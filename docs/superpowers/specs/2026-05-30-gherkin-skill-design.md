@@ -63,7 +63,8 @@ claude-plugins/                          # marketplace repo root (public GitHub)
 
 ### Naming
 
-- Marketplace id: `janno-claude-plugins`
+- GitHub repo: `jannosiilbek/jann0z-claude-plugins`
+- Marketplace id: `jann0z-claude-plugins`
 - Plugin id: `gherkin`
 - Skill name: `gherkin`
 
@@ -83,7 +84,7 @@ auto-discovered from `skills/`.
 
 ### README
 
-Covers: what the marketplace is, `/plugin marketplace add janno/claude-plugins`, and a short
+Covers: what the marketplace is, `/plugin marketplace add jannosiilbek/jann0z-claude-plugins`, and a short
 pitch + usage note for the Gherkin plugin.
 
 ---
