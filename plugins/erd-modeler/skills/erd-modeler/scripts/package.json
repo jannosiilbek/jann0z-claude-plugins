@@ -1,0 +1,16 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "description": "`run-erd-test.mjs` loads a generated schema into an in-memory **PGlite** Postgres, seeds it, and runs labeled business-use-case queries with assertions. It is the engine for stage 4 of the erd-modeler skill (see `../references/live-testing.md`).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@electric-sql/pglite": "^0.4.6"
+  }
+}

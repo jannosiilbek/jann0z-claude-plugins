@@ -13,6 +13,11 @@
       "name": "gherkin",
       "source": "./plugins/gherkin",
       "description": "Author and review framework-agnostic Gherkin/BDD specs with best-practice enforcement, foundation-first ordering, and multi-pass validation."
+    },
+    {
+      "name": "erd-modeler",
+      "source": "./plugins/erd-modeler",
+      "description": "Turn a domain description into a clean, normalized DBML model, validate it, and live-test it against in-memory Postgres (PGlite) until every business use-case passes."
     }
   ]
 }

@@ -1,0 +1,255 @@
+# Live-testing the ERD against in-memory Postgres (PGlite)
+
+This is stage 4 of the skill: prove the model works by running it against a real
+Postgres engine (PGlite, in-memory), seeding realistic data, and executing one query
+per business use-case. Loop with improvements until every use-case passes.
+
+The goal is an **absolutely correct** model: every business use-case is provably
+supported by SQL against the actual schema, with referential integrity enforced and no
+fan/chasm traps. The harness is the oracle — it is built to refuse false-green, so an
+assertion only passes when it has actually proven something. Your job is to write
+assertions that prove the right things.
+
+---
+
+## Artifacts you generate each iteration
+
+These three are **working files** — write them to a scratch dir (e.g.
+`/tmp/erd-test-<n>/`). They are optional to keep; the persisted deliverable is the
+`.dbml` model (SKILL.md stage 5), and these are reproducible from it.
+
+1. **`schema.sql`** — Postgres DDL converted from the validated DBML.
+2. **`seed.sql`** — realistic simulation data.
+3. **`usecases.sql`** — one labeled, asserting query per business use-case.
+
+Then run them through the harness (see `scripts/README.md`):
+
+```bash
+node <skill-dir>/scripts/run-erd-test.mjs \
+  --schema   /tmp/erd-test-1/schema.sql \
+  --seed     /tmp/erd-test-1/seed.sql \
+  --usecases /tmp/erd-test-1/usecases.sql
+```
+
+The harness prints a JSON summary and exits non-zero on any failure.
+
+---
+
+## 1. DBML → Postgres DDL conversion rules
+
+| DBML | Postgres DDL |
+|------|--------------|
+| `Table users { ... }` | `CREATE TABLE users ( ... );` |
+| `id int [pk]` | `id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY` |
+| `id bigint [pk]` | `id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY` |
+| `id uuid [pk]` | `id uuid PRIMARY KEY DEFAULT gen_random_uuid()` (available in PGlite core, no extension) |
+| `name varchar [not null]` | `name varchar NOT NULL` |
+| `email varchar [unique, not null]` | `email varchar UNIQUE NOT NULL` |
+| `amount [money]` / a money attribute | `amount numeric(12,2) NOT NULL` — **never** float/double |
+| `status order_status [not null]` | a `CREATE TYPE order_status AS ENUM (...)` plus `status order_status NOT NULL` |
+| `created_at timestamp [not null, default: now()]` | `created_at timestamptz NOT NULL DEFAULT now()` |
+| optional `updated_at timestamp` | `updated_at timestamptz` (nullable; **not** auto-updated without a trigger) |
+| `customer_id int [not null, ref: > customers.id]` | `customer_id integer NOT NULL REFERENCES customers(id)` |
+| optional FK (`ref` without `not null`) | `parent_id integer REFERENCES parents(id)` (nullable) |
+| 1:1 FK (`-`) | `profile_id integer UNIQUE REFERENCES profiles(id)` (UNIQUE makes it 1:1) |
+| `indexes { customer_id }` | `CREATE INDEX ON orders (customer_id);` |
+| `indexes { (tenant_id, slug) [unique] }` | `UNIQUE (tenant_id, slug)` (composite, non-PK) |
+| junction composite PK `indexes { (a_id, b_id) [pk] }` | `PRIMARY KEY (a_id, b_id)` inside the table |
+
+Rules:
+- **Preserve the DBML's declared nullability and defaults.** Do not silently make an
+  optional column `NOT NULL` or inject `DEFAULT now()` where the DBML didn't ask — the
+  live test must validate the model you designed, not a different one.
+- **Never put a non-deterministic default (`now()`, `gen_random_uuid()`, `random()`) in a
+  column you later assert on or filter by** — it makes the test flaky. Assert on stable
+  seeded values instead.
+- **Order matters**: emit `CREATE TYPE` enums first, then tables in dependency order
+  (parents before children — but see the self-referential carve-out in §2), then
+  `CREATE INDEX`.
+- Every FK becomes a real `REFERENCES` constraint so integrity is enforced by the engine.
+
+### ON DELETE policy (decide per FK, and test it)
+
+Each FK in the DBML carries its policy as a trailing `// ON DELETE …` comment (DBML has
+no native syntax — see metamodel.md). Convert that comment into the `REFERENCES … ON
+DELETE …` clause; if a comment is missing, decide via the matrix below and add it to the
+DBML so the source of truth stays complete.
+
+| Relationship | ON DELETE | Delete-behavior use-case to write |
+|---|---|---|
+| mandatory **owned** child (order_items of an order) | `CASCADE` | delete the parent, assert children gone (`value=0`) |
+| **optional** / nullable FK (employee.manager_id) | `SET NULL` | delete the parent, assert child FK is now `null` (`col:manager_id=null`) |
+| mandatory **blocking** reference (order → customer) | `RESTRICT` | delete a referenced parent, `-- expect: error ~ foreign key` |
+
+(SQL's true default is `NO ACTION`, which differs from `RESTRICT` only in deferral
+timing. Be explicit; don't rely on the default.) Whatever you choose, the choice is only
+real if a use-case exercises it — see §3.
+
+When a table has **multiple FKs**, another FK's `RESTRICT` can pre-empt the delete you're
+trying to test (e.g. you can't reach a `SET NULL` on `manager_id` if deleting that row is
+blocked by a `RESTRICT` elsewhere). Seed a row whose *other* FKs don't block the delete,
+or delete in the right order, so each ON DELETE test isolates the behavior it claims.
+
+---
+
+## 2. Seed-data strategy
+
+Generate data that **exercises the model**, not just fills it. From the domain, for each
+entity create rows that cover:
+
+- **Volume**: ~5–10 rows per primary entity; enough to make joins meaningful.
+- **Mandatory FKs**: every child points to a valid parent.
+- **Optional FKs**: include some rows with the FK `NULL` and some set — proves
+  optionality works.
+- **M:N bridges**: populate multiple combinations — a parent with several children, a
+  child shared by several parents, and at least one entity with **none** (childless
+  parent) to expose chasm traps.
+- **Edge cases**: one parent with many children (fan-out), boundary values, and any
+  domain-specific states (e.g. an order in each `status`).
+
+Insert in dependency order (parents before children, bridges last). Use explicit column
+lists. Because PKs map to `GENERATED ALWAYS AS IDENTITY`, every seed insert that supplies
+an explicit `id` **must** include `OVERRIDING SYSTEM VALUE` (otherwise Postgres rejects
+the explicit id). A timestamp like `responded_at`/`created_at` with `default: now()` is
+fine to include for realism — just never assert on it (see the non-determinism rule in
+§1).
+
+### IDENTITY sequence — required after seeding explicit ids
+
+If a PK is `GENERATED ALWAYS AS IDENTITY` and you seed explicit ids with `OVERRIDING
+SYSTEM VALUE`, the identity **sequence is not advanced** — it is still at 1. The first
+write use-case that omits the id then collides on the PK with a misleading duplicate-key
+error pointed at the *use-case*, not the seed. After seeding each such table, reset the
+sequence:
+
+```sql
+INSERT INTO products (id, sku, price) OVERRIDING SYSTEM VALUE VALUES (1,'A',35.00),(2,'B',10.00);
+-- advance the identity sequence so future auto-inserts don't collide:
+SELECT setval(pg_get_serial_sequence('products','id'), (SELECT max(id) FROM products));
+```
+
+(`GENERATED BY DEFAULT AS IDENTITY` does **not** fix this by itself — `setval` is still
+required. Alternative: never auto-insert into explicitly-seeded tables.)
+
+### Self-referential & cyclic FKs — ordering carve-out
+
+The "parents before children" rule does **not** apply within a self-referential table:
+seed the root row(s) with a `NULL` self-FK **first**, then their descendants. For a true
+mutual cycle (A↔B), insert one side with `NULL`, insert the other, then `UPDATE` to set
+the FK (or use a `DEFERRABLE INITIALLY DEFERRED` constraint). See validation rule A5.
+
+---
+
+## 3. Business use-cases as SQL (the closed assertion grammar)
+
+For **each** business use-case identified in stage 1, write one labeled block in
+`usecases.sql`. The harness parses these comment markers:
+
+```sql
+-- usecase: Enroll a student in a course
+INSERT INTO enrollments (student_id, course_id) VALUES (1, 2);
+-- expect: rowcount=1
+```
+
+Each use-case is **one SQL statement** by default. A multi-statement body (write then
+verify) is allowed; the assertion applies to the **last** statement's result. Every
+use-case runs in **its own transaction that is rolled back**, so use-cases are
+order-independent — a write in one does not leak into another. (Append `[persist]` to the
+label to commit instead, if you deliberately need build-up.)
+
+### The assertion grammar is CLOSED — never invent operators
+
+| `-- expect:` | Passes when |
+|---|---|
+| `error` | the statement is rejected by a **genuine** runtime/constraint error (a "does not exist"/syntax error is a **broken test** and fails) |
+| `error ~ <reason>` | rejected for a specific reason (see below) |
+| `rowcount=N` | **writes only** — `affectedRows === N` |
+| `rows=N` / `rows>=N` | **reads only** — returned row count |
+| `value=<v>` | result is **exactly one row, one column**, equal to `<v>` |
+| `col:<name>=<v>` | result is **exactly one row**; column `<name>` equals `<v>` (`<v>` may be `null`) |
+| _(omitted)_ | the body executes without error |
+
+`error ~ <reason>` matches if `<reason>` is a known constraint keyword whose SQLSTATE
+matches — `foreign key` (23503), `not null` (23502), `unique` (23505), `check` (23514),
+`enum` (22P02) — **or** if `<reason>` is any case-insensitive substring of the error
+message. So a bad enum value can use `error ~ enum` (or `error ~ invalid input value for
+enum`); any other engine error can be pinned by a distinctive phrase from its message.
+
+To bound a result, **assert an exact count or value against deterministic seed data** —
+do not reach for `>`/`<`/`!=` (they don't exist). Numbers compare numerically
+(`value=70` matches `70.00`). Every negative test **must** be reason-qualified (`error ~
+<reason>`) so it can't pass for the wrong reason (e.g. a typo) — only fall back to bare
+`error` if no stable phrase identifies the rejection.
+
+`value=`/`col:` require the verify query to return **exactly one row** — add a `WHERE`
+that pins a single row (e.g. `WHERE id = 2`), or aggregate to one row
+(`SELECT count(*)::int …`). A multi-row result is reported `malformed`, not failed.
+
+If the harness reports a use-case as `malformed`, the fix is to **fix the assertion**,
+not the model.
+
+### Use the value assertion to catch traps empirically
+- **Fan trap**: write the aggregate use-case (e.g. revenue, headcount) and assert the
+  exact, un-inflated number with `value=`. An inflated join will return the wrong value
+  and fail — `rows=1` alone would not catch it.
+- **Chasm trap**: include a parent with no descendants through the optional path; use
+  `LEFT JOIN` and assert it still appears (e.g. `value=0` for its count) rather than
+  vanishing.
+
+---
+
+## 4. Optimality checklist ("absolutely perfect")
+
+The model passes live-testing only when **all** hold:
+
+- [ ] `schema.sql` loads with zero errors.
+- [ ] `seed.sql` loads with zero errors — every FK satisfied, every constraint accepted.
+- [ ] **Coverage floor**: every Stage-1 business use-case maps to ≥1 executed block;
+      at least one **write** use-case and at least one **negative** (`error ~ ...`)
+      use-case exist. (Exception: a genuinely read-only/reporting domain may omit the
+      write — the harness only *warns* here.) No empty `-- expect:` and never `rows>=0`
+      as a sole assertion.
+- [ ] Every block meets its assertion (and none are reported `malformed` or
+      `broken-test`).
+- [ ] Each FK's ON DELETE behavior has a use-case proving it (§1 table).
+- [ ] No fan-trap inflation (`value=` on aggregates) and no chasm-trap loss.
+- [ ] Static validation (stage 3) still reports zero `❌ error` findings.
+- [ ] `usecases_total` from the harness JSON equals your Stage-1 use-case count (no
+      silently-dropped blocks — check the `warnings[]` array).
+
+---
+
+## 5. Improve-and-repeat loop
+
+```
+iteration = 1
+max_iterations = 5
+loop:
+  generate schema.sql, seed.sql, usecases.sql  (from current DBML)
+  result = run harness
+  if result.ok and the coverage floor (§4) is met:
+     CONVERGED -> report
+  else:
+     derive improvement recommendations from the failures:
+       - schema/seed error    -> fix DDL type/constraint/order, IDENTITY setval, or seed integrity
+       - malformed/broken-test -> fix the ASSERTION (not the model)
+       - use-case wrong value  -> fix the model (missing relationship, wrong cardinality,
+                                  missing bridge, fan/chasm trap) per validation-rules A3/A4
+       - ON DELETE failure     -> fix the policy per the §1 table
+     apply fixes to the DBML, re-run static validation (stage 3)
+     iteration += 1
+     if iteration > max_iterations: STOP (not converged)
+```
+
+**Determinism:** the harness builds a fresh in-memory PGlite per invocation and never
+persists, so a re-run over identical files is byte-deterministic — do **not** waste an
+iteration re-running the same files. Instead, ensure no non-deterministic function
+(`now()`, `random()`, `gen_random_uuid()`) appears in any asserted column or filter. The
+only meaningful re-run is after re-**generating** schema/seed/usecases from the final
+DBML.
+
+**Termination**: converged = every use-case passes, the coverage floor is met, and zero
+`❌ error` findings remain. If `max_iterations` is exhausted, stop and report exactly
+which use-cases still fail, the per-iteration history, and the leading hypothesis — then
+ask the user the specific question needed. Never claim success without a green harness
+run.
