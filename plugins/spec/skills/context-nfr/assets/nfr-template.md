@@ -2,7 +2,8 @@
 
 > Cross-cutting invariants. Each line is assertable (could be a Gherkin `Then`).
 > Glossary terms and enum values are used verbatim. Anything undecided is flagged for
-> follow-up, never invented.
+> follow-up, never invented. Mark operational invariants that cannot be a Gherkin `Then`
+> (availability SLO, data residency, infra rate limit) with a trailing `(operational)`.
 
 ## Tenancy & isolation
 

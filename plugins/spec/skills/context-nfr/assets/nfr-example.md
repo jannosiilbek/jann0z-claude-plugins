@@ -26,14 +26,14 @@
 
 ## Compliance & data
 
-- Data is stored in the EU region only.
+- Data is stored in the EU region only. (operational)
 - On Business deletion, personal data is erased within 30 days; Shift and Labor cost
   records are anonymized (User reference removed) but retained for reporting.
 
 ## Limits & SLA
 
-- An authenticated client is limited to 600 requests per minute.
-- Target availability is 99.9% measured monthly.
+- An authenticated client is limited to 600 requests per minute. (operational)
+- Target availability is 99.9% measured monthly. (operational)
 
 ## Audit
 

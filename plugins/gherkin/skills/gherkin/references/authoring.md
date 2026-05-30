@@ -32,6 +32,19 @@ Every `Then` states how success is known (specific status code, message, field, 
 Drop hardcoded IDs/timestamps/exact lists; describe categorically. Use concrete *realistic*
 example data, never `foo`/`bar` — unless the scenario is *about* generic/invalid input.
 
+**Denial vocabulary (one word each, suite-wide):** a permission denial asserts the action
+is `forbidden`; a business-rule or state denial asserts it is `refused`. Do not use
+`rejected`/`blocked`. A denied write is always followed by a state-unchanged `And` (e.g.
+`And the Ticket remains unassigned`) so the `Then` is observable, not just a label.
+
+**Don't restate owned facts.** Never re-type a value another `spec/` file owns — a Plan's
+SLA minutes, a quota, the tenancy mechanism — inside a step. Reference it symbolically
+("a Shop on the Growth Plan") or assert the owning invariant; copy the literal number only
+when that number is itself what the scenario tests.
+
+**Aggregate/dashboard `Then`s state a unit.** "the dashboard shows compliance" is not
+observable; assert the value and unit ("the first-response compliance is 50%").
+
 ## Naming & ubiquitous language
 
 - **Feature files:** kebab-case, named after the capability — `account-withdrawal.feature`,
@@ -74,6 +87,10 @@ the step-definition code layer.
 
 - Tags lowercase, hyphen-separated, namespaced (`@smoke @regression @prio-1 @team-checkout`);
   small documented vocabulary; no case drift.
+- **Traceability:** `@capability:<kebab>` (one per feature, matching the capability-map row)
+  is the traceability tag. `@REQ-<id>` is optional and only for an external tracker — omit it
+  when there is none; never mint a second numbering. `@prereq @<capability>` mirrors each
+  `# Depends on:` dependency.
 - Capitalize only Gherkin keywords + first word of titles; no trailing punctuation on steps;
   parameters in double quotes; lines ~80–120 chars.
 

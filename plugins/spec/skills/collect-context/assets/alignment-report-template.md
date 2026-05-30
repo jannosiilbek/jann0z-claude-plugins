@@ -14,6 +14,7 @@ nfr.
 | 7 | NFR testability | PASS / FAIL | |
 | 8 | Single-ownership (no duplication) | PASS / FAIL | |
 | 9 | Anti-vagueness + completeness | PASS / FAIL | |
+| 10 | NFR downstream traceability | PASS / FAIL | |
 
 **OPEN markers outstanding:** <none / list>
 **Overall:** <COMPLETE only when all checks PASS and no OPEN remains>

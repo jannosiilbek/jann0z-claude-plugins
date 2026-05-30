@@ -16,7 +16,27 @@ even for a "simple" model.
 
 ### 1. Understand the domain
 
-Extract from the user's description:
+**If a `spec/` workspace exists** (the `spec` plugin's output — read its `PIPELINE.md`),
+do **structured intake**, not prose extraction:
+
+- **`spec/glossary.md`** — every term flagged `Maps to: ERD: <Entity>` is a table; use the
+  glossary's canonical names verbatim (respect Forbidden synonyms). The **Enumerations**
+  table becomes DBML `Enum`s with the exact values and spelling (`canceled`, `past_due`) —
+  never invent or rename an enum value.
+- **`spec/nfr.md`** — the tenancy/isolation invariant means every tenant-owned table carries
+  the tenant FK (e.g. `shop_id`); a global catalog like `plans` is the exception. Add a
+  validation check that every non-global table has the tenant key, and set each ON DELETE
+  per the data-lifecycle invariant. If nfr names audit recording, emit a tenant-owned
+  `audit_entries` table so audit assertions have a surface.
+- **`spec/product.md`** + nfr gating — pricing tiers → a `plans` catalog (price, included
+  seats/limits, SLA targets, trial); the subscription lifecycle → a `subscription_status`
+  enum taken from the glossary.
+- **`spec/rbac-matrix.md`** — model roles as an enum or a `roles` table (decide once) plus
+  the relationship entities the matrix implies (e.g. an Agent↔Ticket assignment).
+- **`spec/capability-map.md`** — lift each capability's outcome as a **business use-case**
+  for stage 4 verbatim; do not re-invent use-cases from prose.
+
+**Otherwise** (no `spec/`), extract from the user's natural-language description:
 - **Entities** — the things rows are stored about.
 - **Attributes** — the fields on each entity, with their types.
 - **Relationships** — how entities link, and the cardinality of each end.
@@ -81,6 +101,8 @@ test run (e.g. `/tmp/erd-test-<n>/` or a `.erd-test/` subdir). In summary:
 **Always write the final, validated DBML to a `.dbml` file. This is the primary
 deliverable and is never skipped.** Resolve the location deterministically, in order:
 
+0. **Spec pipeline** — if a `spec/` workspace exists, write `spec/data/model.dbml` (the
+   pipeline's ERD home, per `PIPELINE.md`).
 1. **Explicit** — if the user gave a path or filename, use it.
 2. **Existing convention in the current project** — "the project" is the directory you
    were asked to work in, or its nearest root (the closest ancestor containing

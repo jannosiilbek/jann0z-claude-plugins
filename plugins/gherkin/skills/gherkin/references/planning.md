@@ -5,15 +5,17 @@ Use when generating specs from a brief, or whenever more than one feature is in 
 ## 0. The spec/ workspace
 
 Gherkin operates inside the `spec/` workspace produced by the `spec` plugin's
-`collect-context` skill. Write all specs to `spec/features/<capability>/`, and read these
-`spec/` files as the authoritative single source of truth — never re-derive or re-decide
-what they own:
+`collect-context` skill. The layout and the single-ownership table are defined once in the
+`spec` plugin's `PIPELINE.md` — that is the contract. Write all specs to
+`spec/features/<capability>/`, and read these `spec/` files as the authoritative single
+source of truth — never re-derive or re-decide what they own:
 
 - **`spec/glossary.md`** → the one glossary: ubiquitous language and enum values. Use its
   Terms verbatim and copy enum/state values from its Enumerations table exactly. Its
   Forbidden-synonyms column drives the vocabulary checks (Review Pass 0 and Pass 4).
 - **`spec/capability-map.md`** → the `spec/features/<capability>/` folders, their order,
-  dependencies, and the walking skeleton (see step 1).
+  dependencies, the walking skeleton, and each capability's **Primary feature file** (the
+  canonical `# Depends on:` target — see step 1).
 - **`spec/product.md`** → the SDD header's In-scope / Out-of-scope (copy or narrow the
   MVP-scope items — never invent scope); the pricing table → trial / quota / upgrade
   scenarios.
@@ -37,10 +39,13 @@ row, in its order; carry each row's `Depends on` into the SDD header / `@prereq`
 the walking skeleton from it. Sections 2–4 below are the principles the map already encodes
 — read them as rationale, not as work to redo.
 
-The map's `Depends on` column holds capability numbers; translate each to that capability's
-`@prereq` slug and, as the `# Depends on:` path, to its walking-skeleton / primary feature
-file (e.g. capability `identity-access` → `@prereq @identity-access` and
-`# Depends on: ../identity-access/<primary>.feature`).
+The map's `Depends on` column holds capability numbers. For each, emit the `@prereq` slug
+(the depended-on capability's kebab name) and, as the `# Depends on:` path, the depended-on
+capability's **Primary feature file copied verbatim from capability-map.md** — e.g.
+capability `identity-access` (primary `identity-access.feature`) → `@prereq @identity-access`
+and `# Depends on: ../identity-access/identity-access.feature`. Create that primary file for
+every capability; **never synthesize a `<cap>/<cap>.feature` path you have not created.**
+Before finishing, confirm every `# Depends on:` path resolves to a file that exists.
 
 Capabilities are **business capabilities / bounded contexts** — not technical layers, not
 one-file-per-user-story. The folder layout:
@@ -56,6 +61,13 @@ spec/features/
     checkout.feature
     payment.feature
 ```
+
+A capability folder holds **one feature file per distinct behavior** (each a vertical
+slice) — usually several. The capability-map's Primary feature file is only the canonical
+entry / `# Depends on:` target; its siblings are named after their own behavior
+(`registration.feature`, `authentication.feature`). Splitting a capability into many
+feature files is expected and good — it is not the same as the `story-1234.feature` sprawl
+anti-pattern (those are story-numbered, not behavior-named, and have no capability map).
 
 Anti-patterns: `spec/features/db/`, `spec/features/ui/` (technical layers leak solution
 domain); `spec/features/story-1234.feature` (thin-slice sprawl, no capability map).
@@ -93,7 +105,9 @@ Copy `assets/feature-template.feature`. Each feature opens with:
 - **In-scope / Out-of-scope** — closing scope stops a coding agent expanding it.
 - **Prior decisions** — recorded architecture choices stop the agent re-deciding them.
 - **Acceptance criteria** — what "done" means.
-- Scenarios as task units; tag with requirement/capability IDs (`@REQ-1024 @capability:payment`).
+- Scenarios as task units. Tag each feature with `@capability:<kebab>` (one per feature,
+  matching its capability-map row — the traceability tag). `@REQ-<id>` is optional and only
+  for an external tracker; omit it when there is none. Do not invent a second numbering.
 
 **Header sourcing (do not invent these):** take **Outcome** and
 **Depends on** from the `capability-map.md` row; take **In-scope / Out-of-scope** from

@@ -12,15 +12,20 @@ features consume the context faithfully.
 
 - **Capability coverage:** every `spec/features/<capability>/` folder maps to a
   `capability-map.md` row, and every in-scope capability has a folder.
+- **Dependency integrity:** every `# Depends on:` path resolves to a file that exists, and
+  matches the depended-on capability's Primary feature file in `capability-map.md`. No
+  synthesized `<cap>/<cap>.feature`; `@prereq` mirrors each dependency.
 - **Glossary fidelity:** every domain noun and enum/state value in a scenario appears in
   `spec/glossary.md` verbatim — no forbidden synonym, no re-spelled enum value.
 - **Scope:** no scenario specifies a `product.md` Out-of-scope item.
 - **RBAC coverage:** every `rbac-matrix.md` cell for an in-scope Resource has a scenario —
   allowed cell → a permitted-action scenario, denied cell → a negative "forbidden when the
   role is X" scenario; row conditions appear as `Given`s. **Fix:** add the missing scenario.
-- **NFR coverage:** each `nfr.md` invariant is asserted somewhere — tenant isolation as a
-  cross-cutting `Then`, gating as trial-expiry/lapsed scenarios, each numeric limit/SLA as a
-  boundary scenario. A missing invariant = uncovered cross-cutting behavior.
+- **NFR coverage (by taxonomy — see PIPELINE.md rule 4):** every **behavioral** `nfr.md`
+  invariant is asserted — tenant isolation as a cross-cutting `Then`, subscription gating as
+  trial-expiry/lapsed scenarios, auth flows and in-app limits as scenarios; a missing one =
+  uncovered behavior. **Operational** invariants (availability SLO, data residency, infra
+  rate limit) are acknowledged as out-of-scenario, not counted as a coverage miss.
 
 ## Pass 1 — Mechanical lint gate
 

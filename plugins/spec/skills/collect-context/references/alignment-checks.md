@@ -9,6 +9,13 @@ class in parallel, then collate.
 - Every domain noun used in any file appears in `glossary.md` exactly once.
 - No file uses a word listed in another term's **Forbidden synonyms** (Venue→Location,
   Job-Role→Position, canceled vs cancelled, …).
+- **Part-of-speech carve-out:** the forbidden-synonym check targets a word used as the
+  *concept* (the noun/entity). A different part of speech is not drift — the verb "reply"
+  is fine even if "reply" is a forbidden noun-synonym of Message; "invite (verb)" is fine
+  when "Invitation" is the entity. Do not rewrite legitimate verbs to dodge the check.
+- **Generic architecture vocabulary is exempt:** `tenant` / `tenant-owned` / `tenancy` in
+  the `nfr.md` isolation invariant are generic terms, not a synonym for the specific
+  tenant-root entity — do not flag them (and do not seed them as forbidden synonyms).
 - A term missing from the glossary but used elsewhere → FAIL (add it to the glossary).
 
 ## 2. Enum consistency
@@ -31,6 +38,7 @@ class in parallel, then collate.
 - `Depends on` references only lower-numbered capabilities (valid DAG, no cycles, no
   forward references).
 - Exactly one walking skeleton is named.
+- Every row names a Primary feature file (the canonical `# Depends on:` target for gherkin).
 
 ## 5. Pricing ↔ gating consistency
 
@@ -67,3 +75,12 @@ class in parallel, then collate.
 - No `OPEN:` marker remains.
 - No `<placeholder>` from any template remains.
 - Every section the templates require is present in each file.
+
+## 10. NFR downstream traceability
+
+- Every **behavioral** `nfr.md` invariant (tenant isolation, subscription gating, auth
+  flows, in-app limits) maps to a capability in `capability-map.md` whose features will
+  assert it. An auth/limit invariant with no owning capability AND no scenario path → FAIL.
+- Every **operational** invariant (availability SLO, data residency, infra rate limit) is
+  explicitly marked operational in `nfr.md` so gherkin's Pass 0 does not count it as an
+  uncovered behavior (see PIPELINE.md rule 4).

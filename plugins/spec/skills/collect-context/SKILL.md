@@ -12,41 +12,28 @@ root of six strictly-templated files that double as spec input and living refere
 **Violating the letter of these rules is violating the spirit of them.** "Close enough"
 alignment is not alignment.
 
-## Output layout (flat)
+## Input & output
+
+**Input:** the product brief — read `spec/brief.md` if present, otherwise the brief given
+inline.
+
+**Output:** the flat `spec/` context layer. The authoritative `spec/` layout and the
+**single-ownership table** (which file owns each fact) live once in `../../PIPELINE.md`
+(this plugin's root) — read it first; do not restate it here. This skill produces six files:
 
 ```
-spec/
-  glossary.md         # context-glossary
-  product.md          # context-product
-  personas.md         # context-personas
-  capability-map.md   # context-capability-map
-  rbac-matrix.md      # context-rbac
-  nfr.md              # context-nfr
-  features/           # gherkin specs land here (one folder per capability-map row)
+spec/  →  glossary.md  product.md  personas.md  capability-map.md  rbac-matrix.md  nfr.md
 ```
 
-Settled choices between alternatives are NOT a context artifact. They are recorded where
-they are consumed — in the gherkin per-feature `# Prior decisions:` SDD header — so they
-cannot drift from the state the six files own.
-
-## Single-ownership contract (the anti-overlap rule)
-
-Each fact has exactly ONE home file. Every other file references it; none restates it.
-
-| Concern | Owned by | Everyone else |
-|---------|----------|---------------|
-| Domain terms + enum values | `glossary.md` | use verbatim |
-| Value prop, pricing, scope | `product.md` | reference scope items |
-| Who the actors are + their jobs | `personas.md` | reference persona Roles |
-| Capability set + order + deps | `capability-map.md` | consume as folders |
-| Permission matrix | `rbac-matrix.md` | no other matrix exists |
-| Cross-cutting invariants + subscription gating | `nfr.md` | reference, don't restate |
-
-If two files would state the same fact, the non-owner is wrong — delete it there.
+Each fact has exactly ONE home (per PIPELINE.md); every other file references it. If two
+files would state the same fact, the non-owner is wrong — delete it there. Settled choices
+between alternatives are NOT a context artifact — they live in the gherkin per-feature
+`# Prior decisions:` header so they cannot drift from the six files.
 
 ## Workflow
 
-1. **Locate or create the flat `spec/` root.** One directory, six files, no subfolders.
+1. **Read the brief** (`spec/brief.md` if present, else the brief given inline) and locate
+   or create the flat `spec/` root.
 2. **Author in dependency order**, each via its skill — re-read the skill before each:
    `context-glossary` (seed) → `context-product` → `context-personas` →
    `context-capability-map` → `context-rbac` → `context-nfr` →
