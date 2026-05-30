@@ -58,7 +58,9 @@ mutation or none.
   or job-story (`When <situation>, I want <motivation>, so I can <outcome>`).
   The `As a <role>` clause uses a verbatim glossary Role from a persona in
   `spec/personas.md`, and `In order to <value>` derives from that persona's goals/pains —
-  do not invent roles or values.
+  do not invent roles or values. The `As a <role>` slot takes only an RBAC Role; an
+  external/unauthenticated actor (`Role: none`, e.g. a Customer) never fills it — write its
+  trigger as an event (`When an email arrives from a Customer`).
 - **Scenario titles:** concise, outcome-focused, distinguishing this scenario from its
   siblings — `Withdrawal is refused when the balance is insufficient`, not `Test 1`.
   Never prefix `test`/`verify`/`check` or embed ticket IDs (those go in tags).

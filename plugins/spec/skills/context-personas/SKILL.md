@@ -21,6 +21,11 @@ the same order. See `assets/personas-example.md`.
 1. **Each persona maps to exactly one canonical Role** from `glossary.md` (Owner, Manager,
    Employee…). Use the glossary term verbatim. If a persona needs a role not in the
    glossary, add the role to the glossary first.
+   **External / unauthenticated actors** (e.g. a Customer who emails in) are NOT Roles and
+   do NOT appear in `rbac-matrix.md`. Give such an actor `Role: none (external)`; its
+   triggered behavior is written in gherkin as an event (`When an email arrives from a
+   Customer`), never `As a Customer`. Do not reclassify an external actor as a Role to make
+   it fit a matrix column.
 2. **Jobs-to-be-done are observable tasks** — verb + object a scenario could assert
    ("publish next week's schedule", "request a swap for an assigned shift"). Not vibes
    ("wants to feel in control"), not feelings.

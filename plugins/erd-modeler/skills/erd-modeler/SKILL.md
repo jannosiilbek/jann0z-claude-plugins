@@ -58,7 +58,9 @@ model using this output template:
 
 - Output is **DBML**. One `Table` per entity.
 - Table names: `snake_case`, **plural** (e.g. `orders`, `order_items`).
-- Column order inside a table: **PK → scalar attributes → FK columns → refs**.
+- Column order inside a table: **PK → scalar attributes → FK columns → refs**. Exception:
+  when a `spec/nfr.md` tenancy invariant applies, the tenant FK comes immediately after the
+  PK (it scopes every row), ahead of the scalar attributes.
 - Every column has an **explicit type**. Add `not null` for mandatory columns; omit it
   for optional ones.
 - Primary key: prefer a surrogate `id` (`int`/`bigint`/`uuid`) marked `[pk]`. Use a
