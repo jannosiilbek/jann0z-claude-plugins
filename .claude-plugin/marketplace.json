@@ -1,0 +1,18 @@
+{
+  "name": "jann0z-claude-plugins",
+  "owner": {
+    "name": "janno",
+    "email": "janno.siilbek@gmail.com"
+  },
+  "metadata": {
+    "description": "Janno's Claude Code plugins.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "gherkin",
+      "source": "./plugins/gherkin",
+      "description": "Author and review framework-agnostic Gherkin/BDD specs with best-practice enforcement, foundation-first ordering, and multi-pass validation."
+    }
+  ]
+}

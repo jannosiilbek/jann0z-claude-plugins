@@ -693,6 +693,11 @@ Create `plugins/gherkin/skills/gherkin/assets/gherkin-lintrc` (valid JSON; `gher
 
 > Note: `only-one-when` is a non-default rule in some `gherkin-lint` builds. If `npx gherkin-lint`
 > reports it as unknown, remove that line — passes 2–3 of `review.md` enforce one-behavior by judgment.
+>
+> Implementation note (reconciled): against `gherkin-lint` v4.2.4 the config above was corrected to
+> load cleanly — `no-dupe-scenario-names` uses array form `["on", "in-feature"]`, `no-restricted-patterns`
+> is plain `"off"`, and `one-feature-per-file` was dropped (not a rule in v4.2.4; Gherkin grammar already
+> permits only one Feature per file). The committed `assets/gherkin-lintrc` is the working source of truth.
 
 - [ ] **Step 2: Write the feature template**
 

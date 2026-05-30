@@ -1,0 +1,17 @@
+{
+  "no-files-without-scenarios": "on",
+  "no-unnamed-features": "on",
+  "no-unnamed-scenarios": "on",
+  "no-dupe-feature-names": "on",
+  "no-dupe-scenario-names": ["on", "in-feature"],
+  "keywords-in-logical-order": "on",
+  "only-one-when": "on",
+  "no-restricted-patterns": "off",
+  "no-unused-variables": "on",
+  "no-scenario-outlines-without-examples": "on",
+  "no-superfluous-tags": "on",
+  "indentation": ["on", { "Feature": 0, "Scenario": 2, "Step": 4, "Examples": 4, "example": 6 }],
+  "max-scenarios-per-file": ["on", { "maxScenarios": 12 }],
+  "scenario-size": ["on", { "steps-length": { "Background": 4, "Scenario": 10 } }],
+  "file-name": ["on", { "style": "kebab-case" }]
+}
