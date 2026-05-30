@@ -4,6 +4,24 @@ Run the passes in order, cheapest/most-mechanical first; each later pass assumes
 previous passed. Spend human/LLM judgment only on passes 3–7. Output a findings report:
 for each issue give the anti-pattern name, the offending location, and a concrete fix.
 
+## Pass 0 — Spec conformance
+
+Validates the spec→feature handoff. Do **not** re-run the six-file intra-spec alignment
+checks here — those passed upstream in `collect-context`; this pass only confirms the
+features consume the context faithfully.
+
+- **Capability coverage:** every `spec/features/<capability>/` folder maps to a
+  `capability-map.md` row, and every in-scope capability has a folder.
+- **Glossary fidelity:** every domain noun and enum/state value in a scenario appears in
+  `spec/glossary.md` verbatim — no forbidden synonym, no re-spelled enum value.
+- **Scope:** no scenario specifies a `product.md` Out-of-scope item.
+- **RBAC coverage:** every `rbac-matrix.md` cell for an in-scope Resource has a scenario —
+  allowed cell → a permitted-action scenario, denied cell → a negative "forbidden when the
+  role is X" scenario; row conditions appear as `Given`s. **Fix:** add the missing scenario.
+- **NFR coverage:** each `nfr.md` invariant is asserted somewhere — tenant isolation as a
+  cross-cutting `Then`, gating as trial-expiry/lapsed scenarios, each numeric limit/SLA as a
+  boundary scenario. A missing invariant = uncovered cross-cutting behavior.
+
 ## Pass 1 — Mechanical lint gate
 
 Run the bundled config: `npx gherkin-lint -c plugins/gherkin/skills/gherkin/assets/gherkin-lintrc <path>`
@@ -36,7 +54,7 @@ Vale prose lint over the `.feature` files (`assets/vale/`).
 - **Anti-pattern: imperative/UI-tour steps** → couples to UI, buries intent. **Fix:** raise
   to declarative intent; push mechanics into step defs.
 - **Anti-pattern: vocabulary drift** → breaks shared understanding + reuse. **Fix:** one
-  concept/one term; update the glossary.
+  concept/one term; align to `spec/glossary.md`.
 - **Anti-pattern: placeholder filler** (`foo`/`bar`) → **Fix:** realistic example data.
 
 ## Pass 5 — Deterministic & independent

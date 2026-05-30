@@ -39,12 +39,18 @@ example data, never `foo`/`bar` — unless the scenario is *about* generic/inval
 - **`Feature:` title:** a capability/value phrase. Pick **one** narrative template
   suite-wide — value-first Connextra (`In order to <value> / As a <role> / I want <capability>`)
   or job-story (`When <situation>, I want <motivation>, so I can <outcome>`).
+  The `As a <role>` clause uses a verbatim glossary Role from a persona in
+  `spec/personas.md`, and `In order to <value>` derives from that persona's goals/pains —
+  do not invent roles or values.
 - **Scenario titles:** concise, outcome-focused, distinguishing this scenario from its
   siblings — `Withdrawal is refused when the balance is insufficient`, not `Test 1`.
   Never prefix `test`/`verify`/`check` or embed ticket IDs (those go in tags).
 - **Ubiquitous language:** one concept = one word across features, step definitions, and
   code. No vocabulary drift (user/customer/account-holder for one concept); no technical
-  jargon (status codes, table names, DOM ids) in steps. Keep `features/GLOSSARY.md` current.
+  jargon (status codes, table names, DOM ids) in steps. The glossary is `spec/glossary.md`:
+  use its Terms verbatim and copy enum/state values from its Enumerations table exactly — in
+  `Given` preconditions and Scenario-Outline rows alike (mind traps like `canceled` vs
+  `cancelled`).
 - **Voice:** third person, present tense, complete subject-predicate phrases; never mix persons.
 
 ## DRY & reuse (clarity wins in the prose)

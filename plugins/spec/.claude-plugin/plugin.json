@@ -1,0 +1,11 @@
+{
+  "name": "spec",
+  "version": "0.1.0",
+  "description": "Collect the upstream context a SaaS spec needs — product, personas, glossary, capability map, RBAC, NFRs — as flat, strictly-templated files at a spec/ root, then validate 100% cross-artifact alignment with zero vague text. Feeds Gherkin spec authoring and ERD modeling.",
+  "author": {
+    "name": "janno",
+    "email": "janno.siilbek@gmail.com"
+  },
+  "license": "MIT",
+  "keywords": ["spec", "spec-driven-development", "context", "saas", "personas", "glossary", "rbac", "ubiquitous-language", "gherkin", "erd"]
+}

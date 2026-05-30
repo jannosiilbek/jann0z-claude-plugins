@@ -10,6 +10,11 @@
   },
   "plugins": [
     {
+      "name": "spec",
+      "source": "./plugins/spec",
+      "description": "Collect the upstream context a SaaS spec needs (product, personas, glossary, capability map, RBAC, NFRs) as flat, strictly-templated spec/ files, then validate 100% cross-artifact alignment with zero vague text. Feeds Gherkin authoring and ERD modeling."
+    },
+    {
       "name": "gherkin",
       "source": "./plugins/gherkin",
       "description": "Author and review framework-agnostic Gherkin/BDD specs with best-practice enforcement, foundation-first ordering, and multi-pass validation."

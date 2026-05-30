@@ -33,9 +33,10 @@ Pick the mode that matches the request.
 
 ### Author — generate specs from a brief
 
-1. **PLAN** — read `references/planning.md`. Decompose into capabilities; order
-   foundation-first (walking skeleton → identity/auth → core entities → workflows →
-   edge/cross-cutting); vertical-slice each feature.
+1. **PLAN** — read `references/planning.md`. Write specs to `spec/features/<capability>/`.
+   The capability set, foundation-first order, and dependencies come from
+   `spec/capability-map.md`; the other `spec/` files (glossary, product, personas, RBAC,
+   NFRs) are authoritative inputs (planning.md section 0). Vertical-slice each feature.
 2. **Example-map** — per capability, list rules and, for each rule, at least one happy +
    boundary/edge + error example. Surface open questions instead of guessing.
 3. **DRAFT** — read `references/authoring.md`. Write the scenarios; read and copy the SDD
@@ -44,9 +45,10 @@ Pick the mode that matches the request.
 
 ### Review — validate existing specs
 
-Read `references/review.md` and run the ordered multi-pass checklist (mechanical lint →
-structure → single-behavior → declarative → deterministic/independent → coverage →
-Three-Amigos). Return findings keyed to the anti-pattern catalog, each with a concrete fix.
+Read `references/review.md` and run the ordered multi-pass checklist (spec conformance →
+mechanical lint → structure → single-behavior → declarative → deterministic/independent →
+coverage → Three-Amigos). Return findings keyed to the anti-pattern catalog, each with a
+concrete fix.
 
 ### Implement-from-spec (coding agent)
 
@@ -68,5 +70,6 @@ workflow capability is unavailable, degrade automatically to the single-agent mu
 
 ## Project glossary
 
-Maintain a `features/GLOSSARY.md` of ubiquitous-language terms (one concept = one word).
-Check new specs against it; add new terms as they appear.
+The glossary is `spec/glossary.md` — the single ubiquitous-language source (one concept =
+one word), produced by the `spec` plugin's `collect-context`. Check new specs against it
+and add terms as they appear; its Forbidden-synonyms column drives the vocabulary checks.
