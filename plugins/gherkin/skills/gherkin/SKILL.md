@@ -38,8 +38,8 @@ Pick the mode that matches the request.
    edge/cross-cutting); vertical-slice each feature.
 2. **Example-map** — per capability, list rules and, for each rule, at least one happy +
    boundary/edge + error example. Surface open questions instead of guessing.
-3. **DRAFT** — read `references/authoring.md`. Write the scenarios; put an SDD header
-   (`assets/feature-template.feature`) on each feature file.
+3. **DRAFT** — read `references/authoring.md`. Write the scenarios; read and copy the SDD
+   header from `assets/feature-template.feature` onto each feature file.
 4. **SELF-REVIEW** — run the Review mode checklist on your own output before presenting.
 
 ### Review — validate existing specs
