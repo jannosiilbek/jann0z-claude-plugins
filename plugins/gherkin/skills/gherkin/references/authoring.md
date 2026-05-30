@@ -45,6 +45,10 @@ when that number is itself what the scenario tests.
 **Aggregate/dashboard `Then`s state a unit.** "the dashboard shows compliance" is not
 observable; assert the value and unit ("the first-response compliance is 50%").
 
+**A positive `Then` binds a concrete after-value** ("the Seat count is 6", "the User's Role
+is Owner") — never a bare `is changed`/`is updated`/`is modified`, which passes for any
+mutation or none.
+
 ## Naming & ubiquitous language
 
 - **Feature files:** kebab-case, named after the capability — `account-withdrawal.feature`,
@@ -93,6 +97,11 @@ the step-definition code layer.
   `# Depends on:` dependency.
 - Capitalize only Gherkin keywords + first word of titles; no trailing punctuation on steps;
   parameters in double quotes; lines ~80–120 chars.
+- **Enum/state values are written bare in prose** (`the Subscription status is past_due`),
+  never quoted; reserve double quotes for Scenario-Outline placeholders and free-text/payload
+  values.
+- One `@prereq @<capability>` per dependency, mirroring each `# Depends on:` line (a
+  multi-dependency feature has several of each, in matching order).
 
 ## Worked example
 

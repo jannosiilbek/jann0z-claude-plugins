@@ -60,4 +60,5 @@ spec/
    minutes, the tenancy mechanism) in a step or header — reference it symbolically or assert
    the owning invariant.
 6. **Enum values verbatim.** Statuses/states use the `glossary.md` Enumerations spelling
-   exactly, everywhere (e.g. `canceled`, `past_due`).
+   exactly, everywhere (e.g. `canceled`, `past_due`). A role-derived enum in the ERD uses
+   the glossary Role spelling (e.g. `Owner`, `Agent`), not an ad-hoc lowercasing.

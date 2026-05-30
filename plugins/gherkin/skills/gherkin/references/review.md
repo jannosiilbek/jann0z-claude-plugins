@@ -23,9 +23,10 @@ features consume the context faithfully.
   role is X" scenario; row conditions appear as `Given`s. **Fix:** add the missing scenario.
 - **NFR coverage (by taxonomy — see PIPELINE.md rule 4):** every **behavioral** `nfr.md`
   invariant is asserted — tenant isolation as a cross-cutting `Then`, subscription gating as
-  trial-expiry/lapsed scenarios, auth flows and in-app limits as scenarios; a missing one =
-  uncovered behavior. **Operational** invariants (availability SLO, data residency, infra
-  rate limit) are acknowledged as out-of-scenario, not counted as a coverage miss.
+  trial-expiry/lapsed scenarios, each audit-recording invariant as a scenario, auth flows and
+  in-app limits as scenarios; a missing one = uncovered behavior. **Operational** invariants
+  (those marked `(operational)`: availability SLO, data residency, infra rate limit) are
+  acknowledged as out-of-scenario, not counted as a coverage miss.
 
 ## Pass 1 — Mechanical lint gate
 
@@ -70,8 +71,10 @@ and checkable; no real clock/random/network ordering or shared mutable fixtures.
   self-contained `Given` per scenario; never chain scenarios.
 - **Anti-pattern: bloated Background / hidden setup** → couples unrelated scenarios.
   **Fix:** limit to ~3–4 shared `Given`s; push scenario-specific setup into the scenario.
-- **Anti-pattern: vague / non-observable `Then`** (`it works`) → asserts nothing. **Fix:**
-  state an observable outcome (`a confirmation email is sent to admin@example.com`).
+- **Anti-pattern: vague / non-observable `Then`** (`it works`, or a bare
+  `is changed`/`is updated` that passes for any mutation or none) → asserts nothing.
+  **Fix:** state an observable outcome with the after-value (`the Seat count is 6`,
+  `a confirmation email is sent to admin@example.com`).
 
 ## Pass 6 — Coverage via Example Mapping
 

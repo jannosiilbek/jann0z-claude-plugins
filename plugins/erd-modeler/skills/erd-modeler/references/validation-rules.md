@@ -116,6 +116,9 @@ words.
 **Fix:** replace CSV columns with a related table; replace polymorphic FKs with explicit
 typed relationships (or separate nullable FKs); replace boolean-soup with an `Enum`
 status column.
+**Carve-out:** an append-only audit/event-log table (e.g. `audit_entries`) MAY use a
+`(target_type, target_id)` polymorphic reference when a `Note:` documents the choice —
+audit logs span all entities by design. Without that `Note:`, C2 still fires.
 **Severity:** `❌ error` for data-modeling hacks (CSV/polymorphic); `⚠️ warn` for
 boolean-soup.
 

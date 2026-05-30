@@ -28,8 +28,10 @@ source of truth — never re-derive or re-decide what they own:
 - **`spec/nfr.md`** → cross-cutting acceptance criteria: assert the tenant-isolation
   invariant as a `Then` in the walking skeleton and every capability that touches
   tenant-owned data; generate subscription-gating scenarios (trial-expiry, lapsed/read-only)
-  from the gating section; turn each numeric limit/SLA and the auth rules into boundary
-  scenarios.
+  from the gating section; assert each audit-recording invariant as a scenario (the action
+  is recorded with the acting User and a timestamp); turn each numeric limit/SLA and the
+  auth rules into boundary scenarios. Operational invariants (those marked `(operational)`)
+  are acknowledged, not scripted.
 
 ## 1. Capabilities & folders
 
@@ -45,7 +47,9 @@ capability's **Primary feature file copied verbatim from capability-map.md** —
 capability `identity-access` (primary `identity-access.feature`) → `@prereq @identity-access`
 and `# Depends on: ../identity-access/identity-access.feature`. Create that primary file for
 every capability; **never synthesize a `<cap>/<cap>.feature` path you have not created.**
-Before finishing, confirm every `# Depends on:` path resolves to a file that exists.
+A capability with multiple dependencies (e.g. `Depends on: 3, 4`) gets one `@prereq` tag
+**and** one `# Depends on:` line per dependency — never fewer paths than tags. Before
+finishing, confirm every `# Depends on:` path resolves to a file that exists.
 
 Capabilities are **business capabilities / bounded contexts** — not technical layers, not
 one-file-per-user-story. The folder layout:
@@ -109,8 +113,11 @@ Copy `assets/feature-template.feature`. Each feature opens with:
   matching its capability-map row — the traceability tag). `@REQ-<id>` is optional and only
   for an external tracker; omit it when there is none. Do not invent a second numbering.
 
-**Header sourcing (do not invent these):** take **Outcome** and
-**Depends on** from the `capability-map.md` row; take **In-scope / Out-of-scope** from
-`product.md` MVP scope (copy or narrow the owning items); record settled choices in
-**Prior decisions**, cross-checked against `product.md` pricing and `nfr.md` so they cannot
-contradict the six owning files.
+**Header sourcing (do not invent these):** take **Outcome** and **Depends on** from the
+`capability-map.md` row; take **In-scope / Out-of-scope** from `product.md` MVP scope (copy
+or narrow the owning items). **Prior decisions** holds only settled choices *between
+alternatives* — cite owned invariants (subscription gating, audit, tenancy) symbolically
+("subscription-state gating per nfr.md"), never re-type them. If a header names an enum,
+copy the **complete** glossary Enumerations row verbatim or name the enum symbolically
+("the Invitation status enum") — never an abbreviated subset, which reads as the full list
+and drifts.

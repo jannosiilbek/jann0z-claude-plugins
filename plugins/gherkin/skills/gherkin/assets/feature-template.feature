@@ -4,7 +4,6 @@
 # Prior decisions: <architecture/UX choices already made — don't re-decide>
 # Acceptance criteria: <what "done" means>
 # Depends on: <../<capability>/<primary>.feature — the depended-on capability's Primary feature file from capability-map.md; omit if none>
-# Tags: @capability:<kebab> is required (= the capability-map row); add @REQ-<id> only for an external tracker
 @capability:<kebab>
 Feature: <Capability name>
 

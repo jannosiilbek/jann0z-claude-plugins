@@ -27,7 +27,9 @@ do **structured intake**, not prose extraction:
   the tenant FK (e.g. `shop_id`); a global catalog like `plans` is the exception. Add a
   validation check that every non-global table has the tenant key, and set each ON DELETE
   per the data-lifecycle invariant. If nfr names audit recording, emit a tenant-owned
-  `audit_entries` table so audit assertions have a surface.
+  `audit_entries` table so audit assertions have a surface; if it uses a
+  `(target_type, target_id)` polymorphic reference, add a `Note:` documenting that — the
+  C2 audit-log carve-out (see `references/validation-rules.md`) then permits it.
 - **`spec/product.md`** + nfr gating — pricing tiers → a `plans` catalog (price, included
   seats/limits, SLA targets, trial); the subscription lifecycle → a `subscription_status`
   enum taken from the glossary.
