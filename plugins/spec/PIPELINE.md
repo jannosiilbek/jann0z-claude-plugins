@@ -53,9 +53,11 @@ spec/
    `forbidden`; a business-rule/state denial asserts `refused`; `rejected`/`blocked` are not
    used. A denied write is always followed by a state-unchanged `And`.
 4. **NFR taxonomy** (owner: `nfr.md`). Each invariant is **behavioral** (tenant isolation,
-   subscription gating, auth flows, in-app limits → MUST have a Gherkin `Then`) or
-   **operational** (availability SLO, data residency, infra rate limit → acknowledged, not a
-   scenario). collect-context, gherkin review Pass 0, and erd bucket invariants identically.
+   subscription gating, auth flows, audit recording, in-app limits, and data-lifecycle
+   *events* like erasure-on-deletion and anonymization → MUST have a Gherkin `Then`) or
+   **operational** — a passive property that cannot be a `Then` (availability SLO, data
+   residency, infra rate limit → marked `(operational)`, acknowledged, not a scenario).
+   collect-context, gherkin review Pass 0, and erd bucket invariants identically.
 5. **No restating owned facts.** Cite the owner; never re-type a value it owns (a Plan's SLA
    minutes, the tenancy mechanism) in a step or header — reference it symbolically or assert
    the owning invariant.

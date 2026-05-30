@@ -91,10 +91,9 @@ the step-definition code layer.
 
 - Tags lowercase, hyphen-separated, namespaced (`@smoke @regression @prio-1 @team-checkout`);
   small documented vocabulary; no case drift.
-- **Traceability:** `@capability:<kebab>` (one per feature, matching the capability-map row)
-  is the traceability tag. `@REQ-<id>` is optional and only for an external tracker — omit it
-  when there is none; never mint a second numbering. `@prereq @<capability>` mirrors each
-  `# Depends on:` dependency.
+- **Traceability:** tag each feature `@capability:<kebab>` (its capability-map row) and one
+  `@prereq @<capability>` per `# Depends on:` dependency. The full tag contract (including
+  the optional external `@REQ-<id>`) is PIPELINE.md rule 2 — cite it, don't restate it.
 - Capitalize only Gherkin keywords + first word of titles; no trailing punctuation on steps;
   parameters in double quotes; lines ~80–120 chars.
 - **Enum/state values are written bare in prose** (`the Subscription status is past_due`),

@@ -56,4 +56,6 @@ a definition, `robust`, `user-friendly`, `as appropriate`, `as needed`, `flexibl
 - [ ] Every term: one canonical spelling, one-sentence definition, a Type.
 - [ ] Every likely-confused term has Forbidden synonyms filled.
 - [ ] Every enum and its values appear here and nowhere else.
+- [ ] No definition contradicts another term or a documented flow (e.g. a one-step
+      definition for a two-step process).
 - [ ] No banned phrase; no `<placeholder>` left.

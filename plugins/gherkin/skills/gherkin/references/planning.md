@@ -29,9 +29,10 @@ source of truth — never re-derive or re-decide what they own:
   invariant as a `Then` in the walking skeleton and every capability that touches
   tenant-owned data; generate subscription-gating scenarios (trial-expiry, lapsed/read-only)
   from the gating section; assert each audit-recording invariant as a scenario (the action
-  is recorded with the acting User and a timestamp); turn each numeric limit/SLA and the
-  auth rules into boundary scenarios. Operational invariants (those marked `(operational)`)
-  are acknowledged, not scripted.
+  is recorded with the acting User and a timestamp); assert each data-lifecycle event
+  (erasure-on-deletion, anonymization) as a scenario; turn each numeric limit/SLA and the
+  auth rules into boundary scenarios. Operational invariants (those marked `(operational)`:
+  availability SLO, data residency, infra rate limit) are acknowledged, not scripted.
 
 ## 1. Capabilities & folders
 
@@ -109,9 +110,8 @@ Copy `assets/feature-template.feature`. Each feature opens with:
 - **In-scope / Out-of-scope** — closing scope stops a coding agent expanding it.
 - **Prior decisions** — recorded architecture choices stop the agent re-deciding them.
 - **Acceptance criteria** — what "done" means.
-- Scenarios as task units. Tag each feature with `@capability:<kebab>` (one per feature,
-  matching its capability-map row — the traceability tag). `@REQ-<id>` is optional and only
-  for an external tracker; omit it when there is none. Do not invent a second numbering.
+- Scenarios as task units; tag each feature `@capability:<kebab>` (its capability-map row).
+  The tag contract (incl. optional/external `@REQ-<id>`) is PIPELINE.md rule 2.
 
 **Header sourcing (do not invent these):** take **Outcome** and **Depends on** from the
 `capability-map.md` row; take **In-scope / Out-of-scope** from `product.md` MVP scope (copy

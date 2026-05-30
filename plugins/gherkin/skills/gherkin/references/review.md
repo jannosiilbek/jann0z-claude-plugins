@@ -23,7 +23,8 @@ features consume the context faithfully.
   role is X" scenario; row conditions appear as `Given`s. **Fix:** add the missing scenario.
 - **NFR coverage (by taxonomy — see PIPELINE.md rule 4):** every **behavioral** `nfr.md`
   invariant is asserted — tenant isolation as a cross-cutting `Then`, subscription gating as
-  trial-expiry/lapsed scenarios, each audit-recording invariant as a scenario, auth flows and
+  trial-expiry/lapsed scenarios, each audit-recording invariant as a scenario, each
+  data-lifecycle event (erasure-on-deletion, anonymization) as a scenario, auth flows and
   in-app limits as scenarios; a missing one = uncovered behavior. **Operational** invariants
   (those marked `(operational)`: availability SLO, data residency, infra rate limit) are
   acknowledged as out-of-scenario, not counted as a coverage miss.

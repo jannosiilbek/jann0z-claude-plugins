@@ -35,10 +35,12 @@ invariants. See `assets/nfr-example.md`.
 6. **No invention.** If a required number is undecided, write `OPEN: <question>` — never
    invent a value, never hedge with vague words. The orchestrator surfaces every `OPEN:`.
 7. **Tag the taxonomy (PIPELINE.md rule 4).** Most invariants are *behavioral* (tenant
-   isolation, subscription gating, auth flows, in-app limits) and become Gherkin `Then`s
-   downstream. Mark any *operational* invariant — one that cannot be a Gherkin `Then`
-   (availability SLO, data residency, infra rate limit) — with a trailing `(operational)`
-   so gherkin's Pass 0 does not count it as uncovered behavior.
+   isolation, subscription gating, auth flows, audit recording, in-app limits, and
+   data-lifecycle *events* like erasure-on-deletion and anonymization) and become Gherkin
+   `Then`s downstream. Mark only a *passive* invariant that cannot be a Gherkin `Then`
+   (availability SLO, data residency, infra rate limit) with a trailing `(operational)`,
+   so gherkin's Pass 0 does not count it as uncovered behavior. A deletion/erasure *event*
+   is behavioral — do not mark it operational.
 
 ## Downstream-purpose map
 
