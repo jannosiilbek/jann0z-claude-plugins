@@ -46,9 +46,10 @@ If a row serves none of these, delete it.
 
 ## Anti-vagueness gate
 
-Banned anywhere in the file: `etc.`, `and so on`, `various`, `e.g.` chains standing in for
-a definition, `robust`, `user-friendly`, `as appropriate`, `as needed`, `flexible`,
-`TBD`, `TODO`, trailing `…`. Every definition is a complete, concrete sentence.
+Banned anywhere in the file: `etc.`, `and so on`, `various`, `e.g.` chains or open-ended
+`such as …` lists standing in for a definition, `robust`, `user-friendly`, `as appropriate`,
+`as needed`, `flexible`, `TBD`, `TODO`, trailing `…`. Every definition is a complete,
+concrete sentence — a closed statement, not an open example list.
 
 ## Self-check before done
 

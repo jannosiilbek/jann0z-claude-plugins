@@ -34,7 +34,9 @@ do **structured intake**, not prose extraction:
   seats/limits, SLA targets, trial); the subscription lifecycle → a `subscription_status`
   enum taken from the glossary.
 - **`spec/rbac-matrix.md`** — model roles as an enum or a `roles` table (decide once) plus
-  the relationship entities the matrix implies (e.g. an Agent↔Ticket assignment).
+  the relationship entities the matrix implies (e.g. an Agent↔Ticket assignment). A
+  role-derived enum keeps the glossary Role spelling verbatim (`Owner`, `Agent`) — do NOT
+  lowercase it to the usual enum convention (PIPELINE.md rule 6).
 - **`spec/capability-map.md`** — lift each capability's outcome as a **business use-case**
   for stage 4 verbatim; do not re-invent use-cases from prose.
 

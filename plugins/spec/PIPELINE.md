@@ -45,7 +45,8 @@ spec/
 1. **Canonical feature filename.** `capability-map.md` names each capability's **primary
    feature file** (its walking-skeleton / entry behavior). gherkin MUST create exactly that
    file and point every `# Depends on:` at it — never synthesize `<cap>/<cap>.feature`. erd
-   reads the same column for use-case naming.
+   reads the same column for use-case naming. When a capability's `Depends on` is `—`, omit
+   the `# Depends on:` line entirely and emit no `@prereq` (do not write `none`).
 2. **Traceability tag.** `@capability:<kebab>` (one per feature, matching the capability-map
    row) is the traceability tag. `@REQ-<id>` is OPTIONAL and only for an external tracker —
    omit it when there is none. Never invent a second numbering scheme.
@@ -64,3 +65,9 @@ spec/
 6. **Enum values verbatim.** Statuses/states use the `glossary.md` Enumerations spelling
    exactly, everywhere (e.g. `canceled`, `past_due`). A role-derived enum in the ERD uses
    the glossary Role spelling (e.g. `Owner`, `Agent`), not an ad-hoc lowercasing.
+7. **No invented downstream concepts.** gherkin and erd introduce only artifacts that trace
+   to an owner: a feature's behavior to its `capability-map.md` row, a domain noun to the
+   glossary, a structural table to an M:N relationship or an `nfr.md` invariant (e.g. the
+   audit table). They never invent a new domain entity, feature, or capability that no spec
+   file owns. If one is genuinely needed (e.g. notifications), it is added to the spec first
+   (glossary + capability-map + product) — never smuggled in downstream.

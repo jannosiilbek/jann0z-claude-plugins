@@ -31,8 +31,8 @@ source of truth — never re-derive or re-decide what they own:
   from the gating section; assert each audit-recording invariant as a scenario (the action
   is recorded with the acting User and a timestamp); assert each data-lifecycle event
   (erasure-on-deletion, anonymization) as a scenario; turn each numeric limit/SLA and the
-  auth rules into boundary scenarios. Operational invariants (those marked `(operational)`:
-  availability SLO, data residency, infra rate limit) are acknowledged, not scripted.
+  auth rules into boundary scenarios. Operational invariants (those marked `(operational)` —
+  see PIPELINE.md rule 4) are acknowledged, not scripted.
 
 ## 1. Capabilities & folders
 

@@ -46,7 +46,8 @@ If a line serves none of these, cut it.
 ## Anti-vagueness gate
 
 Banned: `etc.`, `various`, `as needed`, `power user`, `seamless`, `intuitive`, `robust`,
-`wants to feel`, `TBD`, `TODO`. Every job-to-be-done starts with a verb and names an object.
+`wants to feel`, `fast`/`quick`/`slow` without a number, `TBD`, `TODO`. Every job-to-be-done
+starts with a verb and names an object; goals/pains name only outcomes the spec delivers.
 
 ## Self-check before done
 
