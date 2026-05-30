@@ -2,6 +2,9 @@ node_modules/
 .DS_Store
 *.log
 
+# Local Claude Code settings (machine-specific; never share)
+.claude/settings.local.json
+
 # erd-modeler PGlite harness installs its dependency on first run (design: deps float,
 # not vendored). Ignore the generated lockfile so it is never committed accidentally.
 plugins/erd-modeler/skills/erd-modeler/scripts/package-lock.json
