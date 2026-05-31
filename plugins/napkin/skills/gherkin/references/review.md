@@ -37,7 +37,7 @@ features consume the context faithfully.
 
 ## Pass 1 — Mechanical lint gate
 
-Run the bundled config: `npx gherkin-lint -c plugins/gherkin/skills/gherkin/assets/gherkin-lintrc <path>`
+Run the bundled config: `npx gherkin-lint -c plugins/napkin/skills/gherkin/assets/gherkin-lintrc <path>`
 (or copy `gherkin-lintrc` to the project root as `.gherkin-lintrc`). Catches: unnamed
 features/scenarios, duplicate feature/scenario names, out-of-order Given/When/Then,
 **multiple `When`s** (`only-one-when`), oversized scenarios, dead Outline variables,

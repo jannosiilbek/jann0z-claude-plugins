@@ -12,17 +12,7 @@
     {
       "name": "napkin",
       "source": "./plugins/napkin",
-      "description": "Collect the upstream context a SaaS spec needs (product, personas, glossary, capability map, RBAC, NFRs) as flat, strictly-templated spec/ files, then validate 100% cross-artifact alignment with zero vague text. Feeds Gherkin authoring and ERD modeling."
-    },
-    {
-      "name": "gherkin",
-      "source": "./plugins/gherkin",
-      "description": "Author and review framework-agnostic Gherkin/BDD specs with best-practice enforcement, foundation-first ordering, and multi-pass validation."
-    },
-    {
-      "name": "erd-modeler",
-      "source": "./plugins/erd-modeler",
-      "description": "Turn a domain description into a clean, normalized DBML model, validate it, and live-test it against in-memory Postgres (PGlite) until every business use-case passes."
+      "description": "End-to-end spec pipeline: collect a SaaS app's context (product, personas, glossary, capability map, RBAC, NFRs) into a flat spec/ workspace, author framework-agnostic Gherkin/BDD specs from it, and design + live-test a normalized DBML data model — one aligned, drift-free flow from brief to features to schema."
     }
   ]
 }
