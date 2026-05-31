@@ -12,10 +12,21 @@ as an **assertable invariant** so it becomes a reusable Gherkin `Then`. It owns 
 permission matrix (that is `rbac-matrix.md`), does NOT define enum values (that is
 `glossary.md`), and does NOT re-list roles.
 
+## Input
+
+Read `spec/brief.md`. Per `../../PIPELINE.md`, `nfr.md` is the **sole sharpener and owner** of the
+brief's `## Build seed — what implementation needs to know` → `- **Hard constraints:**`. Carry every
+hard constraint here, sharpened to an assertable form (e.g. "EU data residency" → "all data is stored
+in an EU region"; "fast" → "p95 < 2s"). A constraint that is **not** a runtime cross-cutting invariant
+but an architectural/build property (offline-first, on-prem, deterministic output, no third-party data
+egress) goes in the **Architectural & build constraints** section, labelled — never silently dropped
+because it isn't a Gherkin `Then`. `scope.md` carries no `## Constraints` section; this is its home.
+
 ## Output
 
-Copy `assets/nfr-template.md` verbatim: six fixed sections, each a short list of assertable
-invariants. See `assets/nfr-example.md`.
+Copy `assets/nfr-template.md` verbatim: seven fixed sections, each a short list of assertable
+invariants (the seventh, Architectural & build constraints, holds labelled non-Gherkin properties).
+See `assets/nfr-example.md`.
 
 ## Rules
 
@@ -37,10 +48,16 @@ invariants. See `assets/nfr-example.md`.
 7. **Tag the taxonomy (PIPELINE.md rule 4).** Most invariants are *behavioral* (tenant
    isolation, subscription gating, auth flows, audit recording, in-app limits, and
    data-lifecycle *events* like erasure-on-deletion and anonymization) and become Gherkin
-   `Then`s downstream. Mark only a *passive* invariant that cannot be a Gherkin `Then`
+   `Then`s downstream. Mark a *passive* invariant that cannot be a Gherkin `Then`
    (availability SLO, data residency, infra rate limit) with a trailing `(operational)`,
    so gherkin's Pass 0 does not count it as uncovered behavior. A deletion/erasure *event*
    is behavioral — do not mark it operational.
+8. **Sole constraint-sharpener.** Every brief `Build seed · Hard constraints` item is homed
+   here — sharpened to an assertable invariant in its matching section, or, when it is an
+   architectural/build property rather than a runtime rule, in **Architectural & build
+   constraints** with a trailing `(constraint)`. Never drop a founder-vetted constraint just
+   because it isn't a Gherkin `Then`. No other file (and not `scope.md`) sharpens or restates
+   these.
 
 ## Downstream-purpose map
 
@@ -52,6 +69,8 @@ invariants. See `assets/nfr-example.md`.
   audit columns in the ERD.
 - **Limits & SLA** → rate-limit and boundary scenarios.
 - **Audit** → audit-log entity in the ERD.
+- **Architectural & build constraints** → acknowledged build properties (offline/on-prem/
+  determinism/no-egress); not a Gherkin `Then`, but they shape the build and the ERD.
 
 If an invariant feeds none of these, cut it.
 
@@ -63,9 +82,10 @@ Banned: `etc.`, `various`, `as appropriate`, `as needed`, `best-effort`, `robust
 
 ## Self-check before done
 
-- [ ] Six sections, fixed order.
-- [ ] Every invariant is a pass/fail statement.
+- [ ] Seven sections, fixed order.
+- [ ] Every behavioral invariant is a pass/fail statement; every operational/constraint line is labelled.
 - [ ] Every limit / SLA / window has a number and unit (or an `OPEN:` marker).
 - [ ] Subscription gating present and uses glossary status values verbatim.
+- [ ] Every brief `Build seed · Hard constraints` item is homed here (sharpened, or labelled `(constraint)`).
 - [ ] No permission matrix, no enum-value lists, no role definitions.
 - [ ] No banned phrase; no `<placeholder>` left.

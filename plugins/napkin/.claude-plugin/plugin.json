@@ -1,11 +1,11 @@
 {
   "name": "napkin",
-  "version": "0.1.0",
-  "description": "End-to-end spec pipeline: collect a SaaS app's context (product, personas, glossary, capability map, RBAC, NFRs) into a flat spec/ workspace, author framework-agnostic Gherkin/BDD specs from it, and design + live-test a normalized DBML data model — one aligned, drift-free flow from brief to features to schema.",
+  "version": "0.2.0",
+  "description": "End-to-end spec pipeline: turn a raw idea into a validated, build-seeded brief, judge it into a buildable-scope verdict (tier, feasibility, validated integrations), then collect a SaaS app's context (product, personas, glossary, capability map, RBAC, NFRs) into a flat spec/ workspace, author framework-agnostic Gherkin/BDD specs from it, and design + live-test a normalized DBML data model — one aligned, drift-free flow from idea to features to schema.",
   "author": {
     "name": "janno",
     "email": "janno.siilbek@gmail.com"
   },
   "license": "MIT",
-  "keywords": ["spec", "spec-driven-development", "context", "saas", "personas", "glossary", "rbac", "ubiquitous-language", "gherkin", "bdd", "cucumber", "erd", "dbml", "data-model"]
+  "keywords": ["spec", "spec-driven-development", "idea-brief", "mvp-scoping", "scoping", "feasibility", "wedge", "context", "saas", "personas", "glossary", "rbac", "ubiquitous-language", "gherkin", "bdd", "cucumber", "erd", "dbml", "data-model"]
 }

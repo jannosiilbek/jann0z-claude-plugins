@@ -14,8 +14,20 @@ alignment is not alignment.
 
 ## Input & output
 
-**Input:** the product brief — read `spec/brief.md` if present, otherwise the brief given
-inline.
+**Input:** the two upstream artifacts of the pipeline (see `../../PIPELINE.md`):
+
+- **`spec/brief.md`** — the business layer (problem, user, pricing/business-model, why-now, riskiest
+  assumption, Build seed, Non-goals). Read it if present, otherwise use the brief given inline. This is
+  the source for product framing + pricing (`context-product`), Non-goals → out-of-scope
+  (`context-product`), and the Build-seed Hard constraints (`context-nfr`).
+- **`spec/scope.md`** — the buildable-boundary verdict, if present (mvp-scoping's output): the **tier**,
+  the **3-use-case test outcome** (seeds the capability map), the **feasibility check**, and
+  **per-integration reachability verdicts**. A **🔴 tier gates authoring** — stop and sharpen the brief
+  before writing the context layer. Don't spec a capability whose sole enabler is a non-self-serve
+  integration. If `scope.md` is absent, proceed from the brief alone.
+
+scope.md carries no business facts and restates nothing from the brief — read each artifact for what it
+owns (per PIPELINE.md), never expect a fact in both.
 
 **Output:** the flat `spec/` context layer. The authoritative `spec/` layout and the
 **single-ownership table** (which file owns each fact) live once in `../../PIPELINE.md`
@@ -32,8 +44,9 @@ between alternatives are NOT a context artifact — they live in the gherkin per
 
 ## Workflow
 
-1. **Read the brief** (`spec/brief.md` if present, else the brief given inline) and locate
-   or create the flat `spec/` root.
+1. **Read the upstream artifacts** — `spec/brief.md` (if present, else the inline brief) and
+   `spec/scope.md` (if present). If `scope.md`'s tier is **🔴**, stop and sharpen the brief before
+   authoring. Locate or create the flat `spec/` root.
 2. **Author in dependency order**, each via its skill — re-read the skill before each:
    `context-glossary` (seed) → `context-product` → `context-personas` →
    `context-capability-map` → `context-rbac` → `context-nfr` →

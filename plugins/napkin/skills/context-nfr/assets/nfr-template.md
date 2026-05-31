@@ -30,3 +30,10 @@
 ## Audit
 
 - <which actions are recorded, by whom, retained for how long>.
+
+## Architectural & build constraints
+
+> Brief hard constraints that shape the build but are not runtime Gherkin `Then`s. Each labelled
+> `(constraint)`. Omit the section only if the brief carried no such constraint.
+
+- <offline-first / on-prem / deterministic output / no third-party data egress / required language> `(constraint)`.
