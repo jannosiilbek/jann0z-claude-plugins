@@ -1,24 +1,76 @@
 ---
 name: mvp-scoping
-description: The second step of the napkin spec pipeline — read the validated `spec/brief.md` and judge whether the idea is a tight, Claude-Code-shippable MVP or is sprawling (compliance suites, ERP, EHR, multi-stakeholder marketplaces). Emits a thin, lint-gated `spec/scope.md` verdict: a tier (🟢 crisp / 🟡 workable / 🔴 sprawling), the 3-use-case test outcome (the named jobs v1 must do), a feasibility check, per-integration reachability verdicts, and — only if 🔴 — 3 wedge proposals. Use whenever the user wants to "scope an MVP", "check if the spec is writable", "can I greenfield this", "can Claude Code build this from a brief", "spec this idea out", "is this idea sprawling", "is this scope realistic for one person", "what's the wedge for X", "narrow this idea down to a buildable wedge", "find the wedge", or "is this product too broad to vibecode". Distinct from buildability-check (tech feasibility, domain, Stripe, integrations) — this skill judges *spec clarity*: can a coding agent ship 80% of v1 without you re-deciding things mid-build? Runs a 3-use-case test, scans for sprawl flags (regulatory drift, parity-incumbent comparison, multi-role branching, audit/evidence variance), and OPTIONALLY discovers any competitor-feature-matrix skill available at runtime to gauge parity-expectation pressure. It is the pipeline's bridge layer: it consumes the brief's business facts (never restating them) and produces only the buildable-boundary verdict that collect-context and the rest of the pipeline read. Does NOT carry pricing, screens, a data model, or any fact a downstream spec file owns. Does NOT validate demand, market size, or distribution.
+description: The second step of the napkin spec pipeline. Reads the validated `spec/brief.md` and curates the MVP **scope** as a consistently-templated list of features in `spec/scope.md`. IMPORTANT — here a "feature" means an item in the product's MVP scope (a row in the `spec/scope.md` plan), NOT a code change to a running app; this skill never writes or edits application source code, it only writes the scope/feature-list spec artifact. Runs in two phases. PHASE 1 (scope) — derive the candidate feature list from the brief, feasibility-check each, write the list, then STOP and show it. PHASE 2 (curate) — work the list one feature at a time (add, remove, refine, or split a scoped feature); every edit is surgical (one edit) in the exact same strict template — an `### F<n> · name` block with three fixed fields, Persona, In → Out, Feasibility — so the list stays perfectly consistent. Use whenever the user wants to "scope an MVP", "scope this idea", "spec this idea out", "list the MVP features", "what features should v1 have", "add a feature to the scope", "add a scoped feature for X", "remove this feature from the scope", "drop feature F3", "refine feature F2", "split feature F1", "what should I cut from the scope", "what features am I missing", "trim the scope", "is this scope too broad to build", or "narrow this idea down to a buildable feature set". Pick the right neighbor instead when the ask is really: writing the brief itself / problem / user / wedge / business model (that is idea-brief, the producer of this skill's input); judging tech complexity, domain availability, or Stripe-compatibility (buildability-check); writing Gherkin or `.feature` behavior files (gherkin); building the capability-map, personas, RBAC, or glossary (collect-context); the data model / ERD / DBML (erd-modeler); or validating demand, market size, or distribution (market-fit-validator). It is also NOT ordinary app coding — "add a dark-mode feature to my Next.js app", "remove the unused import in F3.tsx", or any edit to real source files are normal code tasks, not this skill. It consumes the brief's business facts (never restating them) and produces only the scoped feature list that collect-context and the rest of the pipeline read; it carries no pricing, screens, data model, or any fact a downstream spec file owns.
 allowed-tools: Bash, Read, Write, Edit, Skill
-argument-hint: "[--competitors c1,c2,c3]  (reads spec/brief.md)"
+argument-hint: "scope | add <feature> | remove F<n> | refine F<n> | split F<n> | what to cut?   (reads spec/brief.md, writes spec/scope.md)"
 ---
 
-# mvp-scoping — can a coding agent ship the v1 without you re-deciding mid-build?
+# mvp-scoping — curate a tight, consistent, buildable feature list
 
-A coding agent ships at the speed of your spec. If the spec has 50 open questions, you'll burn the build window clarifying instead of shipping. This skill checks whether the idea is *spec-tight* (Claude Code can run with it) or *spec-sprawling* (compliance suites, accounting, EHR, multi-stakeholder marketplaces where every customer expects different things).
+A coding agent ships at the speed of your spec. If the feature set is vague, inconsistent, or full of
+"it depends", you burn the build window re-deciding instead of shipping. This skill turns the brief into
+a **curated feature list** where every feature is described the *same way*, is atomic enough to build,
+and is feasibility-validated — and then it hands the list back to you so you can work it feature by
+feature.
 
-This is a tech-feasibility-adjacent but distinct judgement: a tech-feasibility check judges complexity (domain, Stripe, integrations, weekend/week/month); this skill judges *spec clarity*. An idea can be technically trivial (CRUD + Stripe + LLM API) yet impossibly sprawling to spec.
+It is a **feature curator**, not a verdict machine. There is no tier badge, no sprawl score, no wedge
+sketch. Instead there is one disciplined artifact — a list of features in a strict template — and a set
+of curation moves (add / remove / refine / split) that keep that list consistent no matter how many
+times you touch it.
 
-## Inputs
+## Two phases
 
-This skill is the **bridge layer** of the napkin pipeline: it reads `spec/brief.md`, judges
-buildability, and writes a thin `spec/scope.md` verdict. The single source of truth for who owns which
-fact — the brief→scope ownership split, the consume-don't-re-derive rule, and the **exact brief field
-anchors** mvp-scoping parses — is `../../PIPELINE.md` (this plugin's root). Read it before ingesting.
+This skill does exactly one of two things per invocation. Decide which the moment you start:
 
-### Step 0 — Ingest the brief
+- **Phase 1 — SCOPE** (no `spec/scope.md` yet, or the user says "scope the MVP" / "spec this out").
+  Read the brief, derive the candidate feature list, feasibility-check each feature, write the list,
+  then **stop and show it**. Do not proceed to anything downstream.
+- **Phase 2 — CURATE** (`spec/scope.md` already exists and the user names a curation move — "add a
+  feature for X", "remove F3", "refine F2", "split F1", "what should I cut?"). Make **one surgical
+  edit** in the **exact same template**, re-lint, and show the change. Never rewrite the whole file.
+
+If a user asks to curate but no `spec/scope.md` exists, run Phase 1 first. If `spec/scope.md` exists and
+the user says "scope the MVP" again, treat it as a fresh re-scope only if they explicitly ask to start
+over — otherwise assume they mean curate.
+
+## The feature template — the strict contract
+
+Every feature, no matter when it was added, is one block in **exactly** this shape:
+
+```markdown
+### F1 · <verb-led feature name, 3–6 words>
+- **Persona:** <one role, traceable to the brief — never "various users">
+- **In → Out:** <one concrete input> → <one concrete output>
+- **Feasibility:** <self-serve | partnership-gated | cost-gated | data-gated | research-gated> — <≤6-word evidence>
+```
+
+The consistency is the whole point. Three fields, always in this order, always present, never more,
+never fewer. The lint (`references/lint.md`) enforces this field by field. Why it matters:
+
+- **`### F<n> · name`** gives every feature a stable anchor you can point at ("refine F2"). The `n` is a
+  number that **never changes** once assigned — removing a feature leaves its number retired, it does
+  not renumber the rest. Renumbering would mean rewriting every line (the opposite of a surgical edit)
+  and would break any downstream reference. The name is verb-led ("Generate auditor PDF", not "PDF
+  stuff"), 3–6 words, no marketing adjectives.
+- **Persona** — a single role taken from the brief's `## Target user`. One feature serves one primary
+  persona. If you need "and also admins" you probably have two features.
+- **In → Out** — the atomic test. One input, one output, with a literal `→`. If you need "depending
+  on…", an "and/or" list, or "etc.", the feature is not atomic — split it (Phase 2) or tighten it.
+  This is what makes a feature *screenable*: you could sketch the one screen that turns that input into
+  that output.
+- **Feasibility** — the per-feature reachability verdict from the feasibility pass below. It is a
+  *verdict word* + short evidence ("self-serve — camt.053 file parse"), never a vague restatement and
+  never a numeric operational limit (those belong to `nfr.md`).
+
+A feature that can't be written in this template without a vague placeholder isn't ready — tighten it
+or cut it. Don't pad the template to make it fit.
+
+## Inputs — the brief is consumed, never restated
+
+This skill is the **bridge layer** of the napkin pipeline: it reads `spec/brief.md`, curates the
+feature list, and writes `spec/scope.md`. The single source of truth for who owns which fact — the
+brief→scope ownership split, the consume-don't-re-derive rule, and the **exact brief field anchors**
+this skill parses — is `../../PIPELINE.md` (this plugin's root). Read it before ingesting.
 
 **Read `./spec/brief.md`** (relative to the current working directory) and **CONSUME it** per
 PIPELINE.md's brief→scope split — do **not** re-ask or re-derive anything the brief already answers.
@@ -26,266 +78,236 @@ PIPELINE.md's brief→scope split — do **not** re-ask or re-derive anything th
 no `spec/brief.md` on disk, ask them to run `idea-brief` first — that is the producer of this skill's
 input.
 
-Strip the `[fact|assumption]` tag + provenance word when carrying a value across (keep the tag only
-when *referencing* the riskiest assumption as build-risk context). What the brief feeds:
+Strip the `[fact|assumption]` tag + provenance word when carrying a value across. What the brief feeds:
 
-- `## Problem` + `## Opportunity (the need)` + `## Wedge` → the **job-to-be-done** the 3-use-case test runs against.
-- `## Target user` → the **persona** the test runs for.
-- `## Build seed · Core capability` + `## Build seed · Thinnest first slice` → the **v1 scope boundary** the 3 use-cases must cover.
-- `## Build seed · Key inputs / integrations` → the **candidate integration list** whose reachability you validate (Step 3.5).
-- `## Current alternative` + `## Market & segment` → **parity/incumbent context** for the sprawl scan.
-- `**Riskiest assumption:**` + `## Why now` + `## Verification log` → **build-risk context** for the feasibility pass.
+- `## Problem` + `## Opportunity (the need)` + `## Wedge` → the **jobs** the features must cover.
+- `## Target user` → the **persona** every feature's Persona field draws from.
+- `## Build seed · Core capability` + `## Build seed · Thinnest first slice` → the **scope boundary**
+  the feature list must cover (and not exceed).
+- `## Build seed · Key inputs / integrations` → the **candidate integrations** whose reachability the
+  per-feature Feasibility field reports.
+- `## Current alternative` + `## Market & segment` → context for the curation signals (what's table
+  stakes vs. what bloats).
+- `**Riskiest assumption:**` + `## Why now` + `## Verification log` → **build-risk context** for the
+  feasibility pass.
 
 **Reference, never restate.** Carry these as input to your judgement; do **not** re-transcribe brief
-sentences into `scope.md`. The brief owns them — `scope.md` cites by anchor. In particular `scope.md`
-carries **no pricing, no business-model facts, no Non-goals/out-of-scope list, no hard-constraints
-section** — those are owned downstream (`product.md`, `nfr.md`); see PIPELINE.md.
+sentences into `scope.md`. The brief owns them. In particular `scope.md` carries **no pricing, no
+business facts, no out-of-scope list, no hard-constraints section, no screens, no data model** — those
+are owned downstream (`brief.md`, `product.md`, `nfr.md`); see PIPELINE.md.
 
-You **derive** on your own: **the tier, the 3-use-case test outcome, the sprawl scan, the
-feasibility-validation pass, the per-integration reachability verdicts, and (if 🔴) the wedge
-proposals.** That is the entirety of `scope.md`.
+You **derive** on your own: **the feature list and each feature's feasibility verdict.** That is the
+entirety of `scope.md`.
 
-- **competitors** (optional) — comma-separated list of known incumbents. Used for the parity-pressure check; if omitted, judge from the brief alone.
+- **competitors** (optional, `--competitors c1,c2,c3`) — known incumbents, used only as input to the
+  curation signals (what features the market treats as table stakes). If omitted, judge from the brief.
 
-## The 5 steps
+---
 
-### Step 1 — The 3-use-case test
+# Phase 1 — Scope (derive the list, then stop)
 
-Try to name 3 specific jobs v1 must do, concretely enough to write the screens for each. Each use-case must be:
+### Step 1 — Derive the candidate features
 
-- **Atomic** — one input → one output, no "depending on..."
-- **Screenable** — you could sketch the UI on a napkin
-- **Standalone-valuable** — a buyer would pay even if the other two weren't there
+Walk the brief's core capability and thinnest first slice and name the features v1 needs. Each one must
+pass three tests before it earns a place on the list:
 
-Example (🟢 NIS2 supplier-questionnaire wedge):
-1. Generate a supplier-risk questionnaire from a template
-2. Export an auditor-ready PDF
-3. Track remediation tasks with owner + due date
+- **Atomic** — one input → one output, no "depending on…".
+- **Screenable** — you could sketch the single screen for it on a napkin.
+- **Standalone-valuable** — a buyer would get value from it even if the others didn't exist.
 
-Example (🔴 NIS2 compliance suite — can't pass the test):
-1. "Compliance management" — too broad, branches by sector
-2. "Audit support" — varies by jurisdiction, by auditor
-3. "Risk management" — entire frameworks (ISO 27005, NIST 800-30) live here
+Cover the brief's core job end to end, but no further. A v1 is usually **3–7 features**; that is a
+smell-test, not a gate. If the brief's core job genuinely needs more, that's fine — but watch the
+curation signals (below), because most over-long lists are hiding non-atomic or out-of-scope features.
 
-**Output of this step:** either 3 clean use-cases (→ 🟢/🟡 candidate) or evidence that you can't extract them (→ 🔴 candidate).
+If you cannot name even 3 atomic features from the brief — every candidate keeps branching into "it
+depends" — the idea is too broad to scope as-is. Don't force a list. Say so plainly, point at the
+curation signals that are firing, and ask the user to narrow the persona or the core job before you
+build the list. (This replaces the old "tier 🔴 + wedge proposals" move: the cure for sprawl is a
+narrower brief, then a clean list — not a verdict badge.)
 
-### Step 2 — Detect sprawl triggers
+### Step 2 — Feasibility-check each feature
 
-Scan the idea for the heuristic flags in [references/sprawl-flags.md](references/sprawl-flags.md). Count hits.
+Definiteness proves a feature is *clear*; this proves it is *buildable*. A feature stays on the list
+only if a coding agent can ship it on a buy-a-domain / vibecode / plug-in-Stripe stack in
+days-to-weeks. Run the check per feature, discovering capabilities at runtime (bind each doubt to a
+capability by *purpose*, never a hardcoded tool name). Details and failure modes:
+**[references/feasibility.md](references/feasibility.md)**.
 
-Short version of the flag list:
+In short, for each feature:
 
-- Regulatory framework with version drift or sector branching (NIS2, GDPR sub-articles, SOX, HIPAA, PCI-DSS, AI Act, CSRD)
-- Customers benchmark you against a feature-rich incumbent (Vanta, Drata, Salesforce, NetSuite, Epic, SAP, Workday)
-- Multiple user roles with different permissions AND different primary flows (not just admin vs. member)
-- Audit-trail / evidence / reporting requirements that vary by sector or jurisdiction
-- "Workflow engine", "configurable rules", or "no-code builder" in the value prop
-- Output requires expert review (legal doc, medical report, financial filing)
-- Domain knowledge you don't have AND can't read up on in an afternoon
-- "It depends on the customer" appears in your description of any core flow
+1. **Does every external system it touches exist and is it self-serve reachable?** (public/documented
+   API, webhook, SDK, user-supplied export, or OAuth a solo builder can self-register for — *not*
+   partnership/enterprise/closed-beta-gated.)
+2. **Is the core work doable on the common toolkit?** (CRUD + auth, hosted DB, LLM/text API,
+   file parse/generate, standard third-party APIs, Stripe — *not* custom ML training, novel research,
+   real-time/low-latency infra, hardware, or accuracy guarantees no off-the-shelf model gives.)
+3. **Is the data it needs accessible?** (public dataset, user upload, reachable API — not proprietary
+   with no access path.)
 
-**Scoring:** 0-1 hits → 🟢, 2 hits → 🟡, 3+ hits → strong 🔴 signal regardless of Step 1.
+Bind each real doubt to a capability by purpose: a docs-lookup tool for "does this API exist", else web
+search, else common knowledge of well-known APIs, else (if sub-agents exist) a helper agent. Keep it
+proportional — a plain list screen needs no check; "pull bank transactions via Plaid" does. If nothing
+can settle a doubt, write the Feasibility verdict as `feasibility-unconfirmed — <what to verify>` and
+surface it. Never silently assume it works.
 
-### Step 3 — Parity-pressure check (optional, evidence-gathering)
+If the brief already carries a Verification log covering an integration, **consume it — don't re-check
+what the brief settled.** Only validate what the brief left open or the scope newly introduced.
 
-If a **competitor feature-matrix** capability is available this run, use it to gauge how many features the market expects at parity:
+The result of this step is each feature's **Feasibility** field. A feature whose load-bearing
+integration is partnership-/cost-/data-/research-gated does not belong on a clean v1 list — flag it for
+the user to cut or re-route, don't quietly list it as `self-serve`.
 
-1. **Discover** the capability at runtime — match by *purpose*, not a hardcoded name: scan the live
-   available-skills list, read each candidate's description (not just its name), and pick the one whose
-   description covers competitor-feature mining (G2 / Capterra mining, competitor feature extraction,
-   feature-matrix scraping, app-review mining, software-review aggregation). If none fits, this step is
-   simply skipped.
-2. **Invoke** it with 2-3 named competitors (from `--competitors` input, or extracted from the brief, or from the user's mention of "alternative to X").
-3. **Synthesize** the median feature count across top competitors:
-   - **<10 features per top competitor** → low parity pressure → 🟢 supportable
-   - **10-30 features** → moderate parity pressure → 🟡
-   - **30+ features** → high parity pressure → customers will reject you for missing "table stakes" → 🔴 unless you wedge
+### Step 3 — Write the list, lint it, and write the file
 
-If no such capability is available, **skip this step and rely on Steps 1+2**. Don't fall through to a heavier deep-competitor-profiling workflow unless the user explicitly asks for a deep competitive dive — that's a separate workflow.
+Compose every feature in the strict template, numbered `F1`, `F2`, … in dependency-friendly order
+(foundational features first). Then lint the whole list against **[references/lint.md](references/lint.md)**
+as a **double pass**: lint the draft, fix every hit, then re-read the whole list once more clean and
+confirm zero violations. Write the file only on a clean second read.
 
-**Why this is optional:** the rubric works without it; the parity-pressure data just sharpens the verdict when available.
-
-### Step 3.5 — Feasibility-validation pass (is it actually buildable?)
-
-Definiteness proves the scope is *clear*; this pass proves it is *buildable*. A 🟢 must mean "a coding
-agent can ship this on a buy-a-domain / vibecode / plug-in-Stripe stack in days-to-weeks" — evidenced,
-not assumed. Run it after the 3-use-case test and the candidate integration list are in hand, before the
-tier synthesis. Like idea-brief's dynamic verification, it **discovers capabilities at runtime** and
-binds each doubt to a capability by *purpose*, never a hardcoded tool name.
-
-**F1 — Extract the feasibility intents.** Pull every claim the build depends on, across four classes:
-1. **Integration / API / data-source reachability** — does each named external system exist, expose a
-   public/programmatic interface (API, webhook, SDK, export), and is it reachable **without** a signed
-   partnership, enterprise sales call, or closed beta?
-2. **Core-capability achievability** — can the v1 promise / each use-case be built with the common
-   vibecode toolkit (CRUD + auth, hosted DB, LLM/text API, file parse/generate, standard third-party
-   APIs, Stripe) — or does it need custom ML training, novel research, real-time/low-latency infra,
-   hardware, or accuracy guarantees no off-the-shelf model gives?
-3. **Data availability** — does each consumed data source exist in an accessible form (public dataset,
-   user-supplied upload, a reachable API) rather than proprietary data with no access path?
-4. **Effort realism** — against the brief's Thinnest first slice + Hard constraints, is the total
-   build realistic for one person in days-to-weeks, or does screen×integration×difficulty imply months?
-
-If the brief already carries a Verification log or buildability evidence, **consume it — do not
-re-check what the brief settled.** Only validate intents the brief left open or the scope newly
-introduced (e.g. an integration mvp-scoping itself added).
-
-**F2 — Bind each intent to an available capability by purpose.** Prefer a specific skill/MCP tool
-whose purpose matches (e.g. a docs-lookup tool for "does this API exist"); else fall back to
-web/internet search; else common knowledge of well-known APIs (Stripe, Google, Slack, OpenAI…). For
-"is this buildable / effort realistic" where no search settles it, spawn a helper agent (if sub-agents
-exist) or reason it through. If nothing can settle an intent, mark that item `feasibility-unconfirmed`
-and say so — never silently assume it works. Run checks in parallel where possible; keep it
-proportional (a plain "list" screen needs no check; a "pull bank transactions via Plaid" integration
-does).
-
-**F3 — Promote to feasibility-validated** only when ALL hold: every named integration/data source
-exists and is **self-serve reachable** (public API, documented webhook, user-supplied export, or
-OAuth a solo builder can self-register for); the core capability + every use-case are achievable on
-the common toolkit; required data is accessible; the total scope is realistic for the stated
-effort/persona honoring Hard constraints. Record the evidence as a compact **`## Feasibility check`**
-block in scope.md — one line per load-bearing intent (`intent → verdict → via capability → result`,
-≤12 words). Do not narrate.
-
-**F4 — Failure modes that MUST flag (and flip the verdict).** Name the item, the failure mode, and
-the fix:
-- **Integration doesn't exist** (vaporware) → replace or drop. Not feasibility-validated.
-- **Partnership/enterprise/closed-beta-gated** (no self-serve API for a solo builder — direct bank
-  data without an aggregator, a payor claims API, an MLS feed) → flag **partnership-gated**; route
-  through a self-serve aggregator or it blocks v1 (push toward 🔴 if the core use-case depends on it).
-- **Paywalled beyond a solo budget** (enterprise-only pricing, "contact sales") → flag **cost-gated**.
-- **Needs ML training / research / accuracy guarantees beyond a common build** → flag **research-gated**;
-  not a days-to-weeks build → not 🟢 unless reducible to an off-the-shelf LLM/API call.
-- **Required data proprietary / unobtainable** → flag **data-gated**.
-- **Scope implies months, not days-weeks** → a *feasibility* fail (not a count fail); push to 🟡/🔴 and
-  carve the Thinnest first slice tighter.
-
-**F5 — Size is allowed to grow.** Feasibility is about *doability*, not size. A scope with many
-capabilities and 4 integrations **passes** if every item is justified and non-redundant, every
-integration self-serve-reachable, the capability off-the-shelf, and the whole still ships in
-days-to-weeks. Counts are smell-tests, not gates.
-
-### Step 4 — Synthesize tier + deliver the artifact
-
-**Tier (synthesize from Steps 1–3.5).** The tier is keyed off **definiteness + feasibility + sprawl**,
-**not** raw item counts:
-
-| Tier | Signal | Effort to draft v1 spec |
-|---|---|---|
-| 🟢 **Crisp** | 3 atomic, fully-defined, feasibility-validated use-cases (every integration self-serve, capability off-the-shelf, ships in days-to-weeks); ≤1 sprawl flag; low/skipped parity | 1-2 hours |
-| 🟡 **Workable** | definite and mostly feasible but with one cost/partnership/effort caveat to resolve, OR open edges, OR 2 sprawl flags, OR moderate parity | Half-day |
-| 🔴 **Sprawling** | can't name 3 clean use-cases, OR a load-bearing piece is partnership/research/data-gated with no self-serve path, OR the justified scope implies months, OR 3+ sprawl flags, OR vague scope, OR high parity | Days-to-weeks |
-
-**Then deliver the artifact.** `scope.md` is a **thin verdict layer**, not a spec sketch. It carries
-only what mvp-scoping owns: the tier, the 3-use-case test outcome, the sprawl/parity verdict, the
-feasibility check, and the per-integration reachability verdicts. It carries **no** persona/JTBD prose
-(the brief owns those — cite by reference if needed), **no** screens, **no** data model, **no** pricing,
-**no** hard-constraints section, and **no** out-of-scope list — those are owned by `brief.md`,
-`product.md`, and `nfr.md` downstream (see PIPELINE.md). Re-introducing any of them is a lint failure.
-
-For **🟢/🟡**, the artifact is:
+The artifact is exactly:
 
 ```markdown
-# scope verdict: <🟢/🟡> <idea name>
+# scope: <idea name>
 
-**Tier:** <Crisp / Workable>
-**3-use-case test:** <passed cleanly | passed with caveats>
-**Sprawl flags hit:** <count> — <list flag names>
-**Parity-pressure:** <low / moderate / skipped — no competitor-matrix capability available>
+> Feature list for v1. Each feature is atomic, screenable, standalone-valuable, and feasibility-checked.
+> Curate with mvp-scoping: add / remove / refine / split — one feature at a time, same template.
 
-## 3-use-case test
-<!-- the named jobs v1 must do — this outcome seeds capability-map; it is NOT an authoritative spec list -->
-1. <use-case 1 — concrete input → concrete output>
-2. <use-case 2 — concrete input → concrete output>
-3. <use-case 3 — concrete input → concrete output>
+## Scoped features
 
-## Integrations
-<!-- per-integration reachability VERDICTS only (Step 3.5) — name the real system + verdict + routing note.
-     The integration's name is owned by glossary.md when it is a domain noun; here it is the verdict that matters. -->
-- <real system> — <self-serve | partnership-gated | cost-gated | data-gated>[, <routing note e.g. "via aggregator X">]
-- ...
+### F1 · <verb-led name>
+- **Persona:** <role>
+- **In → Out:** <input> → <output>
+- **Feasibility:** <verdict> — <evidence>
 
-## Feasibility check
-<!-- one line per load-bearing intent, from Step 3.5; verdicts only, never numeric operational limits (those are nfr's) -->
-- <intent → verdict → via capability → result, ≤12 words>
-- ...
+### F2 · <verb-led name>
+- **Persona:** <role>
+- **In → Out:** <input> → <output>
+- **Feasibility:** <verdict> — <evidence>
+
+### F3 · ...
 ```
 
-For **🔴**, do NOT write the verdict sketch. Instead, generate **3 wedge proposals** — each one carves a narrower persona + narrower use-case + standalone-sellable cut:
+Write it to `./spec/scope.md` (relative to cwd; create `./spec/` if missing; overwrite any existing
+`scope.md`).
 
-```markdown
-# Wedge proposals for <idea>
+### Step 4 — Stop and show the list
 
-## Wedge 1: <name>
-- **Persona:** <narrower, ~10k addressable buyers>
-- **Use-case:** <single most painful job>
-- **Why standalone-sellable:** <why a buyer pays for just this, even without the rest>
-- **3-use-case test for this wedge:** <which 3 atomic jobs v1 does>
+This is the deliberate stopping point. After writing the file, **stop** — do not run collect-context or
+anything else. Show the user the numbered list in chat (this is the curation surface; unlike a thin
+verdict, the list is *meant* to be read here) and invite the next move:
 
-## Wedge 2: ...
-## Wedge 3: ...
-```
+> Wrote N features to `spec/scope.md`. Tell me what to change:
+> - **add** a feature — "add a feature for exporting a VAT report"
+> - **remove** one — "drop F3"
+> - **refine** one — "make F2's output a PDF, not CSV"
+> - **split** one that's doing too much — "split F1"
+> - or ask **"what should I cut / add?"** and I'll point at the signals.
 
-The user picks one wedge, then re-runs this skill on the wedge to get the 🟢 spec sketch.
+If any feature is feasibility-gated or any candidate had to be dropped for sprawl, say so in one line
+here so the user can decide — don't bury it.
 
-### Step 5 — Lint the artifact (the second half of the double validation)
+---
 
-The tier is one gate; the artifact passing **`references/lint.md`** is the other — together they are
-the double validation. Run the lint as a **double pass**: lint the draft (verdict *or* wedge
-proposals), fix every hit, then re-read the whole artifact once more clean and confirm zero
-violations. Emit only on a clean second read.
+# Phase 2 — Curate (one feature at a time, surgically)
 
-The lint is strict because the verdict's value is that the rest of the pipeline runs on it unattended —
-every "it depends" left in is a downstream stall. It is **intelligent, not arithmetic**: the hard gate
-is **definiteness + feasibility + no slop**, never a raw item count. Key rules it enforces: every line
-concrete and non-vague (no `TBD` / "it depends" / "varies by customer"); each integration line names a
-real self-serve system and is a reachability **verdict**, not a bare name or a numeric limit; the scope
-is **feasibility-validated** (Step 3.5); no marketing adjectives; and — critically — **`scope.md`
-carries none of the cut sections** (no pricing/business facts, no Screens, no Data model, no
-`## Constraints`, no out-of-scope list, no `## Context (from brief)`) and **no verbatim sentence copied
-from `brief.md`** — it references the brief by anchor, never restates it. Counts are **smell-tests, not
-gates**. If a section can't be filled without "it depends", the tier is wrong — drop it and re-tier,
-never pad.
+The user now works the list. **The discipline that makes this trustworthy: one request → one edit, in
+the exact same template, then re-lint.** Specifically, every curation move obeys these rules so the file
+never drifts:
 
-### Step 6 — Write `./spec/scope.md`
+- **Touch only the feature in question.** Never rewrite the whole file, never reflow or "tidy" features
+  the user didn't mention, never renumber. Use a single `Edit` that changes exactly the target block
+  (or appends exactly one new block).
+- **Write new/edited features in the identical template** — same three fields, same order, same
+  formatting as every existing block. A reader must not be able to tell which feature was added last.
+- **Re-lint the touched block** against `references/lint.md`, plus a quick consistency scan that every
+  block still matches the template. Fix before reporting.
+- **Show only what changed** — the new/edited block and a one-line confirmation. Don't re-echo the
+  whole list unless asked.
 
-Once the artifact passes the lint clean, **write it to `./spec/scope.md`** (relative to cwd; create
-`./spec/` if missing; overwrite any existing `scope.md`). Report just the path — do **not** echo the
-full artifact into chat. Output is file-only; the lint is not satisfied by an in-chat draft.
+### Add a feature
 
-## The wedge principle
+1. Confirm it's atomic, screenable, standalone-valuable (Step 1 tests). If it's really two features,
+   say so and offer to add both.
+2. Feasibility-check it (Step 2) to fill the Feasibility field.
+3. Assign the **next unused number** (max existing `F<n>` + 1 — never reuse a retired number).
+4. **One Edit:** append the new block at the end of `## Scoped features`, in the template.
+5. Lint the new block; confirm: "Added F8 · <name>."
 
-Any 🔴 idea can be 🟢'd by carving a wedge — the *single* most painful use case for a *specific* persona, sold standalone. The test: would buyers pay for the wedge *on its own*? If yes → 🟢. If not, you don't have an MVP, you have a feature.
+### Remove a feature
 
-The pattern is always: **vertical narrowing** (specific industry + region + sub-segment) + **use-case narrowing** (one painful job, not a suite) + **standalone-sellability** (priced for the wedge alone, not a teaser for the suite).
+1. **One Edit:** delete exactly that `### F<n> …` block (header + its three fields + the surrounding
+   blank line). Leave all other numbers untouched — the gap is intentional.
+2. Confirm: "Removed F3. (F1, F2, F4… unchanged.)"
 
-Example transformations:
-- "NIS2 compliance suite" 🔴 → "NIS2 supplier-questionnaire generator for Estonian energy-sector MSPs" 🟢
-- "Practice management for therapists" 🔴 → "Insurance superbill generator for cash-pay therapists in California" 🟢
-- "Restaurant operations platform" 🔴 → "Daily prep-list generator for single-location pizzerias" 🟢
-- "AI-powered legal assistant" 🔴 → "NDA reviewer for Series-A SaaS founders" 🟢
+### Refine a feature
 
-## Output format
+The user changes one aspect (the output, the persona, the input, the name). **One Edit** to that block
+only, keeping every other field intact and the template exact. If the change makes the feature
+non-atomic (e.g. the new output depends on the input type), say so and offer to split instead.
 
-The artifact is **file-only**: write `./spec/scope.md` and report just the path. In chat, give a
-one-line summary — the tier, the 3-use-case test result, sprawl-flag count, and parity-pressure — and
-point to the file. Do not echo the full artifact. The written `scope.md` must have passed the Step 5
-lint (`references/lint.md`): never emit a verdict with a `TBD`, an "it depends", a vague or infeasible
-line, a restated brief sentence, or any of the cut sections.
+### Split a feature (when it's doing too much)
+
+When one feature hides two atomic jobs (its In → Out has an "and" or a "depending on"):
+
+1. Define the two (or more) atomic features.
+2. **Edits:** replace the original block in place with the first atomic feature (keep its number), and
+   append the rest as new features with next numbers. Keep each in the template.
+3. Confirm: "Split F1 into F1 · <a> and F8 · <b>."
+
+### "What should I add / cut?" — advisory
+
+Use the **curation signals** in [references/curation-signals.md](references/curation-signals.md) to
+advise, without editing anything until the user picks:
+
+- **What to cut:** features that trip a sprawl signal (branches by sector/role/jurisdiction, needs
+  expert review, "configurable", "it depends on the customer", or a parity feature you'll never match a
+  feature-rich incumbent on). Name the feature and the signal it trips.
+- **What to add:** a gap in the brief's core job — a necessary step between two listed features with no
+  feature covering it. Name the gap and propose the feature (don't add it until the user says yes).
+
+Present the advice as a short bulleted list ("F4 trips the multi-role signal — consider cutting or
+narrowing to one role"). Then wait for the user's decision and apply it as a normal curation move.
+
+---
+
+## The DRY boundary — what scope.md never carries
+
+`scope.md` is the feature list and nothing else. It references the brief by anchor; it never restates a
+brief sentence, and it never carries a fact a downstream spec file owns. Re-introducing any of these is
+a lint failure:
+
+- **No pricing or business-model facts** — `product.md` owns those.
+- **No out-of-scope / Non-goals list** — `product.md` owns the build boundary.
+- **No hard-constraints / `## Constraints` section** — `nfr.md` is the sole sharpener of brief
+  constraints.
+- **No screens or UI detail** — gherkin owns behavior; the In → Out line is a verdict, not a wireframe.
+- **No data model** — the ERD owns schema.
+- **No `## Context (from brief)` block, no restated persona/JTBD prose** — the brief owns those; cite by
+  anchor if you must reference one.
+- **No numeric operational limits** in the Feasibility field (SLAs, rate limits, quotas) — `nfr.md` owns
+  those.
 
 ## What this skill does NOT do
 
-- **No demand validation** — that is a market-fit-validation concern.
-- **No tech feasibility check** of the buildability-check kind (domain, Stripe, complexity rating). This skill's Step 3.5 validates *integration reachability* for the scope, not the full tech-complexity tier.
-- **No GTM / channel check.**
-- **No deep competitor profiling.** The Step 3 parity check is a feature count, not a comparison; a deep competitive dive is a separate workflow.
-- **No code-writing.** The output is a scope verdict the rest of the pipeline consumes, not running code.
-- **No pricing, screens, data model, or out-of-scope list** — those are owned by `brief.md` / `product.md` / `nfr.md` / the ERD (see PIPELINE.md). scope.md carries only the buildability verdict.
-- **No customer interviews.** A 🟢 verdict is "buildable as scoped", not "validated buyers will pay for this exact scope." Talk to humans before building.
+- **No demand validation** — that's a market-fit concern.
+- **No tech-feasibility complexity tier** of the buildability-check kind (domain, Stripe, weekend/week
+  rating). This skill's feasibility pass validates *per-feature reachability*, not a complexity grade.
+- **No GTM / channel check. No deep competitor profiling.** The curation signals use competitor names
+  only as a table-stakes input, not a comparison.
+- **No code-writing.** The output is the feature list the rest of the pipeline consumes.
+- **No pricing, screens, data model, constraints, or out-of-scope list** — owned downstream (see the
+  DRY boundary).
+- **No customer interviews.** A clean, feasible feature is "buildable as scoped", not "validated buyers
+  will pay for exactly this." Talk to humans before building.
 
 ## Related skills (the napkin pipeline)
 
 - **idea-brief** — the producer of this skill's input (`spec/brief.md`); the business layer.
-- **collect-context** — the consumer of this skill's output; reads `spec/scope.md` (tier gate, feasibility, integration verdicts) plus `spec/brief.md` to author the context layer.
-- Any **G2/Capterra / app-review / feature-matrix** capability — discovered at runtime for Step 3 parity-pressure scoring (no hardcoded dependency).
-- For a separate **tech-feasibility complexity rating** or a **deep competitor dive**, discover at runtime any skill whose description covers that — neither is a hard dependency of this skill.
+- **collect-context** — the consumer of this skill's output; reads `spec/scope.md` (the feature list +
+  per-feature feasibility) plus `spec/brief.md` to author the context layer. The feature list seeds the
+  capability-map; each feature's Feasibility verdict guards capability-map against specing a capability
+  whose sole enabler isn't self-serve.
+- Any **G2/Capterra / app-review / feature-matrix** capability — discovered at runtime to sharpen the
+  curation signals (table-stakes pressure); no hardcoded dependency.
+- For a separate **tech-feasibility complexity rating** or a **deep competitor dive**, discover at
+  runtime any skill whose description covers that — neither is a hard dependency.

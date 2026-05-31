@@ -3,47 +3,61 @@
   "evals": [
     {
       "id": 0,
-      "name": "crisp-brief-emits-thin-verdict",
-      "prompt": "(A ./spec/brief.md is present — the Estonian bookkeeper bank-to-invoice reconciliation idea: solo/small-firm bookkeepers in Estonia, Build seed core capability = auto-match bank-statement CSV to invoice export and flag unmatched, key integrations = CSV/camt.053 upload, hard constraints = EU data residency + deterministic matching + Estonian UI.) Scope the MVP.",
-      "expected_output": "Reads spec/brief.md and consumes it. Tier 🟢 (or 🟡), keyed off definiteness + feasibility + sprawl (NOT counts). Writes a THIN ./spec/scope.md verdict: the tier header, the 3-use-case test outcome (3 atomic named jobs), per-integration reachability verdicts (each naming a real self-serve system), and a ## Feasibility check block. Carries NONE of the cut sections (no pricing, no Screens, no Data model, no ## Constraints, no ## Out of scope, no ## Context). No restated brief sentences, no 'TBD', no marketing adjectives. File-only output.",
+      "name": "phase1-crisp-emits-consistent-list",
+      "prompt": "Set up ./spec/brief.md with this content, then scope the MVP:\n\n# brief: Estonian bank-to-invoice reconciliation\n\n## Problem\nSolo and small-firm bookkeepers in Estonia reconcile bank statements to invoices by hand every month. [fact|interviews]\n\n## Target user\nSolo bookkeepers and 2-5 person bookkeeping firms in Estonia. [fact|interviews]\n\n## Opportunity (the need)\nCut a multi-hour monthly chore to minutes. [assumption|inferred]\n\n## Wedge\nAuto-match a bank-statement export to an invoice export and flag what doesn't match. [fact|interviews]\n\n## Build seed — what implementation needs to know\n- **Core capability:** Auto-match bank-statement lines to invoice export; flag unmatched. [fact|scoping]\n- **Key inputs / integrations:** camt.053 / CSV bank-statement upload; invoice CSV export. [fact|scoping]\n- **Hard constraints:** EU data residency; deterministic auditable matching; Estonian-language UI. [fact|scoping]\n- **Thinnest first slice:** Upload two files, see matched + unmatched. [fact|scoping]\n\n## Non-goals\nNo direct bank API; no write-back to accounting software; no full ledger. [fact|scoping]",
+      "expected_output": "Phase 1. Reads/consumes spec/brief.md. Writes ./spec/scope.md as a feature list where EVERY feature is the strict block: '### F<n> · <verb-led name>' then exactly three fields in order — **Persona:**, **In → Out:** (with a literal arrow, atomic), **Feasibility:** (verdict + evidence). 3-7 features. No tier badge, no sprawl score, no wedge proposals. Carries NONE of the cut sections (no pricing, no Screens, no Data model, no ## Constraints, no ## Out of scope, no ## Context). No restated brief sentences. Then STOPS and shows the numbered list in chat, inviting add/remove/refine/split.",
       "files": [],
       "assertions": [
-        {"text": "Reads ./spec/brief.md (Step 0) and consumes it — does not ask for a one-liner"},
-        {"text": "Assigns a tier (🟢 or 🟡) keyed off definiteness + feasibility + sprawl, and shows the 3-use-case test outcome"},
-        {"text": "Writes the thin verdict (not wedge proposals) since the scope is already narrow"},
-        {"text": "Each ## Integrations line is a reachability verdict naming a real self-serve system; a ## Feasibility check block is present with evidenced lines"},
-        {"text": "scope.md carries NONE of the cut sections: no pricing/business fact, no ## Screens, no ## Data model, no ## Constraints, no ## Out of scope, no ## Context (from brief)"},
-        {"text": "No verbatim sentence copied from brief.md; the brief is referenced, not restated"},
-        {"text": "Writes ./spec/scope.md (file-only); no marketing adjectives or narrative preamble"}
-      ]
-    },
-    {
-      "id": 2,
-      "name": "dry-boundary-no-downstream-owned-facts",
-      "prompt": "(A ./spec/brief.md is present with Build seed hard constraints [EU data residency; deterministic auditable matching; Estonian UI], Non-goals [no bank API; no write-back; no full ledger], and a ## Business model with pricing.) Scope the MVP and write ./spec/scope.md.",
-      "expected_output": "scope.md is the thin verdict only. The hard constraints, the Non-goals/out-of-scope list, and the pricing are NOT carried into scope.md — they are owned downstream by nfr.md / product.md and stay in the brief. scope.md re-asks nothing the brief answered and restates no brief sentence.",
-      "files": [],
-      "assertions": [
-        {"text": "scope.md does NOT contain a ## Constraints section — hard constraints stay in the brief (nfr.md owns the sharpened form)"},
-        {"text": "scope.md does NOT contain a ## Out of scope list — Non-goals stay in the brief (product.md owns out-of-scope)"},
-        {"text": "scope.md contains NO pricing or business-model fact"},
-        {"text": "Re-asks ZERO questions the brief already answered (persona, JTBD, integrations not re-derived)"},
-        {"text": "Writes the thin verdict to ./spec/scope.md (file-only)"}
+        {"text": "Sets up and reads ./spec/brief.md and consumes it (does not re-ask the persona, integrations, or core capability)"},
+        {"text": "Writes ./spec/scope.md containing a '## Scoped features' list of 3-7 features"},
+        {"text": "EVERY feature is the strict block: '### F<n> · name' header followed by exactly **Persona:**, **In → Out:**, **Feasibility:** in that order — no missing, extra, or reordered fields"},
+        {"text": "Every 'In → Out' line is atomic: one input, one output, a literal arrow, no 'depending on' / 'and/or' branching / 'etc.'"},
+        {"text": "Every 'Feasibility' line is a verdict word (self-serve/partnership-gated/cost-gated/data-gated/research-gated) plus short evidence — not a bare name or a numeric limit"},
+        {"text": "No tier badge (🟢/🟡/🔴), no sprawl score, and no wedge proposals anywhere"},
+        {"text": "scope.md carries NONE of the cut sections: no pricing, no ## Screens, no ## Data model, no ## Constraints, no ## Out of scope, no ## Context (from brief); no verbatim brief sentence"},
+        {"text": "After writing, STOPS and shows the numbered feature list in chat with an invitation to add/remove/refine/split — does not proceed to anything downstream"}
       ]
     },
     {
       "id": 1,
-      "name": "sprawling-suite-refuses-verdict-gives-wedges",
-      "prompt": "(A ./spec/brief.md is present describing a full NIS2 compliance management suite for EU mid-market companies: risk management, audit support across all 27 national transpositions, evidence collection, multi-role workflows for CISO + auditor + department heads, configurable reporting per regulator.) Scope the MVP.",
-      "expected_output": "Tier 🔴. Counts multiple sprawl flags (regulatory drift, parity incumbents, multi-role branching, audit/evidence variance, configurable value-prop). Does NOT write a verdict sketch. Emits exactly 3 wedge proposals, each with narrower persona + single use-case + standalone-sellability + a 3-use-case test. Lint-clean.",
+      "name": "phase1-broad-idea-narrows-no-tier-no-wedges",
+      "prompt": "Set up ./spec/brief.md with this content, then scope the MVP:\n\n# brief: NIS2 compliance management suite\n\n## Problem\nEU mid-market companies struggle to manage NIS2 compliance. [assumption|inferred]\n\n## Target user\nCISOs, internal auditors, and department heads at EU mid-market companies. [assumption|inferred]\n\n## Wedge\nA full NIS2 compliance suite. [assumption|inferred]\n\n## Build seed — what implementation needs to know\n- **Core capability:** Risk management, audit support across all 27 national transpositions, evidence collection, multi-role workflows for CISO + auditor + department heads, configurable reporting per regulator. [assumption|inferred]\n- **Key inputs / integrations:** Everything a GRC platform touches. [assumption|inferred]\n- **Thinnest first slice:** The whole suite. [assumption|inferred]",
+      "expected_output": "Phase 1 on a too-broad idea. Does NOT force a 7-item list of vague features. Says plainly it cannot name atomic, screenable, standalone features from this brief, names the specific curation signals firing (branches by jurisdiction/version, multi-role flows, configurable value-prop, parity incumbents, expert-review/domain depth), and asks the user to narrow the persona or core job before building the list. Critically: NO tier badge (🟢/🟡/🔴) and NO formal '3 wedge proposals' artifact — the new skill cures sprawl by narrowing the brief, not by emitting a verdict.",
       "files": [],
       "assertions": [
-        {"text": "Assigns tier 🔴 (sprawling)"},
-        {"text": "Names the sprawl flags hit (regulatory drift, multi-role branching, audit/evidence variance, configurable, parity incumbents)"},
-        {"text": "Does NOT emit a verdict sketch"},
-        {"text": "Emits exactly 3 wedge proposals, each with narrower persona + single use-case + standalone-sellability"},
-        {"text": "Each wedge includes its own 3-use-case test"},
-        {"text": "Output is lint-clean: concise, no marketing filler"}
+        {"text": "Does NOT emit a list of vague/non-atomic features just to fill the template"},
+        {"text": "States clearly that the idea is too broad to scope as-is and asks the user to narrow the persona or core job"},
+        {"text": "Names specific curation signals that fire (e.g. branches by jurisdiction/version, multi-role flows, 'configurable', parity incumbents, domain depth)"},
+        {"text": "Does NOT assign a tier badge (no 🟢/🟡/🔴) and does NOT emit a formal '3 wedge proposals' section"},
+        {"text": "Output stays in the skill's lane — no pricing, no screens, no data model, no restated brief facts"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "phase2-add-surgical-same-template",
+      "prompt": "A ./spec/brief.md and ./spec/scope.md already exist. Create ./spec/scope.md with EXACTLY this content first:\n\n# scope: Estonian bank-to-invoice reconciliation\n\n> Feature list for v1. Each feature is atomic, screenable, standalone-valuable, and feasibility-checked.\n> Curate with mvp-scoping: add / remove / refine / split — one feature at a time, same template.\n\n## Scoped features\n\n### F1 · Import bank statement\n- **Persona:** solo bookkeeper\n- **In → Out:** camt.053 / CSV upload → parsed transaction list\n- **Feasibility:** self-serve — file parse\n\n### F2 · Auto-match invoices\n- **Persona:** solo bookkeeper\n- **In → Out:** transaction list + invoice export → matched/unmatched ledger\n- **Feasibility:** self-serve — deterministic matching\n\n### F3 · Flag unmatched lines\n- **Persona:** solo bookkeeper\n- **In → Out:** matched ledger → list of unmatched lines with reason\n- **Feasibility:** self-serve — in-app logic\n\nThen: add a feature for exporting a VAT-ready summary the bookkeeper can hand to a client.",
+      "expected_output": "Phase 2 add. Makes ONE surgical edit: appends a new feature 'F4' (next unused number) at the end of ## Scoped features, in the identical strict template (### F4 · verb-led name, then **Persona:**, **In → Out:** atomic, **Feasibility:** verdict). F1, F2, F3 are left byte-for-byte unchanged — not reflowed, not renumbered. Confirms 'Added F4 · ...' and shows just the new block, not the whole list.",
+      "files": [],
+      "assertions": [
+        {"text": "Appends exactly ONE new feature numbered F4 (the next unused number)"},
+        {"text": "The new F4 block uses the identical template: '### F4 · verb-led name' then **Persona:**, **In → Out:** (atomic, literal arrow), **Feasibility:** (verdict + evidence), in that order"},
+        {"text": "F1, F2, F3 are left completely unchanged — not reworded, not reformatted, not renumbered"},
+        {"text": "The edit is surgical (a single append), not a rewrite of the whole file"},
+        {"text": "Reports the addition concisely (e.g. 'Added F4 · ...') rather than re-echoing the entire list"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "phase2-remove-no-renumber",
+      "prompt": "A ./spec/scope.md already exists. Create ./spec/scope.md with EXACTLY this content first:\n\n# scope: Estonian bank-to-invoice reconciliation\n\n> Feature list for v1. Each feature is atomic, screenable, standalone-valuable, and feasibility-checked.\n> Curate with mvp-scoping: add / remove / refine / split — one feature at a time, same template.\n\n## Scoped features\n\n### F1 · Import bank statement\n- **Persona:** solo bookkeeper\n- **In → Out:** camt.053 / CSV upload → parsed transaction list\n- **Feasibility:** self-serve — file parse\n\n### F2 · Auto-match invoices\n- **Persona:** solo bookkeeper\n- **In → Out:** transaction list + invoice export → matched/unmatched ledger\n- **Feasibility:** self-serve — deterministic matching\n\n### F3 · Flag unmatched lines\n- **Persona:** solo bookkeeper\n- **In → Out:** matched ledger → list of unmatched lines with reason\n- **Feasibility:** self-serve — in-app logic\n\nThen: drop F2 — we won't do auto-matching in v1.",
+      "expected_output": "Phase 2 remove. Makes ONE surgical edit: deletes exactly the '### F2 · Auto-match invoices' block (header + its three fields). F1 and F3 are left unchanged and are NOT renumbered — the file keeps F1 and F3, with F2 retired (a gap is intentional). Confirms 'Removed F2' and notes the remaining numbers are unchanged.",
+      "files": [],
+      "assertions": [
+        {"text": "Deletes exactly the F2 block (header + its three fields)"},
+        {"text": "F1 and F3 remain and are NOT renumbered — F3 stays F3, the F2 number is retired (gap left intentionally)"},
+        {"text": "F1 and F3 content is otherwise unchanged"},
+        {"text": "The edit is a single surgical deletion, not a rewrite of the whole file"},
+        {"text": "Confirms the removal concisely and notes the remaining numbers are unchanged"}
       ]
     }
   ]
