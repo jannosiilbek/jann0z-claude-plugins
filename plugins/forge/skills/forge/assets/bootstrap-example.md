@@ -8,7 +8,8 @@
 
 ## Build sequence (DAG order: scheduling → shift-swaps → approvals → billing)
 
-1. **Scaffold** — Bun + Turbo + `config` package per *architecture §3*.
+1. **Scaffold** — Bun + Turbo + `config` package per *architecture §3*; **+ root `CLAUDE.md`** from
+   forge's template (router into `spec/`).
 2. **Env + dual DB** — `.env.template`/`.env.local`, Zod env schema, `DATABASE_DRIVER` PGlite⇄Postgres
    per *architecture §4, §10*.
 3. **Data layer** — Drizzle schema + migrations + seed an Org with Owner/Manager/Workers.

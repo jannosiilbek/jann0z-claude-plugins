@@ -14,7 +14,8 @@
 Each step names **this spec's** capabilities/features and cites the architecture section for the how.
 
 1. **Scaffold** — Bun + Turborepo workspace; `tsconfig` base, lint/format, `config` package; empty
-   `apps/*` + `packages/*` per *architecture §3 (layout)*.
+   `apps/*` + `packages/*` per *architecture §3 (layout)*. **+ root `CLAUDE.md`** from forge's
+   template (router into `spec/` — no fact restated; keep its package index current as packages appear).
 2. **Env + dual DB** — `.env.template` + `.env.local`; Zod env schema; Drizzle PGlite⇄Postgres-16
    switch per *architecture §4, §10*.
 3. **Data layer first** — Drizzle schema from `data/model.dbml` (glossary names verbatim); migrations

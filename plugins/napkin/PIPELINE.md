@@ -50,9 +50,9 @@ spec/
   alignment-report.md # collect-context pass/fail report
   features/<capability>/*.feature   # gherkin specs
   data/model.dbml     # erd-modeler output
-  architecture.md     # standing build reference (owned by the forge plugin — downstream build stage)
-  bootstrap.md        # kickoff build runbook (owned by the forge plugin — cites architecture.md)
-  DESIGN.md           # design system + tokens (authored by impeccable during the build, sequenced by forge)
+  architecture.md     # build blueprint — standing reference (forge)
+  bootstrap.md        # build runbook (forge)
+  DESIGN.md           # design system + tokens (impeccable, during build)
 ```
 
 ## Single-ownership table
@@ -80,9 +80,7 @@ sentence.
 | Behavioral assertions (scenarios) | `spec/features/` | — (terminal) |
 | Settled choices between alternatives | gherkin per-feature `# Prior decisions:` header | — (terminal) |
 | Schema (tables, columns, relationships, enums-as-types) | `data/model.dbml` | — (terminal) |
-| Build architecture — standing reference (stack, use-case-layer spine, type safety, monorepo layout, data/ports/auth/AI design, testing strategy, drift protocol) | `architecture.md` *(owned by the `forge` plugin — the downstream build stage, not napkin)* | `bootstrap.md` cites it; consumed by `superpowers:writing-plans` |
-| Build kickoff runbook (ordered data-first build sequence + backend-complete/landing-page-first/STOP checkpoints + handoff) | `bootstrap.md` *(owned by the `forge` plugin)* | cites `architecture.md` for the how, never restating it; consumed by `superpowers:writing-plans` |
-| Design system + design tokens | `DESIGN.md` *(authored by `impeccable` during the forge-handed-off build; forge sequences it)* | — (consumed by the UI build) |
+| **Build-stage files** (`architecture.md`, `bootstrap.md`, `DESIGN.md`, root `CLAUDE.md`) | produced + owned by the downstream **`forge`** plugin — see forge for per-file ownership | consumed by `superpowers:writing-plans` (the build) |
 
 ### Upstream seed → canonical owner (the named owner is canonical; the seed is not re-persisted)
 
