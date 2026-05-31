@@ -62,17 +62,22 @@ comments) and conflict with the normal parents-before-children ordering.
 
 ## B. Data Integrity & Normalization
 
-### B1 — Primary keys
-**Detect:** any entity without a unique, stable, non-null identifier, or one using a
-volatile natural key (email, name, phone) as its PK.
-**Fix:** add a surrogate `id [pk]` (`int`/`bigint`/`uuid`). Keep the natural key as a
-`[unique, not null]` attribute when it matters. Bridge tables use a composite PK.
+### B1 — Primary keys (TypeID)
+**Detect:** any entity without a unique, stable, non-null identifier; one using a volatile
+natural key (email, name, phone) as its PK; or a PK typed `int`/`serial`/`bigint` identity
+or raw `uuid` — those are enumerable and untyped, and this skill mandates TypeIDs.
+**Fix:** give every entity a `text` `id [pk]` carrying a **TypeID** (type-prefixed,
+UUIDv7-based) and record the prefix in a `Note`. Keep a natural key as a
+`[unique, not null]` attribute when it matters. Bridge tables use a composite PK of the
+two (text) FKs. (Rationale and prefix rules: `references/metamodel.md`.)
 **Severity:** `❌ error`.
 
 ### B2 — Foreign keys
 **Detect:** an FK placed on the **one** side instead of the **many** side of a 1:N, or an
-FK whose type does not match the referenced PK.
-**Fix:** move the FK to the many side; make its type match the referenced PK exactly.
+FK whose type does not match the referenced PK. Under the TypeID rule both ends are
+`text`, so also flag any FK still typed `int`/`bigint`/`uuid` (a leftover from a
+half-migrated model) and any `text` FK pointing at a non-`text` PK.
+**Fix:** move the FK to the many side; type it `text` to match the referenced TypeID PK.
 **Severity:** `❌ error`.
 
 ### B2a — 1:1 enforcement
