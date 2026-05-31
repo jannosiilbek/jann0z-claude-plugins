@@ -46,6 +46,7 @@ spec/
   alignment-report.md # collect-context pass/fail report
   features/<capability>/*.feature   # gherkin specs
   data/model.dbml     # erd-modeler output
+  architecture.md     # build blueprint (owned by the forge plugin — downstream build stage)
 ```
 
 ## Single-ownership table
@@ -73,6 +74,7 @@ sentence.
 | Behavioral assertions (scenarios) | `spec/features/` | — (terminal) |
 | Settled choices between alternatives | gherkin per-feature `# Prior decisions:` header | — (terminal) |
 | Schema (tables, columns, relationships, enums-as-types) | `data/model.dbml` | — (terminal) |
+| Build architecture (stack, monorepo layout, build sequence + checkpoints, drift protocol) | `architecture.md` *(owned by the `forge` plugin — the downstream build stage, not napkin)* | — (terminal for the spec; consumed by `superpowers:writing-plans`) |
 
 ### Upstream seed → canonical owner (the named owner is canonical; the seed is not re-persisted)
 
