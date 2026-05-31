@@ -1,6 +1,11 @@
 # Build order — data-first, foundation-first, with checkpoints
 
-The blueprint must lay out the build in **this order**, mapped to *this* spec's capabilities in
+> This reference is the **authoring guide for `spec/bootstrap.md`** (the kickoff runbook). The order,
+> checkpoints, and handoff below are written into `bootstrap.md`, with each step citing the relevant
+> `spec/architecture.md` section for the *how*. `architecture.md` owns the standing decisions; this
+> sequence owns the order.
+
+`spec/bootstrap.md` must lay out the build in **this order**, mapped to *this* spec's capabilities in
 `capability-map.md`'s dependency-DAG order. The order is opinionated for a reason: the data and
 use-case layers are the foundation every surface depends on, so they come first; the UI comes last,
 after a human has validated the full stack on a landing page.
@@ -39,20 +44,16 @@ functions and the **same** Zod schemas. MCP action set == UX action set.
 **9. LLM fixtures** — record/author deterministic fixtures for every agent/LLM-backed feature using
 the AI SDK mock model, so agent behavior is testable without live calls. See `testing.md`.
 
-**10. E2E** — `apps/*` Playwright suites: **every `spec/features/**/*.feature` scenario drives an
-e2e test**, run against PGlite. Tests must validate **complete business use-case flows end to end and
-logically** — a real journey across multiple endpoints (e.g. create → claim → approve → verify state),
-asserting the business outcome and post-state, not per-endpoint smoke checks. DRY shared step +
-factory libraries. See `testing.md`.
+**10. E2E** — `apps/*` Playwright suites on PGlite, meeting the **business-flow e2e bar** defined in
+`testing.md` (every scenario drives a test; every endpoint covered by a full multi-step business
+journey, not smoke checks). DRY shared step + factory libraries.
 
 ### ▸ Backend-complete checkpoint (hard gate before any UI)
-Stop and confirm **all** of the following are true before the design/landing-page work starts:
+Stop and confirm **all** of the following before the design/landing-page work starts:
 - [ ] **Every feature's REST API endpoints are implemented** — every action in `capability-map.md` /
-      `features/**` has its API route over a use-case. The feature API surface is complete, not partial.
+      `features/**` has its API route over a use-case. Complete, not partial.
 - [ ] The same actions exist as **MCP** tools (action parity).
-- [ ] **Every API endpoint is exercised by an e2e test, and the e2e suite validates the full business
-      use-case flows logically** — the multi-step journeys, with business-outcome + post-state
-      assertions — all green on PGlite.
+- [ ] The e2e suite meets the business-flow e2e bar (`testing.md`) — all green on PGlite.
 - [ ] data + contracts + ports + domain + LLM fixtures + `typecheck` all green.
 
 Only when the backend + agent surface are *provably* working and type-safe do we build real UI.
@@ -62,8 +63,11 @@ Only when the backend + agent surface are *provably* working and type-safe do we
 
 **12. Landing page first** — build the marketing/landing page, product- and persona-aware, on the
 fresh tokens. This is the first thing the user *sees*. **Precondition: the backend-complete checkpoint
-has passed** — all feature REST endpoints implemented and green under business-flow e2e. The landing
-page is never built on top of an unfinished API.
+has passed.** The landing page is never built on top of an unfinished API. This slice also stands up
+two reusable bases (see `design.md`): the **`/design-guide` route** (hidden gallery of every shadcn
+component + main components incl. charts, with theme switching) and the **DRY error/empty/loading UI
+base** (one toast + error boundary mapped from the typed error model) — so the foundation is right
+before any feature screen reuses it.
 
 ### ▸ STOP: show the user, validate the full stack
 Pause the build. Show the landing page + the working backend/MCP. Let the user validate stack,
@@ -73,7 +77,7 @@ design direction, and direction-of-travel **before** committing to the full UI.
 consistent with the tokens; TanStack Query over the API.
 
 **14. Ops** — observability (structured logs + error tracking tied to `nfr.md` audit), CI/CD turbo
-pipeline (lint → typecheck → unit → e2e → drift gate), Pulumi → Cloud Run deploy.
+pipeline (the gate defined in `testing.md`), Pulumi → Cloud Run deploy.
 
 *(Steps 11–12 may be prepared in parallel with late backend work, but the STOP checkpoint is a hard
 gate before step 13.)*
@@ -84,7 +88,7 @@ gate before step 13.)*
 |---|---|
 | Drizzle schema, migrations, seed | `data/model.dbml` (+ glossary names) |
 | Zod contracts | `glossary.md` enums + feature step data |
-| Ports (which externals exist) | `brief`/`nfr` integrations + any feature touching an external |
+| Ports (which externals exist) | `glossary.md` (integration names that are domain nouns) + `nfr.md` (build constraints) + any `features/**` touching an external |
 | Use-case functions (the set + their order) | `capability-map.md` DAG + `features/**` scenarios |
 | Authorization in use-cases + Better Auth | `rbac-matrix.md` |
 | Tenant isolation, subscription gating, limits, audit | `nfr.md` |
@@ -99,7 +103,6 @@ gate before step 13.)*
 - **Foundation order is not optional**: no API route before its use-case; no use-case before its
   data + contracts; no full UI before the STOP checkpoint.
 - **Every action exists on both surfaces** (API + MCP) or neither.
-- **End-to-end type safety is a hard rule** (`stack.md`): types flow DB → contracts → API → MCP → UI;
-  no `any`; `typecheck` is a CI gate.
-- **All feature REST endpoints are implemented and pass business-flow e2e before the landing page.**
-  The backend is complete and provably correct before any UI exists.
+- **End-to-end type safety is a hard rule** (owner: `stack.md`).
+- **All feature REST endpoints are implemented and pass the business-flow e2e bar (`testing.md`)
+  before the landing page.** The backend is complete and provably correct before any UI exists.

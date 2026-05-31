@@ -52,6 +52,22 @@ The AI agent engine (Vercel AI SDK 5) sits behind a port like any other external
 
 See `testing.md` for how fixtures are recorded and kept in sync with the spec.
 
+## Inbound events (webhooks)
+
+Ports are not only outbound. Externals that own state and push it back asynchronously — most commonly
+the **payments** processor (subscription created/updated, payment failed) — also define an **inbound**
+path, because subscription gating (an `nfr.md` invariant) reads *local* subscription state that only
+stays correct if those events are ingested.
+
+- The port defines an **inbound webhook → use-case** that updates the local `Subscription` (or
+  equivalent) the gating logic reads.
+- Inbound events are **signature-verified** and processed **idempotently** — dedupe by the provider's
+  event id, so a redelivered event is a no-op. (Webhooks are at-least-once.)
+- The **mock** adapter emits the same event shapes, so subscription-state transitions (trial → active
+  → past_due → canceled, in glossary spelling) are driven and asserted in e2e entirely offline.
+
+Without this, local state silently drifts from the processor and gating runs on stale data.
+
 ## DRY discipline
 - One port per external — never two adapters for the same vendor scattered across packages.
 - Mock and real implement the **same** interface; if a method exists on one it exists on the other.

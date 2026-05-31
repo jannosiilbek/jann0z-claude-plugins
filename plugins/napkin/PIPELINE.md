@@ -10,7 +10,11 @@ raw idea
   → collect-context  → spec/*.md (6 files)      (the context spec)   ← reads brief.md always + scope.md if present
   → gherkin          → spec/features/<cap>/*.feature
   → erd-modeler      → spec/data/model.dbml
+  → forge            → spec/architecture.md + spec/bootstrap.md   (build stage — separate `forge` plugin)
 ```
+
+Once the spec is complete (features + `data/model.dbml`), the **`forge`** plugin is the next step:
+run it to turn the spec into a build blueprint and hand off to the build loop.
 
 This file is the **single authority** for who owns each cross-tool fact and the rules for referencing
 it. It holds no values of its own — the owning file always holds the actual value; every other file
@@ -46,7 +50,9 @@ spec/
   alignment-report.md # collect-context pass/fail report
   features/<capability>/*.feature   # gherkin specs
   data/model.dbml     # erd-modeler output
-  architecture.md     # build blueprint (owned by the forge plugin — downstream build stage)
+  architecture.md     # standing build reference (owned by the forge plugin — downstream build stage)
+  bootstrap.md        # kickoff build runbook (owned by the forge plugin — cites architecture.md)
+  DESIGN.md           # design system + tokens (authored by impeccable during the build, sequenced by forge)
 ```
 
 ## Single-ownership table
@@ -74,7 +80,9 @@ sentence.
 | Behavioral assertions (scenarios) | `spec/features/` | — (terminal) |
 | Settled choices between alternatives | gherkin per-feature `# Prior decisions:` header | — (terminal) |
 | Schema (tables, columns, relationships, enums-as-types) | `data/model.dbml` | — (terminal) |
-| Build architecture (stack, monorepo layout, build sequence + checkpoints, drift protocol) | `architecture.md` *(owned by the `forge` plugin — the downstream build stage, not napkin)* | — (terminal for the spec; consumed by `superpowers:writing-plans`) |
+| Build architecture — standing reference (stack, use-case-layer spine, type safety, monorepo layout, data/ports/auth/AI design, testing strategy, drift protocol) | `architecture.md` *(owned by the `forge` plugin — the downstream build stage, not napkin)* | `bootstrap.md` cites it; consumed by `superpowers:writing-plans` |
+| Build kickoff runbook (ordered data-first build sequence + backend-complete/landing-page-first/STOP checkpoints + handoff) | `bootstrap.md` *(owned by the `forge` plugin)* | cites `architecture.md` for the how, never restating it; consumed by `superpowers:writing-plans` |
+| Design system + design tokens | `DESIGN.md` *(authored by `impeccable` during the forge-handed-off build; forge sequences it)* | — (consumed by the UI build) |
 
 ### Upstream seed → canonical owner (the named owner is canonical; the seed is not re-persisted)
 
