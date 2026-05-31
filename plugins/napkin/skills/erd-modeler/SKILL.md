@@ -162,6 +162,7 @@ Iterations to convergence: N
 
 📄 Model saved to `<path>/model.dbml`
 ✅ Compliant & live-tested — all use-cases pass, N issues fixed over M iterations.
+➡️ Spec complete. Next: run the `forge` plugin to turn it into a build blueprint and start building.
 ````
 
 Severities:

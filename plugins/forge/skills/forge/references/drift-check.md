@@ -16,18 +16,14 @@ make drift-checking **continuous** — part of every slice and a CI gate — not
 **Coverage (nothing missing, nothing extra)**
 - [ ] Every `capability-map.md` capability has its use-cases built in DAG order; no capability skipped.
 - [ ] **Every feature has its REST API endpoints implemented** — no feature action without a route.
-- [ ] Every `spec/features/**/*.feature` scenario has an e2e test.
-- [ ] **Every API endpoint is exercised by an e2e flow that validates the full business use-case
-      logically** (multi-step journey + business-outcome/post-state assertions), not a smoke check.
+- [ ] The e2e suite meets the **business-flow e2e bar** (owner: `testing.md`).
 - [ ] Every action exists on **both** the API and MCP (action parity), backed by one domain function.
-
-**Type safety**
-- [ ] `typecheck` passes; no `any`, no unchecked casts, no `@ts-ignore` masking real errors.
-- [ ] Types flow unbroken DB → contracts → API → MCP → UI; the client calls the API with full inference.
-- [ ] Contract types are `z.infer`-ed from Zod schemas, not hand-redeclared; env is typed/validated.
 - [ ] **Nothing** is built that `product.md` lists as out-of-scope.
 - [ ] No domain entity / feature / capability exists in code that no spec file owns. If one is truly
       needed, the spec is updated **first** (napkin), then the code — never smuggled in.
+
+**Type safety** — the end-to-end type-safety rule held (owner: `stack.md`).
+- [ ] `typecheck` passes; types flow unbroken DB → contracts → API → MCP → UI; no `any`/`@ts-ignore`.
 
 **Authorization & invariants**
 - [ ] Every `rbac-matrix.md` resource × action × role cell is enforced in the use-case layer (verified by tests).
@@ -35,10 +31,12 @@ make drift-checking **continuous** — part of every slice and a CI gate — not
       gating (the one gating home), in-app limits/quotas, audit rows written.
 - [ ] Architectural/build constraints from `nfr.md` (offline/on-prem/determinism/no-egress) respected.
 
-**DRY & seams**
-- [ ] Business logic lives only in `domain` — surfaces (API/MCP/UI) are thin.
-- [ ] Externals only via `ports`; no SDK imported in domain.
-- [ ] No duplicated logic across API and MCP for the same action.
+**DRY & seams** — the spine + ports rules held (owners: `stack.md`, `ports-and-mocks.md`).
+- [ ] Business logic only in `domain` (thin surfaces); externals only via `ports`; no duplicated
+      logic across API and MCP for the same action.
+- [ ] UI error/empty/loading goes through the shared base (toast + error boundary mapped from the
+      typed error model) — no ad-hoc `try/catch`-and-alert; every shipped component appears in
+      `/design-guide` and theme-switches cleanly. (owner: `design.md`)
 
 ## How it runs
 - **Per slice:** the implementing/reviewing agent walks the relevant rows before a slice is "done".

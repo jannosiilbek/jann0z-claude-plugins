@@ -1,14 +1,20 @@
 ---
 name: forge
-description: Use after a napkin spec is finished and the user wants to start building the app — "go from spec to code", "decide the architecture", "scaffold the project", "what stack should I use", "set up the monorepo", "start the build". Reads the completed spec/ workspace, verifies the latest best-practice stack, writes spec/architecture.md (the opinionated build blueprint — stack, monorepo layout, a data-first build sequence with checkpoints, and a continuous spec-drift protocol), then hands off to superpowers:writing-plans → subagent-driven-development with impeccable driving all UI. Blueprint + handoff only — never runs scaffolding commands.
+description: Use after a napkin spec is finished and the user wants to start building — "go from spec to code", "decide the architecture", "scaffold the project", "what stack should I use", "set up the monorepo", "start the build". Reads the completed spec/ workspace, verifies the current best-practice stack, and writes two DRY artifacts — spec/architecture.md (the standing build reference) and spec/bootstrap.md (the ordered kickoff runbook) — then hands off to superpowers:writing-plans. Blueprint + handoff only; never runs scaffolding commands.
 ---
 
 # forge: spec → build blueprint → handoff
 
 `forge` is the bridge between a finished **napkin** spec and the actual build. It owns exactly
-one artifact — **`spec/architecture.md`** — the opinionated blueprint that says *what to build it
-with, in what order, and how to keep the code honest to the spec*. It then hands the build itself
-to `superpowers` (planning + execution) and `impeccable` (all UI/design).
+two artifacts that together form the blueprint:
+- **`spec/architecture.md`** — the **standing reference**: stack, the use-case-layer spine +
+  type-safety rule, monorepo layout, data/ports/auth/AI design, testing strategy, env, observability,
+  deploy, and the drift-check protocol. Consulted *throughout* the build.
+- **`spec/bootstrap.md`** — the **kickoff runbook**: the ordered, data-first build sequence (in
+  capability-DAG order), the checkpoints, and the handoff. It cites `architecture.md` for the *how*
+  and owns the *order*. Read first, matters most at the start.
+
+It then hands the build itself to `superpowers` (planning + execution) and `impeccable` (all UI/design).
 
 **forge is blueprint + handoff only.** It writes `spec/architecture.md` and points the build loop
 at it. It does NOT run `bun create`, `drizzle generate`, migrations, `git init`, or any other
@@ -16,9 +22,10 @@ command — every such step is *written into the blueprint as an instruction* an
 superpowers. If you find yourself wanting to run a shell command, you are out of scope; put it in
 the blueprint instead.
 
-Single-ownership ethos (inherited from `napkin/PIPELINE.md`): `architecture.md` **cites** spec
-owners (glossary, product, capability-map, rbac-matrix, nfr, features, model.dbml) and **never
-restates** a fact they own. It adds exactly one new owned thing: the build architecture.
+Single-ownership ethos (inherited from `napkin/PIPELINE.md`): both files **cite** spec owners
+(glossary, product, capability-map, rbac-matrix, nfr, features, model.dbml) and **never restate** a
+fact they own; and `bootstrap.md` cites `architecture.md` for the how rather than duplicating it.
+forge adds exactly two new owned things: the build architecture and the bootstrap runbook.
 
 ## Inputs (the finished spec/ workspace)
 
@@ -37,11 +44,12 @@ Read these by anchor; do not re-derive what they own:
 
 ## Flow
 
-Announce: "Using forge to write spec/architecture.md and hand off to the build loop."
+Announce: "Using forge to write spec/architecture.md + spec/bootstrap.md and hand off to the build loop."
 
 ### 1. Precondition gate — is the spec actually done?
 Confirm the spec workspace is complete:
-- `spec/alignment-report.md` exists and is clean (collect-context passed), AND
+- `spec/alignment-report.md` exists and its verdict line reports a pass (the format is owned by
+  `napkin:collect-context`; read that line rather than re-judging alignment yourself), AND
 - `spec/features/` contains at least the walking-skeleton feature(s), AND
 - `spec/data/model.dbml` exists.
 
@@ -65,32 +73,40 @@ Apply the canonical defaults from `references/stack.md`. If the user has asked t
 (e.g. Next.js instead of Vite, Postgres-only, AI SDK 6), record the override **explicitly** in the
 blueprint with a one-line rationale. Defaults are hard but never silent.
 
-### 5. Emit `spec/architecture.md`
-Copy `assets/architecture-template.md` **verbatim** and fill every section. See
-`assets/architecture-example.md` for a worked blueprint. The build sequence
-(`references/build-order.md`) must be mapped slice-by-slice to *this* spec's capabilities/features,
-in `capability-map.md`'s DAG order, and must carry the three checkpoints:
-- **▸ Backend-complete checkpoint** — **all feature REST endpoints implemented**, mirrored as MCP
-  tools, and **every endpoint passing e2e that validates the full business use-case flows logically**;
-  `typecheck` green. This is a hard gate *before* any UI.
+### 5. Emit the two artifacts
+
+**a. `spec/architecture.md`** — copy `assets/architecture-template.md` **verbatim** and fill every
+section (worked example: `assets/architecture-example.md`). It owns the standing decisions: stack
+(with verified versions), the use-case-layer spine + the **end-to-end type-safety** rule
+(`references/stack.md`: types flow DB → contracts → API → MCP → UI, no `any`, `typecheck` is a CI
+gate), monorepo layout, data/ports/auth/AI design, testing strategy, env, observability, deploy, and
+the **drift-check protocol** (`references/drift-check.md`).
+
+**b. `spec/bootstrap.md`** — copy `assets/bootstrap-template.md` **verbatim** and fill it (worked
+example: `assets/bootstrap-example.md`). It owns the ordered build sequence
+(`references/build-order.md`), mapped slice-by-slice to *this* spec's capabilities/features in
+`capability-map.md`'s DAG order, each step citing the relevant `architecture.md` section. It must
+carry the checkpoints:
+- **▸ Backend-complete checkpoint** — all feature REST endpoints implemented, mirrored as MCP tools,
+  meeting the business-flow e2e bar (`references/testing.md`); `typecheck` green. A hard gate *before* any UI.
 - **Design via impeccable** then **landing page first** (product- + persona-aware).
 - **▸ STOP: show the user, validate the full stack** before building the rest of the UI.
 
-The blueprint must also state the **end-to-end type-safety** rule (`references/stack.md`): types flow
-DB → contracts → API → MCP → UI, no `any`, `typecheck` is a CI gate.
-
-Embed the continuous drift-check protocol (`references/drift-check.md`) so the build re-checks code
-against spec owners on every slice.
+Keep them DRY: `bootstrap.md` references `architecture.md` for the how; it does not restate stack or
+design decisions.
 
 ### 6. Hand off
-Per `references/handoff.md`:
-- Invoke `superpowers:writing-plans`, passing `spec/architecture.md` + `spec/features/**` as the
-  spec to plan against.
-- Then `superpowers:subagent-driven-development` to execute.
-- The plan's design phase invokes `impeccable` (DESIGN.md + tokens from product + personas, then
-  consistent UI); the landing-page-first + STOP checkpoints are honored as written in the blueprint.
+Per `references/handoff.md` — note the downstream skills only do what the plan makes explicit:
+- Invoke `superpowers:writing-plans`, passing `spec/bootstrap.md` (the runbook) +
+  `spec/architecture.md` (the reference) + `spec/features/**` to plan against.
+- Instruct it to **transcribe** `bootstrap.md`'s steps, the impeccable design step, and the
+  checkpoints into the plan as explicit tasks/gates (drift-check as a per-task review criterion), and
+  to **split into two plans at the STOP boundary** — backend+landing-page first, then the rest of the
+  UI — so the validation pause survives `subagent-driven-development`'s continuous execution.
+- `writing-plans` saves the plan and **offers an execution choice** (recommend
+  `superpowers:subagent-driven-development`); forge does not auto-chain into execution.
 
-forge's job ends when the blueprint is written and the handoff is invoked. It runs no commands.
+forge's job ends when both artifacts are written and `writing-plans` is invoked. It runs no commands.
 
 ## References
 - `references/stack.md` — the hard, overridable stack + why.
@@ -103,12 +119,9 @@ forge's job ends when the blueprint is written and the handoff is invoked. It ru
 - `references/handoff.md` — invoking superpowers + impeccable.
 
 ## Self-check before done
-- [ ] Precondition gate passed (alignment-report clean, features present, model.dbml present) — or stopped and pointed back.
-- [ ] Research gate run; verified-current versions recorded in the Stack section.
-- [ ] `spec/architecture.md` written from the template verbatim, every section filled, no `<placeholder>` left.
-- [ ] Drizzle/Zod/MCP names use glossary terms verbatim; nothing planned outside product.md scope.
-- [ ] Blueprint states the end-to-end type-safety rule (types DB→contracts→API→MCP→UI, no `any`, typecheck gate).
-- [ ] Backend-complete checkpoint requires **all feature REST endpoints implemented** + **every endpoint passing business-flow e2e** before the landing page.
-- [ ] Build sequence is in capability-map DAG order and carries the backend-complete + landing-page-first + STOP checkpoints.
+- [ ] Precondition + research gates passed (or stopped and pointed back); verified-current versions recorded in the Stack section.
+- [ ] `spec/architecture.md` AND `spec/bootstrap.md` written from their templates verbatim, every section filled, no `<placeholder>` left.
+- [ ] `bootstrap.md` cites `architecture.md` for the how and carries the checkpoints per `build-order.md` — it does not restate stack/design decisions (DRY).
+- [ ] Glossary names used verbatim; nothing planned outside `product.md` scope; build order in capability-map DAG order.
 - [ ] Any user override recorded explicitly with a rationale.
-- [ ] Ended by invoking `superpowers:writing-plans`; ran **no** shell commands.
+- [ ] Ended by invoking `superpowers:writing-plans` (two-plan split, checkpoints transcribed); ran **no** shell commands.

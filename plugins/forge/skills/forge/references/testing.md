@@ -1,6 +1,10 @@
 # Testing — every feature drives an e2e, on PGlite, DRY, with LLM fixtures
 
-## Principles
+## The business-flow e2e bar (owned here — other files cite this, never restate it)
+
+This is the single definition of "done" for e2e, referenced by `build-order.md`, `drift-check.md`,
+and the templates:
+
 - **The spec is the test plan.** Every `spec/features/**/*.feature` scenario maps to at least one
   e2e test. A feature with no e2e is an unfinished feature.
 - **E2E validates complete business use-case flows, logically.** A test exercises a real journey —
@@ -9,8 +13,10 @@
   smoke checks are not enough.
 - **Every API endpoint is covered.** No feature REST endpoint ships without an e2e flow that drives it.
   This is the bar for the backend-complete checkpoint (`build-order.md`).
-- **Type safety is checked too.** `typecheck` is a first-class CI gate alongside the tests — end-to-end
-  types (DB → contracts → API → MCP → UI) must compile with no `any`/`@ts-ignore` (`stack.md`).
+
+## Other principles
+- **Type safety is checked too.** `typecheck` is a first-class CI gate alongside the tests — the
+  end-to-end type-safety rule (owner: `stack.md`) must compile.
 - **Fast by default.** Unit + e2e run on **PGlite** and **mock ports** — no docker, no network, no
   external accounts. The full suite runs in CI on every PR.
 - **DRY tests.** Shared step helpers, data factories, and fixtures — never copy-paste setup across

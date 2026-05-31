@@ -33,7 +33,7 @@ spec action ──► packages/domain  ◄─────┼── apps/mcp (MCP
 |---|---|---|
 | Runtime + package manager | **Bun** | One fast toolchain for install/run/test; native TS. |
 | Monorepo | **Turborepo** | Task graph + caching across apps/packages; one repo for UI+API+MCP+domain. |
-| Language | **TypeScript**, `strict` | End-to-end types from DB → contracts → UI. |
+| Language | **TypeScript**, `strict` | End-to-end types from DB → contracts → API → MCP → UI. |
 | Data ORM | **Drizzle** | Typed SQL-first schema; works against both PGlite and node-postgres with the **same** schema. |
 | Local/e2e DB | **PGlite** | WASM Postgres, in-memory or file; instant, no docker — fast dev loop + fast e2e. (napkin's erd-modeler already live-tests on PGlite.) |
 | Real DB | **PostgreSQL 16** | Production + full local. Selected by env (`DATABASE_DRIVER`), never code change. |
@@ -51,7 +51,7 @@ spec action ──► packages/domain  ◄─────┼── apps/mcp (MCP
 | Design | **impeccable** skill | Generates DESIGN.md + design tokens from product + personas; governs UI consistency. |
 | Env | `.env.template` (committed) + `.env.local` (gitignored) + validated env schema | mock⇄real and PGlite⇄Postgres are both env-driven. |
 | Observability | structured logging + error tracking (Sentry) | Wired to `nfr.md` audit invariants. |
-| CI/CD | Turbo pipeline | lint → typecheck → unit → e2e (PGlite) → drift-check gate, per PR. |
+| CI/CD | Turbo pipeline | the gate defined in `testing.md` (lint → typecheck → unit → integration → e2e → drift-check), per PR. |
 | Deploy | **GCP Cloud Run** via **Pulumi** | Containerized; IaC in `infra/`. |
 
 ## Type safety (hard rule, non-negotiable)
