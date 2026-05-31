@@ -71,5 +71,5 @@ workflow capability is unavailable, degrade automatically to the single-agent mu
 ## Project glossary
 
 The glossary is `spec/glossary.md` — the single ubiquitous-language source (one concept =
-one word), produced by the `spec` plugin's `collect-context`. Check new specs against it
+one word), produced by the `napkin` plugin's `collect-context`. Check new specs against it
 and add terms as they appear; its Forbidden-synonyms column drives the vocabulary checks.

@@ -4,9 +4,9 @@ Use when generating specs from a brief, or whenever more than one feature is in 
 
 ## 0. The spec/ workspace
 
-Gherkin operates inside the `spec/` workspace produced by the `spec` plugin's
+Gherkin operates inside the `spec/` workspace produced by the `napkin` plugin's
 `collect-context` skill. The layout and the single-ownership table are defined once in the
-`spec` plugin's `PIPELINE.md` — that is the contract. Write all specs to
+`napkin` plugin's `PIPELINE.md` — that is the contract. Write all specs to
 `spec/features/<capability>/`, and read these `spec/` files as the authoritative single
 source of truth — never re-derive or re-decide what they own:
 
