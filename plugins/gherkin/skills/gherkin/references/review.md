@@ -15,8 +15,10 @@ features consume the context faithfully.
 - **Dependency integrity:** every `# Depends on:` path resolves to a file that exists, and
   matches the depended-on capability's Primary feature file in `capability-map.md`. No
   synthesized `<cap>/<cap>.feature`; `@prereq` mirrors each dependency.
-- **Glossary fidelity:** every domain noun and enum/state value in a scenario appears in
-  `spec/glossary.md` verbatim — no forbidden synonym, no re-spelled enum value.
+- **Glossary fidelity:** every domain noun and enum/state value — in a scenario **or in the
+  Feature narrative** (`In order to / As a / I want`) — appears in `spec/glossary.md`
+  verbatim: no forbidden synonym, no re-spelled enum value. (Connective English in a title,
+  e.g. "when the role is Agent", is not a term reference — only the value `Agent` must match.)
 - **Scope:** no scenario specifies a `product.md` Out-of-scope item.
 - **Provenance (PIPELINE.md rule 7):** every feature's behavior traces to its
   `capability-map.md` row and every domain noun to `spec/glossary.md`. A feature that

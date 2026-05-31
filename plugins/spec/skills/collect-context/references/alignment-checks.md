@@ -8,7 +8,9 @@ class in parallel, then collate.
 
 - Every domain noun used in any file appears in `glossary.md` exactly once.
 - No file uses a word listed in another term's **Forbidden synonyms** (Venue→Location,
-  Job-Role→Position, canceled vs cancelled, …).
+  Job-Role→Position, canceled vs cancelled, …). Scan the **full prose** of every file —
+  narrative, goals, pains, preambles, definitions — not only structured fields/tables; a
+  forbidden synonym anywhere is drift.
 - **Part-of-speech carve-out:** the forbidden-synonym check targets a word used as the
   *concept* (the noun/entity). A different part of speech is not drift — the verb "reply"
   is fine even if "reply" is a forbidden noun-synonym of Message; "invite (verb)" is fine

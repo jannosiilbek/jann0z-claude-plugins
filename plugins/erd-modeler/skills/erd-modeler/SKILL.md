@@ -32,7 +32,9 @@ do **structured intake**, not prose extraction:
   C2 audit-log carve-out (see `references/validation-rules.md`) then permits it.
 - **`spec/product.md`** + nfr gating — pricing tiers → a `plans` catalog (price, included
   seats/limits, SLA targets, trial); the subscription lifecycle → a `subscription_status`
-  enum taken from the glossary.
+  enum taken from the glossary. Carry SLA targets and limits in product.md's stated unit
+  verbatim (do not convert days↔minutes); cite owned numbers in a `Note:`, do not restate
+  them as scattered comments (PIPELINE.md rule 5).
 - **`spec/rbac-matrix.md`** — model roles as an enum or a `roles` table (decide once) plus
   the relationship entities the matrix implies (e.g. an Agent↔Ticket assignment). A
   role-derived enum keeps the glossary Role spelling verbatim (`Owner`, `Agent`) — do NOT
