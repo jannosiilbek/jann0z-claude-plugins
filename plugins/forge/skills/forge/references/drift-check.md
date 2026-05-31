@@ -19,6 +19,8 @@ make drift-checking **continuous** — part of every slice and a CI gate — not
 - [ ] The e2e suite meets the **business-flow e2e bar** (owner: `testing.md`).
 - [ ] Every action exists on **both** the API and MCP (action parity), backed by one domain function.
 - [ ] **Nothing** is built that `product.md` lists as out-of-scope.
+- [ ] Root `CLAUDE.md`'s package index matches the actual workspace (new packages/apps added); it
+      restates no fact an owner holds (it points to `spec/architecture.md`, never duplicates it).
 - [ ] No domain entity / feature / capability exists in code that no spec file owns. If one is truly
       needed, the spec is updated **first** (napkin), then the code — never smuggled in.
 

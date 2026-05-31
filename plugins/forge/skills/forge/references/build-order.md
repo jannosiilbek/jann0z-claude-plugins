@@ -15,7 +15,10 @@ after a human has validated the full stack on a landing page.
 **0. Research gate** *(forge, at author time)* — versions verified per `research.md`.
 
 **1. Scaffold** *(superpowers)* — Bun + Turborepo workspace; `tsconfig` base, lint/format,
-`config` package; the empty `apps/*` and `packages/*` from the layout in `stack.md`.
+`config` package; the empty `apps/*` and `packages/*` from the layout in `stack.md`. Also create the
+**root `CLAUDE.md`** from forge's `assets/claude-md-template.md` — a **router only**: it points into
+`spec/architecture.md` + `spec/bootstrap.md` and lists the package index + commands + one-line rules;
+it **restates no fact an owner holds**. Keep it current as packages appear (drift-check).
 
 **2. Env + dual DB** — `.env.template` (committed) + `.env.local`; a Zod **env schema** validated at
 boot; Drizzle wired for the **PGlite⇄Postgres-16** switch (`DATABASE_DRIVER`). PGlite is the default

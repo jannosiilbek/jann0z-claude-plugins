@@ -38,7 +38,9 @@ This aligns with `writing-plans`' own "one plan per subsystem" guidance instead 
   capability-map, rbac, nfr, model.dbml).
 - **Transcribe, don't assume:** carry `bootstrap.md`'s ordered steps, the **impeccable design step**,
   and the **backend-complete** checkpoint into Plan A as explicit tasks/gates; put the **STOP** at the
-  Plan A/B boundary. Make the **drift-check** (`drift-check.md`) a per-task review criterion.
+  Plan A/B boundary. Make the **drift-check** (`drift-check.md`) a per-task review criterion. The
+  **Scaffold task must include creating the root `CLAUDE.md`** from forge's template (router into
+  `spec/`) — otherwise the build never creates it.
 - **Two plans, capability-DAG order**, as above.
 
 ## Handoff message (what forge says)

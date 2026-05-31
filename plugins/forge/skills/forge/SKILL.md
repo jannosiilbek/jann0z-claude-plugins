@@ -95,6 +95,11 @@ carry the checkpoints:
 Keep them DRY: `bootstrap.md` references `architecture.md` for the how; it does not restate stack or
 design decisions.
 
+forge writes exactly these **two** artifacts. A third, the generated app's **root `CLAUDE.md`**, is a
+**router** the *build* authors at scaffold from `assets/claude-md-template.md` (not written by forge) —
+it points into `spec/` and owns no architectural facts. forge's job is to ship the template and ensure
+`bootstrap.md`'s scaffold step + the handoff name it (see `references/build-order.md`, `references/handoff.md`).
+
 ### 6. Hand off
 Per `references/handoff.md` — note the downstream skills only do what the plan makes explicit:
 - Invoke `superpowers:writing-plans`, passing `spec/bootstrap.md` (the runbook) +
@@ -117,11 +122,13 @@ forge's job ends when both artifacts are written and `writing-plans` is invoked.
 - `references/design.md` — using impeccable; landing-page-first; UI-consistency loop.
 - `references/drift-check.md` — continuous spec-conformance checklist.
 - `references/handoff.md` — invoking superpowers + impeccable.
+- `assets/claude-md-template.md` — the generated app's root `CLAUDE.md` (a router; build-authored at scaffold).
 
 ## Self-check before done
 - [ ] Precondition + research gates passed (or stopped and pointed back); verified-current versions recorded in the Stack section.
 - [ ] `spec/architecture.md` AND `spec/bootstrap.md` written from their templates verbatim, every section filled, no `<placeholder>` left.
 - [ ] `bootstrap.md` cites `architecture.md` for the how and carries the checkpoints per `build-order.md` — it does not restate stack/design decisions (DRY).
 - [ ] Glossary names used verbatim; nothing planned outside `product.md` scope; build order in capability-map DAG order.
+- [ ] Scaffold step + handoff name the root `CLAUDE.md` (router from `assets/claude-md-template.md`); forge itself wrote only the two artifacts.
 - [ ] Any user override recorded explicitly with a rationale.
 - [ ] Ended by invoking `superpowers:writing-plans` (two-plan split, checkpoints transcribed); ran **no** shell commands.
