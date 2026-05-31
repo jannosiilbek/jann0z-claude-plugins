@@ -28,7 +28,9 @@ Copy `assets/capability-map-template.md` verbatim: one ordered table (including 
    capabilities — never a later or equal one. No cycles.
 3. **Every capability traces to product scope.** Each row must correspond to an in-scope
    item in `product.md`. Nothing from the out-of-scope list may appear. No capability the
-   product does not claim.
+   product does not claim. `scope.md`'s 3-use-case test outcome (if present) is a **seed**
+   for the capability set, not an authoritative list — this map does not own a "use-case
+   set"; it derives capabilities and traces them to product in-scope.
 4. **Capability name = folder name.** Use a short kebab-case name (`shift-swaps`); it
    becomes `spec/features/shift-swaps/`.
 5. **Declare the primary feature file.** Each row names its capability's primary

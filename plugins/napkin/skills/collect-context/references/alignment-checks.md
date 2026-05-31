@@ -37,6 +37,9 @@ class in parallel, then collate.
 
 - Every capability in `capability-map.md` corresponds to an in-scope item in `product.md`.
 - No capability matches an out-of-scope item.
+- **Brief carry-guarantee:** when `spec/brief.md` is present, every `## Non-goals` item appears in
+  `product.md`'s out-of-scope list (product.md may add more; it may drop none). A dropped Non-goal →
+  FAIL. The out-of-scope list lives only in `product.md` — not in `scope.md`.
 - `Depends on` references only lower-numbered capabilities (valid DAG, no cycles, no
   forward references).
 - Exactly one walking skeleton is named.

@@ -11,6 +11,18 @@ coding agent expanding the build — and (b) drive pricing-related scenarios (tr
 quota, upgrade/downgrade). It does NOT define vocabulary (that is `glossary.md`), roles
 or permissions (that is `rbac-matrix.md`).
 
+## Input
+
+Read `spec/brief.md` (the business layer). Per `../../PIPELINE.md`, `product.md` is the canonical owner
+of pricing and the in/out-of-scope boundary, derived from the brief:
+
+- **Pricing** — derive concrete tiers from `## Business model` when the brief carries one (new-venture
+  briefs). When it doesn't (extension briefs), `product.md` **originates** pricing via Rule 1's
+  concrete-or-ask gate. The brief is a seed, not a hard prerequisite.
+- **Out-of-scope** — `product.md` owns the out-of-scope list and **must carry every `## Non-goals` item
+  from the brief** (append more if you discover them; never drop one). The brief's Non-goals are the
+  *origin*; this is the canonical home. `scope.md` does not carry an out-of-scope list.
+
 ## Output
 
 Copy `assets/product-template.md` verbatim and fill it. Six sections, fixed order. Do not
@@ -26,7 +38,8 @@ See `assets/product-example.md`.
    it verbatim. Subscription statuses are owned by `glossary.md` — do not list them here.
 3. **Scope is exhaustive and concrete.** In-scope lists capabilities by name (each maps to
    a `capability-map.md` entry). Out-of-scope names specific excluded things ("no payroll
-   export", "no native mobile app"), not vague gestures.
+   export", "no native mobile app"), not vague gestures — and includes **every** brief
+   `## Non-goals` item (append, never drop).
 4. **One success metric.** A single measurable number the product optimizes. Not a list.
 5. **No marketing adjectives.** Ban "seamless", "powerful", "intuitive", "best-in-class".
    State what it does, for whom, against what pain.
@@ -56,6 +69,7 @@ Banned: `etc.`, `and so on`, `various`, `robust`, `user-friendly`, `seamless`, `
 - [ ] Six sections, fixed order, nothing added.
 - [ ] Every Plan has a price and numeric limits; no invented/guessed tier.
 - [ ] In-scope items map to capability-map entries; out-of-scope items are specific.
+- [ ] Every brief `## Non-goals` item appears in the out-of-scope list.
 - [ ] Exactly one success metric, expressed as a number.
 - [ ] No glossary, roles matrix, or subscription-status list here.
 - [ ] No banned phrase; no `<placeholder>` left.

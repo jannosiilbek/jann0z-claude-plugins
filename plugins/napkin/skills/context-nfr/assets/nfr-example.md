@@ -39,3 +39,8 @@
 
 - Role changes, Schedule publishes, and billing changes are recorded with actor, timestamp,
   and Business, and retained for 365 days.
+
+## Architectural & build constraints
+
+- Schedule export must be byte-deterministic for the same input (audit reproducibility). `(constraint)`
+- No employee personal data leaves the EU region via any third-party integration. `(constraint)`

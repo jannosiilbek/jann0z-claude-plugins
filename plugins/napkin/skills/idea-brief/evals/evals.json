@@ -1,0 +1,50 @@
+{
+  "skill_name": "idea-brief",
+  "evals": [
+    {
+      "id": 0,
+      "name": "vague-feature-dump-refuses",
+      "prompt": "I want to build an AI tool for restaurants. It'll have a dashboard, inventory tracking, maybe some kind of chatbot for staff, and it'll use AI to predict stuff. Can you turn this into an idea brief?",
+      "expected_output": "Content-gate failure. Skill emits the tight blocked-response (verdict + per-gate what's-missing/why/question), refuses to emit a brief, does NOT run verification or write a build seed. Blocked-response is shorter than a brief would be.",
+      "files": [],
+      "assertions": [
+        {"text": "Refuses to emit a full brief (no tagged field set, no Build seed)"},
+        {"text": "Identifies the input as a feature-list, not a crisp problem"},
+        {"text": "Flags the missing specific/reachable user gate"},
+        {"text": "Blocked-response is tight: one-line verdict + per-gate question, no pre-written brief"},
+        {"text": "Does not run dynamic verification on un-gated input"}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "solid-dump-emits-clean-build-carrying-brief",
+      "prompt": "Idea brief please. Estonian bookkeepers waste ~3 hours a month manually reconciling bank statements against invoices in their accounting software because the bank export format doesn't match. I'm a bookkeeper, I do this myself, and I've watched 4 colleagues do the same workaround with a messy spreadsheet. Target user: solo and small-firm bookkeepers in Estonia, ~2000 of them. They'd pay maybe 20 EUR/month. The risky part is whether they'd trust an automated match over their own eyes.",
+      "expected_output": "Passes the three gates and emits a tagged brief in the template shape. Includes a Build seed (core capability, key inputs/integrations, hard constraints, thinnest first slice). bookkeeper-watched-colleagues = [fact]; price + trust = [assumption]; riskiest assumption = trust in automated matching. Output is lint-clean: every field one sentence + tag, no caveat-essay, verification log <=5 lines.",
+      "files": [],
+      "assertions": [
+        {"text": "Emits a brief (gates pass), not a blocked-response"},
+        {"text": "Riskiest-assumption line is one sentence + risk-type + one 'if wrong' clause, directly under the title"},
+        {"text": "Build seed present with all four lines (core capability, key inputs/integrations, hard constraints, thinnest first slice)"},
+        {"text": "Every claim line ends with [fact]/[assumption] and a provenance word"},
+        {"text": "watched-4-colleagues marked [fact]; 20 EUR price and trust concern marked [assumption]"},
+        {"text": "Riskiest assumption is the trust-in-automated-matching concern"},
+        {"text": "Output is lint-clean (intelligent model): no 'Note:'/'Bottom line'/reframing essay, no marketing adjectives, every field concrete and non-vague (no TBD/it-depends) — judged on definiteness, NOT word/line counts"},
+        {"text": "On a clean pass the brief is written to ./spec/brief.md (file-only) using the verbatim field anchors from the shared handoff doc"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "solution-in-disguise-reframes",
+      "prompt": "Make me an idea brief. The idea is a mobile app with a big red button that lets people report workplace safety incidents. For construction companies.",
+      "expected_output": "Applies the disguised-solution test ('big red button' is a solution), reframes to the underlying need (fast/low-friction on-site incident capture), and either blocks for the missing specific user/buyer or interrogates it. Does not transcribe the solution as the problem. If it emits, the build seed and tags are present and lint-clean.",
+      "files": [],
+      "assertions": [
+        {"text": "Applies the disguised-solution test to the 'big red button' framing"},
+        {"text": "Reframes to the underlying need (low-friction on-site incident capture), not the UI"},
+        {"text": "Asks for / names the specific user and buyer (separates them if different)"},
+        {"text": "Does not record the solution verbatim as the problem"},
+        {"text": "Any emitted brief is lint-clean and carries a Build seed"}
+      ]
+    }
+  ]
+}

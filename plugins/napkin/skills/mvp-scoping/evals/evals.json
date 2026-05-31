@@ -1,0 +1,50 @@
+{
+  "skill_name": "mvp-scoping",
+  "evals": [
+    {
+      "id": 0,
+      "name": "crisp-brief-emits-thin-verdict",
+      "prompt": "(A ./spec/brief.md is present — the Estonian bookkeeper bank-to-invoice reconciliation idea: solo/small-firm bookkeepers in Estonia, Build seed core capability = auto-match bank-statement CSV to invoice export and flag unmatched, key integrations = CSV/camt.053 upload, hard constraints = EU data residency + deterministic matching + Estonian UI.) Scope the MVP.",
+      "expected_output": "Reads spec/brief.md and consumes it. Tier 🟢 (or 🟡), keyed off definiteness + feasibility + sprawl (NOT counts). Writes a THIN ./spec/scope.md verdict: the tier header, the 3-use-case test outcome (3 atomic named jobs), per-integration reachability verdicts (each naming a real self-serve system), and a ## Feasibility check block. Carries NONE of the cut sections (no pricing, no Screens, no Data model, no ## Constraints, no ## Out of scope, no ## Context). No restated brief sentences, no 'TBD', no marketing adjectives. File-only output.",
+      "files": [],
+      "assertions": [
+        {"text": "Reads ./spec/brief.md (Step 0) and consumes it — does not ask for a one-liner"},
+        {"text": "Assigns a tier (🟢 or 🟡) keyed off definiteness + feasibility + sprawl, and shows the 3-use-case test outcome"},
+        {"text": "Writes the thin verdict (not wedge proposals) since the scope is already narrow"},
+        {"text": "Each ## Integrations line is a reachability verdict naming a real self-serve system; a ## Feasibility check block is present with evidenced lines"},
+        {"text": "scope.md carries NONE of the cut sections: no pricing/business fact, no ## Screens, no ## Data model, no ## Constraints, no ## Out of scope, no ## Context (from brief)"},
+        {"text": "No verbatim sentence copied from brief.md; the brief is referenced, not restated"},
+        {"text": "Writes ./spec/scope.md (file-only); no marketing adjectives or narrative preamble"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "dry-boundary-no-downstream-owned-facts",
+      "prompt": "(A ./spec/brief.md is present with Build seed hard constraints [EU data residency; deterministic auditable matching; Estonian UI], Non-goals [no bank API; no write-back; no full ledger], and a ## Business model with pricing.) Scope the MVP and write ./spec/scope.md.",
+      "expected_output": "scope.md is the thin verdict only. The hard constraints, the Non-goals/out-of-scope list, and the pricing are NOT carried into scope.md — they are owned downstream by nfr.md / product.md and stay in the brief. scope.md re-asks nothing the brief answered and restates no brief sentence.",
+      "files": [],
+      "assertions": [
+        {"text": "scope.md does NOT contain a ## Constraints section — hard constraints stay in the brief (nfr.md owns the sharpened form)"},
+        {"text": "scope.md does NOT contain a ## Out of scope list — Non-goals stay in the brief (product.md owns out-of-scope)"},
+        {"text": "scope.md contains NO pricing or business-model fact"},
+        {"text": "Re-asks ZERO questions the brief already answered (persona, JTBD, integrations not re-derived)"},
+        {"text": "Writes the thin verdict to ./spec/scope.md (file-only)"}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "sprawling-suite-refuses-verdict-gives-wedges",
+      "prompt": "(A ./spec/brief.md is present describing a full NIS2 compliance management suite for EU mid-market companies: risk management, audit support across all 27 national transpositions, evidence collection, multi-role workflows for CISO + auditor + department heads, configurable reporting per regulator.) Scope the MVP.",
+      "expected_output": "Tier 🔴. Counts multiple sprawl flags (regulatory drift, parity incumbents, multi-role branching, audit/evidence variance, configurable value-prop). Does NOT write a verdict sketch. Emits exactly 3 wedge proposals, each with narrower persona + single use-case + standalone-sellability + a 3-use-case test. Lint-clean.",
+      "files": [],
+      "assertions": [
+        {"text": "Assigns tier 🔴 (sprawling)"},
+        {"text": "Names the sprawl flags hit (regulatory drift, multi-role branching, audit/evidence variance, configurable, parity incumbents)"},
+        {"text": "Does NOT emit a verdict sketch"},
+        {"text": "Emits exactly 3 wedge proposals, each with narrower persona + single use-case + standalone-sellability"},
+        {"text": "Each wedge includes its own 3-use-case test"},
+        {"text": "Output is lint-clean: concise, no marketing filler"}
+      ]
+    }
+  ]
+}

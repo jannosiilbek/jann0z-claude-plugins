@@ -16,20 +16,26 @@ Add the marketplace once, then install the plugin:
 
 | Plugin | What it does |
 |--------|--------------|
-| [`napkin`](plugins/napkin) | Turn a napkin-sketch brief into an aligned spec workspace, Gherkin specs, and a live-tested data model |
+| [`napkin`](plugins/napkin) | Turn a raw idea into a validated brief, a buildable-scope verdict, an aligned spec workspace, Gherkin specs, and a live-tested data model |
 
 ### napkin
 
-One end-to-end **spec pipeline** that takes a SaaS idea from a rough brief to
+One end-to-end **spec pipeline** that takes a SaaS idea from a rough dump to
 machine-checkable specs and a schema, with no drift between the stages:
 
 ```
-brief → collect-context → spec/*.md → gherkin → spec/features/ → erd-modeler → spec/data/model.dbml
+idea → idea-brief → spec/brief.md → mvp-scoping → spec/scope.md → collect-context → spec/*.md → gherkin → spec/features/ → erd-modeler → spec/data/model.dbml
 ```
 
-- **collect-context** (+ six `context-*` workers) gathers the upstream context — product,
-  personas, glossary, capability map, RBAC, NFRs — into a flat `spec/` workspace of
-  strictly-templated files, then validates 100% cross-artifact alignment with zero vague text.
+- **idea-brief** interrogates a rough idea dump into a validated, lint-clean `spec/brief.md` — the
+  **business layer**: problem, user, market, pricing, riskiest assumption, build seed, non-goals, every
+  claim tagged fact vs. assumption.
+- **mvp-scoping** reads the brief and judges it into a thin `spec/scope.md` **verdict** — a buildability
+  tier (🟢/🟡/🔴), the 3-use-case test outcome, a feasibility check, and per-integration reachability
+  verdicts — consuming the brief without restating it.
+- **collect-context** (+ six `context-*` workers) reads the brief and scope, then gathers the upstream
+  context — product, personas, glossary, capability map, RBAC, NFRs — into a flat `spec/` workspace of
+  strictly-templated files, and validates 100% cross-artifact alignment with zero vague text.
 - **gherkin** authors and reviews **framework-agnostic Gherkin/BDD specs** from that context:
   declarative single-behavior scenarios, DRY discipline, ubiquitous language, foundation-first
   ordering, and a multi-pass validation checklist (mechanical lint → judgment passes →
