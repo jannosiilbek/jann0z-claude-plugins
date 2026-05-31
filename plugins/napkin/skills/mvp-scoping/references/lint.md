@@ -1,84 +1,100 @@
-# Scope-sketch lint — the intelligent gate before you write `./spec/scope.md`
+# scope.md lint — the gate before you write or edit the feature list
 
-Two things must hold before the artifact leaves the skill: the **tier is honestly assigned** (keyed
-off definiteness + feasibility + sprawl) and the **artifact passes this lint**. Together they are the
-double validation. Lint is a **double pass**: lint the draft, fix every hit, then re-read the whole
-artifact once more clean and confirm zero violations. The lint runs on what you write to
-`./spec/scope.md`.
+`scope.md` is one thing: a list of features, each in the exact same template. The lint exists because
+the list's value is that the rest of the pipeline (and you, on every future curation pass) can trust it
+without re-reading the brief. Every inconsistency, every vague line, every leaked downstream fact is a
+stall later.
 
-This lint is **intelligent, not arithmetic**. Its job is three things — exclude AI slop, demand
-defined (non-vague) structure, and confirm the thing is actually **buildable**. It does **not** gate
-on raw item counts. A large but fully-justified, feasibility-validated, non-vague scope passes; a
-small but inflated, vague, or infeasible one fails. The hard gate is **definiteness + feasibility +
-no slop**.
+Run the lint as a **double pass**: lint the draft (or the one block you just added/edited), fix every
+hit, then re-read clean and confirm zero violations. In Phase 2 you lint the touched block *and* run the
+consistency scan (§2) over the whole file — one drifted block poisons the list.
 
 Run every rule. Any fail → fix and re-run the section.
 
-## 1. No AI slop
-- [ ] No marketing adjectives (revolutionary, seamless, robust, powerful, game-changing).
-- [ ] No narrative preamble, no bottom-line paragraph, no restating the idea back as prose.
-- [ ] No meta-commentary or reframing essays. No hedge-stacks or filler.
+## 1. The feature template (every block, identical)
 
-## 2. Only defined structure (the anti-vagueness gate)
-Every item must be concrete and handoff-ready — the next pipeline step must never have to ask a
-follow-up question about it. **Vagueness, not size, is the failure.**
-- [ ] No `TBD`, no "it depends", no "varies by customer", no "etc." standing in for real content.
-- [ ] Each use-case atomic: one input → one output, screenable, standalone-sellable.
-- [ ] Each integration line names the actual system (e.g. Stripe Billing API, Plaid `/transactions`),
-  not "a payments integration", and states a reachability **verdict** — not a bare name, not a purpose.
-- [ ] If a line cannot be filled without a vague placeholder, the tier is wrong — drop it and
-  re-tier, never pad.
+Each feature is exactly:
 
-## 3. Feasibility — is it actually buildable?
-- [ ] The scope ran through the **Step 3.5 feasibility pass** (web search + common knowledge,
-  optionally a helper agent); the `## Feasibility check` block carries evidenced lines
-  (`intent → verdict → via capability → result`).
-- [ ] Every named integration / data source **exists** and is **self-serve reachable** — a real,
-  available public/programmatic API/feed/webhook/export (not vaporware, deprecated, or
-  partnership/enterprise/closed-beta-gated for a solo builder).
-- [ ] The core capability is achievable on a vibecode stack (CRUD + auth, hosted DB, LLM/text API,
-  file parse/generate, standard third-party APIs, Stripe) — **not** a research project, custom ML
-  training, novel research, real-time/low-latency infra, or hardware dependency.
-- [ ] Required data is accessible (public dataset, user upload, reachable API) — not proprietary with
-  no access path.
-- [ ] The total scope is realistic for one person in days-to-weeks, honoring the brief's Hard
-  constraints — a scope that implies months is a **feasibility** fail, carve the slice tighter.
-- [ ] A **🟢 tier is backed by feasibility evidence.** If any load-bearing integration or the core
-  capability is infeasible (partnership/cost/research/data-gated), the tier is **not** 🟢 — re-tier.
-- [ ] Any intent nothing could settle is marked `feasibility-unconfirmed` and surfaced — never a
-  silent pass.
+```markdown
+### F<n> · <verb-led name, 3–6 words>
+- **Persona:** <one role>
+- **In → Out:** <one input> → <one output>
+- **Feasibility:** <verdict> — <≤6-word evidence>
+```
 
-## 4. Counts are smell-tests, NOT gates
-- [ ] If past ~3 integrations: re-check each item is justified, non-redundant, and
-  feasibility-validated. A justified, feasible, non-vague large scope passes.
-- [ ] Bloat fails only when items are redundant, unjustified, or push the scope past buildable —
-  judged item by item, not by a number.
+- [ ] Header matches `### F<n> · <name>` — `F` + an integer, a `·` separator, then a verb-led name of
+  3–6 words. No marketing adjectives in the name (revolutionary, seamless, smart, powerful, AI-powered).
+- [ ] **Exactly three fields, in this order:** Persona, In → Out, Feasibility. None missing, none extra,
+  no reordering, no stray sub-bullets.
+- [ ] Field labels are written identically everywhere — `**Persona:**`, `**In → Out:**`,
+  `**Feasibility:**` — same bold, same spelling, same colon.
+- [ ] Every `F<n>` number is unique. Numbers are never reused after removal and never renumbered.
 
-## 5. DRY-boundary contract (scope.md is a thin verdict, never a restatement)
-`brief.md` is always consumed. `scope.md` references it by anchor — it never re-transcribes it, and it
-never carries a fact a downstream spec file owns. See PIPELINE.md for the ownership split.
-- [ ] **None of the cut sections appear.** No pricing or business-model fact; no `## Screens`; no
-  `## Data model`; no `## Constraints`; no `## Out of scope for v1`; no `## Context (from brief)`;
-  no standalone persona/JTBD prose block. Any of these → FAIL (the fact is owned downstream).
-- [ ] **No verbatim sentence copied from `brief.md`.** A brief fact is referenced by anchor, not
-  restated. A re-transcribed brief sentence → FAIL.
-- [ ] **No re-derivation that contradicts the brief.** The use-cases, persona framing, and integration
-  candidates trace to the brief, not re-invented against it.
-- [ ] `scope.md` `## Integrations` lines are reachability **verdicts** (self-serve / partnership-gated /
-  cost-gated / data-gated, + optional routing note) — not bare names and not numeric operational limits
-  (those belong to `nfr.md`).
+## 2. Consistency scan (the list reads as one hand)
 
-## 6. Tier honesty + artifact shape
-- [ ] Tier matches **definiteness + feasibility + sprawl**: 🟢 = 3 atomic fully-defined
-  feasibility-validated use-cases + ≤1 sprawl flag; 🟡 = open edges, a feasibility caveat, or moderate
-  sprawl/parity; 🔴 = cannot name 3 clean use-cases, OR an infeasible load-bearing piece, OR high
-  sprawl, OR vague scope.
-- [ ] If 🔴: **no verdict sketch** — 3 **wedge proposals** instead. If 🟢/🟡: the verdict, **no** wedge list.
+- [ ] Every block matches §1. A reader cannot tell which feature was added most recently — same shape,
+  same density, same voice.
+- [ ] Names are parallel in form (all verb-led: "Generate…", "Export…", "Match…") — not a mix of
+  verb-phrases and noun-blobs.
+- [ ] No duplicate features (two blocks with the same In → Out).
 
-## 7. The artifact was written
-- [ ] `./spec/scope.md` was actually written (created `./spec/` if missing; overwritten if it
-  existed). Output is **file-only** — the lint is not satisfied by an in-chat draft.
+## 3. Atomic & defined (the anti-vagueness gate)
+
+Vagueness, not size, is the failure. Each feature must be handoff-ready — the next pipeline step never
+has to ask a follow-up about it.
+
+- [ ] **In → Out is atomic:** contains a literal `→`, one input, one output. No "depending on…", no
+  "and/or" list standing in for branching, no "etc.". If it branches, it's two features — split it.
+- [ ] **Persona is a single named role** traceable to the brief's `## Target user` — never "various
+  users", "anyone", or two roles joined by "and".
+- [ ] **Feasibility is a verdict + evidence**, not a restatement: a verdict word
+  (`self-serve` / `partnership-gated` / `cost-gated` / `data-gated` / `research-gated` /
+  `feasibility-unconfirmed`) then `— <short evidence>`. Never a bare integration name, never a numeric
+  operational limit.
+- [ ] No `TBD`, no "it depends", no "varies by customer". If a field can't be filled without a
+  placeholder, the feature isn't ready — tighten or cut it, never pad.
+
+## 4. Feasibility-validated (is each feature actually buildable?)
+
+- [ ] Each feature ran through the **feasibility pass** (`references/feasibility.md`): every external
+  system it touches exists and is self-serve reachable; the core work is doable on a vibecode stack; the
+  data it needs is accessible.
+- [ ] No feature on the list is silently listed `self-serve` when its load-bearing integration is
+  partnership-/cost-/data-/research-gated. A gated feature is either flagged with the honest verdict (so
+  the user can cut/re-route it) or removed — not disguised.
+- [ ] Any doubt nothing could settle is written `feasibility-unconfirmed — <what to verify>` and
+  surfaced to the user — never a silent pass.
+
+## 5. DRY boundary (the list never carries a downstream-owned fact)
+
+`brief.md` is consumed, not restated. `scope.md` references it by anchor and carries only the feature
+list. See PIPELINE.md for the ownership split.
+
+- [ ] **No restated brief sentence.** A brief fact is referenced by anchor, not re-transcribed.
+- [ ] **None of the cut sections appear:** no pricing or business-model fact; no `## Screens` or UI
+  detail; no `## Data model`; no `## Constraints` / hard-constraints; no `## Out of scope` / Non-goals;
+  no `## Context (from brief)`; no standalone persona/JTBD prose block. Any of these → FAIL (owned
+  downstream).
+- [ ] **No numeric operational limit** (SLA, rate limit, quota, retention window) in any field — those
+  are `nfr.md`'s. Feasibility carries a reachability verdict, not a limit.
+- [ ] Features trace to the brief's core capability / thinnest slice — not re-invented against it, not
+  exceeding the brief's scope boundary.
+
+## 6. No AI slop
+
+- [ ] No marketing adjectives anywhere (revolutionary, seamless, robust, game-changing, cutting-edge).
+- [ ] No narrative preamble or bottom-line essay beyond the one-line file header. No meta-commentary,
+  no hedge-stacks.
+
+## 7. The file was written / edited correctly
+
+- [ ] **Phase 1:** `./spec/scope.md` was actually written (created `./spec/` if missing; overwritten if
+  it existed). Output is file-backed — an in-chat draft does not satisfy the lint.
+- [ ] **Phase 2:** the change was a **single surgical edit** to the named feature only — no other block
+  was reflowed, reformatted, or renumbered. The rest of the file is byte-for-byte unchanged except the
+  target block.
 
 ---
-If you cannot fill a section without "it depends", the tier is wrong. Drop it and re-tier — never pad.
-Size may grow as long as every item is justified, feasible, and non-vague.
+If a feature can't be written in the template without "it depends", it isn't ready. Tighten it or cut
+it — never pad the template to make it fit. Size may grow as long as every feature is atomic, feasible,
+consistent, and non-vague.

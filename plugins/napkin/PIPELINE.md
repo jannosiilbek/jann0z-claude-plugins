@@ -6,7 +6,7 @@ consumes:
 ```
 raw idea
   → idea-brief      → spec/brief.md           (business layer)
-  → mvp-scoping      → spec/scope.md            (buildable-boundary verdict layer)
+  → mvp-scoping      → spec/scope.md            (scoped feature list)
   → collect-context  → spec/*.md (6 files)      (the context spec)   ← reads brief.md always + scope.md if present
   → gherkin          → spec/features/<cap>/*.feature
   → erd-modeler      → spec/data/model.dbml
@@ -27,8 +27,10 @@ and the ownership table all live here.
 - **`brief.md` = WHY + WHO-PAYS.** Problem, user, opportunity, current alternative, wedge, market,
   why-now, business-model/pricing-origin (new-venture briefs only), riskiest assumption, the Build
   seed as *direction*, and Non-goals as *origin*. Every claim tagged `[fact|assumption]` + provenance.
-- **`scope.md` = IS-IT-BUILDABLE.** A thin verdict: tier · 3-use-case test outcome · sprawl/parity
-  verdict · feasibility check · per-integration reachability verdicts · (only if 🔴) wedge proposals.
+- **`scope.md` = WHAT-V1-DOES, IS-IT-BUILDABLE.** A curated **feature list**: one `### F<n>` block per
+  feature, each with a Persona, an atomic In → Out, and a per-feature **Feasibility** verdict
+  (self-serve / partnership-gated / cost-gated / data-gated / research-gated). No tier badge, no sprawl
+  score, no wedge proposals — sprawl is cured by curating the list down, not by stamping a verdict.
   It **references** the brief by anchor; it carries **no** pricing, **no** business-fact sentence,
   **no** screens, **no** data model, **no** `## Constraints`, **no** out-of-scope list, **no**
   `## Context (from brief)` block — each of those is owned elsewhere.
@@ -40,7 +42,7 @@ and the ownership table all live here.
 ```
 spec/
   brief.md            # idea-brief output — the business layer                 (idea-brief)
-  scope.md            # mvp-scoping output — the buildable-boundary verdict     (mvp-scoping)
+  scope.md            # mvp-scoping output — the scoped feature list             (mvp-scoping)
   glossary.md         # ubiquitous language + enums                            (context-glossary)
   product.md          # value prop, pricing, in/out-of-scope, success metric    (context-product)
   personas.md         # actors + jobs/roles                                     (context-personas)
@@ -62,15 +64,14 @@ sentence.
 
 | Fact | Owner | Consumers (cite / reference, never restate) |
 |------|-------|---------------------------------------------|
-| Problem statement | `brief.md` `## Problem` | scope.md (the JTBD the 3-use-case test runs against — reference); product.md (problem framing — derive) |
-| Target user/buyer + segment + market size/reachability | `brief.md` (`## Target user`, `## Market & segment`, `## Market size / reachability`) | scope.md sprawl-scan input (consume, don't store); personas.md derives spec actors; product.md target-segment line |
+| Problem statement | `brief.md` `## Problem` | scope.md (the JTBD the features cover — reference); product.md (problem framing — derive) |
+| Target user/buyer + segment + market size/reachability | `brief.md` (`## Target user`, `## Market & segment`, `## Market size / reachability`) | scope.md per-feature Persona + curation-signals input (consume, don't store); personas.md derives spec actors; product.md target-segment line |
 | Underlying need / opportunity | `brief.md` `## Opportunity (the need)` | product.md value proposition (derive, never copy the sentence) |
 | Why-now (timing trigger) | `brief.md` `## Why now` | scope.md feasibility context (reference by anchor only) |
 | Riskiest assumption (+ verification log) | `brief.md` `**Riskiest assumption:**` / `## Verification log` | scope.md feasibility pass (reference by anchor; never reproduce) |
 | Business-model thesis — who pays, rough price, monetisation (**new-venture briefs only; absent for extensions**) | `brief.md` `## Business model` *(conditional)* | product.md derives concrete numeric tiers when present; else product.md originates pricing via its concrete-or-ask gate. **NEVER in scope.md.** |
-| **Per-integration reachability VERDICT** (self-serve / partnership-gated / cost-gated / data-gated + routing note) | **`scope.md` `## Integrations`** | collect-context guardrail (capability-map must not spec a capability whose sole enabler is non-self-serve). The integration NAME is owned by glossary when it is a domain noun; scope cites it. |
-| **Tier verdict (🟢/🟡/🔴)** | **`scope.md`** | collect-context ONLY, once, as a GATE (🔴 ⇒ sharpen the brief before authoring). **No artifact downstream of collect-context may cite the tier — it is a gate signal, not a fact.** |
-| **3-use-case test outcome** (passed / caveats / failed + the 3 named lines) + sprawl-flag scan + feasibility check + (if 🔴) wedge proposals | **`scope.md`** | capability-map cites the test outcome as a **seed** (not an authoritative use-case list); the human |
+| **Scoped feature list** (one `### F<n>` block per feature: verb-led name + Persona + atomic In → Out) | **`scope.md` `## Scoped features`** | capability-map cites the feature list as a **seed** (not an authoritative capability/feature set); the human curates it via mvp-scoping (add/remove/refine/split) |
+| **Per-feature reachability VERDICT** (`self-serve` / `partnership-gated` / `cost-gated` / `data-gated` / `research-gated`) | **`scope.md`** each feature's `**Feasibility:**` field | collect-context guardrail (capability-map must not spec a capability whose sole enabler is a non-self-serve feature). The integration NAME is owned by glossary when it is a domain noun; scope cites it. |
 | Domain terms + definitions + type + ERD-entity flag; enum/status value sets; Role definitions; forbidden synonyms; integration system names that are domain nouns | `glossary.md` | every spec file; gherkin steps; erd tables/enums; personas Roles; rbac columns/resources; scope.md cites integration names |
 | Value proposition; **pricing tiers + numeric limits**; MVP **in/out-of-scope** (the build boundary); success metric | `product.md` | gherkin scope/pricing/quota scenarios; capability-map (every capability traces to in-scope); erd Plan/Subscription |
 | Actors + jobs-to-be-done + goals/pains; the Role each persona holds; external/unauth actor flags | `personas.md` | gherkin `As a <role>`; capability-map personas served |
@@ -86,10 +87,10 @@ sentence.
 
 | Upstream seed (in `brief.md`) | Canonical in-chain owner | Rule |
 |---|---|---|
-| `- **Key inputs / integrations:**` | `scope.md ## Integrations` (the *verdict*) + `glossary.md` (the *name*) | brief names candidates; scope validates reachability (verdict only); glossary owns any name that is a domain noun |
+| `- **Key inputs / integrations:**` | `scope.md` per-feature `**Feasibility:**` (the *verdict*) + `glossary.md` (the *name*) | brief names candidates; scope validates reachability per feature (verdict only); glossary owns any name that is a domain noun |
 | `- **Hard constraints:**` | `nfr.md` (sharpened to assertable invariant or labelled build constraint) | scope.md has **no** `## Constraints`; nfr.md is the **sole sharpener** and reads brief directly |
 | `## Non-goals` | `product.md` out-of-scope | scope.md has **no** out-of-scope list; product.md is the build boundary and **must carry every Non-goal** (append, never drop) |
-| `- **Core capability:**` + `- **Thinnest first slice:**` | `capability-map.md` (+ gherkin for behavior) | scope.md has **no** Screens and **no** authoritative use-case list; the 3-use-case test *outcome* seeds capability-map |
+| `- **Core capability:**` + `- **Thinnest first slice:**` | `capability-map.md` (+ gherkin for behavior) | scope.md has **no** Screens and **no** authoritative capability set; the *scoped feature list* seeds capability-map |
 | Problem / Target user / Why-now / Riskiest assumption | `brief.md` | scope.md has **no** `## Context (from brief)` — collect-context and scope read brief.md directly |
 
 ## Brief → scope contract (consume, don't re-derive)
@@ -98,8 +99,9 @@ sentence.
 re-ask, re-interrogate, or silently regenerate a different value for anything the brief settled
 (problem, user, wedge, core capability, integrations, constraints, non-goals). It carries brief facts
 as *input to its judgement*, **referencing them by anchor — never re-transcribing a brief sentence
-into scope.md**. mvp-scoping **derives** only what it owns (table above): the tier, the 3-use-case
-test outcome, the sprawl scan, the feasibility pass, and the per-integration verdicts.
+into scope.md**. mvp-scoping **derives** only what it owns (table above): the scoped feature list and
+each feature's feasibility verdict. It runs in two phases — scope (derive the list from the brief, then
+stop) and curate (add/remove/refine/split one feature at a time, surgically, in the same template).
 
 ## Brief field anchors (verbatim parse contract)
 
@@ -121,25 +123,28 @@ provenance must survive (a riskiest-assumption reference).
 **Build-seed sub-field labels (bold list items):** `- **Core capability:**` ·
 `- **Key inputs / integrations:**` · `- **Hard constraints:**` · `- **Thinnest first slice:**`
 
-**Wedge has two senses.** The brief's `## Wedge` is the *narrow first use-case* (an input, present on
-every brief). A mvp-scoping *wedge proposal* is a *standalone-sellable carved cut* generated only for
-🔴 ideas (an output). Same word, two layers; the brief owns the input sense.
+**Wedge.** The brief's `## Wedge` is the *narrow first use-case* (an input, present on every brief);
+the brief owns it. mvp-scoping no longer emits "wedge proposals" — when an idea is too broad to scope,
+it asks the user to narrow the brief (persona / sector / core job) rather than stamping a verdict.
 
 ## Cross-cutting assertions (lint/alignment enforce these)
 
 1. **No business facts in scope.md.** No pricing, no business-model line. (mvp lint.)
 2. **scope.md restates nothing.** No verbatim sentence copied from brief.md — references by anchor only.
-3. **scope.md `## Integrations` are verdicts**, not bare names and not numeric operational limits.
-4. **Tier is a gate signal, not a citable fact.** Nothing downstream of collect-context references it.
+3. **Every scope.md feature is the strict template** — `### F<n> · name` + `**Persona:**` +
+   atomic `**In → Out:**` + `**Feasibility:**` (a reachability verdict, not a bare name and not a
+   numeric operational limit). Numbers are stable: never reused after removal, never renumbered.
+4. **scope.md carries no tier, no sprawl score, no wedge proposals.** Sprawl is cured by curating the
+   list down; a too-broad idea sends the user back to narrow the brief.
 5. **product.md owns out-of-scope and carries every brief `## Non-goals` item** (append, never drop) —
    enforced by an alignment check.
 6. **nfr.md is the sole constraint-sharpener**, reads brief directly, and owns non-Gherkin
    architectural/build constraints (offline/on-prem/determinism/no-egress) in a labelled category —
    never silently dropping a founder-vetted constraint.
-7. **capability-map does not own a "use-case set."** Named jobs live in personas.md; scope's test
-   outcome only seeds.
+7. **capability-map does not own a "feature set."** Named jobs live in personas.md; scope's feature
+   list only seeds.
 8. **No double feasibility work.** idea-brief verifies feasibility on brief-named integrations; scope
-   re-checks only integrations it newly introduces.
+   re-checks only features/integrations it newly introduces.
 9. **One ownership table.** This file is the only ownership/anchor authority — no second table anywhere.
 
 ## Reference rules (collect-context → gherkin → erd)

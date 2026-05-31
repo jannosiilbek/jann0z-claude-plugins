@@ -20,11 +20,14 @@ alignment is not alignment.
   assumption, Build seed, Non-goals). Read it if present, otherwise use the brief given inline. This is
   the source for product framing + pricing (`context-product`), Non-goals → out-of-scope
   (`context-product`), and the Build-seed Hard constraints (`context-nfr`).
-- **`spec/scope.md`** — the buildable-boundary verdict, if present (mvp-scoping's output): the **tier**,
-  the **3-use-case test outcome** (seeds the capability map), the **feasibility check**, and
-  **per-integration reachability verdicts**. A **🔴 tier gates authoring** — stop and sharpen the brief
-  before writing the context layer. Don't spec a capability whose sole enabler is a non-self-serve
-  integration. If `scope.md` is absent, proceed from the brief alone.
+- **`spec/scope.md`** — the **scoped feature list**, if present (mvp-scoping's output): a curated list
+  of `### F<n>` features, each with a Persona, an atomic In → Out, and a per-feature **Feasibility**
+  verdict (self-serve / partnership-gated / cost-gated / data-gated / research-gated). The feature list
+  **seeds the capability map** (it is a richer seed than a raw use-case list, but still a seed — not an
+  authoritative capability set). Each feature's Feasibility verdict is the integration-reachability
+  signal: **don't spec a capability whose sole enabler is a non-self-serve feature.** If a feature is
+  feasibility-gated, treat it as a flag to sharpen the brief before authoring around it. If `scope.md`
+  is absent, proceed from the brief alone.
 
 scope.md carries no business facts and restates nothing from the brief — read each artifact for what it
 owns (per PIPELINE.md), never expect a fact in both.
@@ -45,7 +48,8 @@ between alternatives are NOT a context artifact — they live in the gherkin per
 ## Workflow
 
 1. **Read the upstream artifacts** — `spec/brief.md` (if present, else the inline brief) and
-   `spec/scope.md` (if present). If `scope.md`'s tier is **🔴**, stop and sharpen the brief before
+   `spec/scope.md` (if present). If `scope.md` has any feasibility-gated feature, or its feature list is
+   too thin/vague to author capabilities from, stop and sharpen the scope (re-run mvp-scoping) before
    authoring. Locate or create the flat `spec/` root.
 2. **Author in dependency order**, each via its skill — re-read the skill before each:
    `context-glossary` (seed) → `context-product` → `context-personas` →
