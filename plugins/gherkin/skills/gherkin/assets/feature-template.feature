@@ -3,8 +3,8 @@
 # Out-of-scope: <what it deliberately does NOT cover — stops scope creep>
 # Prior decisions: <architecture/UX choices already made — don't re-decide>
 # Acceptance criteria: <what "done" means>
-# Depends on: <../other/feature.feature, if any>
-@capability:<name> @REQ-<id>
+# Depends on: <../<capability>/<primary>.feature — the depended-on capability's Primary feature file from capability-map.md; omit if none>
+@capability:<kebab>
 Feature: <Capability name>
 
   In order to <value>

@@ -4,6 +4,37 @@ Run the passes in order, cheapest/most-mechanical first; each later pass assumes
 previous passed. Spend human/LLM judgment only on passes 3–7. Output a findings report:
 for each issue give the anti-pattern name, the offending location, and a concrete fix.
 
+## Pass 0 — Spec conformance
+
+Validates the spec→feature handoff. Do **not** re-run the six-file intra-spec alignment
+checks here — those passed upstream in `collect-context`; this pass only confirms the
+features consume the context faithfully.
+
+- **Capability coverage:** every `spec/features/<capability>/` folder maps to a
+  `capability-map.md` row, and every in-scope capability has a folder.
+- **Dependency integrity:** every `# Depends on:` path resolves to a file that exists, and
+  matches the depended-on capability's Primary feature file in `capability-map.md`. No
+  synthesized `<cap>/<cap>.feature`; `@prereq` mirrors each dependency.
+- **Glossary fidelity:** every domain noun and enum/state value — in a scenario **or in the
+  Feature narrative** (`In order to / As a / I want`) — appears in `spec/glossary.md`
+  verbatim: no forbidden synonym, no re-spelled enum value. (Connective English in a title,
+  e.g. "when the role is Agent", is not a term reference — only the value `Agent` must match.)
+- **Scope:** no scenario specifies a `product.md` Out-of-scope item.
+- **Provenance (PIPELINE.md rule 7):** every feature's behavior traces to its
+  `capability-map.md` row and every domain noun to `spec/glossary.md`. A feature that
+  introduces an un-owned domain concept (an entity/notification/capability no spec file
+  owns) is drift — add it to the spec first, never smuggle it in.
+- **RBAC coverage:** every `rbac-matrix.md` cell for an in-scope Resource has a scenario —
+  allowed cell → a permitted-action scenario, denied cell → a negative "forbidden when the
+  role is X" scenario; row conditions appear as `Given`s. **Fix:** add the missing scenario.
+- **NFR coverage (by taxonomy — see PIPELINE.md rule 4):** every **behavioral** `nfr.md`
+  invariant is asserted — tenant isolation as a cross-cutting `Then`, subscription gating as
+  trial-expiry/lapsed scenarios, each audit-recording invariant as a scenario, each
+  data-lifecycle event (erasure-on-deletion, anonymization) as a scenario, auth flows and
+  in-app limits as scenarios; a missing one = uncovered behavior. **Operational** invariants
+  (those marked `(operational)` — see PIPELINE.md rule 4) are acknowledged as out-of-scenario,
+  not counted as a coverage miss.
+
 ## Pass 1 — Mechanical lint gate
 
 Run the bundled config: `npx gherkin-lint -c plugins/gherkin/skills/gherkin/assets/gherkin-lintrc <path>`
@@ -36,7 +67,7 @@ Vale prose lint over the `.feature` files (`assets/vale/`).
 - **Anti-pattern: imperative/UI-tour steps** → couples to UI, buries intent. **Fix:** raise
   to declarative intent; push mechanics into step defs.
 - **Anti-pattern: vocabulary drift** → breaks shared understanding + reuse. **Fix:** one
-  concept/one term; update the glossary.
+  concept/one term; align to `spec/glossary.md`.
 - **Anti-pattern: placeholder filler** (`foo`/`bar`) → **Fix:** realistic example data.
 
 ## Pass 5 — Deterministic & independent
@@ -47,8 +78,10 @@ and checkable; no real clock/random/network ordering or shared mutable fixtures.
   self-contained `Given` per scenario; never chain scenarios.
 - **Anti-pattern: bloated Background / hidden setup** → couples unrelated scenarios.
   **Fix:** limit to ~3–4 shared `Given`s; push scenario-specific setup into the scenario.
-- **Anti-pattern: vague / non-observable `Then`** (`it works`) → asserts nothing. **Fix:**
-  state an observable outcome (`a confirmation email is sent to admin@example.com`).
+- **Anti-pattern: vague / non-observable `Then`** (`it works`, or a bare
+  `is changed`/`is updated` that passes for any mutation or none) → asserts nothing.
+  **Fix:** state an observable outcome with the after-value (`the Seat count is 6`,
+  `a confirmation email is sent to admin@example.com`).
 
 ## Pass 6 — Coverage via Example Mapping
 

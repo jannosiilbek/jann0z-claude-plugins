@@ -10,7 +10,7 @@
   "no-unused-variables": "on",
   "no-scenario-outlines-without-examples": "on",
   "no-superfluous-tags": "on",
-  "indentation": ["on", { "Feature": 0, "Scenario": 2, "Step": 4, "Examples": 4, "example": 6 }],
+  "indentation": ["on", { "Feature": 0, "Background": 2, "Scenario": 2, "Step": 4, "Examples": 4, "example": 6 }],
   "max-scenarios-per-file": ["on", { "maxScenarios": 12 }],
   "scenario-size": ["on", { "steps-length": { "Background": 4, "Scenario": 10 } }],
   "file-name": ["on", { "style": "kebab-case" }]
