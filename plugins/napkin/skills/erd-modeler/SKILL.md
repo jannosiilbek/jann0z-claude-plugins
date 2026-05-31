@@ -65,10 +65,14 @@ model using this output template:
   PK (it scopes every row), ahead of the scalar attributes.
 - Every column has an **explicit type**. Add `not null` for mandatory columns; omit it
   for optional ones.
-- Primary key: prefer a surrogate `id` (`int`/`bigint`/`uuid`) marked `[pk]`. Use a
-  natural key only when it is genuinely stable.
-- Foreign key columns are named `<referenced_singular>_id` and typed to match the
-  referenced PK. Express the link inline with `[ref: > target_table.id]`, and record the
+- Primary key: **always a TypeID** — a `text` column `id [pk]`, application-generated and
+  type-prefixed (Stripe-style, UUIDv7-based, e.g. `order_01h2x...`): self-describing in
+  logs/URLs, k-sortable, non-enumerable, and FK/PK types can never silently mismatch.
+  Record the table's prefix in a `Note`. Never use an `int`/`serial`/`bigint` identity or a
+  raw `uuid` as the PK; a natural key may exist only as an extra `[unique, not null]`
+  attribute. (Rationale and prefix rules: `references/metamodel.md`.)
+- Foreign key columns are named `<referenced_singular>_id` and typed `text` to match the
+  referenced TypeID PK. Express the link inline with `[ref: > target_table.id]`, and record the
   chosen ON DELETE policy as a trailing comment — `// ON DELETE CASCADE` /
   `SET NULL` / `RESTRICT` (DBML has no native ON DELETE syntax, so this comment is how
   the policy survives in the source-of-truth `.dbml`).
@@ -91,7 +95,8 @@ test run (e.g. `/tmp/erd-test-<n>/` or a `.erd-test/` subdir). In summary:
 
 1. **Generate `schema.sql`** — convert the validated DBML to Postgres DDL.
 2. **Generate `seed.sql`** — realistic simulation data covering every relationship and
-   edge case (and reset IDENTITY sequences after seeding explicit ids).
+   edge case (supply an explicit, prefixed TypeID string `id` for every row — text PKs
+   have no DB default).
 3. **Generate `usecases.sql`** — one labeled, asserting query per business use-case,
    using the **closed assertion grammar** (`error ~ <reason>`, `rowcount=`, `rows=`,
    `value=`, `col:=`). Meet the **coverage floor**: ≥1 write and ≥1 negative test, and

@@ -18,7 +18,37 @@ decoration on top of these six concepts.
 
 **Type notes:** use `timestamptz` for timestamps (the DDL conversion maps `timestamp`
 → `timestamptz`); use `numeric(p,s)` (e.g. `numeric(12,2)`) for money/amounts — **never**
-`float`/`double`, which corrupt the aggregates the live-test checks.
+`float`/`double`, which corrupt the aggregates the live-test checks. Every PK and every FK
+is `text` (a TypeID — see below).
+
+## Primary keys: always a TypeID
+
+Every entity's PK is a **TypeID** — a `text`, application-generated, type-prefixed
+identifier in the Stripe style (`order_01h2x3...`): a Crockford-base32 UUIDv7 (26-char
+suffix) behind a short lowercase prefix that names the type. This is an opinionated
+convention, **not** a normalization rule (a `text` surrogate key is exactly as valid as an
+`int` one under 1NF–3NF) — adopt it because:
+
+- **Self-describing** — `order_01h2x...` is unambiguous in logs, URLs, and API payloads,
+  and the prefix makes it impossible to silently pass a `customer_` id where an `order_`
+  id is expected.
+- **k-sortable** — the UUIDv7 timestamp prefix means new ids sort near the end of the
+  index, giving good B-tree locality (unlike random UUIDv4).
+- **Non-enumerable** — ids don't leak row counts or growth rate and can't be guessed
+  (no IDOR-by-incrementing).
+- **Generatable anywhere** — client, service, or DB, with no central sequence, so it
+  works across distributed / offline / optimistic-insert flows.
+
+Cost to accept knowingly: a `text` id is ~26–90 bytes vs 8 (`bigint`) / 16 (`uuid`), and
+every FK and secondary index inherits that width. We store the full string (the most
+debuggable option) and let the **application** generate it (Go/TS/Python/… TypeID
+libraries, or the `typeid-sql` Postgres functions for a DB-side default).
+
+**Prefix rules:** lowercase `[a-z_]`, starts and ends with a letter, ≤ 63 chars — use the
+entity's singular glossary name (`user`, `order_item`). Record each table's prefix in a
+`Note`. Enforcing the prefix with a DB `CHECK (id LIKE 'order\_%')` is optional
+belt-and-suspenders (live-testable via `error ~ check`) but adds churn to every seed and
+write and can't validate the 26-char suffix anyway, so a `Note` is the default.
 
 A relationship is fully described by its cardinality **and** the participation of each
 end. "An order must belong to exactly one customer; a customer may have zero or more
@@ -31,17 +61,17 @@ optional-many (`0..*`).
 
 ```dbml
 Table orders {
-  id          int       [pk]                    // surrogate primary key
+  id          text      [pk]                    // TypeID primary key (text, app-generated)
   order_no    varchar   [unique, not null]      // natural unique attribute
   status      order_status [not null, default: 'pending']
-  customer_id int       [not null, ref: > customers.id]  // FK, many-to-one
+  customer_id text      [not null, ref: > customers.id]  // FK, many-to-one
   created_at  timestamp [not null, default: `now()`]
 
   indexes {
     customer_id
   }
 
-  Note: 'A single customer order.'
+  Note: 'A single customer order. TypeID prefix: order'
 }
 ```
 
@@ -55,7 +85,6 @@ Table orders {
 | `[ref: > t.c]` | foreign key reference (this column is the many side) |
 | `[default: ...]` | default value (`` `now()` `` for expressions) |
 | `[note: '...']` | inline documentation |
-| `[increment]` | auto-increment |
 
 ### Relationship operators
 
@@ -83,9 +112,9 @@ DBML has **no** native ON DELETE syntax, but the model still needs to carry the 
 (the live-test proves it). Record it as a trailing `//` comment on the FK column:
 
 ```dbml
-order_id   int [not null, ref: > orders.id]    // ON DELETE CASCADE  (owned child)
-manager_id int [ref: > employees.id]           // ON DELETE SET NULL (optional)
-customer_id int [not null, ref: > customers.id] // ON DELETE RESTRICT (blocking ref)
+order_id    text [not null, ref: > orders.id]     // ON DELETE CASCADE  (owned child)
+manager_id  text [ref: > employees.id]            // ON DELETE SET NULL (optional)
+customer_id text [not null, ref: > customers.id]  // ON DELETE RESTRICT (blocking ref)
 ```
 
 The DDL conversion (live-testing.md §1) turns each comment into the matching
@@ -113,22 +142,22 @@ FK `not null`:
 
 ```dbml
 Table students {
-  id    int     [pk]
+  id    text    [pk]   // TypeID prefix: student
   email varchar [unique, not null]
 }
 
 Table courses {
-  id    int     [pk]
+  id    text    [pk]   // TypeID prefix: course
   title varchar [not null]
 }
 
 Table enrollments {
-  student_id  int       [not null, ref: > students.id]
-  course_id   int       [not null, ref: > courses.id]
+  student_id  text      [not null, ref: > students.id]
+  course_id   text      [not null, ref: > courses.id]
   enrolled_at timestamp [not null, default: `now()`]
 
   indexes {
-    (student_id, course_id) [pk]   // composite primary key
+    (student_id, course_id) [pk]   // composite PK (both FKs are text TypeIDs)
   }
 }
 ```
