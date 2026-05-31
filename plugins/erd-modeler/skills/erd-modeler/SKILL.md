@@ -16,7 +16,7 @@ even for a "simple" model.
 
 ### 1. Understand the domain
 
-**If a `spec/` workspace exists** (the `spec` plugin's output — read its `PIPELINE.md`),
+**If a `spec/` workspace exists** (the `napkin` plugin's output — read its `PIPELINE.md`),
 do **structured intake**, not prose extraction:
 
 - **`spec/glossary.md`** — every term flagged `Maps to: ERD: <Entity>` is a table; use the

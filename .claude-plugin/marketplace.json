@@ -10,8 +10,8 @@
   },
   "plugins": [
     {
-      "name": "spec",
-      "source": "./plugins/spec",
+      "name": "napkin",
+      "source": "./plugins/napkin",
       "description": "Collect the upstream context a SaaS spec needs (product, personas, glossary, capability map, RBAC, NFRs) as flat, strictly-templated spec/ files, then validate 100% cross-artifact alignment with zero vague text. Feeds Gherkin authoring and ERD modeling."
     },
     {
