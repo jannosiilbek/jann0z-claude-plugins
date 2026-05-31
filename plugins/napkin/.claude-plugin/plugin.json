@@ -1,11 +1,11 @@
 {
   "name": "napkin",
   "version": "0.1.0",
-  "description": "Collect the upstream context a SaaS spec needs — product, personas, glossary, capability map, RBAC, NFRs — as flat, strictly-templated files at a spec/ root, then validate 100% cross-artifact alignment with zero vague text. Feeds Gherkin spec authoring and ERD modeling.",
+  "description": "End-to-end spec pipeline: collect a SaaS app's context (product, personas, glossary, capability map, RBAC, NFRs) into a flat spec/ workspace, author framework-agnostic Gherkin/BDD specs from it, and design + live-test a normalized DBML data model — one aligned, drift-free flow from brief to features to schema.",
   "author": {
     "name": "janno",
     "email": "janno.siilbek@gmail.com"
   },
   "license": "MIT",
-  "keywords": ["spec", "spec-driven-development", "context", "saas", "personas", "glossary", "rbac", "ubiquitous-language", "gherkin", "erd"]
+  "keywords": ["spec", "spec-driven-development", "context", "saas", "personas", "glossary", "rbac", "ubiquitous-language", "gherkin", "bdd", "cucumber", "erd", "dbml", "data-model"]
 }

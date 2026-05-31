@@ -9,7 +9,7 @@ banned-term substitution, and tense/voice. Optional — `review.md` Pass 4 works
 2. Point a `.vale.ini` at this folder as a `StylesPath` and enable the `Gherkin` style:
 
    ```ini
-   StylesPath = plugins/gherkin/skills/gherkin/assets/vale
+   StylesPath = plugins/napkin/skills/gherkin/assets/vale
    [*.feature]
    Gherkin.Terminology = YES
    ```
