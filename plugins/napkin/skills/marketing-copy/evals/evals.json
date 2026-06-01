@@ -1,0 +1,43 @@
+{
+  "skill_name": "marketing-copy",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I've got a spec/ folder for LatePay (brief, scope, product, personas, positioning). Write the landing page copy.",
+      "expected_output": "spec/copy/landing.md following references/landing.md: hero (headline+subhead+CTA), problem, benefit blocks per messaging pillar, how-it-works, differentiation, objection handling, final CTA, 2-3 headline/CTA alternatives, meta block. Every claim traces to a spec fact; price exactly $15/mo if mentioned; no invented metrics (proof OPEN markers ok); voice matches positioning.md; no banned fluff.",
+      "files": [],
+      "assertions": [
+        {"text": "Writes to spec/copy/landing.md", "type": "manual"},
+        {"text": "Any price stated is exactly $15/mo (matches product.md); no invented price", "type": "manual"},
+        {"text": "No fabricated metric/testimonial/customer; proof gaps left as OPEN markers", "type": "manual"},
+        {"text": "Every promised capability is a real scope.md feature (no roadmap-as-fact)", "type": "manual"},
+        {"text": "No banned fluff words (seamless/powerful/intuitive/game-changing/etc.)", "type": "manual"},
+        {"text": "CTAs are action+outcome, not bare 'Sign up'/'Submit'", "type": "manual"},
+        {"text": "Provides 2-3 headline alternatives annotated with their angle", "type": "manual"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Write a welcome email sequence for new LatePay signups.",
+      "expected_output": "spec/copy/email.md with a sequence overview + 5-7 emails, each with subject (+alts), preview text, body, one CTA, and a why-annotation tied to a positioning pillar/objection. Fact-faithful; on-voice; one job per email.",
+      "files": [],
+      "assertions": [
+        {"text": "Writes to spec/copy/email.md as a welcome sequence", "type": "manual"},
+        {"text": "Each email has one primary CTA and a subject 40-60 chars", "type": "manual"},
+        {"text": "Email themes map to positioning messaging pillars/objections", "type": "manual"},
+        {"text": "No invented price/metric; $15/mo if mentioned; proof gaps OPEN", "type": "manual"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Write Google Search ads for LatePay.",
+      "expected_output": "spec/copy/ads.md with a Google RSA: >=8 headlines (<=30 chars), 4 descriptions (<=90 chars), plus 3-5 annotated ad angles. No fabricated claims; on-voice.",
+      "files": [],
+      "assertions": [
+        {"text": "Writes to spec/copy/ads.md with Google RSA structure", "type": "manual"},
+        {"text": "Headlines <=30 chars and descriptions <=90 chars", "type": "manual"},
+        {"text": "No fabricated claim/metric; angles tie to positioning pillars/forces", "type": "manual"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "skill_name": "marketing-positioning",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a spec/ for LatePay (brief, scope, product, personas). Write the marketing positioning before I do copy.",
+      "expected_output": "spec/positioning.md from the template: 11 sections (positioning statement, category, messaging pillars, differentiation, objections, anti-personas, switching forces, customer language, brand voice, proof points, before->after). References brief/product/personas by anchor (no restated sentences). Pillars map to scope features. Differentiation against the named current alternative. Proof real or OPEN. No fluff.",
+      "files": [],
+      "assertions": [
+        {"text": "Writes spec/positioning.md with all 11 sections in order", "type": "manual"},
+        {"text": "No verbatim sentence copied from brief.md/product.md/personas.md (referenced by anchor)", "type": "manual"},
+        {"text": "Every messaging pillar maps to a real scope.md feature / product in-scope item", "type": "manual"},
+        {"text": "Differentiation is against the named current alternative (manual email/basic reminders)", "type": "manual"},
+        {"text": "Proof points are real or marked OPEN (no fabricated metrics/customers)", "type": "manual"},
+        {"text": "No banned fluff words; no <placeholder> left", "type": "manual"}
+      ]
+    }
+  ]
+}
