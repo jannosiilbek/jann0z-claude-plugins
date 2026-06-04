@@ -1,0 +1,29 @@
+// regression-04.dbml — data model for the order/coupon regression domain.
+
+Enum OrderStatus {
+  placed
+  paid
+  shipped
+  delivered
+  cancelled
+  refunded
+}
+
+Enum CouponStatus {
+  issued
+  redeemed
+  expired
+  cleared
+}
+
+Table Order {
+  id integer [primary key]
+  status OrderStatus
+  customer_id integer
+}
+
+Table Coupon {
+  id integer [primary key]
+  status CouponStatus
+  order_id integer
+}
