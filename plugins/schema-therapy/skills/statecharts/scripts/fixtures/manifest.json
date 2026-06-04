@@ -1,0 +1,57 @@
+{
+  "description": "Expected (status, failingCheck, upstreamRoute?, gateRecord?) per shipped fixture, per simulation.md §3.4/§3.5. Each fixture names a `dir` (the 05 directory, possibly nonexistent for the not-emitted cases) and the FIVE upstream files (defaults to the standard mutually-consistent quintuple unless overridden). `failingCheck` is the owner-rule check ID that MUST appear among the harness's failing/malformed checks or error findings for the stated reason; `null` = a clean pass (or a status with no single owner). `args` are extra harness CLI flags. `trap`/`trapOwner`/`trapAlsoPresent` mark the wrong-reason trap. `gateRecord` asserts the gate block's record. `upstreamDefect`/`upstreamDefectFile`/`upstreamDefectElement` mark a §9 upstream-defect routed to the named file. `malformedUpstream` marks an unparseable-upstream quintuple (broken-test). `guardVerified` marks the W-GUARD positive. Standard upstreams: up01=upstream-01.md up02=upstream-02.md up03=upstream-03.md up04dbml=upstream-04.dbml up04tr=upstream-04-transitions.md.",
+  "upstreams": {
+    "up01": "upstream-01.md",
+    "up02": "upstream-02.md",
+    "up03": "upstream-03.md",
+    "up04dbml": "upstream-04.dbml",
+    "up04tr": "upstream-04-transitions.md"
+  },
+  "fixtures": [
+    { "dir": "valid-05", "status": "pass", "failingCheck": null, "gateRecord": "emitted" },
+
+    { "dir": "NONEXISTENT-not-emitted-correct", "up01": "nopass-01.md", "up02": "nopass-02.md", "up04dbml": "nopass-04.dbml", "up04tr": "nopass-04-transitions.md", "status": "pass", "failingCheck": null, "gateRecord": "not-emitted", "notEmittedCorrect": true },
+    { "dir": "NONEXISTENT-not-emitted-wrong", "status": "fail", "failingCheck": "M8", "gateRecord": "not-emitted", "notEmittedWrong": true },
+
+    { "dir": "dir-empty", "status": "fail", "failingCheck": "M1" },
+    { "dir": "bad-filename", "status": "fail", "failingCheck": "M2" },
+    { "dir": "not-wellformed", "status": "malformed", "failingCheck": "M3" },
+    { "dir": "missing-fingerprint", "status": "fail", "failingCheck": "M4" },
+    { "dir": "placeholder-fingerprint", "status": "fail", "failingCheck": "M4" },
+    { "dir": "missing-fifth-upstream", "status": "fail", "failingCheck": "M4" },
+    { "dir": "missing-supersedes", "status": "fail", "failingCheck": "M5" },
+    { "dir": "bad-version", "status": "fail", "failingCheck": "M6" },
+    { "dir": "bad-xmlns", "status": "fail", "failingCheck": "M6" },
+    { "dir": "cond-under-null", "status": "fail", "failingCheck": "M7" },
+
+    { "dir": "unjustified-promotion", "status": "fail", "failingCheck": "M9" },
+    { "dir": "missed-promotion", "status": "fail", "failingCheck": "M8" },
+    { "dir": "non-lifecycle-promoted", "status": "fail", "failingCheck": "M10" },
+
+    { "dir": "extra-state", "status": "fail", "failingCheck": "M11" },
+    { "dir": "missing-state", "status": "fail", "failingCheck": "M11" },
+    { "dir": "missing-04-row", "status": "fail", "failingCheck": "M12" },
+    { "dir": "contradicting-transition", "status": "fail", "failingCheck": "M13" },
+    { "dir": "wrong-initial", "status": "fail", "failingCheck": "M14" },
+    { "dir": "bad-event-token", "status": "fail", "failingCheck": "M19" },
+    { "dir": "roundtrip-mismatch", "status": "fail", "failingCheck": "M19" },
+    { "dir": "duplicate-id", "status": "fail", "failingCheck": "M15" },
+    { "dir": "dangling-target", "status": "fail", "failingCheck": "M16" },
+    { "dir": "unreachable-state", "status": "fail", "failingCheck": "M17" },
+    { "dir": "forbidden-synonym", "status": "fail", "failingCheck": "M20" },
+    { "dir": "restated-04-table", "status": "fail", "failingCheck": "M21" },
+
+    { "dir": "guard-unverified", "status": "fail", "failingCheck": "W-GUARD" },
+    { "dir": "guard-verified", "status": "pass", "failingCheck": null, "guardVerified": true },
+    { "dir": "negative-walk-broken", "status": "fail", "failingCheck": "W-NEG:shipped" },
+
+    { "dir": "wrong-reason-trap", "status": "fail", "failingCheck": "M12", "trap": true, "trapOwner": "M12", "trapAlsoPresent": "M20" },
+
+    { "dir": "valid-05", "status": "broken-test", "failingCheck": null, "vacuous": true, "args": ["--no-checks"] },
+    { "dir": "valid-05", "status": "broken-test", "failingCheck": null, "noEngine": true, "args": ["--no-install", "--force-missing-deps", "/tmp/statecharts-nonexistent-node-modules"] },
+
+    { "dir": "valid-05", "up04tr": "broken-upstream-04-transitions.md", "status": "fail", "failingCheck": "M11", "upstreamDefect": true, "upstreamDefectFile": "04-transitions.md", "upstreamDefectElement": "returned" },
+    { "dir": "valid-05", "up02": "malformed-upstream-02.md", "status": "broken-test", "failingCheck": null, "malformedUpstream": "02" },
+    { "dir": "valid-05", "up04tr": "malformed-upstream-04-transitions.md", "status": "broken-test", "failingCheck": null, "malformedUpstream": "04" }
+  ]
+}

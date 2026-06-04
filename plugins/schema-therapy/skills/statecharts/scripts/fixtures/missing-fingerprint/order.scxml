@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- supersedes: 04-transitions.md#order -->
+<scxml version="1.0" xmlns="http://www.w3.org/2005/07/scxml" datamodel="null" initial="placed">
+  <state id="placed">
+    <!-- 01-event: Order Placed -->
+    <!-- 01-event: Order Paid -->
+    <transition event="order_paid" target="paid"/>
+    <!-- 01-event: Order Cancelled -->
+    <transition event="order_cancelled" target="cancelled"/>
+  </state>
+  <state id="paid">
+    <!-- 01-event: Order Shipped -->
+    <transition event="order_shipped" target="shipped"/>
+    <!-- 01-event: Order Cancelled -->
+    <transition event="order_cancelled" target="cancelled"/>
+  </state>
+  <state id="shipped">
+    <!-- 01-event: Order Delivered -->
+    <transition event="order_delivered" target="delivered"/>
+  </state>
+  <state id="delivered">
+    <!-- 01-event: Order Refunded -->
+    <transition event="order_refunded" target="refunded"/>
+  </state>
+  <final id="cancelled"/>
+  <final id="refunded"/>
+</scxml>

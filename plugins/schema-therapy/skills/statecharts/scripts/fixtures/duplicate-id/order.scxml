@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+  01-event-storming.md@sha256:cf411e5b715d1e4e7614f16e43d2706453c0dd796404090c525728375011a136
+  02-glossary.md@sha256:78bb661aa79f3244a7a21e7b7ef34d63a7b71ac17c16b53f7207a5d70ebb4c79
+  03-aggregates.md@sha256:3c9d8d73fab97751e3e9c13d4fd73f7a5f9966beb629a6e72eb887f7b2151907
+  04-erd.dbml@sha256:baf0732d7895d2dc83d5d1e784108f41406a6036ebe09308431223e00e66a346
+  04-transitions.md@sha256:c84f66dd96cc3b4549c4d6398683ac9c885c5e88e26167f03352020b715c39ea
+-->
+<!-- supersedes: 04-transitions.md#order -->
+<scxml version="1.0" xmlns="http://www.w3.org/2005/07/scxml" datamodel="null" initial="placed">
+  <state id="placed">
+    <!-- 01-event: Order Placed -->
+    <!-- 01-event: Order Paid -->
+    <transition event="order_paid" target="paid"/>
+    <!-- 01-event: Order Cancelled -->
+    <transition event="order_cancelled" target="cancelled"/>
+  </state>
+  <state id="paid">
+    <!-- 01-event: Order Shipped -->
+    <transition event="order_shipped" target="shipped"/>
+    <!-- 01-event: Order Cancelled -->
+    <transition event="order_cancelled" target="cancelled"/>
+  </state>
+  <state id="shipped">
+    <!-- 01-event: Order Delivered -->
+    <transition event="order_delivered" target="delivered"/>
+  </state>
+  <state id="delivered">
+    <!-- 01-event: Order Refunded -->
+    <transition event="order_refunded" target="refunded"/>
+  </state>
+  <final id="cancelled"/>
+  <final id="paid"/>
+</scxml>

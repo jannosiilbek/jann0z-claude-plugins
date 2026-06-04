@@ -1,0 +1,23 @@
+// 04 — ERD (no-gate-passer quintuple: every entity ≤4 states)
+
+Enum order_status {
+  placed
+  paid
+  shipped
+}
+
+Enum coupon_status {
+  issued
+  redeemed
+  expired
+}
+
+Table order {
+  id int [pk]
+  status order_status [not null]
+}
+
+Table coupon {
+  id int [pk]
+  status coupon_status [not null]
+}

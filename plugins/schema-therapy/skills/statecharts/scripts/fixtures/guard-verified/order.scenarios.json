@@ -1,0 +1,20 @@
+[
+  {
+    "datamodel": {
+      "amount": 0
+    },
+    "event": "order_paid",
+    "expectConfig": [
+      "paid"
+    ]
+  },
+  {
+    "datamodel": {
+      "amount": 500
+    },
+    "event": "order_paid",
+    "expectConfig": [
+      "cancelled"
+    ]
+  }
+]

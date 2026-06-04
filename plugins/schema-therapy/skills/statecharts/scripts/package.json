@@ -1,0 +1,16 @@
+{
+  "name": "statecharts-harness",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Executable simulation oracle for schema-therapy artifact 05 (specs/05-statecharts/<entity>.scxml). Pins @scion-scxml/core + @scion-scxml/scxml (the format's own IRP reference SCXML interpreter — the execution oracle) and @dbml/core (to enumerate the 04 status enums + lifecycle entities) per references/simulation.md §1.",
+  "scripts": {
+    "harness": "node harness.mjs",
+    "selftest": "node selftest.mjs"
+  },
+  "dependencies": {
+    "@scion-scxml/core": "2.6.24",
+    "@scion-scxml/scxml": "4.3.27",
+    "@dbml/core": "8.2.5"
+  }
+}
