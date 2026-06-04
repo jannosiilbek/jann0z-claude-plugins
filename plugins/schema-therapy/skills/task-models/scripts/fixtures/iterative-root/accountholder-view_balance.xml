@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       specs/06-gherkin/account.feature        sha256:3f9ac1aa3f9ac1aa3f9ac1aa3f9ac1aa3f9ac1aa3f9ac1aa3f9ac1aa3f9ac1aa
+       specs/07-personas.md                     sha256:11efaa1111efaa1111efaa1111efaa1111efaa1111efaa1111efaa1111efaa11
+-->
+<TaskModel id="accountholder-view_balance"
+           persona="AccountHolder"
+           job="view_balance">
+  <Budget klm="4"/>
+  <Task id="view-balance" category="abstract" iterative="true" operator="enabling">
+    <Task id="open-dashboard" category="interaction"
+          scenario-tags="@transition:open_dashboard"
+          klm="MBB"/>
+    <Task id="read-balance" category="interaction"
+          scenario-tags="@terminal:balance_shown"
+          klm="MH"/>
+  </Task>
+</TaskModel>

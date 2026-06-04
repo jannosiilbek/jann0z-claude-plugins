@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       specs/06-gherkin/onboarding.feature      sha256:b27d90b2b27d90b2b27d90b2b27d90b2b27d90b2b27d90b2b27d90b2b27d90b2
+       specs/07-personas.md                     sha256:11efaa1111efaa1111efaa1111efaa1111efaa1111efaa1111efaa1111efaa11
+-->
+<TaskModel id="teller-open_account"
+           persona="Teller"
+           job="open_account">
+  <Budget klm="7"/>
+  <Task id="open-account" category="abstract" operator="enabling">
+    <Task id="capture-kyc" category="interaction"
+          scenario-tags="@transition:capture_kyc"
+          klm="MH4K"/>
+    <Task id="record-account" category="system"
+          scenario-tags="@terminal:account_opened"
+          klm="W"/>
+  </Task>
+</TaskModel>

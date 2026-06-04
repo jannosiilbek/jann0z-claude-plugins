@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       specs/06-gherkin/order.feature        sha256:e656728752b2cd3189c1188bebe5e70ccaf318e6d9b6f45f63028a8602f129e9
+       specs/06-gherkin/ticket.feature        sha256:3fcf82c1527f843f5c0018422c8263b4709029184db2513c8b235561c13c3099
+       specs/07-personas.md                     sha256:0c557607a179b21eee8d6e3f612a00048e1d32432409f6eff01f12246a4c87e9
+-->
+<TaskModel id="customer-buy_ticket"
+           persona="Customer" job="buy ticket">
+  <Budget klm="6"/>
+  <Task id="buy-ticket" category="abstract" operator="enabling">
+    <Task id="pay-order" category="interaction"
+          scenario-tags="@transition:order"
+          klm="MH2K"/>
+    <Task id="fulfil-payment" category="abstract" operator="enabling">
+      <Task id="settle-payment" category="system"
+            scenario-tags="@policy:POL-1"
+            klm="W"/>
+      <Task id="mark-ticket-sold" category="system"
+            scenario-tags="@transition:ticket"
+            klm="W"/>
+    </Task>
+  </Task>
+</TaskModel>

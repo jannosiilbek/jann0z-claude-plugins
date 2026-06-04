@@ -1,0 +1,47 @@
+{
+  "description": "Expected (status, owner, route, run-mode) tuples for each shipped fixture per simulation.md §3.4/§3.5. `dir` is the 08 directory passed positionally; `up06`/`up07` are the upstream args. `owner` is the check ID that MUST appear among the harness's failing/malformed rejections for the stated reason (the defect's owner-rule check). `status` is the expected status taxonomy value. `route` (when present) is the upstream file an upstream-defect finding must name. `trap:true` marks the wrong-reason trap whose OWNER must be W-BUDGET (the walker isolates over the co-present R-TAG). `vacuous:true`, `malformedUpstream`, and `upstreamDefect` mark the special run-modes. Every negative carries EXACTLY ONE injected defect (a fixture failing for any other reason is itself broken-test).",
+  "fixtures": [
+    { "dir": "valid-08", "up06": "upstream-06", "up07": "upstream-07.md", "status": "pass", "owner": null, "args": [] },
+
+    { "dir": "malformed-xml", "up06": "upstream-06", "up07": "upstream-07.md", "status": "malformed", "owner": "M1", "args": [] },
+
+    { "dir": "missing-fingerprint", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M2", "args": [] },
+    { "dir": "missing-budget", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M5", "args": [] },
+    { "dir": "budget-mismatch", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "W-BUDGET", "args": [] },
+    { "dir": "bad-operator", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M14", "args": [] },
+    { "dir": "bad-category", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M7", "args": [] },
+    { "dir": "bad-klm-token", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M17", "args": [] },
+    { "dir": "m-on-system-leaf", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M19", "args": [] },
+    { "dir": "missing-m-on-interaction-leaf", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M19", "args": [] },
+    { "dir": "single-child-abstract", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M10", "args": [] },
+    { "dir": "operator-on-single-child", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M12", "args": [] },
+    { "dir": "abstract-leaf", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M9", "args": [] },
+    { "dir": "ghost-scenario-tag", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "R-TAG", "args": [] },
+    { "dir": "untagged-leaf", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M21", "args": [] },
+    { "dir": "missing-model", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M-BIJ", "args": [] },
+    { "dir": "extra-model", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M-BIJ", "args": [] },
+    { "dir": "persona-attr-mismatch", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M-ATTR", "args": [] },
+    { "dir": "restated-gherkin-text", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M23", "args": [] },
+    { "dir": "unreachable-leaf", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "W-REACH", "args": [] },
+
+    { "dir": "root-not-taskmodel", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M3", "args": [] },
+    { "dir": "id-not-slug", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M4", "args": [] },
+    { "dir": "multi-root-task", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M6", "args": [] },
+    { "dir": "unknown-attribute", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M8", "args": [] },
+    { "dir": "multi-child-no-operator", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M13", "args": [] },
+    { "dir": "unary-as-operator", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M15", "args": [] },
+    { "dir": "klm-absent-leaf", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M16", "args": [] },
+    { "dir": "bad-multiplier", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M20", "args": [] },
+    { "dir": "iterative-root", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M11", "args": [] },
+
+    { "dir": "wrong-reason-trap", "up06": "upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "W-BUDGET", "trap": true, "trapOwner": "W-BUDGET", "trapNotOwner": "R-TAG", "args": [] },
+
+    { "dir": "valid-08", "up06": "upstream-06", "up07": "upstream-07.md", "status": "broken-test", "owner": null, "vacuous": true, "args": ["--no-checks"] },
+
+    { "dir": "valid-08", "up06": "upstream-06", "up07": "dup-upstream-07.md", "status": "fail", "owner": "M-BIJ", "upstreamDefect": true, "route": "07-personas.md", "args": [] },
+    { "dir": "valid-08", "up06": "bad-upstream-06", "up07": "upstream-07.md", "status": "fail", "owner": "M22", "upstreamDefect": true, "route": "onboarding.feature", "args": [] },
+
+    { "dir": "valid-08", "up06": "upstream-06", "up07": "malformed-upstream-07.md", "status": "broken-test", "owner": null, "malformedUpstream": "07", "args": [] },
+    { "dir": "valid-08", "up06": "malformed-upstream-06", "up07": "upstream-07.md", "status": "broken-test", "owner": null, "malformedUpstream": "06", "args": [] }
+  ]
+}

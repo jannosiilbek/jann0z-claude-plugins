@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       specs/06-gherkin/account.feature        sha256:3f9ac1aa3f9ac1aa3f9ac1aa3f9ac1aa3f9ac1aa3f9ac1aa3f9ac1aa3f9ac1aa
+       specs/07-personas.md                     sha256:11efaa1111efaa1111efaa1111efaa1111efaa1111efaa1111efaa1111efaa11
+-->
+<TaskModel id="accountowner-transfer_funds"
+           persona="AccountOwner"
+           job="transfer_funds">
+  <Budget klm="14"/>
+  <Task id="transfer-funds" category="abstract" operator="enabling">
+    <Task id="choose-account" category="abstract" operator="choice">
+      <Task id="pick-checking" category="interaction"
+            scenario-tags="@transition:select_source_account"
+            klm="MPBB"/>
+      <Task id="pick-savings" category="interaction"
+            scenario-tags="@transition:select_source_account"
+            klm="MPBB"/>
+    </Task>
+    <Task id="capture-amount" category="abstract" iterative="true" operator="enabling">
+      <Task id="enter-amount" category="interaction"
+            scenario-tags="@transition:enter_amount @invariant:INV-Amount-1"
+            klm="MH4K"/>
+      <Task id="verify-amount" category="interaction"
+            scenario-tags="@transition:enter_amount"
+            klm="MH"/>
+    </Task>
+    <Task id="confirm-transfer" category="interaction"
+          scenario-tags="@transition:confirm_transfer @terminal:transfer_posted"
+          klm="MBB"/>
+    <Task id="add-note" category="interaction" optional="true"
+          scenario-tags="@transition:enter_amount"
+          klm="MH4K"/>
+    <Task id="post-ledger-entry" category="system"
+          scenario-tags="@policy:double-entry-ledger"
+          klm="W"/>
+  </Task>
+</TaskModel>

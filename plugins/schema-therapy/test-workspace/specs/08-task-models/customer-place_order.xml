@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       specs/06-gherkin/order.feature        sha256:e656728752b2cd3189c1188bebe5e70ccaf318e6d9b6f45f63028a8602f129e9
+       specs/07-personas.md                     sha256:0c557607a179b21eee8d6e3f612a00048e1d32432409f6eff01f12246a4c87e9
+-->
+<TaskModel id="customer-place_order"
+           persona="Customer" job="place order">
+  <Budget klm="6"/>
+  <Task id="place-order" category="abstract" operator="enabling">
+    <Task id="compose-order" category="abstract" operator="enabling">
+      <Task id="select-tickets" category="interaction"
+            scenario-tags="@invariant:INV-Order-1"
+            klm="MPBB"/>
+      <Task id="submit-order" category="interaction"
+            scenario-tags="@transition:order"
+            klm="MBB"/>
+    </Task>
+    <Task id="record-order-placed" category="system"
+          scenario-tags="@transition:order"
+          klm="W"/>
+  </Task>
+</TaskModel>
