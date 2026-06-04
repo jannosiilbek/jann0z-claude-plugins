@@ -1,0 +1,92 @@
+{
+  "description": "Adversarial selftest manifest for the suite-drift oracle (doctrine §3). Each entry: specsDir (relative to fixtures/), the overall status the oracle MUST report, and `requireFinding` = the {id?, class, reason} that MUST appear among the failing/malformed findings FOR THE STATED REASON (the check-class owner). `requireDetailContains`/`requireDetailNotContains` enforce the wrong-reason trap (the failing finding's detail must name the real defect, not a co-present one). `domain` is the path passed via --domain (relative to fixtures/). `args` are extra CLI args. Mutating an UPSTREAM artifact legitimately cascades staleness onto downstream artifacts — the selftest asserts the PRIMARY finding is present, not that it is the only one.",
+  "good": { "specsDir": "good/specs", "domain": "good/domain.md", "status": "pass" },
+  "fixtures": [
+    {
+      "name": "dangling-resolution",
+      "specsDir": "neg/dangling-resolution/specs",
+      "domain": "good/domain.md",
+      "status": "fail",
+      "requireFinding": { "id": "R-02-enum-derivation", "class": "resolution", "reason": "dangling-derivation" },
+      "requireDetailContains": "Order Settled"
+    },
+    {
+      "name": "restated-shape",
+      "specsDir": "neg/restated-shape/specs",
+      "domain": "good/domain.md",
+      "status": "fail",
+      "requireFinding": { "id": "DRY-01-shape", "class": "dry", "reason": "restated-shape" },
+      "requireDetailContains": "Actors table shape"
+    },
+    {
+      "name": "stale-fingerprint",
+      "specsDir": "neg/stale-fingerprint/specs",
+      "domain": "good/domain.md",
+      "status": "fail",
+      "requireFinding": { "id": "S-03-aggregates.md", "class": "staleness", "reason": "stale" },
+      "requireDetailContains": "STALE"
+    },
+    {
+      "name": "missing-fingerprint",
+      "specsDir": "neg/missing-fingerprint/specs",
+      "domain": "good/domain.md",
+      "status": "malformed",
+      "requireFinding": { "id": "S-03-aggregates.md", "class": "staleness", "reason": "missing-fingerprint" }
+    },
+    {
+      "name": "malformed-fingerprint",
+      "specsDir": "neg/malformed-fingerprint/specs",
+      "domain": "good/domain.md",
+      "status": "malformed",
+      "requireFinding": { "id": "S-03-aggregates.md", "class": "staleness", "reason": "malformed-fingerprint" }
+    },
+    {
+      "name": "unparseable-artifact",
+      "specsDir": "neg/unparseable-artifact/specs",
+      "domain": "good/domain.md",
+      "status": "malformed",
+      "requireFinding": { "id": "M-parse", "class": "malformed", "reason": "unparseable-artifact" }
+    },
+    {
+      "name": "wrong-reason-trap",
+      "specsDir": "neg/wrong-reason-trap/specs",
+      "domain": "good/domain.md",
+      "status": "fail",
+      "requireFinding": { "id": "R-06-tag", "class": "resolution", "reason": "dangling-tag" },
+      "requireDetailContains": "INV-Order-9",
+      "requireDetailNotContains": "restates",
+      "requireAlsoFinding": { "class": "dry", "reason": "restated-shape" }
+    },
+    {
+      "name": "missing-05-supersedes-target",
+      "specsDir": "neg/missing-05-supersedes-target/specs",
+      "domain": "good/domain.md",
+      "status": "fail",
+      "requireFinding": { "id": "R-05-supersedes", "class": "resolution", "reason": "dangling-supersedes" },
+      "requireDetailContains": "ghost"
+    },
+    {
+      "name": "tag-ghost-entity",
+      "specsDir": "neg/tag-ghost-entity/specs",
+      "domain": "good/domain.md",
+      "status": "fail",
+      "requireFinding": { "id": "R-06-tag", "class": "resolution", "reason": "dangling-tag" },
+      "requireDetailContains": "ghost"
+    },
+    {
+      "name": "when-no-event",
+      "specsDir": "neg/when-no-event/specs",
+      "domain": "good/domain.md",
+      "status": "fail",
+      "requireFinding": { "id": "R-06-when-event", "class": "resolution", "reason": "dangling-when-event" },
+      "requireDetailContains": "no authoritative event string"
+    },
+    {
+      "name": "vacuous-empty-specs",
+      "specsDir": "neg/vacuous/specs",
+      "domain": "good/domain.md",
+      "status": "broken-test",
+      "requireFinding": null
+    }
+  ]
+}

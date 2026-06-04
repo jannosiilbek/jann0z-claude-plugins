@@ -8,3 +8,6 @@ node_modules/
 # erd-modeler PGlite harness installs its dependency on first run (design: deps float,
 # not vendored). Ignore the generated lockfile so it is never committed accidentally.
 plugins/napkin/skills/erd-modeler/scripts/package-lock.json
+
+# Claude Code scheduler lock (machine-local; never share)
+.claude/scheduled_tasks.lock

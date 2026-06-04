@@ -1,0 +1,5 @@
+// fingerprints:
+// 02-glossary.md@sha256:2ed23f79e00dafff18f4c87584a8821b1609eb533b3692747e65c6932b788fc9
+// 03-aggregates.md@sha256:0de902e4bf885e26f33fcee898d17287fb11c6770c3ce53867e30da5d79f8352
+Enum order_status {
+  placed

@@ -1,7 +1,8 @@
 # Personas — ShiftLoop
 
 > One block per persona. Each maps to a canonical Role defined in `glossary.md`.
-> Permissions live in `rbac-matrix.md`, not here.
+> Permissions live in `rbac-matrix.md`, not here. The *message* to a buyer lives in
+> `positioning.md`, not here — this file owns who they are, not how to sell to them.
 
 ## Café Owner
 
@@ -14,6 +15,24 @@
 - **Goals:** keep weekly Labor cost within budget without leaving Shifts uncovered.
 - **Top pains:** discovers labor overspend only after payroll; cannot see cost while the
   schedule is being built.
+- **Buyer role:** Champion
+- **Buying trigger:** gets a labor-cost blowout on a payroll run
+- **Reached via:** independent-café-owner Facebook groups
+
+## Group Operator
+
+> A non-login buyer: funds ShiftLoop across several cafés but never builds a schedule. External to the
+> app, so `Role: none (external)` — appears here for the sell branch, never in `rbac-matrix.md`.
+
+- **Role:** none (external)
+- **Jobs-to-be-done:**
+  - approve the tool budget across all Locations
+  - review whether Labor cost dropped after rollout
+- **Goals:** cut group-wide labor overspend without micromanaging each café.
+- **Top pains:** has no visibility into per-café labor cost until the monthly numbers land.
+- **Buyer role:** Economic-Buyer
+- **Buying trigger:** opens a third Location and loses cost visibility across the group
+- **Reached via:** multi-unit-operator LinkedIn groups and franchise newsletters
 
 ## Shift Manager
 

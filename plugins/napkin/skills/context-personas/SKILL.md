@@ -5,11 +5,14 @@ description: Use when authoring or reviewing the spec/personas.md context artifa
 
 # Context: personas.md
 
-`personas.md` is the **single source of truth for who uses the product and what each one
-is trying to get done**. One file, all personas. It feeds the `As a <role>` clause of
-every scenario and the priority of capabilities. It does NOT contain a permission matrix
-(that is `rbac-matrix.md`), does NOT redefine role meanings (that is `glossary.md`), and
-does NOT list authorization invariants (those are `nfr.md` / `rbac-matrix.md`).
+`personas.md` is the **single source of truth for who interacts with the product — both who
+*uses* it and who *buys* it — and what each one is trying to get done**. One file, all personas.
+It feeds the `As a <role>` clause of every scenario and the priority of capabilities, and it is the
+buyer the sell branch's `positioning.md` targets. It does NOT contain a permission matrix
+(that is `rbac-matrix.md`), does NOT redefine role meanings (that is `glossary.md`), does NOT list
+authorization invariants (those are `nfr.md` / `rbac-matrix.md`), and does NOT carry the *message* to a
+buyer — objections, switching forces, and voice live in `positioning.md`. This file owns **who they
+are**; positioning.md owns **how to sell to them**.
 
 ## Output
 
@@ -37,6 +40,19 @@ the same order. See `assets/personas-example.md`.
 5. **Pains are concrete.** Name the specific frustration, not "inefficiency".
 6. **No invention.** If a persona's role or goal is undecided, ask — do not fabricate a
    user segment the brief never mentioned.
+7. **The buying committee lives here too (optional sell-branch fields).** When the sell branch
+   needs it, the people who *buy* — not just use — are personas in this same file. A buyer who
+   uses the app is an ordinary persona with a Role; a buyer who **never logs in** (a CFO who only
+   signs the cheque) is `Role: none (external)`, exactly like any other external actor — it never
+   enters `rbac-matrix.md`. Such personas may carry three **optional** fields the template defines —
+   `Buyer role` (Champion / Decision-Maker / Economic-Buyer / User), `Buying trigger`, `Reached via` —
+   added **only** to personas in the purchase, omitted everywhere else. Keep the *message* (objections,
+   rebuttals, switching forces, voice) out of here — that is `positioning.md`. A persona block names a
+   buyer's trigger and channel; how you persuade them is owned downstream.
+   **Single-actor products:** when one person both buys and uses (a solo/self-serve tool), there is no
+   committee — tag them `Buyer role: User` or omit the buyer fields entirely. Don't manufacture a
+   Champion / Decision-Maker / Economic-Buyer split that doesn't exist; the fields are for genuine
+   multi-stakeholder purchases.
 
 ## Downstream-purpose map
 
@@ -45,6 +61,8 @@ the same order. See `assets/personas-example.md`.
 - **Jobs-to-be-done** → candidate scenarios and a cross-check that every job is covered by
   a `capability-map.md` capability.
 - **Goals + pains** → capability priority and the "In order to <value>" clause.
+- **Buyer role / buying trigger / reached via** (optional) → the buyer `positioning.md` writes the
+  message for and the channel `marketing-copy` writes copy for. Build-branch scenarios ignore them.
 
 If a line serves none of these, cut it.
 
@@ -60,4 +78,6 @@ starts with a verb and names an object; goals/pains name only outcomes the spec 
 - [ ] Every persona's Role is a verbatim `glossary.md` Role term.
 - [ ] Every job-to-be-done is a verb + object (observable).
 - [ ] No permission matrix or allow/deny grid anywhere.
+- [ ] Optional sell-branch fields (Buyer role / Buying trigger / Reached via) appear only on personas in
+      the purchase; non-login buyers are `Role: none (external)`; no objection/message text leaked in.
 - [ ] No persona invented beyond the brief; no banned phrase; no `<placeholder>`.

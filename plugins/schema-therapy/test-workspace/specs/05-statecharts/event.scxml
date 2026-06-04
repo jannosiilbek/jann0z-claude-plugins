@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+  01-event-storming.md@sha256:523aa37c481ec8791813797d23934cc0c18f94570a5185c1a657f96cbf377739
+  02-glossary.md@sha256:2c472777ffccf7a0275c19adec734cd7f050329d2f6c8197fc48c5a3bb6cab37
+  03-aggregates.md@sha256:a3966e66c0fe18e86756d918a98a0c62238db6742ac7477125d8a8da94755221
+  04-erd.dbml@sha256:1888517e6784c5dac865caa27e3708581c690651d7f8873895fef50835f8d255
+  04-transitions.md@sha256:b3b491ac88780cba10c83df5f5f799f6bd339dba46a1124433fab1115169165d
+-->
+<!-- supersedes: 04-transitions.md#event -->
+<scxml version="1.0" xmlns="http://www.w3.org/2005/07/scxml" datamodel="null" initial="created">
+  <!-- 01-event: Event Created -->
+  <state id="created">
+    <!-- 01-event: Event Scheduled -->
+    <transition event="event_scheduled" target="scheduled"/>
+  </state>
+  <state id="scheduled">
+    <!-- 01-event: Event Rescheduled -->
+    <transition event="event_rescheduled" target="rescheduled"/>
+    <!-- 01-event: Event Sellout Reached -->
+    <transition event="event_sellout_reached" target="sellout_reached"/>
+    <!-- 01-event: Event Cancelled -->
+    <transition event="event_cancelled" target="cancelled"/>
+  </state>
+  <state id="rescheduled">
+    <!-- 01-event: Event Sellout Reached -->
+    <transition event="event_sellout_reached" target="sellout_reached"/>
+    <!-- 01-event: Event Cancelled -->
+    <transition event="event_cancelled" target="cancelled"/>
+  </state>
+  <state id="sellout_reached">
+    <!-- 01-event: Event Cancelled -->
+    <transition event="event_cancelled" target="cancelled"/>
+  </state>
+  <final id="cancelled"/>
+</scxml>

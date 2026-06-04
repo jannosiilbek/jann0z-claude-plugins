@@ -206,6 +206,16 @@ verdict, the list is *meant* to be read here) and invite the next move:
 If any feature is feasibility-gated or any candidate had to be dropped for sprawl, say so in one line
 here so the user can decide — don't bury it.
 
+Once the list settles, the pipeline **forks** — point the user at both branches (don't auto-run either):
+
+> The scope is set. Two ways forward, off the same spec:
+> - **build it** → `collect-context` (context spec → gherkin → erd → forge)
+> - **sell it** → `marketing-positioning` (the message), then `marketing-copy` (landing / email / ads /
+>   social / launch copy)
+>
+> The sell branch only needs the brief + this scope, so you can write copy now — or build first and the
+> copy gets richer once `product.md` and `personas.md` exist.
+
 ---
 
 # Phase 2 — Curate (one feature at a time, surgically)
@@ -303,10 +313,14 @@ a lint failure:
 ## Related skills (the napkin pipeline)
 
 - **idea-brief** — the producer of this skill's input (`spec/brief.md`); the business layer.
-- **collect-context** — the consumer of this skill's output; reads `spec/scope.md` (the feature list +
-  per-feature feasibility) plus `spec/brief.md` to author the context layer. The feature list seeds the
-  capability-map; each feature's Feasibility verdict guards capability-map against specing a capability
-  whose sole enabler isn't self-serve.
+- **collect-context** — the **build-branch** consumer of this skill's output; reads `spec/scope.md` (the
+  feature list + per-feature feasibility) plus `spec/brief.md` to author the context layer. The feature
+  list seeds the capability-map; each feature's Feasibility verdict guards capability-map against specing
+  a capability whose sole enabler isn't self-serve.
+- **marketing-positioning** — the **sell-branch** consumer of this skill's output; the pipeline forks
+  here. Reads `spec/scope.md` + `spec/brief.md` (richer if `product.md`/`personas.md` exist) to settle
+  the message in `spec/positioning.md`, which **marketing-copy** then renders into channel copy. A
+  feature in this list is the most a marketing pillar may promise.
 - Any **G2/Capterra / app-review / feature-matrix** capability — discovered at runtime to sharpen the
   curation signals (table-stakes pressure); no hardcoded dependency.
 - For a separate **tech-feasibility complexity rating** or a **deep competitor dive**, discover at

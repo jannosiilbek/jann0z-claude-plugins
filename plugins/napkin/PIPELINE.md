@@ -7,14 +7,25 @@ consumes:
 raw idea
   → idea-brief      → spec/brief.md           (business layer)
   → mvp-scoping      → spec/scope.md            (scoped feature list)
-  → collect-context  → spec/*.md (6 files)      (the context spec)   ← reads brief.md always + scope.md if present
-  → gherkin          → spec/features/<cap>/*.feature
-  → erd-modeler      → spec/data/model.dbml
-  → forge            → spec/architecture.md + spec/bootstrap.md   (build stage — separate `forge` plugin)
+       │
+       ├─ build ─→ collect-context → spec/*.md (6 files)   (the context spec)   ← reads brief.md always + scope.md if present
+       │           → gherkin         → spec/features/<cap>/*.feature
+       │           → erd-modeler      → spec/data/model.dbml
+       │           → forge            → spec/architecture.md + spec/bootstrap.md   (build stage — separate `forge` plugin)
+       │
+       └─ sell ──→ marketing-positioning → spec/positioning.md   (the sell foundation)  ← reads brief.md + scope.md (+ product.md/personas.md if present)
+                   → marketing-copy        → spec/copy/<channel>.md
 ```
 
-Once the spec is complete (features + `data/model.dbml`), the **`forge`** plugin is the next step:
-run it to turn the spec into a build blueprint and hand off to the build loop.
+The pipeline **forks after `scope.md`** into two parallel branches off the same spec:
+- **build** — turn the scope into a buildable spec (context → features → schema → `forge`).
+- **sell** — turn the scope into go-to-market assets (positioning → channel copy).
+
+The two branches share one `spec/` and one ownership table; neither restates the other's facts. The
+sell branch's **minimum input is `brief.md` + `scope.md`** (so it runs straight after mvp-scoping); it
+is **richer when the build branch's context exists** (`product.md`, `personas.md`) but never hard-depends
+on it. Once the build spec is complete (features + `data/model.dbml`), the **`forge`** plugin turns it
+into a build blueprint and hands off to the build loop.
 
 This file is the **single authority** for who owns each cross-tool fact and the rules for referencing
 it. It holds no values of its own — the owning file always holds the actual value; every other file
@@ -52,6 +63,8 @@ spec/
   alignment-report.md # collect-context pass/fail report
   features/<capability>/*.feature   # gherkin specs
   data/model.dbml     # erd-modeler output
+  positioning.md      # sell foundation: messaging, differentiation, objections, voice, proof  (marketing-positioning)
+  copy/<channel>.md   # rendered marketing copy, one file per channel (landing/email/ads/social/launch) (marketing-copy)
   architecture.md     # build blueprint — standing reference (forge)
   bootstrap.md        # build runbook (forge)
   DESIGN.md           # design system + tokens (impeccable, during build)
@@ -65,7 +78,7 @@ sentence.
 | Fact | Owner | Consumers (cite / reference, never restate) |
 |------|-------|---------------------------------------------|
 | Problem statement | `brief.md` `## Problem` | scope.md (the JTBD the features cover — reference); product.md (problem framing — derive) |
-| Target user/buyer + segment + market size/reachability | `brief.md` (`## Target user`, `## Market & segment`, `## Market size / reachability`) | scope.md per-feature Persona + curation-signals input (consume, don't store); personas.md derives spec actors; product.md target-segment line |
+| Target user/buyer + segment + market size/reachability | `brief.md` (`## Target user`, `## Market & segment`, `## Market size / reachability`) | scope.md per-feature Persona + curation-signals input (consume, don't store); personas.md derives spec actors; product.md target-segment line. The buyer *identity* is brief-owned — product.md `## Target segment` (who pays vs who uses) and personas.md `Buyer role` (committee position) are both brief-derived **views**, not independent owners |
 | Underlying need / opportunity | `brief.md` `## Opportunity (the need)` | product.md value proposition (derive, never copy the sentence) |
 | Why-now (timing trigger) | `brief.md` `## Why now` | scope.md feasibility context (reference by anchor only) |
 | Riskiest assumption (+ verification log) | `brief.md` `**Riskiest assumption:**` / `## Verification log` | scope.md feasibility pass (reference by anchor; never reproduce) |
@@ -74,7 +87,9 @@ sentence.
 | **Per-feature reachability VERDICT** (`self-serve` / `partnership-gated` / `cost-gated` / `data-gated` / `research-gated`) | **`scope.md`** each feature's `**Feasibility:**` field | collect-context guardrail (capability-map must not spec a capability whose sole enabler is a non-self-serve feature). The integration NAME is owned by glossary when it is a domain noun; scope cites it. |
 | Domain terms + definitions + type + ERD-entity flag; enum/status value sets; Role definitions; forbidden synonyms; integration system names that are domain nouns | `glossary.md` | every spec file; gherkin steps; erd tables/enums; personas Roles; rbac columns/resources; scope.md cites integration names |
 | Value proposition; **pricing tiers + numeric limits**; MVP **in/out-of-scope** (the build boundary); success metric | `product.md` | gherkin scope/pricing/quota scenarios; capability-map (every capability traces to in-scope); erd Plan/Subscription |
-| Actors + jobs-to-be-done + goals/pains; the Role each persona holds; external/unauth actor flags | `personas.md` | gherkin `As a <role>`; capability-map personas served |
+| Actors + jobs-to-be-done + goals/pains; the Role each persona holds; external/unauth actor flags; **the buying committee** (Champion / Decision-Maker / Economic-Buyer / User — non-login buyers carried as `Role: none (external)`) + **optional marketing fields** (buyer tag, buying trigger, primary channel) | `personas.md` | gherkin `As a <role>`; capability-map personas served; positioning.md (the buyer the message targets — reference, never restate the persona) |
+| **Marketing positioning** — positioning statement + category; messaging pillars; differentiation vs the current alternative; objections + responses; anti-personas (who to disqualify); JTBD switching forces (push/pull/habit/anxiety); **customer language** (verbatim words to use/avoid — the "ubiquitous voice"); brand voice/tone; proof points; before→after transformation | `positioning.md` | marketing-copy (every channel reads it as the foundation; reuses voice + customer-language verbatim) |
+| **Rendered marketing copy** (headlines, body, CTAs, subject lines, ad variants — per channel) | `spec/copy/<channel>.md` | — (terminal) |
 | Capability set; foundation order + dependency DAG; primary feature file per capability; walking skeleton; one-line capability outcome | `capability-map.md` | gherkin folders / `# Depends on:` / `@prereq`; erd bounded-context grouping |
 | Permission matrix (resource × action × role) + conditions | `rbac-matrix.md` | gherkin authorization scenarios; erd role/permission |
 | Cross-cutting invariants (tenancy/isolation, auth, subscription gating, limits/SLA, audit, retention); **architectural/build constraints (offline, on-prem, determinism, data-egress) as a labelled non-Gherkin category**; **hard constraints sharpened to assertable form** | `nfr.md` | gherkin cross-cutting `Then`s; erd tenant key/audit/residency columns |
@@ -178,3 +193,30 @@ it asks the user to narrow the brief (persona / sector / core job) rather than s
    invent a new domain entity, feature, or capability that no spec file owns. If one is genuinely
    needed (e.g. notifications), it is added to the spec first (glossary + capability-map + product) —
    never smuggled in downstream.
+
+## Sell-branch rules (marketing-positioning → marketing-copy)
+
+The sell branch is held to the same single-ownership discipline as the build branch. It owns the
+*persuasion* layer; it never re-authors a product fact.
+
+1. **positioning.md derives, never restates.** The problem, target user, wedge, and current alternative
+   are `brief.md`'s; the value proposition, pricing, in-scope features, and success metric are
+   `product.md`'s; persona identity is `personas.md`'s. positioning.md references each by anchor and
+   adds only what it owns (messaging, differentiation, objections, switching forces, voice, proof). It
+   never copies the value-prop sentence, a price, or a persona block.
+2. **Customer language is the ubiquitous voice.** positioning.md's `words to use / words to avoid` is to
+   copy what `glossary.md` is to the spec: the canonical vocabulary, reused **verbatim** by every channel
+   in `spec/copy/`. A word on the avoid-list never appears in rendered copy; a glossary domain noun keeps
+   its glossary spelling even in marketing copy.
+3. **Copy asserts only owned facts.** `spec/copy/<channel>.md` may state a price only if `product.md`
+   owns it, promise a capability only if it is `product.md` in-scope / a `scope.md` feature, and cite a
+   proof point only if `positioning.md` owns it. **No invented metric, claim, testimonial, price, or
+   feature.** If a persuasive asset needs a fact no file owns, add it to the owner first (a proof point
+   to positioning.md, a feature to scope.md) — never fabricate it in copy.
+4. **Buyer ≠ user, and both live in personas.md.** The buying committee (incl. non-login buyers as
+   `Role: none (external)`) is owned by `personas.md`; positioning.md targets a buyer by reference. The
+   *objection* a buyer raises and its rebuttal are positioning.md's (the message), not personas.md's
+   (the person) — one owner each, no overlap.
+5. **No marketing fluff anywhere.** The product.md adjective ban ("seamless", "powerful", "intuitive",
+   "best-in-class") holds across positioning.md and copy too — persuasion comes from specific outcomes
+   and real proof, not adjectives.

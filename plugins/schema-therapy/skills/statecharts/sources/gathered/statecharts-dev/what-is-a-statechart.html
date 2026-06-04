@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+  <head>
+    <title>What is a statechart? - Statecharts</title>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width,maximum-scale=2">
+    <meta name="description" content="">
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="What is a statechart?" />
+    <meta property="og:description" content="" />
+
+    <meta name="twitter:label1" value="Word count"/>
+    <meta name="twitter:data1" value="644"/>
+
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+
+    <link rel="canonical" href="https://statecharts.dev/what-is-a-statechart.html">
+    <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/style.css?v=1c8408e15f873a5f277fcffe4c46ee019a324875">
+
+    <script>
+      window.onload = () => {
+        
+        // add title attributes and highlight missing glossary entries
+        document.querySelectorAll('a.glossary').forEach(a => {
+          if (a.attributes.href) {
+            var g = document.querySelector('footer a[href="/' + a.attributes.href.value + '"]');
+            if (g) {
+              a.title = g.title;
+            }
+            else {
+              a.classList.add('missing');
+              a.title = "Missing glossary entry";
+            }
+          }
+        });
+        
+      };
+    </script>
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-TSK7VG6');</script>
+<!-- End Google Tag Manager -->
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-24028448-3"></script>
+    <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-24028448-3');
+  </script>
+  <script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "WebPage",
+  "name": "What is a statechart?",
+  "url": "https://statecharts.dev/what-is-a-statechart.html",
+  "description": "",
+
+  "mainContentOfPage": {
+    "@type": "WebPageElement",
+    "cssSelector": "#main_content"
+  },
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": "#main_content"
+  }
+}
+  </script>
+  </head>
+
+  <body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TSK7VG6"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h2 id="what-is-a-statechart">What is a statechart?</h2>
+
+<p>The primary feature of statecharts is that states can be organized in a <em>hierarchy</em>:  A statechart is a <a href="what-is-a-state-machine.html">state machine</a> where each state in the state machine may define its own <em>subordinate</em> state machines, called <em>substates</em>.  Those states can again define substates.</p>
+
+<p>Here’s an example of a state in a state machine, with some extra features:</p>
+
+<p><img src="/on-off-delayed-exit-1-zoomed.svg" alt="A state with some substates" /></p>
+
+<ul>
+  <li>The state is called “D”</li>
+  <li>E and F are substates</li>
+  <li>E even has a substate G</li>
+  <li>“entry” and “exit” actions are mentioned</li>
+</ul>
+
+<p>When the state machine enters this state <em>D</em> it also starts the state machine within it.  The <em>initial state</em> of this machine inside <em>D</em> is in fact <em>E</em> so it <em>enters</em> <em>E</em> too.  And since <em>E</em> has a single substate <em>G</em>, it is also <em>entered</em>.</p>
+
+<blockquote>
+  <p>A state with no substates is called an <a href="glossary/atomic-state.html" class="glossary">atomic state</a>.  A state with substates is called a <a href="glossary/compound-state.html" class="glossary">compound state</a>.</p>
+</blockquote>
+
+<h3 id="entering-a-state-enters-one-of-its-substates">Entering a state enters one of its substates</h3>
+
+<ul>
+  <li>When a <a href="glossary/enter.html" class="glossary">state is entered</a>, its sub state machine starts and therefore, a substate is entered</li>
+  <li>When a <a href="glossary/exit.html" class="glossary">state is exited</a>, its sub state machine is exited too, i.e. any substates also exit</li>
+</ul>
+
+<p>In the example above, when the machine is told to enter <em>D</em>, it actually ends up entering <em>D</em>, <em>E</em>, and <em>G</em>.  Conversely, when the state machine exits <em>D</em> it also exits any substates.</p>
+
+<p>Like state machines, statecharts also react to events; events are <em>dealt with</em> by the states and the main side effects are specified by what happens upon entering and exiting states.</p>
+
+<h3 id="a-state-can-have-many-regions">A state can have many “regions”</h3>
+
+<p>A compound state can be split up into completely separate (“orthogonal”) regions.  Each region specifies its own state machine.  When a state machine enters such a state, it also enters <em>all</em> of the regions of the state at the same time.</p>
+
+<p><img src="glossary/parallel.svg" alt="A state with four regions" /></p>
+
+<p>If this state is entered, then it enters both the top and bottom regions, and the following statements will hold true so long as A is active:</p>
+
+<ul>
+  <li>Exactly one of B and C is active</li>
+  <li>Exactly one of D and E is active</li>
+</ul>
+
+<p>Such a state is called a <a href="glossary/parallel-state.html" class="glossary">parallel state</a>, and the regions are often called “orthogonal regions”.</p>
+
+<h3 id="transitions-can-be-guarded">Transitions can be guarded</h3>
+
+<p>When an event happens, and the state machine would normally transition from one state to another, statecharts introduce the concepts of <em>guarding</em> the transition.  A <a href="glossary/guard.html" class="glossary">guard</a> is a condition placed upon the transition, and the transition is essentially ignored if the guard condition is false.</p>
+
+<h3 id="states-can-have-multiple-transitions-for-the-same-event">States can have multiple transitions for the same event</h3>
+
+<p>The addition of guards allows a state to have <em>more than one</em> transition that reacts to the same event:  Two transitions fire on the same event, but only one is picked at run-time depending on which one’s guards evaluate to TRUE.</p>
+
+<h3 id="transitions-can-happen-automatically">Transitions can happen automatically</h3>
+
+<p>When entering a state, a transition can be defined which is <a href="glossary/automatic-transition.html" class="glossary">automatically</a> taken.  This is useful in conjunction with guards, to move out of a state immediately upon entering it when certain conditions hold, or as soon as those conditions hold.</p>
+
+<h3 id="transitions-can-be-delayed">Transitions can be delayed</h3>
+
+<p>Simply being in a state for a duration of time can be enough to transition to a different state.  This is accomplished by way of a <a href="glossary/delayed-transition.html" class="glossary">delayed transition</a>, which defines that the transition should be taken a specific period of time after entering a state.</p>
+
+<h3 id="history">History</h3>
+
+<p>When exiting a compound state and its substate, it is sometimes useful to be able to return to exactly the state that you left.  Statecharts introduce the concepts of <a href="glossary/history-state.html" class="glossary">history states</a>.  When a transition goes <em>to</em> a history state, it re-enters the state that “was last active”.</p>
+
+<h3 id="see-also">See also</h3>
+
+<p>To get a full explanation of the statechart shown above, see <a href="on-off-statechart.html">the description of the on-off statechart</a>.</p>
+
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p>This glossary entry comes from the <a href="https://statecharts.dev/">statecharts.dev</a> project.  Check out the <a href="https://github.com/statecharts/statecharts/discussions">discussions</a> over on GitHub where you can find more people discussing statecharts.</p>
+        <p>Published using <a href="https://pages.github.com">GitHub Pages</a> from <a href="https://github.com/statecharts/">github.com/statecharts</a> (<a href="https://github.com/statecharts/statecharts.github.io/edit/master/what-is-a-statechart.md">edit this page</a>)</p>
+        <p>Glossary:   <a href="/glossary/action.html" title="Code that is executed as the state machine performs transitions">Action</a>   <a href="/glossary/activity.html" title="A long running process that is usually tied to the state machine being in a state">Activity</a>   <a href="/glossary/atomic-state.html" title="a state that has no substates">Atomic state</a>   <a href="/glossary/automatic-transition.html" title="a transition that happens immediately upon entering a state or immediately after a condition arises">Automatic transition</a>   <a href="/glossary/compound-state.html" title="A state that has one or more substates">Compound state</a>   <a href="/glossary/condition-state.html" title="A pseudo-state that only has transitions, guarded in such a way that it immediately moves to another state.">Condition state</a>   <a href="/glossary/delayed-event.html" title="an event that is raised some time after a transition takes place.">Delayed event</a>   <a href="/glossary/delayed-transition.html" title="a transition that executes automatically when a machine has been in a state for a particular amount of time">Delayed transition</a>   <a href="/glossary/enter.html" title="A state becomes an active state in a running state machine">Enter</a>   <a href="/glossary/event.html" title="A trigger for a transition, typically an signal from the outside world that something has happened">Event</a>   <a href="/glossary/exit.html" title="A state stops being an active state in a running state machine">Exit</a>   <a href="/glossary/final-state.html" title="a helper state which designates that its parent state has completed">Final state</a>   <a href="/glossary/generated-event.html" title="An event generated by the statechart itself">Generated event</a>   <a href="/glossary/guard.html" title="A boolean check imposed on a transition to inhibit the execution of the transition">Guard</a>   <a href="/glossary/history-state.html" title="A pseudo-state that remembers the most recent sibling states that were active">History state</a>   <a href="/glossary/initial-state.html" title="The state which is entered when a state machine starts, or when a compound state is entered.">Initial state</a>   <a href="/glossary/internal-event.html" title="An event caused by the statechart itself, and processed immediately">Internal event</a>   <a href="/glossary/local-transition.html" title="A transition between a state and its children that skips exiting or entering the state in question">Local transition</a>   <a href="/glossary/parallel-state.html" title="a compound state that divides its substates into separate state machines that all get to be active at the same time">Parallel State</a>   <a href="/glossary/pseudostate.html" title="A set of types of state that are transient in nature.">Pseudostate</a>   <a href="/glossary/raised-event.html" title="An event generated explicitly by the statechart">Raised event</a>   <a href="/glossary/refine.html" title="The conversion of an atomic state to a compound state by the addition of substates.">Refine</a>   <a href="/glossary/self-transition.html" title="A transition from a state back to itself.">Self transition</a>   <a href="/glossary/state.html" title="A particular behaviour of a state machine">State</a>   <a href="/glossary/transition.html" title="The instantaneous transfer from one state to another.">Transition</a>   </p>
+      </footer>
+    </div>
+  </body>
+</html>

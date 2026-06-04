@@ -1,0 +1,16 @@
+{
+  "name": "gherkin-harness",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Executable simulation oracle for schema-therapy artifact 06 (specs/06-gherkin/<aggregate>.feature). Pins @cucumber/gherkin (the format's own reference parser + pickle compiler — the parse-and-instantiate oracle) and its @cucumber/messages peer, plus @dbml/core (to enumerate the 04 status enums + tables), per references/simulation.md §1.",
+  "scripts": {
+    "harness": "node harness.mjs",
+    "selftest": "node selftest.mjs"
+  },
+  "dependencies": {
+    "@cucumber/gherkin": "39.1.0",
+    "@cucumber/messages": "32.3.1",
+    "@dbml/core": "8.2.5"
+  }
+}

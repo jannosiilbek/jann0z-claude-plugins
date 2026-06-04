@@ -12,12 +12,17 @@
     {
       "name": "napkin",
       "source": "./plugins/napkin",
-      "description": "End-to-end spec pipeline: turn a raw idea into a validated, build-seeded brief, judge it into a buildable-scope verdict (tier, feasibility, validated integrations), then collect a SaaS app's context (product, personas, glossary, capability map, RBAC, NFRs) into a flat spec/ workspace, author framework-agnostic Gherkin/BDD specs from it, and design + live-test a normalized DBML data model — one aligned, drift-free flow from idea to features to schema."
+      "description": "End-to-end spec pipeline: turn a raw idea into a validated, build-seeded brief, judge it into a curated, feasibility-checked MVP feature list (per-feature reachability verdicts), then fork — BUILD it (collect a SaaS app's context — product, personas, glossary, capability map, RBAC, NFRs — into a flat spec/ workspace, author framework-agnostic Gherkin/BDD specs, and design + live-test a normalized DBML data model) or SELL it (settle the marketing message in spec/positioning.md, then render fact-faithful, on-voice landing/email/ads/social/launch copy to spec/copy/) — one aligned, drift-free flow from idea to features, schema, and go-to-market copy."
     },
     {
       "name": "forge",
       "source": "./plugins/forge",
       "description": "Turn a finished napkin spec into an opinionated build blueprint and hand off to the build loop. Reads the spec/ workspace, verifies the latest best-practice stack (Bun + Turborepo + TypeScript, Drizzle with a PGlite⇄Postgres-16 env switch, shared Zod contracts, a single use-case layer behind Hono API + MCP, Better Auth multi-tenancy/RBAC, Vercel AI SDK 5 with LLM fixtures, latest React + Tailwind/shadcn driven by impeccable, one mock⇄real ports abstraction, Pulumi/Cloud Run), then writes two DRY artifacts — spec/architecture.md (the standing reference) and spec/bootstrap.md (the kickoff runbook: a data-first build sequence with backend-complete + landing-page-first + stop-to-validate checkpoints) — and hands off to superpowers:writing-plans → subagent-driven-development. Blueprint + handoff only: it never runs scaffolding commands."
+    },
+    {
+      "name": "schema-therapy",
+      "source": "./plugins/schema-therapy",
+      "description": "Schema Therapy is a practice, not a tool. Bring a tangled data model, a fuzzy domain, or a legacy schema nobody understands, and a couch full of modelling specialists works through it with you. Each one is grounded in the old discipline (Codd's normal forms, Chen's entities, a little category theory when the relationship is genuinely complicated) and backed by a modern AI that reads your DDL without flinching."
     }
   ]
 }

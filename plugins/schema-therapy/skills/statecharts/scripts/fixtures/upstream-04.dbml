@@ -1,0 +1,26 @@
+// 04 — ERD (enums + tables used to enumerate lifecycle entities + state counts)
+
+Enum order_status {
+  placed
+  paid
+  shipped
+  delivered
+  cancelled
+  refunded
+}
+
+Enum coupon_status {
+  issued
+  redeemed
+  expired
+}
+
+Table order {
+  id int [pk]
+  status order_status [not null]
+}
+
+Table coupon {
+  id int [pk]
+  status coupon_status [not null]
+}

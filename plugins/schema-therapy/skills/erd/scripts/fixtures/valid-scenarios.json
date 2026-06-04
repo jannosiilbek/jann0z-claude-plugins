@@ -1,0 +1,11 @@
+{
+  "seeds": [
+    { "table": "order", "row": { "id": 1, "status": "placed" } },
+    { "table": "ticket", "row": { "id": 1, "seat_number": "A1", "status": "reserved" } },
+    { "table": "order_ticket", "row": { "order_id": 1, "ticket_id": 1 } }
+  ],
+  "asserts": [
+    { "query": "SELECT 1 FROM \"order\" WHERE status = 'placed'", "expect": { "rowCount": 1 } },
+    { "query": "SELECT 1 FROM order_ticket WHERE order_id = 1 AND ticket_id = 1", "expect": { "rowCount": 1 } }
+  ]
+}
