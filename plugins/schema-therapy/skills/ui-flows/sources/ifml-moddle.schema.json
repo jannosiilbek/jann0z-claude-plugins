@@ -1,0 +1,1355 @@
+{
+    "name": "IFML",
+    "uri": "http://www.omg.org/spec/IFML/20140301",
+    "prefix": "ifml",
+    "associations": [],
+    "types": [
+        {
+            "name": "InteractionFlow",
+            "superClass": [
+                "InteractionFlowModelElement"
+            ],
+            "isAbstract": true,
+            "description": "An InteractionFlow is a directed connection between ViewElements or ViewElements and Actions, which enables communication between them by means of Parameter passing. InteractionFlows are divided into NavigationFlows and DataFlows. NavigationFlows cause navigation or change of focus to the target element and Parameter passing, while DataFlows cause only Parameter passing to the target element.",
+            "properties": [
+                {
+                    "name": "parameterBindingGroup",
+                    "description": "Group of parameters that are passed to the target interaction flow element by following the InteractionFlow.",
+                    "type": "ParameterBindingGroup",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "sourceInteractionFlowElement",
+                    "description": "Source InteractionFlowElement of the InteractionFlow.",
+                    "type": "InteractionFlowElement",
+                    "isReference": true,
+                    "isAttr": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "targetInteractionFlowElement",
+                    "description": "Target InteractionFlowElement of the InteractionFlow.",
+                    "type": "InteractionFlowElement",
+                    "isReference": true,
+                    "isAttr": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "InteractionFlowExpression",
+            "superClass": [
+                "Expression"
+            ],
+            "isAbstract": false,
+            "description": "An InteractionFlowExpression is used to determine which of the InteractionFlows will be followed as a consequence of the occurrence of an Event. When an Event occurs and it has no InteractionFlowExpression, all the InteractionFlows associated with the event are followed. At least two InteractionFlows must be associated with an InteractionFlowExpression. An InteractionFlowExpression uses the ViewElement Parameter values and the InteractionFlows for the evaluation of the expression.",
+            "properties": [
+                {
+                    "name": "interactionFlow",
+                    "description": "InteractionFlows for which the expression is evaluated.",
+                    "type": "InteractionFlow",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "SystemEvent",
+            "superClass": [
+                "CatchingEvent"
+            ],
+            "isAbstract": false,
+            "description": "A SystemEvent is an Event produced by the system, which triggers a computation reflected in the user interface. Examples of SystemEvents are time events, which are triggered after an elapsed frame of time, or system special conditions events, such as a database connection loss event.",
+            "properties": [
+                {
+                    "name": "triggeringExpressions",
+                    "description": "Expressions that determines when or under what conditions the SystemEvent should be triggered.",
+                    "type": "Expression",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "type",
+                    "description": "Determines the kind of SystemEvent.",
+                    "type": "SystemEventType",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "ParameterBinding",
+            "superClass": [
+                "InteractionFlowModelElement"
+            ],
+            "isAbstract": false,
+            "description": "A ParameterBinding determines how data flow between components. A ParameterBinding connects an output Parameter of a source InteractionFlowElement with an input Parameter of a target InteractionFlowElement. When an Event is triggered, InteractionFlows are followed and Parameter values flow from source InteractionFlowElements to target InteractionFlowElements, according to how they have been bound.",
+            "properties": [
+                {
+                    "name": "sourceParameter",
+                    "description": "Output Parameter of the source InteractionFlowElement that participates in the ParameterBinding.",
+                    "type": "Parameter",
+                    "isAttr": true,
+                    "isReference": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "targetParameter",
+                    "description": "Input Parameter of the target InteractionFlowElement that participates in the ParameterBinding.",
+                    "type": "Parameter",
+                    "isAttr": true,
+                    "isReference": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "ActionEvent",
+            "superClass": [
+                "CatchingEvent"
+            ],
+            "isAbstract": false,
+            "description": "An ActionEvent is an Event that may be triggered by an Action such as a normal termination event or exception event.",
+            "properties": []
+        },
+        {
+            "name": "DomainModel",
+            "superClass": [
+                "uml:NamedElement"
+            ],
+            "isAbstract": false,
+            "description": "The DomainModel is a model that contains content elements that ViewComponents may access to retrieve information, process it, and show it to the user. The DomainModel also stores information captured from the user. The DomainModel is presumed to be represented in UML and therefore consists of a set of UML model elements .",
+            "properties": [
+                {
+                    "name": "domainElements",
+                    "description": "References to the DomainElements of the DomainModel.",
+                    "type": "DomainElement",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "IFMLNamedElement",
+            "superClass": [
+                "BaseElement"
+            ],
+            "isAbstract": true,
+            "description": "A NamedElement is an Element that requires a name for easy visual identification in diagrams or for being handled as a named variables in a concrete textual syntax.",
+            "properties": [
+                {
+                    "name": "name",
+                    "description": "Element name.",
+                    "type": "String",
+                    "isAttr": true,
+                    "redefinesNothing": "uml:NamedElement#name",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "PortDefinition",
+            "superClass": [
+                "InteractionFlowElement"
+            ],
+            "isAbstract": false,
+            "description": "PortDefinitions represent interaction points with a ModuleDefinition. They are defined within a ModuleDefinition. They hold Parameters, for transferring values to and from the ModuleDefinition. An input PortDefinition has outgoing InteractionFlows to the inside of the Module. An output PortDefinition has incoming InteractionFlows from the inside of the Module. Modules that reference a ModuleDefinition may comprise Ports, which in turn reference the corresponding PortDefinitions.",
+            "properties": [
+                {
+                    "name": "ports",
+                    "description": "Set of Ports referencing the current PortDefinition in some Modules implementing the ModuleDefinition within which the current PortDefinition is defined.",
+                    "type": "Port",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "ContentBinding",
+            "superClass": [
+                "ViewComponentPart"
+            ],
+            "isAbstract": true,
+            "description": "A ContentBinding allows the system to access a given source of content. A content source access may be done through a DataBinding or a DynamicBehavior of a DomainModel element.",
+            "properties": [
+                {
+                    "name": "uniformResourceIdentifier",
+                    "description": "URI used to identify or locate the resource from which the content may be obtained.",
+                    "type": "String",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "ViewElement",
+            "superClass": [
+                "InteractionFlowElement"
+            ],
+            "isAbstract": false,
+            "description": "ViewElements are elements of the user interface that display content. ViewElements are divided into ViewContainers and ViewComponents. ViewContainers are aggregations of other ViewContainers and/or ViewComponents.",
+            "properties": [
+                {
+                    "name": "viewElementEvents",
+                    "description": "ViewElementEvents contained by the ViewElement.",
+                    "type": "ViewElementEvent",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "activationExpression",
+                    "description": "Reference to an ActivationExpression whose evaluation result determines whether the ViewElement is active or inactive. If no ActivationExpression is given, by default the ViewElement is active.",
+                    "type": "ActivationExpression",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "viewContainer",
+                    "description": "ViewContainer of the current ViewElement.",
+                    "type": "ViewContainer",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "Expression",
+            "superClass": [
+                "InteractionFlowModelElement"
+            ],
+            "isAbstract": true,
+            "description": "An Expression is an element that, in a given context, evaluates to a single instance, a set of instances. or an empty result. An Expression must be side effect free. Specific expression types, such as BooleanExpression, etc., specialize this concept.",
+            "properties": [
+                {
+                    "name": "language",
+                    "description": "Language in which the Expression is written, e.g. OCL, Java, etc.",
+                    "type": "String",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "body",
+                    "description": "Code of the Expression.",
+                    "type": "String",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "DynamicBehavior",
+            "superClass": [
+                "ContentBinding"
+            ],
+            "isAbstract": false,
+            "description": "DynamicBehavior represents the binding of the system with a service or operation, which may be invoked in order to carry out business logic or return content.",
+            "properties": [
+                {
+                    "name": "behavioralFeatureConcept",
+                    "description": "BehavioralFeatureConcept representing a procedure, method, function etc, that may be invoked by a ViewComponent to carry out business logic or obtain content.",
+                    "type": "BehavioralFeatureConcept",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "behaviorConcept",
+                    "description": "Representing a procedure, method, function etc, that may be invoked by a ViewComponent to carry out business logic or obtain content.",
+                    "type": "BehaviorConcept",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "Viewpoint",
+            "superClass": [
+                "uml:NamedElement"
+            ],
+            "isAbstract": false,
+            "description": "A Viewpoint is a reference to an interrelated set of InteractionFlowModelElements, which as a whole define a functional portion of the system. The purpose of a Viewpoint is to facilitate the comprehension of a complex system, to allow or disallow access to the system by a specific UserRole, or to adapt the system to a specific context change.",
+            "properties": [
+                {
+                    "name": "interactionFlowModelElements",
+                    "description": "InteractionFlowModelElements that build up this Viewpoint.",
+                    "type": "InteractionFlowModelElement",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "context",
+                    "description": "Application context that determines the Viewpoint to be used.",
+                    "type": "Context",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "DataFlow",
+            "superClass": [
+                "InteractionFlow"
+            ],
+            "isAbstract": false,
+            "description": "A DataFlow is a kind of InteractionFlow used for passing context information between InteractionFlowElements. DataFlows are triggered by NavigationFlows causing Parameter passing but no navigation.",
+            "properties": []
+        },
+        {
+            "name": "ViewComponentPart",
+            "superClass": [
+                "InteractionFlowElement"
+            ],
+            "isAbstract": false,
+            "description": "A ViewComponentPart is an InteractionFlowElement that may not live outside the context of ViewComponent. A ViewComponentPart may trigger Events and have incoming and outgoing InteractionFlows.",
+            "properties": [
+                {
+                    "name": "viewElementEvents",
+                    "description": "Events that this ViewComponentPart may trigger.",
+                    "type": "ViewElementEvent",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "activationExpression",
+                    "description": "Reference to an ActivationExpression whose evaluation result determines whether the ViewComponentPart is active or inactive. If no ActivationExpression is given, by default the ViewComponentPart is active.",
+                    "type": "ActivationExpression",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "parentViewComponentPart",
+                    "description": "Parent ViewComponentPart.",
+                    "type": "ViewComponentPart",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "subViewComponentParts",
+                    "description": "Nested ViewComponentParts.",
+                    "type": "ViewComponentPart",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "ViewContainer",
+            "superClass": [
+                "ViewElement"
+            ],
+            "isAbstract": false,
+            "description": "A ViewContainer is an element of the interface that aggregates other ViewContainers and/or ViewElements displaying content.",
+            "properties": [
+                {
+                    "name": "isLandmark",
+                    "description": "If true, the ViewContainer is directly reachable from any ViewElement from any ViewElement contained, directly or indirectly, in the same ViewContainer. It represents an implicit link between all the other ViewElements and the ViewContainer.",
+                    "type": "Boolean",
+                    "isAttr": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "isDefault",
+                    "description": "If true, the ViewContainer will be presented to the user when its enclosing ViewContainer is accessed. This attribute is relevant when this ViewContainer shares the same parent ViewContainer with other ViewContainers.",
+                    "type": "Boolean",
+                    "isAttr": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "isXOR",
+                    "description": "If true, the contained ViewElements of thisViewContainer will be presented to the user only one at the time, as the user interacts with the system.",
+                    "type": "Boolean",
+                    "isAttr": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "viewElements",
+                    "description": "The ViewElements owned by the ViewContainer.",
+                    "type": "ViewElement",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "actions",
+                    "description": "",
+                    "type": "Action",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "ActivationExpression",
+            "superClass": [
+                "BooleanExpression"
+            ],
+            "isAbstract": false,
+            "description": "ActivationExpressions are used by ViewElements, Events or ViewComponentParts to determine if they are enabled or not. An ActivationExpression is a BooleanExpression such that, if it evaluates to true, the element is active, otherwise the element is inactive. ActivationExpressions use Parameter values for the expression evaluation.",
+            "properties": []
+        },
+        {
+            "name": "InteractionFlowModel",
+            "superClass": [
+                "uml:NamedElement"
+            ],
+            "isAbstract": false,
+            "description": "An InteractionFlowModel aggregates all the elements modeling interaction with the user.",
+            "properties": [
+                {
+                    "name": "interactionFlowModelElements",
+                    "description": "Elements of the InteractionFlowModel.",
+                    "type": "InteractionFlowModelElement",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "ContextDimension",
+            "superClass": [
+                "uml:NamedElement"
+            ],
+            "isAbstract": false,
+            "description": "ContextDimensions are dimensions of the Context that represent not only the user’s identity and preferences, but also the interaction environment of the system. ContextDimension has the specializations UserRole, Device, and Position. When the user context satisfies all required ContextDimensions, access is granted to the ViewElements of the Viewpoint and to the Events that may be triggered on them.",
+            "properties": []
+        },
+        {
+            "name": "IFMLModel",
+            "superClass": [
+                "uml:NamedElement"
+            ],
+            "isAbstract": false,
+            "description": "An IFMLModel is the top-level container of all other elements in an IFML model. All model elements are grouped into two submodels, the InteractionFlowModel and the DomainModel. An IFMLModel may also contain a number of Viewpoints of the InteractionFlowModel.",
+            "properties": [
+                {
+                    "name": "interactionFlowModel",
+                    "description": "The complete model that describes the interaction of the user with the system.",
+                    "type": "InteractionFlowModel",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "domainModel",
+                    "description": "Model that holds the business model of the system being described in IFML.",
+                    "type": "DomainModel",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "interactionFlowModelViewpoint",
+                    "description": "Viewpoints of the InteractionFlowModel.",
+                    "type": "Viewpoint",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "ModuleDefinition",
+            "superClass": [
+                "ModularizationElement"
+            ],
+            "isAbstract": false,
+            "description": "A ModuleDefinition is a fully functional collection of user InteractionFlowModelElements and their corresponding Actions, which may be reused for improving IFML model maintainability. ModuleDefinitions can be aggregated in a hierarchical structure of ModulePackages. ModuleDefinitions may comprise PortDefinitions. A ModuleDefinition receives Parameter values from outside and provides Parameter values to the outside. ModuleDefinitions exchange Parameters by mean of input and output PortDefinitions. InteractionFlowModelElements contained in a Module may not be shared or referenced by other Modules or by the main InteractionFlowModel. A ModuleDefinition may comprise a reference to a BPMN Activity (meaning that the Module implements that Activity). Reuse of ModuleDefinition is obtained by adding Modules referencing that ModuleDefinition in IFML models.s.",
+            "properties": [
+                {
+                    "name": "inputPorts",
+                    "description": "Ports that distributes InteractionFlows and Parameters coming into the Module.",
+                    "type": "PortDefinition",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "outputPorts",
+                    "description": "Ports that collect the InteractionFlows and Parameters going out from the Module.",
+                    "type": "PortDefinition",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "interactionFlowModelElement",
+                    "description": "InteractionFlowModelElements contained by the Module",
+                    "type": "InteractionFlowModelElement",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "modules",
+                    "description": "The set of Modules that are defined in the IFML model and reference the current ModuleDefinition.",
+                    "type": "Module",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "activityConcept",
+                    "description": "Reference to a process activity (e.g., a BPMN Activity). If present, the current module is describes the technical implementation of the process activity.",
+                    "type": "ActivityConcept",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "BooleanExpression",
+            "superClass": [
+                "Expression"
+            ],
+            "isAbstract": false,
+            "description": "A BooleanExpression is a kind of Expression that evaluates to true or false.",
+            "properties": []
+        },
+        {
+            "name": "InteractionFlowElement",
+            "superClass": [
+                "InteractionFlowModelElement",
+                "uml:NamedElement"
+            ],
+            "superClassTodo": [
+                "TemplateableElement"
+            ],
+            "isAbstract": true,
+            "description": "InteractionFlowElements represent pieces of the system such as Actions, Events, ViewElements, and ViewComponentParts, which participate in user interaction flows through InteractionFlow connections. Usually there is a flow of Parameter values between InteractionFlowElements as a consequence of user, action, or system events.",
+            "properties": [
+                {
+                    "name": "parameters",
+                    "description": "Parameters contained by the InteractionFlowElement.",
+                    "type": "Parameter",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "outInteractionFlows",
+                    "description": "Outgoing InteractionFlows.",
+                    "type": "InteractionFlow",
+                    "isReference": true,
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "inInteractionFlows",
+                    "description": "Incoming InteractionFlows.",
+                    "type": "InteractionFlow",
+                    "isReference": true,
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "Action",
+            "superClass": [
+                "InteractionFlowElement",
+                "uml:NamedElement"
+            ],
+            "isAbstract": false,
+            "description": "An Action is an InteractionFlowElement that represents a piece of business logic triggered by an Event. Actions may reference behavior models describing the actual business logic to be performed. Actions may trigger different Events called ActionEvents as the result of business logic computation termination or the occurrence of exceptions. Actions may reside on the server or on the client side. If no ActionEvent (and corresponding outgoing flow) is specified, IFML assumes as default an ActionEvent and NavigationFlow that lead back to the ViewComponent or ViewContainer from which the navigation to the Action was launched.",
+            "properties": [
+                {
+                    "name": "actionEvents",
+                    "description": "Events triggered by the Action.",
+                    "type": "ActionEvent",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "dynamicBehavior",
+                    "description": "The business logic to be carried out by the Action.",
+                    "type": "DynamicBehavior",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "viewContainer",
+                    "description": "The ViewContainer that contains the current Action.",
+                    "type": "ViewContainer",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "NavigationFlow",
+            "superClass": [
+                "InteractionFlow"
+            ],
+            "isAbstract": false,
+            "description": "A NavigationFlow represents navigation or change of ViewElement focus, the triggering of Action processing, or a SystemEvent. NavigationFlows are followed when Events are triggered. NavigationFlows connect Events of ViewContainers, ViewComponents, ViewComponentParts, or Actions with other InteractionFlowElements. When a NavigationFlow is followed, Parameters may be passed from the container of the source Event to the target InteractionFlowElement through ParameterBindings. When a NavigationFlow is triggered, a corresponding set of DataFlows may be triggered, at the purpose of carrying further parameters to the target InteractionFlowElement. The DataFlows that are triggered are all the ones having some parameter values available and pointing to the same target as the current NavigationFlow.",
+            "properties": []
+        },
+        {
+            "name": "ParameterBindingGroup",
+            "superClass": [
+                "InteractionFlowModelElement"
+            ],
+            "isAbstract": false,
+            "description": "A ParameterBindingGroup aggregates all the ParameterBindings of an InteractionFlow.",
+            "properties": [
+                {
+                    "name": "parameterBindings",
+                    "description": "The ParameterBindings composing the ParameterBindingGroup.",
+                    "type": "ParameterBinding",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "BaseElement",
+            "isAbstract": true,
+            "description": "Element is the base class for the representation of all model elements in an IFML model.",
+            "properties": [
+                {
+                    "name": "constraints",
+                    "description": "Constraints applied to the Element.",
+                    "type": "Constraint",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "annotations",
+                    "description": "Annotations, comments, tags, etc., owned by the Element",
+                    "type": "Annotation",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "Constraint",
+            "superClass": [
+                "BooleanExpression"
+            ],
+            "isAbstract": false,
+            "description": "A Constraint is a BooleanExpression that may be defined for any model Element in order to restrict its behavior.",
+            "properties": []
+        },
+        {
+            "name": "ViewComponent",
+            "superClass": [
+                "ViewElement"
+            ],
+            "isAbstract": false,
+            "description": "A ViewComponent is an element of the user interface that displays content or accepts input. A ViewComponent may be bound to a ContentBinding through its association with ViewComponentPart.",
+            "properties": [
+                {
+                    "name": "viewComponentParts",
+                    "description": "Parts of the ViewComponent.",
+                    "type": "ViewComponentPart",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "Parameter",
+            "superClass": [
+                "uml:TypedElement",
+                "uml:MultiplicityElement",
+                "InteractionFlowModelElement",
+                "uml:NamedElement"
+            ],
+            "isAbstract": false,
+            "description": "A Parameter is a typed name, whose instances hold values. Parameters are held by InteractionFlowElements, i.e., ViewElements, ViewComponentParts, Ports, and Actions. Parameters flow between InteractionFlowElements when Events are triggered. Parameters may correspond to elements of the user interface (for instance, fields in a form), determining whether the element of the user interface is read-only or modifiable. Parameters have a direction property, which can be input (in), output (out) or input-output (inout). Default direction is input. The scope of a Parameter (i.e., the model space where it can be used or referenced) is the InteractionFlowElement that holds the Parameter, plus the incoming and outgoing InteractionFlows. This means that: if the parameter is held by a ViewComponent, it can be referenced only within the ViewComponent itself and the contained ViewComponentParts (plus the incoming and outgoing InteractionFlows); if the parameter is held by a ViewContainer, it can be referenced within the ViewContainer itself, and within the contained ViewContainers, ViewComponents, and ViewComponentParts (plus the incoming and outgoing InteractionFlows).s).",
+            "properties": [
+                {
+                    "name": "direction",
+                    "description": "Determines if the parameter is input, output or input-output.",
+                    "isAttr": true,
+                    "type": "String",
+                    "default": "undefined",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "defaultValue",
+                    "description": "",
+                    "type": "Expression",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "DataBinding",
+            "superClass": [
+                "ContentBinding"
+            ],
+            "isAbstract": false,
+            "description": "DataBinding represents the binding of the system with an instance of an element of the DomainModel such as a table, an object, an XML file etc.",
+            "properties": [
+                {
+                    "name": "conditionalExpression",
+                    "description": "ConditionalExpressions that determine how to access the content.",
+                    "type": "ConditionalExpression",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "visualizationAttribute",
+                    "description": "VisualizationAttributes that determine the StructuralFeatures that should be shown to the user, such as a data base column or an XML element or attribute.",
+                    "type": "VisualizationAttribute",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "dataContextVariables",
+                    "description": "Reference to the ContextVariable that makes use of the DataBinding,",
+                    "type": "DataContextVariable",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "domainConcept",
+                    "description": "A concept specifying the data structure to which the ViewComponent is bound, such as a UML class, a table in a relational data base or an XML file.",
+                    "type": "DomainConcept",
+                    "isAttr": true,
+                    "isReference": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "ConditionalExpression",
+            "superClass": [
+                "Expression",
+                "ViewComponentPart"
+            ],
+            "isAbstract": false,
+            "description": "A ConditionalExpression is a predefined query expression associated with a DataBinding. When a ConditionalExpression is present, the DataBinding is queried by applying the query in the ConditionalExpression for retrieving content.t.",
+            "properties": []
+        },
+        {
+            "name": "Context",
+            "superClass": [
+                "BaseElement"
+            ],
+            "isAbstract": false,
+            "description": "The Context is a runtime aspect of the system that determines how the user interface should be configured. A Context has several dimensions that represent not only the user’s identity and preferences, but also the interaction environment of the system. Context is composed of one or more ContextDimensions and may comprise ContextVariables.",
+            "properties": [
+                {
+                    "name": "contextDimensions",
+                    "description": "ContextDimensions the user context must satisfy to have access to one or more Viewpoints.",
+                    "type": "ContextDimension",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "contextVariables",
+                    "description": "ContextVariable – set of ContextVariables whose values are relevant for the current Contextt",
+                    "type": "ContextVariable",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "VisualizationAttribute",
+            "superClass": [
+                "ViewComponentPart"
+            ],
+            "isAbstract": false,
+            "description": "The VisualizationAttributes used by a ViewComponent to determine the features obtained from a DataBinding that may be shown to the user, such as a data base column or an XML element or attribute. A feature is represented using a UML::StructuralFeature.",
+            "properties": [
+                {
+                    "name": "featureConcept",
+                    "description": "",
+                    "type": "FeatureConcept",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "Event",
+            "superClass": [
+                "InteractionFlowElement"
+            ],
+            "isAbstract": false,
+            "description": "An Event is an occurrence that can affect the state of the application. Events can be ThrowingEvent (events that are thrown by the modeled interaction) or CatchingEvent (events that are captured by the modeled interaction and used as triggers causing navigation and/or Parameter value passing between InteractionFlowElements.",
+            "properties": [
+                {
+                    "name": "activationExpression",
+                    "description": "Reference to an ActivationExpression whose evaluation result determines if the Event is active or inactive. If no ActivationExpression is given, the default is that the Event is active.",
+                    "type": "ActivationExpression",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "interactionFlowExpression",
+                    "description": "InteractionFlowExpression determining the InteractionFlows to be followed after the occurrence of the Event.",
+                    "type": "InteractionFlowExpression",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "InteractionFlowModelElement",
+            "superClass": [
+                "BaseElement"
+            ],
+            "isAbstract": true,
+            "description": "An InteractionFlowModelElement is the top-level class that generalizes all the elements that are part of an InteractionFlowModel.",
+            "properties": []
+        },
+        {
+            "name": "ViewElementEvent",
+            "superClass": [
+                "CatchingEvent"
+            ],
+            "isAbstract": false,
+            "description": "A ViewElementEvent represents a user interaction Event, which may be triggered by ViewElements (ViewContainers and ViewComponents).",
+            "properties": [
+                {
+                    "name": "viewElement",
+                    "description": "",
+                    "type": "ViewElement",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "Annotation",
+            "isAbstract": false,
+            "description": "An Annotation represents a comment, note, explanation, or other type of documentation that can be attached to any Element.",
+            "properties": [
+                {
+                    "name": "text",
+                    "description": "Annotation text.",
+                    "type": "String",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "ModulePackage",
+            "superClass": [
+                "ModularizationElement"
+            ],
+            "isAbstract": false,
+            "description": "A ModulePackage is a container of ModuleDefinitions. ModulePackages can be nested in arbitrarily deep hierarchical structure.",
+            "properties": [
+                {
+                    "name": "modularizationElements",
+                    "description": "",
+                    "type": "ModularizationElement",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "ModularizationElement",
+            "superClass": [
+                "uml:NamedElement",
+                "InteractionFlowModelElement"
+            ],
+            "isAbstract": false,
+            "description": "A ModularizationElement is an abstract concept that represents both ModulePackages and ModuleDefinitions.",
+            "properties": [
+                {
+                    "name": "modulePackage",
+                    "description": "",
+                    "type": "ModulePackage",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "Module",
+            "superClass": [
+                "uml:NamedElement",
+                "InteractionFlowElement"
+            ],
+            "isAbstract": false,
+            "description": "A Module is a named reference to a ModuleDefinition, which allows reuse of the model part specified in the ModuleDefinition. Module has a reference to the relevant ModuleDefinition and may be associated with a set of Ports, which in turn reference the corresponding PortDefinitions. For every PortDefinition in the ModuleDefinition there shall be 0 or 1 Ports in each corresponding Module. An input Port (i.e., a Port referencing an input PortDefinition) has incoming InteractionFlows from the outside of the Module, for receiving input Parameters. An output Port has outgoing InteractionFlows to the outside of the Module, for shipping output Parameters.",
+            "properties": [
+                {
+                    "name": "moduleDefinition",
+                    "description": "The ModuleDefinition that is instantiated by the current Module.",
+                    "type": "ModuleDefinition",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "ports",
+                    "description": "Ports that collect InteractionFlows and Parameters incoming or outgoing from the Module.",
+                    "type": "Port",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "Port",
+            "superClass": [
+                "InteractionFlowElement"
+            ],
+            "isAbstract": false,
+            "description": "A Port is an interaction point between a Module and the surrounding model within which it is defined. Module is associated with a set of Ports, which in turn reference the corresponding PortDefinitions. An input Port (i.e., a Port referencing an input PortDefinition) has incoming InteractionFlows from the outside of the Module, for receiving input Parameters. An output Port has outgoing InteractionFlows to the outside of the Module, for shipping output Parameters.",
+            "properties": [
+                {
+                    "name": "portDefinition",
+                    "description": "Reference to the PortDefinition that defines the interface of the current Port",
+                    "type": "PortDefinition",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "module",
+                    "description": "Module that contains the current Port",
+                    "type": "Module",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "CatchingEvent",
+            "superClass": [
+                "Event"
+            ],
+            "isAbstract": false,
+            "description": "A CatchingEvent is an occurrence that can affect the state of the application, by causing navigation and/or Parameter value passing between InteractionFlowElements. CatchingEvents may be produced by a user interaction (ViewElementEvent), by an action when it finishes its execution (ActionEvent), or by the system in the form of notifications (SystemEvent), or by a navigational jump (JumpEvent) in the model that reaches a LandingEvent.",
+            "properties": []
+        },
+        {
+            "name": "ThrowingEvent",
+            "superClass": [
+                "Event"
+            ],
+            "isAbstract": false,
+            "description": "A ThrowingEvent is an occurrence of event that is generated by the modeled application. Event occurences generated by ThrowingEvent can be captured by CatchingEvents.",
+            "properties": []
+        },
+        {
+            "name": "BPMNActivityConcept",
+            "superClass": [
+                "ActivityConcept"
+            ],
+            "isAbstract": false,
+            "description": "BPMNActivityConcepts are a specialization of ActivityConcept for representing the particular case of BPMN Activities.",
+            "properties": [
+                {
+                    "name": "activity",
+                    "description": "",
+                    "type": "Activity",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "ContextVariable",
+            "superClass": [
+                "uml:NamedElement"
+            ],
+            "isAbstract": false,
+            "description": "ContextVariable is a name-value pair that allows to store information associated to the current Context. It can be a SimpleContextVariable, storing a primitive type value, or a DataContextVariable, referencing a DataBinding.",
+            "properties": [
+                {
+                    "name": "context",
+                    "description": "",
+                    "type": "Context",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "scope",
+                    "description": "",
+                    "type": "ContextVariableScope",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "SimpleContextVariable",
+            "superClass": [
+                "ContextVariable",
+                "uml:ValueSpecification"
+            ],
+            "isAbstract": false,
+            "description": "SimpleContextVariable is a typed name-value pair that can be associated to the current Context. Allowed types are the primitive ones",
+            "properties": []
+        },
+        {
+            "name": "DataContextVariable",
+            "superClass": [
+                "ContextVariable"
+            ],
+            "isAbstract": false,
+            "description": "DataContextVariable allows to associate a DataBinding to the current Context.",
+            "properties": [
+                {
+                    "name": "dataBinding",
+                    "description": "Reference to the DomainModel concept used as ContextVariable.",
+                    "type": "DataBinding",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "DomainConcept",
+            "superClass": [
+                "DomainElement"
+            ],
+            "isAbstract": false,
+            "description": "The DomainConcept represents a generic concept, class, entity of the DomainModel, which can be referenced in a DataBinding. Its purpose is to allow extensibility in terms of concepts from different modeling languages representing the DomainModel.",
+            "properties": [
+                {
+                    "name": "dataBinding",
+                    "description": "Reference to the DataBinding in a ViewComponent that uses the current DomainConcept.",
+                    "type": "DataBinding",
+                    "isReference": true,
+                    "isAttr": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "FeatureConcept",
+            "superClass": [
+                "DomainElement"
+            ],
+            "isAbstract": false,
+            "description": "FeatureConcept represents the generic attribute or property of a DomainModel element, which can be referenced as VisualizationAttribute.",
+            "properties": [
+                {
+                    "name": "visualizationAttribute",
+                    "description": "Placeholder in a DataBinding of the FeatureConcept to be visualized.",
+                    "type": "VisualizationAttribute",
+                    "isReference": true,
+                    "isAttr": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "BehaviorConcept",
+            "superClass": [
+                "DomainElement"
+            ],
+            "isAbstract": false,
+            "description": "BehaviorConcept represents the generic Behavior (for instance, a UML dynamic diagram) which can be referenced as DynamicBehavior in a ContentBinding.",
+            "properties": [
+                {
+                    "name": "dynamicBehavior",
+                    "description": "Placeholder in a ContentBinding of the Behavior to be executed by the Action or ViewComponent.",
+                    "type": "DynamicBehavior",
+                    "isReference": true,
+                    "isAttr": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "BehavioralFeatureConcept",
+            "superClass": [
+                "DomainElement"
+            ],
+            "isAbstract": false,
+            "description": "BehavioralFeatureConcept represents the generic BehavioralFeature of a DomainModel element (for instance, a Class method) which can be referenced as DynamicBehavior in a ContentBinding.",
+            "properties": [
+                {
+                    "name": "dynamicBehavior",
+                    "description": "Placeholder in a ContentBinding of the BehavioralFeature to be executed by the Action or ViewComponent.",
+                    "type": "DynamicBehavior",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "UMLBehavior",
+            "superClass": [
+                "BehaviorConcept"
+            ],
+            "isAbstract": false,
+            "description": "UMLBehavior represents a Behavior specified in UML (that is, a UML dynamic diagram) which can be referenced as DynamicBehavior in a ContentBinding.",
+            "properties": [
+                {
+                    "name": "behavior",
+                    "description": "UML Behavior to be executed by the Action or ViewComponent.",
+                    "type": "uml:Behavior",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "UMLBehavioralFeature",
+            "superClass": [
+                "BehavioralFeatureConcept"
+            ],
+            "isAbstract": false,
+            "description": "UMLBehavioralFeature represents a BehavioralFeature specified in UML (typically, a UML method in a Class) which can be referenced as DynamicBehavior in a ContentBinding.",
+            "properties": [
+                {
+                    "name": "behavioralFeature",
+                    "description": "UML BehavioralFeature to be executed by the Action or ViewComponent.",
+                    "type": "BehavioralFeature",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "UMLDomainConcept",
+            "superClass": [
+                "DomainConcept"
+            ],
+            "isAbstract": false,
+            "description": "The UMLDomainConcept is a specific DomainConcept referring to a UML Classifier.",
+            "properties": [
+                {
+                    "name": "classifier",
+                    "description": "Reference to the UML Classifier of the DomainModel that will be connected to a ViewElement through a DataBinding.",
+                    "type": "uml:Classifier",
+                    "isAttr": false,
+                    "isReference": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "UMLStructuralFeature",
+            "superClass": [
+                "FeatureConcept"
+            ],
+            "isAbstract": false,
+            "description": "The UMLStructuralFeature is a specific FeatureConcept referring to a UML StructuralFeature.",
+            "properties": [
+                {
+                    "name": "structuralFeature",
+                    "description": "Reference to the UML element of the DomainModel.",
+                    "type": "uml:StructuralFeature",
+                    "isReference": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "ActivityConcept",
+            "superClass": [
+                "uml:NamedElement"
+            ],
+            "isAbstract": false,
+            "description": "ActivityConcepts are an abstract concept describing the idea of business action that can be implemented through an IFML ModuleDefinition. Typical examples could be BPMN Activities or Activities in UML Activity Diagrams",
+            "properties": [
+                {
+                    "name": "moduleDefinition",
+                    "description": "The ModuleDefinition that implements the business process ActivityConcept.",
+                    "type": "ModuleDefinition",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "DomainElement",
+            "superClass": [
+                "uml:NamedElement"
+            ],
+            "isAbstract": false,
+            "description": "The DomainElement represents a generic element of the DomainModel, which can describe a concept, a property, a behavior, or a behavioral feature. It is a generic representative for classes DomainConcept, FeatureConcept, BehavioralFeatureConcept, BehaviorConcept",
+            "properties": []
+        },
+        {
+            "name": "OnSubmitEvent",
+            "superClass": [
+                "ViewElementEvent"
+            ],
+            "isAbstract": false,
+            "description": "An OnSubmitEvent triggers the Parameter passing of a ViewComponent to the target ViewElement or Action of its corresponding NavigationFlow. An OnSubmitEvent is typically found in Form ViewComponents.",
+            "properties": []
+        },
+        {
+            "name": "ValidationRule",
+            "superClass": [
+                "Constraint"
+            ],
+            "isAbstract": false,
+            "description": "A ValidationRule is a Constraint, which, when evaluated, determines if the content of a Field or group of Fields is valid or not.",
+            "properties": []
+        },
+        {
+            "name": "List",
+            "superClass": [
+                "ViewComponent"
+            ],
+            "isAbstract": false,
+            "description": "The List ViewComponent is used to display a list of DataBinding instances. When the List ViewComponent is associated with an Event, it means that each DataBinding instance displayed by the component may trigger the Event. The Event will in turn cause the passing of the Parameter values mapped to the DataBinding instance to a target InteractionFlowElement.",
+            "properties": [
+                {
+                    "name": "selectEvent",
+                    "description": "Events that represent the selection of a DataBinding instance of the List ViewComponent and the passing of the value as a Parameter.",
+                    "type": "OnSelectEvent",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "Position",
+            "superClass": [
+                "ContextDimension"
+            ],
+            "isAbstract": false,
+            "description": "A Position is a ContextDimension representing the location and orientation of a device from which the application is accessed. A Position is associated with one or more ViewPoints (through the association between ViewPoint and Context). When the user context indicates having reached the location or orientation described by a Position, the ContextDimension is satisfied and access is granted to the ViewPoint elements and presented to the user.",
+            "properties": []
+        },
+        {
+            "name": "UserRole",
+            "superClass": [
+                "ContextDimension"
+            ],
+            "isAbstract": false,
+            "description": "A UserRole is a ContextDimension that represents a role played by a human user or external system that accesses the application through its user interface. A UserRole is associated with one or more ViewPoints (trough the association between ViewPoint and Context). When the user context has the same user role as the one specified by the UserRole, the ContextDimension is satisfied and access is granted to the ViewPoint elements.",
+            "properties": []
+        },
+        {
+            "name": "Slot",
+            "superClass": [
+                "ViewComponentPart",
+                "Parameter"
+            ],
+            "isAbstract": false,
+            "description": "A Slot is a value placeholder for a Field. When the Field is a SelectionField, its associated Slots contain the available selection options and the selected one. When the Field is a SimpleField, the Slot contains the Field value. A Slot value of a SimpleField and the Slots corresponding to the selected options of SelectionFields are copied to Parameters in order to be passed to other ViewElements or Actions when an Event is triggered.",
+            "properties": []
+        },
+        {
+            "name": "OnSelectEvent",
+            "superClass": [
+                "ViewElementEvent"
+            ],
+            "isAbstract": false,
+            "description": "An OnSelectEvent is a kind of Event that, when triggered, results in a selected value being passed as a Parameter to the target InteractionFlowElement of its associated NavigationFlow.",
+            "properties": []
+        },
+        {
+            "name": "Field",
+            "superClass": [
+                "ViewComponentPart",
+                "Parameter"
+            ],
+            "isAbstract": true,
+            "description": "A Field is a value-type pair whose value may be displayed to the user or serves as a mean for capturing input from the user. Fields are usually mapped to Parameters for passing their values to other InteractionFlowElements. There are two kinds of fields, SimpleFields and SelectionFields.",
+            "properties": []
+        },
+        {
+            "name": "Form",
+            "superClass": [
+                "ViewComponent"
+            ],
+            "isAbstract": false,
+            "description": "The Form ViewComponent represents input forms where user can submit information through Fields (SimpleFields or SelectionFields). It comprises at least one Field and typically at least one OnSubmitEvent.",
+            "properties": []
+        },
+        {
+            "name": "Device",
+            "superClass": [
+                "ContextDimension"
+            ],
+            "isAbstract": false,
+            "description": "A Device is a ContextDimension that represents any device such as desktop, laptop, smart phone, tablet, or any other device from which the application may be accessed. A Device is associated with one or more Viewpoints (through the association from Viewpoint to Context). When the user context specifies the same device as the one specified by Device, the ContextDimension is satisfied and access is granted to the Viewpoint elements.",
+            "properties": []
+        },
+        {
+            "name": "SelectionField",
+            "superClass": [
+                "Field"
+            ],
+            "isAbstract": false,
+            "description": "A SelectionField is a kind of Field that enables the selection of one or more values from the predefined set of values given in its Slots.",
+            "properties": [
+                {
+                    "name": "isMultiSelection",
+                    "description": "If true, the SelectionField allows the selection of multiple values.",
+                    "type": "Boolean",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "SimpleField",
+            "superClass": [
+                "Field"
+            ],
+            "isAbstract": false,
+            "description": "A SimpleField is a kind of Field that displays a value or captures a textual input from the user. A SimpleField also behaves as a Parameter so that its value may be passed to other ViewElements or Actions.",
+            "properties": []
+        },
+        {
+            "name": "Details",
+            "superClass": [
+                "ViewComponent"
+            ],
+            "isAbstract": false,
+            "description": "A Details ViewComponent is used to display the details of a DataBinding instance. When the Details ViewComponent is associated with an Event, it means that the DataBinding instance displayed by the component may trigger the Event. The Event will in turn cause the passing of the Parameter values mapped to the DataBinding instance to a target InteractionFlowElement.",
+            "properties": []
+        },
+        {
+            "name": "Window",
+            "superClass": [
+                "ViewContainer"
+            ],
+            "isAbstract": false,
+            "description": "A Window is a special kind of ViewContainer used to model the concept of a window in IFML.",
+            "properties": [
+                {
+                    "name": "isModal",
+                    "description": "If true, the Window will be rendered as a modal window.",
+                    "type": "Boolean",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "isNewWindow",
+                    "description": "If true, the Window will be opened as a new window.",
+                    "type": "Boolean",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "OnLoadEvent",
+            "superClass": [
+                "SystemEvent"
+            ],
+            "isAbstract": false,
+            "description": "An OnLoadEvent is triggered by the system when a ViewElement is completely computed and rendered.",
+            "properties": []
+        },
+        {
+            "name": "Menu",
+            "superClass": [
+                "ViewContainer"
+            ],
+            "isAbstract": false,
+            "description": "A Menu is a special kind of ViewContainer used to model the concept of a menu of options in IFML. It cannot contain ViewComponents or sub-ViewContainers.",
+            "properties": []
+        },
+        {
+            "name": "JumpEvent",
+            "superClass": [
+                "ThrowingEvent"
+            ],
+            "isAbstract": false,
+            "description": "A JumpEvent is a ThrowingEvent that, when launched, redirects the NavigationFlow entering the event to a referenced LandingEvent.",
+            "properties": [
+                {
+                    "name": "landingEvent",
+                    "description": "Reference to the LandingEvent targeted by the JumpEvent.",
+                    "type": "LandingEvent",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "LandingEvent",
+            "superClass": [
+                "CatchingEvent"
+            ],
+            "isAbstract": false,
+            "description": "A LandingEvent is the destination of a JumpEvent.",
+            "properties": [
+                {
+                    "name": "jumpingEvents",
+                    "description": "Reference to the JumpEvents targeting the current LandingEvent.",
+                    "type": "JumpEvent",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "SetContextEvent",
+            "superClass": [
+                "ThrowingEvent"
+            ],
+            "isAbstract": false,
+            "description": "A SetContextEvent is launched every time a ContextVariable is set or assigned a new value.",
+            "properties": []
+        }
+    ],
+    "enumerations": [
+        {
+            "name": "Direction",
+            "literalValues": [
+                {
+                    "name": "in"
+                },
+                {
+                    "name": "out"
+                }
+            ]
+        }
+    ]
+}
