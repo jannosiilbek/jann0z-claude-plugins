@@ -118,6 +118,8 @@ The suite-wide enforcement arm of doctrine §7 — a **double assurance** layer:
 - **`agents/drift-police.md`** — the agent that runs the audit and drives remediation.
 - **plugin `scripts/`** — the mechanical suite-drift script, the sole mechanical authority for cross-artifact checks; it obeys doctrine §2 (machine-readable summary on stdout, no vacuous green, status taxonomy `pass | fail | malformed | broken-test`) and ships its own adversarial selftest per doctrine §3.
 
+**Creation** — build the agent with `plugin-dev:agent-creator`, this section as the sole requirements contract; author the suite-drift script alongside it. Created only when the script's adversarial selftest passes (doctrine §3).
+
 **Checks** — over the entire `specs/` tree:
 
 1. *Resolution* — every upstream-owned name used in any artifact resolves by exact string match to exactly one owner; ownership contracts are read from each skill's intake table.
@@ -135,4 +137,4 @@ The suite-wide enforcement arm of doctrine §7 — a **double assurance** layer:
 
 1. **Phase 0 — sources**: run Step 1 for all six skills, each in its own separate research context. No skill creation starts until every source set passes Step 1.
 2. **Phase 1 — skills**: create the six skills in pipeline order (1→6) — each skill's drift check needs its upstream artifact contract defined first. A skill counts as created only when (a) its harness selftest passes, and (b) it converges end-to-end on the shared sample domain within the doctrine §5 bound.
-3. **Phase 2 — suite check**: cross-skill DRY and drift audit — single ownership of every concept across all six artifact contracts, verified by the plugin's drift police (Plugin-level drift police) in its first end-to-end run; consistent `specs/` naming; each skill tested end-to-end on the shared sample domain: **conference ticketing** (orders, tickets, events, venues, refunds — rich lifecycles for 05, an M:N for 04, multi-aggregate transactions for 03).
+3. **Phase 2 — suite check**: create the drift police (Creation, Plugin-level drift police), then run its first end-to-end audit — single ownership of every concept across all six artifact contracts; consistent `specs/` naming; each skill tested end-to-end on the shared sample domain: **conference ticketing** (orders, tickets, events, venues, refunds — rich lifecycles for 05, an M:N for 04, multi-aggregate transactions for 03).
