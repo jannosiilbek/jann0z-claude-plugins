@@ -8,14 +8,14 @@ Derived from domain description `box-office.md`@sha256:9a8b7c6d5e4f30211f2e3d4c5
 
 ## Events Recap
 
-| Event | Actor | Trigger | Notes |
-|-------|-------|---------|-------|
-| Order Placed | Customer | Place Order command | pivotal |
-| Order Paid | Payment Gateway | Order Placed | pivotal |
-| Order Expired | Box Office System | Order Placed | terminal |
-| Ticket Reserved | Box Office System | Order Placed | |
-| Ticket Sold | Box Office System | Order Paid | |
-| Ticket Released | Box Office System | Order Expired | terminal |
+| Event | Actor | Trigger | Notes | Deliverable |
+|-------|-------|---------|-------|-------------|
+| Order Placed | Customer | Place Order command | pivotal | — |
+| Order Paid | Payment Gateway | Order Placed | pivotal | — |
+| Order Expired | Box Office System | Order Placed | terminal | — |
+| Ticket Reserved | Box Office System | Order Placed | | — |
+| Ticket Sold | Box Office System | Order Paid | | — |
+| Ticket Released | Box Office System | Order Expired | terminal | — |
 
 ## Actors
 

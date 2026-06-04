@@ -27,7 +27,7 @@ node scripts/harness.mjs <03-artifact> --upstream-01 <01-artifact> --upstream-02
 
 The two upstream parses use the **pinned 01/02 formats** (copied, never imported — see §1):
 
-- **01** (event-storming): `## Domain Events` table `Event | Actor | Trigger | Notes`;
+- **01** (event-storming): `## Domain Events` table `Event | Actor | Trigger | Notes | Deliverable`;
   `## Actors` table `Actor | Kind | Responsibility`; `## Hotspots` table
   `Hotspot | Question | Blocks`; `## Lifecycle Skeletons` with `### <AggregateName>` numbered
   event lists. **01 is authority for event/actor/aggregate names + skeletons.**
@@ -138,7 +138,7 @@ parseable 03 yields `fail`; ⚠️/ℹ️ lints are warn-only findings.
 | L10 | Every Invariants `ID` matches `INV-<token>-<n>` (`n` a positive integer) and is unique within the artifact; every `Scope` cell is exactly `within-boundary`. | I1, I2 | `fail` (Scope ❌ / ID ⚠️) |
 | L11 | Every policy `Mode` cell ∈ `{transactional, eventual}` (exact). | X3 | `fail` |
 | L12 | No forbidden-synonym token (the closed list read from 02's `## Forbidden Synonyms` `Forbidden term` column) appears anywhere in 03's prose cells (Root lines, Boundary/Invariants/References/Policies cells). Whole-word, case-insensitive. | L2 | `fail` |
-| L13 | No Domain-Events-shaped table (`Event \| Actor \| Trigger \| Notes` header) appears anywhere inside 03 (a restated 01 event table). | D1 (D1-mech) | `fail` |
+| L13 | No Domain-Events-shaped table (`Event \| Actor \| Trigger \| Notes \| Deliverable` header) appears anywhere inside 03 (a restated 01 event table). | D1 (D1-mech) | `fail` |
 | L14 | No Hotspots-shaped table (`Hotspot \| Question \| Blocks` header) and no Actors-shaped table (`Actor \| Kind \| Responsibility` header) appears anywhere inside 03 (a restated 01 hotspot/actor block). | D5 (D5-mech) | warn-only (ℹ️) |
 | L15 | No Terms-shaped table (`Term \| Definition \| Owns 01 element? \| 01 element (exact string)` header) appears anywhere inside 03 (a restated 02 glossary). | D3 (D3-mech) | `fail` |
 | L16 | No `<AggregateName>Status`-values listing appears inside 03 — i.e. no table with a `Value \| Derived from event (exact 01 string)` header, and no prose listing of ≥2 of a single enum's 02 values as an enumeration rather than a single cited value. | D4 (D4-mech) | `fail` |

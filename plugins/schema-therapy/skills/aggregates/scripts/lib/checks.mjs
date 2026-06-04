@@ -40,7 +40,7 @@ const POLICIES_COLUMNS = ['Policy', 'Source event', 'Target aggregate', 'Mode', 
 
 // Pinned 01 upstream shape (the same A-theme event-storming pins).
 const REQUIRED_H2_01 = ['Domain Events', 'Actors', 'Hotspots', 'Lifecycle Skeletons'];
-const EVENTS_COLUMNS_01 = ['Event', 'Actor', 'Trigger', 'Notes'];
+const EVENTS_COLUMNS_01 = ['Event', 'Actor', 'Trigger', 'Notes', 'Deliverable'];
 const ACTORS_COLUMNS_01 = ['Actor', 'Kind', 'Responsibility'];
 const HOTSPOTS_COLUMNS_01 = ['Hotspot', 'Question', 'Blocks'];
 

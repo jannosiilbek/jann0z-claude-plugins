@@ -1,12 +1,12 @@
 <!-- fingerprints:
-01-event-storming.md@sha256:523aa37c481ec8791813797d23934cc0c18f94570a5185c1a657f96cbf377739
-02-glossary.md@sha256:2c472777ffccf7a0275c19adec734cd7f050329d2f6c8197fc48c5a3bb6cab37
+01-event-storming.md@sha256:8808edde01f35a1a3d5d6a4aba10133d725920d68c42d432c6d5bbc5d872ddd4
+02-glossary.md@sha256:5f13227739cd2a3444b73a7c531d1d4de611054b81ba40bda62c1e6966ed4fca
 -->
 
 ## Upstream Fingerprints
 
-- 01-event-storming.md@sha256:523aa37c481ec8791813797d23934cc0c18f94570a5185c1a657f96cbf377739
-- 02-glossary.md@sha256:2c472777ffccf7a0275c19adec734cd7f050329d2f6c8197fc48c5a3bb6cab37
+- 01-event-storming.md@sha256:8808edde01f35a1a3d5d6a4aba10133d725920d68c42d432c6d5bbc5d872ddd4
+- 02-glossary.md@sha256:5f13227739cd2a3444b73a7c531d1d4de611054b81ba40bda62c1e6966ed4fca
 
 ## Aggregates
 

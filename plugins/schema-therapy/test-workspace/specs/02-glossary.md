@@ -1,10 +1,10 @@
 <!-- fingerprints:
-01-event-storming.md@sha256:523aa37c481ec8791813797d23934cc0c18f94570a5185c1a657f96cbf377739
+01-event-storming.md@sha256:8808edde01f35a1a3d5d6a4aba10133d725920d68c42d432c6d5bbc5d872ddd4
 -->
 
 ## Upstream Fingerprint
 
-01-event-storming.md@sha256:523aa37c481ec8791813797d23934cc0c18f94570a5185c1a657f96cbf377739 (captured 2026-06-04, against the converged 01-event-storming.md for the Conference Ticketing domain).
+01-event-storming.md@sha256:8808edde01f35a1a3d5d6a4aba10133d725920d68c42d432c6d5bbc5d872ddd4 (captured 2026-06-05, against the regenerated 01-event-storming.md for the Conference Ticketing domain).
 
 This glossary is scoped to the single bounded context: Conference Ticketing.
 
@@ -13,8 +13,7 @@ This glossary is scoped to the single bounded context: Conference Ticketing.
 | Term | Definition | Owns 01 element? | 01 element (exact string) |
 |------|------------|------------------|---------------------------|
 | Organizer | The party that opens conference events and registers the venues they run in. | yes | Organizer |
-| Customer | A patron who places orders, acquires tickets, and joins waitlists. | yes | Customer |
-| TicketHolder | The party that holds an acquired ticket and may give it up before its event begins. | yes | Ticket Holder |
+| Customer | A patron who places orders, acquires and holds tickets, may give a ticket up before its event begins, and joins waitlists. | yes | Customer |
 | GateAgent | The party that admits a ticket at the door. | yes | Gate Agent |
 | FinanceOfficer | The party accountable for the refund of a given ticket. | yes | Finance Officer |
 | PaymentGateway | The external party that confirms whether an order has been paid and whether a refund has gone through. | yes | Payment Gateway |
@@ -92,7 +91,8 @@ This glossary is scoped to the single bounded context: Conference Ticketing.
 | Forbidden term | Canonical term | Reason |
 |----------------|----------------|--------|
 | Buyer | Customer | One name per patron concept; Buyer is a rejected alternative. |
-| Attendee | TicketHolder | A held-admission patron is a TicketHolder in this context. |
+| Attendee | Customer | A held-admission patron is a Customer in this context. |
+| TicketHolder | Customer | The held-ticket party folded into Customer; one name per patron concept. |
 | Conference | Event | The conference occurrence is named Event throughout. |
 | Section | SeatingSection | Section is an abbreviation of the canonical SeatingSection. |
 | Reservation | Order | An unpaid hold is the Order concept, not a separate term. |
