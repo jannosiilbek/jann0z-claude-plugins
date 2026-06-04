@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+lang="en">
+<head>
+  <style type="text/css">
+    .diff-chg { background-color: lime }
+    .diff-add { background-color: yellow }
+    .diff-del { background-color: #FFBBBB; text-decoration: line-through; }
+    .title-description { color:red; font-style:italic }
+    .title-correction { color:red; font-style:italic }
+    .error{ background:  #dddddd;border-width: thin;margin-top:1cm;}
+
+div.cited { background-color: #e5eef3;
+                   border-top-width: 4px;
+                   border-top-style: double;
+                   border-top-color: #d3d3d3;
+                   border-bottom-width: 4px;
+                   border-bottom-style: double;
+                   border-bottom-color: #d3d3d3;
+                   padding: 4px; margin: 0em }
+.wrong{ color:  #ff0000;}
+.correct{ color:  #0000ff;}
+.RFC2119 {
+  text-transform: lowercase;
+  font-style: italic;
+}
+  </style>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <title>Errata in 
+  State Chart XML (SCXML): State Machine Notation for Control Abstraction
+  Recommendation</title>
+  <link rel="stylesheet" href="https://www.w3.org/StyleSheets/TR/base.css" type="text/css" />
+</head>
+
+<body>
+
+<div class="head">
+<a href="https://www.w3.org/"><img src="https://www.w3.org/Icons/w3c_home" alt="W3C" height="48" width="72" /></a>
+
+<h1>
+State Chart XML (SCXML): State Machine Notation for Control Abstraction
+Recommendation Errata
+</h1>
+
+
+<p><em>Last updated $Date: 2016/12/28 14:46:27 $</em></p>
+
+<dl>
+  <dt>This document records known errors in the 
+  SCXML
+  Recommendation:</dt>
+    <dd>
+    <a href=" http://www.w3.org/TR/2015/REC-scxml-20150901/">
+    http://www.w3.org/TR/2015/REC-scxml-20150901/</a>
+      <p></p>
+
+    </dd>
+</dl>
+
+<p class="copyright"><a href="https://www.w3.org/Consortium/Legal/ipr-notice#Copyright">Copyright</a>
+© 2015-2016 <a href="https://www.w3.org/"><acronym
+title="World Wide Web Consortium">W3C</acronym></a><sup>®</sup> (<a
+href="http://www.csail.mit.edu/"><acronym
+title="Massachusetts Institute of Technology">MIT</acronym></a>, <a
+href="http://www.ercim.eu/"><acronym
+title="European Research Consortium for Informatics and Mathematics">
+ERCIM</acronym></a>, <a href="http://www.keio.ac.jp/">Keio</a>, <a
+href="http://ev.buaa.edu.cn/">Beihang</a>). W3C <a href="https://www.w3.org/Consortium/Legal/ipr-notice#Legal_Disclaimer">
+liability</a>, <a href="https://www.w3.org/Consortium/Legal/ipr-notice#W3C_Trademarks">
+trademark</a> and <a href="https://www.w3.org/Consortium/Legal/copyright-documents">document
+use</a> rules apply.</p>
+
+                                                                                
+<hr title="Separator for header" />
+</div>
+
+
+<h2>About the SCXML Recommendation</h2>
+
+<p>The
+<a href=" http://www.w3.org/TR/2015/REC-scxml-20150901/">
+SCXML Recommendation</a>
+has been produced by the W3C
+<a href=" http://www.w3.org/Voice/">Voice Browser Working Group</a>
+as part of the activity of the W3C
+<a href="https://www.w3.org/UbiWeb/">Ubiquitous Web Domain</a>.
+</p>
+
+<p>This document lists known errata to the Recommendation.
+Each entry has the following information:</p>
+
+<ul>
+  <li>A unique entry number</li>
+  <li>The date it was added to the errata page.</li>
+  <li>Whether the entry is considered an important error, a minor
+    typographical error, a clarification, or a known problem with the
+    document itself.</li>
+  <li>The section referred to.</li>
+
+  <li>A description of the problem and correction if applicable.</li>
+</ul>
+
+<p>Please send general comments about this document to the public mailing
+list at <a href="mailto:www-voice@w3.org">www-voice@w3.org</a>.
+The <a href="http://lists.w3.org/Archives/Public/www-voice/">archive</a>
+for the list is accessible online.</p>
+
+<h2>Conventions</h2>
+
+<p>Added text marked <span class="diff-add">&#x2191;new, added
+text&#x2191;</span>. Changed text marked <span
+class="diff-chg">&#x2191;changed text&#x2191;</span>. Removed text marked
+<span class="diff-del">&#x2193;deleted text&#x2193;.</span></p>
+
+<p></p>
+
+<h2>Proposed and Pending Errata</h2>
+
+<p>None.</p>
+
+<h2>Rejected proposed errata</h2>
+
+<p><a>None.</a></p>
+<hr />
+
+<h2 id="errors">Known errors as of 28 December 2016</h2>
+
+<ul>
+<li><a href="#e1">E1 (13 January 2016): Appendix C.1.2 Example 3 - 'sendid' attribute wrongly used instead of 'id'</a> - Editorial</li>
+<li><a href="#e1">E2 (13 January 2016): Appendix B. Data Models</a> - Editorial</li>
+<li><a href="#e3">E3 (5 February 2016): 3.12.1 Event Descriptors - event name matching example</a> - Editorial</li>
+
+<li><a href="#e4">E4 (25 February 2016): Appendix D - misleading description on interepret() procedure</a> - Editorial</li>
+<li><a href="#e5">E5 (25 February 2016): Appendix D - typo in the example code of interpret() procedure</a> - Editorial</li>
+<li><a href="#e6">E6 (25 February 2016): Appendix G.1 - typo in example SCXML code, "Main.scxml"</a> - Editorial</li>
+
+<li><a href="#e7">E7 (23 December 2016): Appendix G.5 - typo in example SCXML code, "Traffic Report" and "Blackjack"</a> - Editorial</li>
+</ul>
+
+<hr />
+<h2>Errata</h2>
+
+<!-- E1 -->
+<h3 id="e1">E1: Appendix C.1.2 Example 3 - 'sendid' attribute wrongly used instead of 'id'</h3>
+<p>
+In <a href="https://www.w3.org/TR/2015/REC-scxml-20150901/#N1138D">section
+C.1.2</a>, "Example 3" contains an incorrect attribute name.
+</p>
+
+<div class="cited">
+<p>
+&lt;send sendid="send-123" .../&gt;
+</p>
+</div>
+<p>should be:</p>
+<div class="cited">
+<p>
+&lt;send id="send-123".../&gt;
+</p>
+</div>
+
+<p>
+That is, the &lt;send&gt; element has an 'id' attribute, and does not have a
+'sendid' attribute.
+</p>
+
+<p><strong>Email trail:</strong></p>
+<ul>
+<li>
+None
+</li>
+</ul>
+
+<!-- E2 -->
+<h3 id="e2">E2: Appendix B. Data Models - misleading description on a data model</h3>
+<p>
+The second paragraph
+of <a href="https://www.w3.org/TR/2015/REC-scxml-20150901/#profiles">Appendix
+B</a> should read:
+</p>
+<div class="cited">
+<p>The definition of a data model <em title="MUST in RFC2119 context" class="RFC2119">MUST</em>:</p>
+<ul>
+<li>Specify the boolean expression language, which is used, for
+example, as the value of the 'cond' attribute in &lt;transition&gt;,
+&lt;if&gt; and &lt;elseif&gt;. This language 
+<em title="MUST in RFC2119 context" class="RFC2119">MUST</em>
+not have side
+effects and 
+<em title="MUST in RFC2119 context" class="RFC2119">MUST</em>
+include the predicate 'In', which takes a single
+argument, the id of a state in the enclosing state machine, and
+returns 'true' if the state machine is in that state.</li>
+<li>Specify the location expression language, which is used, for
+example, as the value of the 'location' attribute of the
+&lt;assign&gt; tag.</li>
+<li>Specify the value expression language which is used, for example,
+as the value of the 'expr' attribute of the &lt;data&gt; and
+&lt;assign&gt; elements.</li>
+<li>Specify the scripting language used inside the &lt;script&gt;
+element.</li>
+</ul>
+</div>
+<p>
+instead of:
+</p>
+<div class="cited">
+<p>The definition of a data model <em title="MUST in RFC2119 context" class="RFC2119">MUST</em>:</p>
+<ul>
+<li>Specify the boolean expression language used as the value of
+the 'cond' attribute in &lt;transition&gt;, &lt;if&gt; and
+&lt;elseif&gt; This language <em title="MUST in RFC2119 context"
+class="RFC2119">MUST</em> not have side effects and <em
+title="MUST in RFC2119 context" class="RFC2119">MUST</em> include
+the predicate 'In', which takes a single argument, the id of a
+state in the enclosing state machine, and returns 'true' if the
+state machine is in that state.</li>
+<li>Specify the location expression language that is used as the
+value of the 'location' attribute of the &lt;assign&gt; tag.</li>
+<li>Specify the value expression language that is used as the value
+of the 'expr' attribute of the &lt;data&gt; and &lt;assign&gt;
+elements.</li>
+<li>Specify the scripting language used inside the &lt;script&gt;
+element</li>
+</ul>
+</div>
+
+<p>
+The existing language in the specification is misleading and can be
+read as saying that the attributes that are mentioned are the only
+places that the various expression languages are used.  That is not
+necessarily the case.  The attributes are mentioned only as examples.
+</p>
+
+<p><strong>Email trail:</strong></p>
+<ul>
+<li><a href="https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0001.html">
+https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0001.html</a></li>
+<li><a href="https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0002.html">
+https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0002.html</a></li>
+</ul>
+
+<!-- E3 -->
+<h3 id="e3">E3: 3.12.1 Event Descriptors - event name matching example</h3>
+
+<p>
+The fourth paragraph of <a href="https://www.w3.org/TR/2015/REC-scxml-20150901/#EventDescriptors">section 3.12.1</a> on the example of event name match should read:
+</p>
+<div class="cited">
+<p>
+For example, a transition with an 'event' attribute of "error foo"
+will match event names "error", "error.send", "error.send.failed",
+etc. (or "foo", "foo.bar" etc.) but would not match events named
+"errors.my.custom", "errorhandler.mistake", "<span class="correct">errOr.send</span>" or "foobar".
+</p>
+</div>
+<p>instead of:</p>
+<div class="cited">
+<p>
+For example, a transition with an 'event' attribute of "error foo"
+will match event names "error", "error.send", "error.send.failed",
+etc. (or "foo", "foo.bar" etc.) but would not match events named
+"errors.my.custom", "errorhandler.mistake", "<span class="wrong">error.send</span>" or "foobar".
+</p>
+</div>
+
+<p>
+The text in the specification erroneously has "<span class="wrong">error.send</span>" in place of
+"<span class="correct">errOr.send</span>".
+</p>
+
+<p><strong>Email trail:</strong></p>
+<ul>
+<li><a href="https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0003.html">
+https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0003.html</a></li>
+<li><a href="https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0004.html">
+https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0004.html</a></li>
+</ul>
+
+<!-- E4 -->
+<h3 id="e4">E4 (25 February 2016): Appendix D - misleading description on interepret() procedure</h3>
+
+<p>
+In the prose introduction to the <a href="https://www.w3.org/TR/2015/REC-scxml-20150901/#interpret">
+interpret() procedure</a>, the following sentence is incorrect:
+</p>
+<div class="cited">
+<p>
+Finally call enterStates on the initial
+configuration, set the global running variable to true and start the
+interpreter's event loop.
+</p>
+</div>
+<p>
+It should read:
+</p>
+<div class="cited">
+<p>
+Finally call enterStates
+on a one item list consisting of the &lt;transition&gt; inside the &lt;initial&gt;
+element that has been created from the 'initial' attribute on &lt;scxml&gt;.
+Then set the global running variable to true and start the
+interpreter's event loop.
+</p>
+</div>
+
+<p><strong>Email trail:</strong></p>
+<ul>
+<li>
+<a href="https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0006.html">
+https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0006.html</a></li>
+<li>
+<a href="https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0007.html">
+https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0007.html</a></li>
+</ul>
+
+<!-- E5 -->
+<h3 id="e5">E5 (25 February 2016): Appendix D - typo in the example code of interpret() procedure</h3>
+
+<p>
+The <a href="https://www.w3.org/TR/2015/REC-scxml-20150901/#interpret">
+procedure interpret()</a> fails to set the 'binding' global variable,
+which causes the variable to be unbound when it is accessed in
+enterStates().
+</p>
+
+<p>
+The following statement in <a href="https://www.w3.org/TR/2015/REC-scxml-20150901/#interpret">
+interpret()</a>:
+</p>
+
+<div class="cited">
+<pre>
+if doc.binding == "early":
+        initializeDatamodel(datamodel, doc)
+</pre>
+</div>
+<p>should be replaced by:</p>
+<div class="cited">
+<pre>
+binding = doc.binding
+if binding == "early":
+        initializeDatamodel(datamodel, doc)
+</pre>
+</div>
+
+<p><strong>Email trail:</strong></p>
+<ul>
+<li>
+<a href="https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0006.html">
+https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0006.html</a></li>
+<li>
+<a href="https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0007.html">
+https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0007.html</a></li>
+</ul>
+
+<!-- E6 -->
+<h3 id="e6">E6 (25 February 2016): Appendix G.1 - typo in example SCXML code, "Main.scxml"</h3>
+
+<p>
+In the <a href="https://www.w3.org/TR/2015/REC-scxml-20150901/#N1160D">
+example Main.scxml</a>, there is a transition that incorrectly
+contains a '<span class="wrong">next</span>' attribute instead of a '<span class="correct">target</span>' attribute:
+</p>
+
+<div class="cited">
+<p>
+&lt;transition event="done.state.Test2" <span class="wrong">next</span>="Test3"/&gt;
+</p>
+</div>
+<p>should be:</p>
+<div class="cited">
+<p>
+&lt;transition event="done.state.Test2" <span class="correct">target</span>="Test3"/&gt;
+</p>
+</div>
+
+<p><strong>Email trail:</strong></p>
+<ul>
+<li>
+<a href="https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0006.html">
+https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0006.html</a></li>
+<li>
+<a href="https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0007.html">
+https://lists.w3.org/Archives/Public/www-voice/2016JanMar/0007.html</a></li>
+</ul>
+
+<!-- E7 -->
+<h3 id="e7">E7 (23 December 2016): Appendix G.5 - typo in example SCXML code, "Traffic Report" and "Blackjack"</h3>
+
+<p>
+In the examples of "<a href="https://www.w3.org/TR/2015/REC-scxml-20150901/#N11641">Traffic Report</a>" and
+"<a href="https://www.w3.org/TR/2015/REC-scxml-20150901/#N11649">Blackjack</a>", there are states that incorrectly
+contain an '<span class="wrong">onenter</span>' element instead of an '<span class="correct">onentry</span>' element.
+</p>
+
+<p>For example:</p>
+<div class="cited">
+<p>
+&lt;<span class="wrong">onenter</span>&gt;<br/>
+&nbsp;&nbsp;&lt;script&gt;enterStartOver();&lt;/script&gt;<br/>
+&lt;/<span class="wrong">onenter</span>&gt;
+</p>
+</div>
+<p>should be:</p>
+<div class="cited">
+<p>
+&lt;<span class="correct">onentry</span>&gt;<br/>
+&nbsp;&nbsp;&lt;script&gt;enterStartOver();&lt;/script&gt;<br/>
+&lt;/<span class="correct">onentry</span>&gt;
+</p>
+</div>
+
+<p><strong>Email trail:</strong></p>
+<ul>
+<li>
+<a href="https://lists.w3.org/Archives/Public/www-voice/2016OctDec/0004.html">
+https://lists.w3.org/Archives/Public/www-voice/2016OctDec/0004.html</a></li>
+<li>
+<a href="https://lists.w3.org/Archives/Public/www-voice/2016OctDec/0005.html">
+https://lists.w3.org/Archives/Public/www-voice/2016OctDec/0005.html</a></li>
+<li>
+<a href="https://lists.w3.org/Archives/Public/www-voice/2016OctDec/0006.html">
+https://lists.w3.org/Archives/Public/www-voice/2016OctDec/0006.html</a></li>
+</ul>
+
+<hr />
+<address>
+  <a href="mailto:ashimura@w3.org">Kazuyuki Ashimura</a>
+</address>
+</body>
+</html>
