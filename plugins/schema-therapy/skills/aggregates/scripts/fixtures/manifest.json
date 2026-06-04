@@ -1,0 +1,41 @@
+{
+  "description": "Expected (status, failingCheck, upstream-route) tuples for each shipped fixture triple, per simulation.md §3.2. `failingCheck` is the check ID that MUST appear among the harness's failing/malformed checks for the stated reason (the defect's owner rule check); `null` = a clean pass or a status with no single owner check. `upstream01`/`upstream02` are the files passed via --upstream-01/--upstream-02. `args` are extra harness CLI args. The wrong-reason guard is enforced via `trapDetailMustContain`/`trapDetailMustNotContain`. `upstreamDefect`/`upstreamDefectFile`/`upstreamDefectElement` mark a fixture whose finding must carry class:\"upstream-defect\" routed to the named upstream file.",
+  "fixtures": [
+    { "file": "valid.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "pass", "failingCheck": null, "args": [] },
+
+    { "file": "missing-aggregates-section.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "malformed", "failingCheck": "L1", "args": [] },
+    { "file": "missing-policies-section.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "malformed", "failingCheck": "L1", "args": [] },
+    { "file": "missing-fingerprints.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "malformed", "failingCheck": "L1", "args": [] },
+    { "file": "placeholder-fingerprint.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "L2", "args": [] },
+    { "file": "bad-boundary-columns.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "malformed", "failingCheck": "L4", "args": [] },
+    { "file": "missing-subblock.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "malformed", "failingCheck": "L3", "args": [] },
+
+    { "file": "missing-aggregate.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "R1", "args": [] },
+    { "file": "extra-aggregate.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "R1", "args": [] },
+    { "file": "heading-casing.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "R1", "args": [] },
+    { "file": "ghost-boundary-term.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "R2", "args": [] },
+    { "file": "reference-to-member.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "R3", "args": [] },
+    { "file": "cross-aggregate-invariant.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "I3", "args": [] },
+    { "file": "transactional-no-justification.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "X4", "args": [] },
+    { "file": "transactional-generic-justification.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "X4", "args": [] },
+    { "file": "ghost-source-event.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "R5", "args": [] },
+    { "file": "ghost-target-aggregate.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "R6", "args": [] },
+    { "file": "forbidden-synonym-used.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "L12", "args": [] },
+    { "file": "restated-event-table.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "L13", "args": [] },
+    { "file": "restated-terms-table.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "L15", "args": [] },
+    { "file": "restated-enum-listing.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "L16", "args": [] },
+    { "file": "restated-lifecycle.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "L17", "args": [] },
+    { "file": "mangled-enum-value.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "R4", "args": [] },
+    { "file": "wrong-aggregate-enum-value.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "R4", "args": [] },
+    { "file": "bad-mode.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "L11", "args": [] },
+    { "file": "non-unique-root.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "L8", "args": [] },
+
+    { "file": "wrong-reason-trap.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "R5", "trap": true, "trapDetailMustContain": "Order Shipped", "trapDetailMustNotContain": "convenience", "args": [] },
+    { "file": "vacuous.md", "upstream01": "upstream-01.md", "upstream02": "upstream-02.md", "status": "broken-test", "failingCheck": null, "vacuous": true, "args": ["--no-checks"] },
+
+    { "file": "valid.md", "upstream01": "broken-upstream-01.md", "upstream02": "upstream-02.md", "status": "fail", "failingCheck": "R7", "upstreamDefect": true, "upstreamDefectFile": "01-event-storming.md", "upstreamDefectElement": "Order Refunded", "args": [] },
+    { "file": "valid.md", "upstream01": "upstream-01.md", "upstream02": "inconsistent-upstream-02.md", "status": "fail", "failingCheck": "R4", "upstreamDefect": true, "upstreamDefectFile": "02-glossary.md", "upstreamDefectElement": "Order Refunded", "args": [] },
+    { "file": "valid.md", "upstream01": "malformed-upstream-01.md", "upstream02": "upstream-02.md", "status": "broken-test", "failingCheck": null, "malformedUpstream": "01", "args": [] },
+    { "file": "valid.md", "upstream01": "upstream-01.md", "upstream02": "malformed-upstream-02.md", "status": "broken-test", "failingCheck": null, "malformedUpstream": "02", "args": [] }
+  ]
+}
