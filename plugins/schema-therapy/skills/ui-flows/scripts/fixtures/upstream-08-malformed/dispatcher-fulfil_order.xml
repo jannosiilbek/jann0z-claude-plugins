@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       specs/06-gherkin/fulfilment.feature sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+       specs/07-personas.md                sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+-->
+<TaskModel id="dispatcher-fulfil_order" persona="Dispatcher" job="fulfil_order">
+  <Budget klm="7"/>
+  <Task id="fulfil-order" category="abstract" operator="enabling">
+    <Task id="select-order" category="interaction" klm="MPBB"/>
+    <Task id="start-picking" category="interaction" klm="MBB"/>
+    <Task id="ship-order" category="interaction" klm="MBB"/>
+  </Task>
+</TaskModel>

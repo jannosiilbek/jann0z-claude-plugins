@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       04-transitions.md sha256:4444444444444444444444444444444444444444444444444444444444444444
+-->
+<!-- supersedes: 04-transitions.md#order -->
+<scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" initial="placed">
+  <state id="placed">
+    <!-- 01-event: start picking -->
+    <transition event="start_picking" target="picking"/>
+    <!-- 01-event: cancel order -->
+    <transition event="cancel_order" target="cancelled"/>
+    <!-- 01-event: expedite order -->
+    <transition event="expedite order" target="picking"/>
+  </state>
+  <state id="picking">
+    <!-- 01-event: ship order -->
+    <transition event="ship_order" target="shipped"/>
+  </state>
+  <state id="shipped">
+    <!-- 01-event: confirm delivery -->
+    <transition event="confirm_delivery" target="delivered"/>
+  </state>
+  <final id="delivered"/>
+  <final id="cancelled"/>
+

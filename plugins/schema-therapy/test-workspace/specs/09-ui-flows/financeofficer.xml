@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       02-glossary.md          sha256:5f13227739cd2a3444b73a7c531d1d4de611054b81ba40bda62c1e6966ed4fca
+       04-erd.dbml             sha256:3e8dfce8ca142390d7b5efcc820ef5bf4dcb1605be000834df1178d830cde622
+       04-transitions.md       sha256:b3953d456bbc9d5d5615d1110ac5fd2d052826a33a444fae2250ea1b78ee2759
+       07-personas.md          sha256:0c557607a179b21eee8d6e3f612a00048e1d32432409f6eff01f12246a4c87e9
+       08-task-models/financeofficer-request_refund.xml sha256:0c6d62573474445e4fc4b859773ff17bc4cbdb432bc6afce725bc7c82f7d62ef
+       08-task-models/financeofficer-issue_refund.xml sha256:4dd15a5ac404821147239a766c254da16e8ab9f884c3416b813c7d605828775c
+       08-task-models/financeofficer-escalate_refund.xml sha256:96c257de84120100e0268ae4ba565d755ce4963a0d5f994b300cf943006d3a04
+-->
+<IFMLModel id="financeofficer" persona="FinanceOfficer">
+
+  <Realizes taskModel="financeofficer-request_refund"/>
+  <Realizes taskModel="financeofficer-issue_refund"/>
+  <Realizes taskModel="financeofficer-escalate_refund"/>
+
+  <ViewContainer id="refund_queue" name="Refund Queue" home="true">
+    <ViewComponent id="refund_list" type="list" binding="refund"/>
+    <Event id="open_request" type="navigate"/>
+    <Event id="open_issue" type="navigate"/>
+    <Event id="open_escalation" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="refund_request" name="Request Refund">
+    <ViewComponent id="cancellation_view" type="details" binding="refund"/>
+    <Event id="review_cancellation" type="select" task="review-cancellation" klm="MH"/>
+    <Event id="submit_request" type="submit" task="submit-refund-request" klm="MBB">
+      <!-- 01-event: Refund Requested -->
+    </Event>
+    <Event id="back_from_request" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="refund_issue" name="Issue Refund">
+    <ViewComponent id="payout_view" type="details" binding="refund"/>
+    <Event id="authorize_payout" type="submit" task="authorize-payout" klm="MBB">
+      <!-- 01-event: Refund Issued -->
+    </Event>
+    <Event id="back_from_issue" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="refund_escalation" name="Escalate Refund">
+    <ViewComponent id="failure_view" type="details" binding="refund"/>
+    <Event id="diagnose_failure" type="select" task="diagnose-failure" klm="MH"/>
+    <Event id="hand_to_finance" type="submit" task="hand-to-finance" klm="MBB">
+      <!-- 01-event: Refund Escalated -->
+    </Event>
+    <Event id="back_from_escalation" type="navigate"/>
+  </ViewContainer>
+
+  <NavigationFlow from="open_request"        to="refund_request"/>
+  <NavigationFlow from="open_issue"          to="refund_issue"/>
+  <NavigationFlow from="open_escalation"     to="refund_escalation"/>
+  <NavigationFlow from="back_from_request"   to="refund_queue"/>
+  <NavigationFlow from="back_from_issue"     to="refund_queue"/>
+  <NavigationFlow from="back_from_escalation" to="refund_queue"/>
+
+</IFMLModel>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       02-glossary.md          sha256:5f13227739cd2a3444b73a7c531d1d4de611054b81ba40bda62c1e6966ed4fca
+       04-erd.dbml             sha256:3e8dfce8ca142390d7b5efcc820ef5bf4dcb1605be000834df1178d830cde622
+       04-transitions.md       sha256:b3953d456bbc9d5d5615d1110ac5fd2d052826a33a444fae2250ea1b78ee2759
+       05-statecharts/ticket.scxml sha256:04261089844499a10976ad65b7c44cf5fb1d4a645f73f8ed7db4ea831427fb1a
+       07-personas.md          sha256:0c557607a179b21eee8d6e3f612a00048e1d32432409f6eff01f12246a4c87e9
+       08-task-models/gateagent-admit_ticket.xml sha256:487975cb4d915b9e0af80263663eb0ddc0117a230469da3faf8679e909346076
+-->
+<IFMLModel id="gateagent" persona="GateAgent">
+
+  <Realizes taskModel="gateagent-admit_ticket"/>
+
+  <ViewContainer id="gate_scanner" name="Gate Scanner" home="true">
+    <ViewComponent id="admitted_list" type="list" binding="ticket"/>
+    <Event id="scan_ticket" type="select" task="scan-qr-code" klm="MP"/>
+  </ViewContainer>
+
+</IFMLModel>

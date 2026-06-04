@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       specs/06-gherkin/fulfilment.feature sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+       specs/07-personas.md                sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+-->
+<TaskModel id="dispatcher-cancel_order" persona="Dispatcher" job="cancel_order">
+  <Budget klm="5"/>
+  <Task id="cancel-flow" category="abstract" operator="enabling">
+    <Task id="select-order-c" category="interaction" klm="MPBB"/>
+    <Task id="cancel-order" category="interaction" klm="MBB"/>
+  </Task>
+</TaskModel>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       specs/06-gherkin/picking.feature sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+       specs/07-personas.md             sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+-->
+<TaskModel id="picker-pick_order" persona="Picker" job="pick_order">
+  <Budget klm="7"/>
+  <Task id="pick-order" category="abstract" operator="enabling">
+    <Task id="open-pick-list" category="interaction" klm="MBB"/>
+    <Task id="confirm-pick" category="interaction" klm="MBB"/>
+    <Task id="record-pick" category="system" klm="W"/>
+  </Task>
+
