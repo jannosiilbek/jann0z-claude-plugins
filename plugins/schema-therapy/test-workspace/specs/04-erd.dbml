@@ -1,0 +1,108 @@
+// fingerprints:
+// 02-glossary.md@sha256:2c472777ffccf7a0275c19adec734cd7f050329d2f6c8197fc48c5a3bb6cab37
+// 03-aggregates.md@sha256:a3966e66c0fe18e86756d918a98a0c62238db6742ac7477125d8a8da94755221
+
+// Artifact 04 (.dbml) of the schema-therapy pipeline for the Conference Ticketing
+// bounded context. Tables derive from 03 aggregate roots / entity members; enums
+// from 02; status columns + transition tables (companion 04-transitions.md) from
+// the 02 lifecycle enums. References (by identity only) per 03 are held as identity
+// FKs without cross-aggregate cascade (see 03 Cross-Aggregate Policies POL-1..POL-6).
+
+Enum event_status {
+  created
+  scheduled
+  rescheduled
+  sellout_reached
+  cancelled
+}
+
+Enum venue_status {
+  registered
+  seating_section_defined
+}
+
+Enum order_status {
+  placed
+  payment_failed
+  paid
+  expired
+}
+
+Enum ticket_status {
+  reserved
+  sold
+  released
+  cancelled
+  reissued
+  holder_notified
+  admitted
+}
+
+Enum refund_status {
+  requested
+  issued
+  failed
+  escalated
+}
+
+Enum waitlist_offer_status {
+  waitlist_joined
+  waitlist_offer_made
+  waitlist_offer_expired
+}
+
+// 03 aggregate Event. Holds 03 Venue by identity FK only (03 References row);
+// the eventual coupling lives in 03 policies, not a DB cascade.
+Table event {
+  id int [pk, increment]
+  venue_id int [not null, note: 'identity FK to 03 aggregate Venue (03 References row)']
+  event_dates varchar [not null, note: 'value object EventDates of 03 aggregate Event']
+  status event_status [not null]
+}
+
+// 03 aggregate Venue root.
+Table venue {
+  id int [pk, increment]
+  status venue_status [not null]
+}
+
+// 03 Venue entity-kind boundary member SeatingSection; FK path to its root venue.
+Table seating_section {
+  id int [pk, increment]
+  venue_id int [not null]
+  capacity int [not null, note: 'value object Capacity of 03 aggregate Venue']
+}
+
+// 03 aggregate Order root.
+Table order {
+  id int [pk, increment]
+  status order_status [not null]
+}
+
+// 03 aggregate Ticket. Holds 03 Event by identity FK only (03 References row).
+Table ticket {
+  id int [pk, increment]
+  event_id int [not null, note: 'identity FK to 03 aggregate Event (03 References row)']
+  qr_code varchar [not null, note: 'value object QrCode of 03 aggregate Ticket']
+  status ticket_status [not null]
+}
+
+// 03 aggregate Refund. Holds 03 Ticket by identity FK only (03 References row).
+Table refund {
+  id int [pk, increment]
+  ticket_id int [not null, note: 'identity FK to 03 aggregate Ticket (03 References row)']
+  status refund_status [not null]
+}
+
+// 03 aggregate WaitlistOffer. Holds 03 Event by identity FK only (03 References row).
+Table waitlist_offer {
+  id int [pk, increment]
+  event_id int [not null, note: 'identity FK to 03 aggregate Event (03 References row)']
+  status waitlist_offer_status [not null]
+}
+
+Ref: event.venue_id > venue.id
+Ref: seating_section.venue_id > venue.id
+Ref: ticket.event_id > event.id
+Ref: refund.ticket_id > ticket.id
+Ref: waitlist_offer.event_id > event.id

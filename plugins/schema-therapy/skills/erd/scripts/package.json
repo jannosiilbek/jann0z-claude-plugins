@@ -1,0 +1,15 @@
+{
+  "name": "erd-harness",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Executable simulation oracle for schema-therapy artifact 04 (specs/04-erd.dbml + specs/04-transitions.md). Pins @dbml/core (authoritative DBML parser) and @electric-sql/pglite (PostgreSQL 18.3) per references/simulation.md §1.",
+  "scripts": {
+    "harness": "node harness.mjs",
+    "selftest": "node selftest.mjs"
+  },
+  "dependencies": {
+    "@dbml/core": "8.2.5",
+    "@electric-sql/pglite": "0.5.1"
+  }
+}

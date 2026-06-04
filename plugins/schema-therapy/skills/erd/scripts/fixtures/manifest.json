@@ -1,0 +1,51 @@
+{
+  "description": "Expected (status, failingCheck, upstream-route) per shipped fixture quadruple, per simulation.md §3.4/§3.5. `dbml` + `transitions` are the two-file 04 artifact; `up02`/`up03` are the upstreams; `scenarios` is the optional domain-seed file. `failingCheck` is the check ID that MUST appear among the harness's failing/malformed checks or findings for the stated reason (the defect's owner-rule check); `null` = a clean pass or a status with no single owner. `args` are extra harness CLI args. The wrong-reason guard uses `trapDetailMustContain`/`trapDetailMustNotContain`. `upstreamDefect`/`upstreamDefectFile`/`upstreamDefectElement` mark a fixture whose finding must carry class:\"upstream-defect\" routed to the named upstream file. `malformedUpstream` marks an unparseable-upstream quadruple (broken-test).",
+  "fixtures": [
+    { "dbml": "valid.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "scenarios": "valid-scenarios.json", "status": "pass", "failingCheck": null, "args": [] },
+
+    { "dbml": "valid.dbml", "transitions": "MISSING-FILE.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "malformed", "failingCheck": "L1", "args": [] },
+    { "dbml": "dbml-parse-error.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "malformed", "failingCheck": "L2", "args": [] },
+    { "dbml": "valid.dbml", "transitions": "bad-transitions-columns.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "malformed", "failingCheck": "L3", "args": [] },
+
+    { "dbml": "missing-fingerprint.dbml", "transitions": "missing-fingerprint-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "L4", "args": [] },
+    { "dbml": "placeholder-fingerprint.dbml", "transitions": "placeholder-fingerprint-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "L5", "args": [] },
+    { "dbml": "fingerprint-mismatch.dbml", "transitions": "fingerprint-mismatch-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "L6", "args": [] },
+
+    { "dbml": "no-pk.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "L9", "args": [] },
+    { "dbml": "array-column.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "L10", "args": [] },
+    { "dbml": "missing-junction.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-MN", "args": [] },
+    { "dbml": "fk-type-mismatch.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-FKTYPE", "args": [] },
+    { "dbml": "nullable-fk-undocumented.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "pass", "failingCheck": "L13", "warnOnly": true, "args": [] },
+    { "dbml": "ddl-export-fails.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "E-DDL", "args": [] },
+    { "dbml": "bad-type-ddl.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "E-DDL", "args": [] },
+
+    { "dbml": "enum-value-extra.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-ENUM", "args": [] },
+    { "dbml": "enum-value-missing.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-ENUM", "args": [] },
+    { "dbml": "enum-value-reordered.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-ENUM", "args": [] },
+
+    { "dbml": "missing-root-table.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-ROOT", "args": [] },
+    { "dbml": "table-for-ghost-member.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-NAME", "args": [] },
+    { "dbml": "reference-without-fk.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-REF", "args": [] },
+    { "dbml": "status-untyped.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-STATUS", "args": [] },
+
+    { "dbml": "valid.dbml", "transitions": "transition-from-not-enum.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-TFROM", "args": [] },
+    { "dbml": "valid.dbml", "transitions": "transition-event-paraphrased.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-TEVENT", "args": [] },
+    { "dbml": "valid.dbml", "transitions": "missing-transition-table.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-BIJECTION", "args": [] },
+    { "dbml": "valid.dbml", "transitions": "extra-transition-table.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-BIJECTION", "args": [] },
+    { "dbml": "valid.dbml", "transitions": "unreachable-enum-value.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-REACH", "args": [] },
+    { "dbml": "valid.dbml", "transitions": "duplicate-initial-row.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-INIT", "args": [] },
+
+    { "dbml": "forbidden-synonym-id.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "L12", "args": [] },
+    { "dbml": "forbidden-subtoken-misuse.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "L12", "args": [] },
+    { "dbml": "restated-invariant-note.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "L11", "args": [] },
+
+    { "dbml": "wrong-reason-trap.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-ROOT", "trap": true, "trapDetailMustContain": "Ticket", "trapDetailMustNotContain": "booking", "args": [] },
+    { "dbml": "valid.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "broken-test", "failingCheck": null, "vacuous": true, "args": ["--no-checks"] },
+    { "dbml": "valid.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "broken-test", "failingCheck": null, "noEngine": true, "args": ["--no-install", "--force-missing-deps", "/tmp/erd-nonexistent-node-modules"] },
+
+    { "dbml": "valid.dbml", "transitions": "valid-transitions.md", "scenarios": "valid-scenarios.json", "up02": "upstream-02.md", "up03": "broken-upstream-03.md", "status": "fail", "failingCheck": "R-REF", "upstreamDefect": true, "upstreamDefectFile": "03-aggregates.md", "upstreamDefectElement": "Invoice", "args": [] },
+    { "dbml": "valid.dbml", "transitions": "valid-transitions.md", "scenarios": "valid-scenarios.json", "up02": "inconsistent-upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-ENUM", "upstreamDefect": true, "upstreamDefectFile": "02-glossary.md", "upstreamDefectElement": "Invoice", "args": [] },
+    { "dbml": "valid.dbml", "transitions": "valid-transitions.md", "up02": "malformed-upstream-02.md", "up03": "upstream-03.md", "status": "broken-test", "failingCheck": null, "malformedUpstream": "02", "args": [] },
+    { "dbml": "valid.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "malformed-upstream-03.md", "status": "broken-test", "failingCheck": null, "malformedUpstream": "03", "args": [] }
+  ]
+}
