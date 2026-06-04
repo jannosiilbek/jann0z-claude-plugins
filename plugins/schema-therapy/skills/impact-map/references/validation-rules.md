@@ -239,7 +239,7 @@ The four-level hierarchy (goal → actors → impacts → deliverables) must res
 ## G — Naming, language & pipeline contract
 
 ### G1 — No vague terms
-- **Detect:** Any goal/actor/impact/deliverable uses vague filler from the closed blocklist: `manage`, `handle`, `process`, `support` (as the whole verb), `stuff`, `various`, `etc.`, `things`, `data`, `solution`, `leverage`, `optimize`, `streamline`, `seamless`, `robust` — in place of a precise term.
+- **Detect:** Any goal/actor/impact/deliverable uses vague filler from the closed blocklist: `manage`, `handle`, `process`, `support` (whole-word match — noun uses such as "customer support" may produce an acceptable non-blocking warn), `stuff`, `various`, `etc.`, `things`, `data`, `solution`, `leverage`, `optimize`, `streamline`, `seamless`, `robust` — in place of a precise term.
 - **Fix:** Replace with the precise business word.
 - **Severity:** ⚠️
 - **Source:** [S-home] ("does not get in the way with complicated syntax or bureaucracy" — precise, plain language); [PLAN] (downstream 02 glossary derives one-concept-one-word terms — vagueness breaks that).
