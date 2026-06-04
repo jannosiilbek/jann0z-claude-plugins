@@ -1,0 +1,24 @@
+{
+  "description": "Expected (status, failingCheck, args) triples for each shipped fixture, per simulation.md §3.2. `failingCheck` is the check ID that MUST appear among the harness's failing/malformed checks for the stated reason (the defect's owner rule check). `null` = no failing check expected (a clean pass). `args` are extra harness CLI args. The wrong-reason guard is enforced via `trapDetailMustContain`/`trapDetailMustNotContain` on the trap fixture.",
+  "fixtures": [
+    { "file": "valid.md", "status": "pass", "failingCheck": null, "args": [] },
+    { "file": "missing-section.md", "status": "malformed", "failingCheck": "L1", "args": [] },
+    { "file": "out-of-order-sections.md", "status": "malformed", "failingCheck": "L1", "args": [] },
+    { "file": "bad-actors-columns.md", "status": "malformed", "failingCheck": "L3", "args": [] },
+    { "file": "bad-impacts-columns.md", "status": "malformed", "failingCheck": "L4", "args": [] },
+    { "file": "multi-goal.md", "status": "malformed", "failingCheck": "L6", "args": [] },
+    { "file": "malformed-fingerprint-block.md", "status": "malformed", "failingCheck": "L2", "args": [] },
+    { "file": "placeholder-fingerprint.md", "status": "fail", "failingCheck": "L7", "args": [] },
+    { "file": "empty-deliverables.md", "status": "fail", "failingCheck": "L8", "args": [] },
+    { "file": "feature-impact.md", "status": "fail", "failingCheck": "L9", "args": [] },
+    { "file": "unmeasurable-goal.md", "status": "fail", "failingCheck": "L11", "args": [] },
+    { "file": "unknown-actor.md", "status": "fail", "failingCheck": "N1", "args": [] },
+    { "file": "dangling-deliverable.md", "status": "fail", "failingCheck": "N2", "args": [] },
+    { "file": "case-drift-actor.md", "status": "fail", "failingCheck": "N3", "args": [] },
+    { "file": "dup-actor.md", "status": "fail", "failingCheck": "X2", "args": [] },
+    { "file": "dup-impact.md", "status": "fail", "failingCheck": "X3", "args": [] },
+    { "file": "broken-chain.md", "status": "fail", "failingCheck": "N5", "args": [] },
+    { "file": "wrong-reason-trap.md", "status": "fail", "failingCheck": "N1", "trap": true, "trapDetailMustContain": "Advertisers", "trapDetailMustNotContain": "measur", "args": [] },
+    { "file": "vacuous.md", "status": "broken-test", "failingCheck": null, "vacuous": true, "args": ["--no-checks"] }
+  ]
+}
