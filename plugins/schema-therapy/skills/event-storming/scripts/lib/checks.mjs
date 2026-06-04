@@ -32,9 +32,25 @@ const REQUIRED_H2 = [
   'Lifecycle Skeletons',
 ];
 
-const EVENTS_COLUMNS = ['Event', 'Actor', 'Trigger', 'Notes'];
+const EVENTS_COLUMNS = ['Event', 'Actor', 'Trigger', 'Notes', 'Deliverable'];
 const ACTORS_COLUMNS = ['Actor', 'Kind', 'Responsibility'];
 const HOTSPOTS_COLUMNS = ['Hotspot', 'Question', 'Blocks'];
+
+// Upstream 00 (impact-map) pinned shapes (simulation.md §3.3).
+const BIZ_ACTORS_COLUMNS = ['Actor', 'Description'];
+// 00's Impacts/Deliverables foreign-key columns carry an "(exact string)" hint
+// in their header (simulation.md §3.3). The shape match tolerates that
+// parenthetical: the leading token (`Business Actor` / `Impact`) is the pin.
+const IMPACTS_COLUMNS = ['Impact', 'Business Actor (exact string)'];
+const DELIVERABLES_COLUMNS = ['Deliverable', 'Impact (exact string)'];
+const REQUIRED_H2_00 = ['Goal', 'Business Actors', 'Impacts', 'Deliverables'];
+
+// Human/organizational actor kinds resolve to 00 Business Actors (H1); system
+// kinds are 01-owned and exempt.
+const HUMAN_KINDS = new Set(['person', 'role', 'department']);
+
+// The em-dash sentinel for "this event realizes no 00 deliverable".
+const DASH = '—';
 
 const norm = (s) => (s == null ? '' : String(s).trim());
 const isBlank = (s) => {
@@ -43,6 +59,17 @@ const isBlank = (s) => {
 };
 // Case/space-insensitive identity for cross-table name resolution.
 const key = (s) => norm(s).toLowerCase().replace(/\s+/g, ' ');
+// EXACT-string identity (case- and whitespace-sensitive) for the 00 seam
+// resolution (H1/H2/H3/H4/N15 require exact-string-match per the catalog).
+const exact = (s) => norm(s);
+// Is a Deliverable cell the "no 00 deliverable" sentinel? Accept the em-dash and
+// the ASCII hyphen-minus as equivalent (simulation.md §2 sentinel definition).
+// An EMPTY cell is NOT a sentinel — it is an unfilled cell (caught by L14), so it
+// is deliberately NOT accepted here.
+const isDash = (s) => {
+  const t = norm(s);
+  return t === DASH || t === '-';
+};
 
 function columnsMatch(table, expected) {
   if (!table) return false;
@@ -112,6 +139,67 @@ export function deriveGraph(doc) {
     skeletons,
     aggregateNames: skeletons.map((s) => s.aggregate),
   };
+}
+
+// ===========================================================================
+// UPSTREAM 00 (impact-map) — the parsed seam authority (simulation.md §3.3).
+// The harness resolves 01's human/organizational actors and event Deliverable
+// cells against 00's owned name sets (Business Actors, Deliverables) and the
+// Deliverable→Impact bridge. Copied from the sibling glossary two-input pattern
+// (never imported), per the isolation directive.
+// ===========================================================================
+
+// Derive 00's owned name sets from the parsed 00 document. Read-only; pairs with
+// `parseUpstreamShape00` which decides parseability.
+export function deriveUpstream00(doc00) {
+  const sec = (t) => doc00.sections.get(t) || null;
+  const bizTable = sec('Business Actors') ? sec('Business Actors').tables[0] : null;
+  const impactsTable = sec('Impacts') ? sec('Impacts').tables[0] : null;
+  const delivTable = sec('Deliverables') ? sec('Deliverables').tables[0] : null;
+
+  const businessActors = bizTable
+    ? bizTable.rows.map((r) => exact(r[0])).filter((s) => s !== '')
+    : [];
+  const impacts = impactsTable
+    ? impactsTable.rows
+        .map((r) => ({ impact: exact(r[0]), businessActor: exact(r[1]) }))
+        .filter((o) => o.impact !== '')
+    : [];
+  const deliverables = delivTable
+    ? delivTable.rows
+        .map((r) => ({ deliverable: exact(r[0]), impact: exact(r[1]) }))
+        .filter((o) => o.deliverable !== '')
+    : [];
+
+  return {
+    bizTable,
+    impactsTable,
+    delivTable,
+    businessActors,
+    impacts,
+    deliverables,
+  };
+}
+
+// Is the 00 upstream PARSEABLE against the pinned 00 format (§3.3)? A required
+// heading or a required table with the wrong column shape ⇒ unparseable ⇒
+// broken-test (the seam loses authority). Returns { ok, detail }.
+export function parseUpstreamShape00(doc00) {
+  const missing = REQUIRED_H2_00.filter((h) => !doc00.sections.has(h));
+  if (missing.length) {
+    return { ok: false, detail: `upstream 00 missing required section(s): ${missing.join(', ')}` };
+  }
+  const u = deriveUpstream00(doc00);
+  if (!columnsMatch(u.bizTable, BIZ_ACTORS_COLUMNS)) {
+    return { ok: false, detail: 'upstream 00 Business Actors table column shape is wrong (expected `Actor | Description`)' };
+  }
+  if (!columnsMatch(u.impactsTable, IMPACTS_COLUMNS)) {
+    return { ok: false, detail: 'upstream 00 Impacts table column shape is wrong (expected `Impact | Business Actor`)' };
+  }
+  if (!columnsMatch(u.delivTable, DELIVERABLES_COLUMNS)) {
+    return { ok: false, detail: 'upstream 00 Deliverables table column shape is wrong (expected `Deliverable | Impact`)' };
+  }
+  return { ok: true, detail: '' };
 }
 
 // ---- Malformed lints (return { ok, rule, detail }) -------------------------
@@ -312,6 +400,63 @@ export function lintL13_techLeak(g) {
   };
 }
 
+// L14 — every Domain-Events row has a Deliverable cell present (5th column
+// populated; value MAY be the `—` sentinel). Two distinct defects (simulation.md
+// §2; catalog A3):
+//   - a row supplying fewer than 5 cells (a genuinely absent 5th column) is a
+//     SHAPE defect under the 5-column pin ⇒ `malformed`;
+//   - a row whose 5th cell is PRESENT-but-empty is an unfilled deliverable. An
+//     empty cell is NOT the `—` sentinel ⇒ `fail`, naming the event row.
+export function lintL14_deliverableCell(g) {
+  const missingCol = []; // < 5 cells (absent column) ⇒ malformed
+  const emptyCell = []; // 5 cells but blank deliverable ⇒ fail
+  if (g.eventsTable) {
+    g.eventsTable.rows.forEach((r, i) => {
+      if (r.length < EVENTS_COLUMNS.length) {
+        missingCol.push(`row ${i + 1} (${r[0] || '?'})`);
+      } else if (norm(r[EVENTS_COLUMNS.length - 1]) === '') {
+        emptyCell.push(`row ${i + 1} (${r[0] || '?'})`);
+      }
+    });
+  }
+  const isMalformed = missingCol.length > 0;
+  const ok = missingCol.length === 0 && emptyCell.length === 0;
+  let detail = '';
+  if (isMalformed) {
+    detail = `Domain-Events row(s) missing the Deliverable cell (5-column pin): ${missingCol.join(', ')}`;
+  } else if (emptyCell.length) {
+    detail = `Domain-Events row(s) with an empty Deliverable cell (an empty cell is not the \`—\` sentinel; fill it or mark \`—\`): ${emptyCell.join(', ')}`;
+  }
+  return {
+    id: 'L14',
+    rule: 'A3',
+    ok,
+    // Only an absent 5th COLUMN makes the artifact unparseable (malformed). An
+    // empty-but-present cell is a content `fail`, not a shape malformation.
+    malformed: isMalformed,
+    status: ok ? 'pass' : 'fail',
+    detail,
+  };
+}
+
+// L15 — pervasive `—` Deliverable cells (scope-creep smell). Advisory only;
+// never blocks (simulation.md §2; catalog H5). Threshold: > 60% of events `—`.
+export function lintL15_dashSmell(g) {
+  const total = g.events.length;
+  const dashes = g.events.filter((e) => isDash(e.deliverable)).length;
+  const frac = total === 0 ? 0 : dashes / total;
+  const smell = total > 0 && frac > 0.6;
+  return {
+    id: 'L15',
+    rule: 'H5',
+    severity: 'info',
+    status: smell ? 'info' : 'pass',
+    detail: smell
+      ? `${dashes}/${total} events carry Deliverable = — (scope-creep smell; advisory)`
+      : '',
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Resolution checks (N3, N4, N5, N8, N9) — referenced element exists in owner.
 // Each returns { id, class:'resolution', rule, status, detail, edges }.
@@ -422,6 +567,93 @@ export function checkN9_triggerResolves(g) {
 }
 
 // ---------------------------------------------------------------------------
+// SEAM resolution checks (N13/N14/N15) — resolve 01 against the upstream 00
+// owned name sets by EXACT string (case- and whitespace-sensitive).
+// ---------------------------------------------------------------------------
+
+// N13 (catalog H1) — every Actors row with Kind ∈ {person, role, department}
+// resolves by exact string into 00's Business-Actor set; {system,
+// automated-process} are 01-owned and exempt. One edge per human/org actor.
+export function checkN13_humanActorResolves00(g, u00) {
+  const known = new Set(u00.businessActors.map((a) => exact(a)));
+  let edges = 0;
+  const bad = [];
+  for (const a of g.actors) {
+    if (!HUMAN_KINDS.has(key(a.kind))) continue; // systems exempt
+    edges++;
+    if (!known.has(exact(a.actor))) {
+      bad.push(`'${a.actor}' (kind ${a.kind})`);
+    }
+  }
+  return {
+    id: 'N13',
+    rule: 'H1',
+    status: bad.length === 0 ? 'pass' : 'fail',
+    detail: bad.length
+      ? `human/organizational actor(s) not matching any 00 Business Actor: ${bad.join(', ')}`
+      : '',
+    edges,
+  };
+}
+
+// N14 (catalog H2) — every Domain-Events Deliverable cell ≠ `—` resolves by
+// exact string into 00's Deliverable set. One edge per non-`—` cell.
+export function checkN14_deliverableResolves00(g, u00) {
+  const known = new Set(u00.deliverables.map((d) => exact(d.deliverable)));
+  let edges = 0;
+  const bad = [];
+  for (const e of g.events) {
+    if (isDash(e.deliverable)) continue;
+    edges++;
+    if (!known.has(exact(e.deliverable))) {
+      bad.push(`event '${e.event}' → deliverable '${e.deliverable}'`);
+    }
+  }
+  return {
+    id: 'N14',
+    rule: 'H2',
+    status: bad.length === 0 ? 'pass' : 'fail',
+    detail: bad.length
+      ? `Deliverable cell(s) not matching any 00 deliverable: ${bad.join(', ')}`
+      : '',
+    edges,
+  };
+}
+
+// N15 (catalog H-seam) — 00 SELF-CONSISTENCY. Every 00 Impacts.Business Actor
+// resolves into 00's Business-Actor set AND every 00 Deliverables.Impact
+// resolves into 00's Impacts set. A miss is an `upstream-defect` finding routed
+// to `00-impact-map.md` (01 status `fail`, NOT broken-test). One edge per 00
+// foreign reference. Mirrors the glossary upstream-defect routing pattern.
+export function checkN15_upstream00SelfConsistent(u00) {
+  const knownActors = new Set(u00.businessActors.map((a) => exact(a)));
+  const knownImpacts = new Set(u00.impacts.map((i) => exact(i.impact)));
+  let edges = 0;
+  const bad = [];
+  for (const imp of u00.impacts) {
+    edges++;
+    if (!knownActors.has(exact(imp.businessActor))) {
+      bad.push(`Impacts row '${imp.impact}' names ghost Business Actor '${imp.businessActor}'`);
+    }
+  }
+  for (const d of u00.deliverables) {
+    edges++;
+    if (!knownImpacts.has(exact(d.impact))) {
+      bad.push(`Deliverables row '${d.deliverable}' names ghost Impact '${d.impact}'`);
+    }
+  }
+  return {
+    id: 'N15',
+    rule: 'H-seam',
+    status: bad.length === 0 ? 'pass' : 'fail',
+    upstreamDefect: bad.length > 0,
+    upstreamDetail: bad.length ? bad.join('; ') : '',
+    detail: bad.length ? bad.join('; ') : '',
+    edges,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Exact-value checks (X1..X5). X1/X5 reconcile counters; X2/X3/X4 are content.
 // ---------------------------------------------------------------------------
 
@@ -494,6 +726,54 @@ export function checkX4_singleOwnership(g) {
   };
 }
 
+// X6 (catalog H3) — Deliverable coverage: every 00 deliverable string appears
+// in ≥1 Domain-Events Deliverable cell. A 00 deliverable covered by zero cells
+// is an unmodelled promise ⇒ fail. One edge per 00 deliverable (coverage).
+export function checkX6_deliverableCoverage(g, u00) {
+  const cells = new Set(
+    g.events.filter((e) => !isDash(e.deliverable)).map((e) => exact(e.deliverable))
+  );
+  let edges = 0;
+  const bad = [];
+  for (const d of u00.deliverables) {
+    edges++;
+    if (!cells.has(exact(d.deliverable))) bad.push(d.deliverable);
+  }
+  return {
+    id: 'X6',
+    rule: 'H3',
+    status: bad.length === 0 ? 'pass' : 'fail',
+    detail: bad.length ? `00 deliverable(s) realized by no event (unmodelled promise): ${bad.join(', ')}` : '',
+    edges,
+  };
+}
+
+// X7 (catalog H4) — Aggregate-serves: every skeleton has ≥1 step whose event's
+// Deliverable cell ≠ `—` and resolves to a 00 deliverable. A whole-aggregate
+// orphan fails; a single `—` event does not. One edge per aggregate (serves).
+export function checkX7_aggregateServes(g, u00) {
+  const known = new Set(u00.deliverables.map((d) => exact(d.deliverable)));
+  const deliverableOf = new Map();
+  for (const e of g.events) deliverableOf.set(key(e.event), e.deliverable);
+  let edges = 0;
+  const bad = [];
+  for (const sk of g.skeletons) {
+    edges++;
+    const serves = sk.steps.some((st) => {
+      const d = deliverableOf.get(key(st));
+      return d != null && !isDash(d) && known.has(exact(d));
+    });
+    if (!serves) bad.push(sk.aggregate);
+  }
+  return {
+    id: 'X7',
+    rule: 'H4',
+    status: bad.length === 0 ? 'pass' : 'fail',
+    detail: bad.length ? `aggregate(s) serving no 00 deliverable/impact (scope creep): ${bad.join(', ')}` : '',
+    edges,
+  };
+}
+
 export function checkX5_reconcile(executedChecks, edgesWalked, edgesExpected) {
   const ok = executedChecks > 0 && edgesWalked === edgesExpected;
   return {
@@ -506,13 +786,17 @@ export function checkX5_reconcile(executedChecks, edgesWalked, edgesExpected) {
   };
 }
 
-// Expected edge count from the intake graph (simulation.md §3.1 / §5):
-//   N3 edges: non-empty event.actor
-//   N4 edges: every skeleton step
-//   N5 edges: every non-"-" hotspot.blocks
-//   N8 edges: every event (membership)
-//   N9 edges: every trigger that names a known event
-export function expectedEdges(g) {
+// Expected edge count from the intake graph PLUS the seam-edge families
+// (simulation.md §3.1 edge classes 1–11 / §5). Domain edges:
+//   N3: non-empty event.actor / N4: every skeleton step / N5: every non-"-"
+//   hotspot.blocks / N8: every event (membership) / N9: every trigger naming a
+//   known event.
+// Seam edges (resolve against 00; if 00 is unparseable they cannot be walked at
+// all ⇒ broken-test, never a silent skip):
+//   N13: one per human/organizational actor / N14: one per non-`—` deliverable
+//   cell / X6: one per 00 deliverable (coverage) / X7: one per aggregate
+//   (serves) / N15: one per 00 Impacts/Deliverables foreign reference.
+export function expectedEdges(g, u00) {
   const known = new Set(g.events.map((e) => key(e.event)));
   let n3 = 0;
   for (const e of g.events) if (!isBlank(e.actor)) n3++;
@@ -523,7 +807,34 @@ export function expectedEdges(g) {
   const n8 = g.events.length;
   let n9 = 0;
   for (const e of g.events) if (!isBlank(e.trigger) && known.has(key(e.trigger))) n9++;
-  return n3 + n4 + n5 + n8 + n9;
+  const domainEdges = n3 + n4 + n5 + n8 + n9;
+
+  // --- seam edge families ---
+  let n13 = 0;
+  for (const a of g.actors) if (HUMAN_KINDS.has(key(a.kind))) n13++;
+  let n14 = 0;
+  for (const e of g.events) if (!isDash(e.deliverable)) n14++;
+  const x6 = u00.deliverables.length; // one coverage edge per 00 deliverable
+  const x7 = g.skeletons.length; // one serves edge per aggregate
+  const n15 = u00.impacts.length + u00.deliverables.length; // 00 self-ref edges
+  const seamEdges = n13 + n14 + x6 + x7 + n15;
+
+  return domainEdges + seamEdges;
 }
 
-export { KIND_ENUM, REQUIRED_H2, EVENTS_COLUMNS, ACTORS_COLUMNS, HOTSPOTS_COLUMNS, key, isBlank };
+export {
+  KIND_ENUM,
+  REQUIRED_H2,
+  EVENTS_COLUMNS,
+  ACTORS_COLUMNS,
+  HOTSPOTS_COLUMNS,
+  BIZ_ACTORS_COLUMNS,
+  IMPACTS_COLUMNS,
+  DELIVERABLES_COLUMNS,
+  REQUIRED_H2_00,
+  HUMAN_KINDS,
+  key,
+  exact,
+  isBlank,
+  isDash,
+};

@@ -10,13 +10,15 @@ Derived from impact map `00-impact-map.md`@sha256:00aa11bb22cc33dd and domain de
 
 | Event | Actor | Trigger | Notes | Deliverable |
 |-------|-------|---------|-------|-------------|
-| Place Order | Warehouse | Place Order command | pivotal | Order Tracking |
+| Order Placed | Customer | Place Order command | pivotal | Order Tracking |
+| Order Shipped | Warehouse Clerk | Order Placed | | Dispatch Scheduling |
 
 ## Actors
 
 | Actor | Kind | Responsibility |
 |-------|------|----------------|
 | Customer | person | Places an order |
+| Warehouse Clerk | role | Ships the order |
 
 ## Hotspots
 
@@ -30,4 +32,5 @@ Note: this pipeline fixes the term **aggregate**; in current EventStorming the s
 
 ### Order
 
-1. Place Order
+1. Order Placed
+2. Order Shipped

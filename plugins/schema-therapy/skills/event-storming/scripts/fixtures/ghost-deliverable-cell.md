@@ -10,13 +10,19 @@ Derived from impact map `00-impact-map.md`@sha256:00aa11bb22cc33dd and domain de
 
 | Event | Actor | Trigger | Notes | Deliverable |
 |-------|-------|---------|-------|-------------|
-| Place Order | Warehouse | Place Order command | pivotal | Order Tracking |
+| Order Placed | Customer | Place Order command | pivotal | Order Tracking |
+| Order Expedited | Customer | Order Placed | | Same-Day Delivery |
+| Order Shipped | Warehouse Clerk | Order Placed | | Dispatch Scheduling |
+| Invoice Issued | Billing System | Order Placed | | Invoice Generation |
+| Invoice Settled | Billing System | Invoice Issued | | — |
 
 ## Actors
 
 | Actor | Kind | Responsibility |
 |-------|------|----------------|
-| Customer | person | Places an order |
+| Customer | person | Places and expedites an order |
+| Warehouse Clerk | role | Ships the order |
+| Billing System | system | Issues and settles invoices |
 
 ## Hotspots
 
@@ -30,4 +36,11 @@ Note: this pipeline fixes the term **aggregate**; in current EventStorming the s
 
 ### Order
 
-1. Place Order
+1. Order Placed
+2. Order Expedited
+3. Order Shipped
+
+### Invoice
+
+1. Invoice Issued
+2. Invoice Settled

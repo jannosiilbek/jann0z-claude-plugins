@@ -4,21 +4,24 @@ order-fulfillment.md@sha256:1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b
 
 ## Upstream Fingerprint
 
-Derived from domain description `order-fulfillment.md`@sha256:1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b0d1f3acb9d2e4 (captured 2026-06-04).
+Derived from impact map `00-impact-map.md`@sha256:00aa11bb22cc33dd and domain description `order-fulfillment.md`@sha256:1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b0d1f3acb9d2e4 (captured 2026-06-04).
 
 ## Domain Events
 
-| Event | Actor | Trigger | Notes |
-|-------|-------|---------|-------|
-| Place Order | Customer | Place Order command | pivotal |
-| Payment Received | Payment Gateway | Place Order | pivotal |
+| Event | Actor | Trigger | Notes | Deliverable |
+|-------|-------|---------|-------|-------------|
+| Place Order | Customer | Place Order command | pivotal | Order Tracking |
+| Order Shipped | Warehouse Clerk | Place Order | | Dispatch Scheduling |
+| Invoice Issued | Billing System | Place Order | | Invoice Generation |
+| Invoice Settled | Billing System | Invoice Issued | | — |
 
 ## Actors
 
 | Actor | Kind | Responsibility |
 |-------|------|----------------|
 | Customer | person | Places an order |
-| Payment Gateway | system | Confirms payment for an order |
+| Warehouse Clerk | role | Ships the order |
+| Billing System | system | Issues and settles invoices |
 
 ## Hotspots
 
@@ -33,4 +36,9 @@ Note: this pipeline fixes the term **aggregate**; in current EventStorming the s
 ### Order
 
 1. Place Order
-2. Payment Received
+2. Order Shipped
+
+### Invoice
+
+1. Invoice Issued
+2. Invoice Settled

@@ -4,16 +4,16 @@ order-fulfillment.md@sha256:1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b
 
 ## Upstream Fingerprint
 
-Derived from domain description `order-fulfillment.md`@sha256:1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b0d1f3acb9d2e4 (captured 2026-06-04).
+Derived from impact map `00-impact-map.md`@sha256:00aa11bb22cc33dd and domain description `order-fulfillment.md`@sha256:1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b0d1f3acb9d2e4 (captured 2026-06-04).
 
 ## Domain Events
 
-| Event | Actor | Trigger | Notes |
-|-------|-------|---------|-------|
-| Order Placed | Customer | Place Order command | pivotal |
-| Payment Received | Payment Gateway | Order Placed | pivotal |
-| Order Shipped | Warehouse Clerk | Payment Received | |
-| Order Delivered | Carrier | Order Shipped | terminal |
+| Event | Actor | Trigger | Notes | Deliverable |
+|-------|-------|---------|-------|-------------|
+| Order Placed | Customer | Place Order command | pivotal | Order Tracking |
+| Payment Received | Payment Gateway | Order Placed | pivotal | — |
+| Order Shipped | Warehouse Clerk | Payment Received | | Dispatch Scheduling |
+| Order Delivered | Carrier | Order Shipped | terminal | — |
 
 ## Actors
 
