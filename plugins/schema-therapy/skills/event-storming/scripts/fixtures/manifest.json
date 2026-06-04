@@ -1,0 +1,18 @@
+{
+  "description": "Expected (status, failingCheck) pairs for each shipped fixture, per simulation.md §3.2. `failingCheck` is the check ID that MUST appear among the harness's failing/malformed checks for the stated reason (the defect's owner rule check). `null` = no failing check expected (a clean pass). `args` are extra harness CLI args. The wrong-reason guard is enforced via `trapDetailMustNotContain` on the trap fixture.",
+  "fixtures": [
+    { "file": "valid.md", "status": "pass", "failingCheck": null, "args": [] },
+    { "file": "missing-section.md", "status": "malformed", "failingCheck": "L1", "args": [] },
+    { "file": "bad-events-columns.md", "status": "malformed", "failingCheck": "L3", "args": [] },
+    { "file": "bad-actor-kind.md", "status": "fail", "failingCheck": "L7", "args": [] },
+    { "file": "empty-events.md", "status": "fail", "failingCheck": "L8", "args": [] },
+    { "file": "present-tense-event.md", "status": "fail", "failingCheck": "L11", "args": [] },
+    { "file": "unknown-actor.md", "status": "fail", "failingCheck": "N3", "args": [] },
+    { "file": "skeleton-ghost-event.md", "status": "fail", "failingCheck": "N4", "args": [] },
+    { "file": "dup-skeleton-event.md", "status": "fail", "failingCheck": "X4", "args": [] },
+    { "file": "dangling-blocks.md", "status": "fail", "failingCheck": "N5", "args": [] },
+    { "file": "duplicate-event.md", "status": "fail", "failingCheck": "X2", "args": [] },
+    { "file": "wrong-reason-trap.md", "status": "fail", "failingCheck": "N3", "trap": true, "trapDetailMustContain": "Warehouse", "trapDetailMustNotContain": "tense", "args": [] },
+    { "file": "vacuous.md", "status": "broken-test", "failingCheck": null, "vacuous": true, "args": ["--no-checks"] }
+  ]
+}
