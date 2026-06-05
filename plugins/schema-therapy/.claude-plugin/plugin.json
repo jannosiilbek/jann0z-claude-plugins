@@ -1,7 +1,7 @@
 {
   "name": "schema-therapy",
   "displayName": "Schema Therapy",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "An 11-skill modelling pipeline that turns a product intent + domain description into a chain of validated, harness-verified artifacts (specs/00-10): impact map → event storming → glossary → aggregates → ERD → statecharts → Gherkin → personas → task models → UI flows → flow acceptance — re-verified suite-wide by a drift-police audit. Grounded in the old discipline (Codd's normal forms, Chen's entities, Harel's statecharts), every artifact passes an executable oracle before it ships.",
   "author": {
     "name": "janno",
@@ -10,5 +10,5 @@
   "homepage": "https://github.com/jannosiilbek/jann0z-claude-plugins/tree/main/plugins/schema-therapy",
   "repository": "https://github.com/jannosiilbek/jann0z-claude-plugins",
   "license": "MIT",
-  "keywords": ["schema-therapy", "meta-modelling", "erd", "data-modelling", "conceptual-model", "domain-model", "event-storming", "gherkin", "statecharts", "ddd"]
+  "keywords": ["schema-therapy", "meta-modelling", "erd", "data-modelling", "conceptual-model", "domain-model", "event-storming", "gherkin", "statecharts", "ddd", "legacy", "brownfield", "anamnesis"]
 }

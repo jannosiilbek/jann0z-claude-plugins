@@ -47,6 +47,29 @@ confirmed change crosses into an isolated amendment as a distilled scope delta
 separate context, and the map stays lint-green throughout. Downstream
 staleness is batched — the cascade is offered once, when the scope settles.
 
+### Brownfield entry — the anamnesis bridge (optional)
+
+Modelling an existing system instead of a blank idea? The anamnesis bridge is
+legacy-to-model extraction: agents mine domain **value** out of a legacy codebase
+(code, tests, docs, data, live probes) into an evidence-gated claims ledger, a
+human adjudicates the doubtful cases topic-by-topic, and the bridge renders only
+confirmed claims into the same `domain.md` the pipeline already consumes — a
+bridge-rendered domain file and a human-written one are indistinguishable to the
+pipeline, except every sentence in the bridge's version carries evidence. The
+boundary rule: **the only thing that ever crosses from the legacy system into the
+pipeline is the rendered set of confirmed claims — never code, never chat, never
+probe output.**
+
+```
+/schema-therapy:anamnesis
+```
+
+Engagement order: anamnesis mines → `/schema-therapy:scope` runs with the context
+map and actor claims on the table (the human decides which mined actors become
+business actors — the legacy cannot dictate the future product) → the pipeline
+runs as normal over the rendered domain file. Greenfield projects keep writing
+`domain.md` by hand; the pipeline changes by zero bytes.
+
 Already have the inputs written? Run the batch path:
 
 ```
