@@ -12,7 +12,16 @@
 //   - fingerprint shape/64-hex check ONLY (never recompute the digest — §1/§8)
 //
 // Node ≥18, plain ESM, zero external deps.
-// Usage: node scripts/harness.mjs <artifact.md> [--no-checks]
+// Usage: node scripts/harness.mjs <artifact.md> [--no-checks] [--baseline <prev.md>]
+//
+// AMENDMENT MODE (`--baseline <previous-00>`): parse the baseline with the SAME
+// reader, compute the element-level diff (added/removed/changed keyed by name
+// per table; goalChanged / fingerprintChanged booleans), emit it as a `baseline`
+// block in the JSON summary, and run the flag-conditional check XD1
+// (exactValue, [PLAN]-amend) which asserts the diff reconciles. A
+// missing/unreadable/unparseable baseline ⇒ broken-test (exit 3): the comparison
+// has no authority. With no flag, no `baseline` block, XD1 not run, all existing
+// behavior byte-identical.
 
 import { readFileSync } from 'node:fs';
 import { parse, ParseError } from './lib/md.mjs';
@@ -75,9 +84,25 @@ function main() {
   // corpus so zero checks parse, which MUST yield broken-test, never a vacuous
   // pass (simulation.md §3.2 `vacuous.md`).
   const noChecks = args.includes('--no-checks');
-  const artifactPath = args.find((a) => !a.startsWith('--'));
+
+  // Parse `--baseline <prev.md>`. Its VALUE is a bare path (no `--` lead), so we
+  // consume it explicitly and exclude it from the positional artifact scan below.
+  let baselinePath = null;
+  const consumed = new Set();
+  const bIdx = args.indexOf('--baseline');
+  if (bIdx !== -1) {
+    baselinePath = args[bIdx + 1];
+    consumed.add(bIdx);
+    if (baselinePath !== undefined) consumed.add(bIdx + 1);
+    if (baselinePath === undefined || baselinePath.startsWith('--')) {
+      process.stderr.write('BROKEN-TEST: --baseline requires a path argument\n');
+      process.exit(EXIT['broken-test']);
+    }
+  }
+  const positionals = args.filter((a, i) => !a.startsWith('--') && !consumed.has(i));
+  const artifactPath = positionals[0];
   if (!artifactPath) {
-    process.stderr.write('usage: node scripts/harness.mjs <artifact.md> [--no-checks]\n');
+    process.stderr.write('usage: node scripts/harness.mjs <artifact.md> [--no-checks] [--baseline <prev.md>]\n');
     process.exit(EXIT['broken-test']);
   }
 
@@ -120,6 +145,60 @@ function main() {
     process.stderr.write(`BROKEN-TEST (graph derive threw): ${e.stack}\n`);
     summary.status = 'broken-test';
     emit(summary, 'broken-test');
+  }
+
+  // ===========================================================================
+  // AMENDMENT MODE — parse the baseline with the SAME reader and compute the
+  // element-level diff. A baseline that is missing/unreadable/unparseable ⇒
+  // broken-test (exit 3): the comparison has no authority. Computed here (after
+  // the artifact graph) so the `baseline` block + XD1 are available downstream.
+  // ===========================================================================
+  let baselineDiff = null;
+  let baselineGraph = null;
+  if (baselinePath !== null) {
+    let baseText;
+    try {
+      baseText = readFileSync(baselinePath, 'utf8');
+    } catch (e) {
+      process.stderr.write(`BROKEN-TEST: cannot read baseline '${baselinePath}': ${e.message} (comparison has no authority)\n`);
+      summary.status = 'broken-test';
+      emit(summary, 'broken-test');
+    }
+    let baseDoc;
+    try {
+      baseDoc = parse(baseText);
+    } catch (e) {
+      process.stderr.write(`BROKEN-TEST: baseline '${baselinePath}' unparseable [${(e && e.rule) || '?'}]: ${e.message} (comparison has no authority)\n`);
+      summary.status = 'broken-test';
+      emit(summary, 'broken-test');
+    }
+    // The baseline must itself anchor against the pinned A-theme shape; if any
+    // malformed-class lint fails, the baseline is not a valid prior generation
+    // and the comparison has no authority ⇒ broken-test.
+    let baseG;
+    try {
+      baseG = C.deriveGraph(baseDoc);
+    } catch (e) {
+      process.stderr.write(`BROKEN-TEST: baseline '${baselinePath}' graph derive threw: ${e.message} (comparison has no authority)\n`);
+      summary.status = 'broken-test';
+      emit(summary, 'broken-test');
+    }
+    const baseMalformed = [
+      C.lintL1_headings(baseDoc),
+      C.lintL2_fingerprintBlock(baseDoc),
+      C.lintL3_actorsCols(baseG),
+      C.lintL4_impactsCols(baseG),
+      C.lintL5_deliverablesCols(baseG),
+      C.lintL6_singleGoal(baseG),
+    ].find((ml) => !ml.ok);
+    if (baseMalformed) {
+      process.stderr.write(`BROKEN-TEST: baseline '${baselinePath}' is malformed [${baseMalformed.id}/${baseMalformed.rule}]: ${baseMalformed.detail} (comparison has no authority)\n`);
+      summary.status = 'broken-test';
+      emit(summary, 'broken-test');
+    }
+    baselineGraph = baseG;
+    baselineDiff = C.computeBaselineDiff(g, baseG);
+    summary.baseline = baselineDiff;
   }
 
   const checkRecords = [];
@@ -231,6 +310,31 @@ function main() {
       process.stderr.write(`FAIL [${xc.id}/${xc.rule}]: ${xc.detail}\n`);
     } else if (xc.status === 'warn') {
       pushFinding(xc, 'warn');
+    }
+  }
+
+  // ===========================================================================
+  // STAGE 4b — XD1 (exactValue, [PLAN]-amend): flag-conditional. Runs ONLY when
+  // --baseline was given. Asserts the diff reconciles (per-table counts match
+  // each side's own parse; added/removed/changed disjoint by (table,name)). XD1
+  // does NOT judge whether the diff is justified — that is the professor's job
+  // (delta traceability). A diff WITH entries is still `pass` mechanically.
+  // XD1 participates in executedChecks (exactValueRun) when run, but walks ZERO
+  // edges, so it is excluded from the always-run edge reconciliation arithmetic
+  // (edgesExpected unchanged). When no flag is given, XD1 is absent entirely.
+  // ===========================================================================
+  if (baselineDiff !== null) {
+    const xd1 = C.checkXD1_amendReconcile(baselineDiff, g, baselineGraph);
+    exactValueRun++;
+    checkRecords.push({
+      id: xd1.id,
+      class: 'exactValue',
+      rule: xd1.rule,
+      status: xd1.status === 'pass' ? 'pass' : 'fail',
+    });
+    if (xd1.status !== 'pass') {
+      findings.push({ id: xd1.id, rule: xd1.rule, severity: 'error', detail: xd1.detail });
+      process.stderr.write(`BROKEN-TEST [XD1]: ${xd1.detail}\n`);
     }
   }
 

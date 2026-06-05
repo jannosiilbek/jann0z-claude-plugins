@@ -1,6 +1,6 @@
 ---
 name: impact-map
-description: Entry skill (step 0) of the schema-therapy modelling pipeline. Use this to START the pipeline / turn a free-text product intent into the validated artifact specs/00-impact-map.md — the single measurable business goal, the business actors, the impacts (actor behaviour changes), and the high-level deliverables that the downstream schema-therapy skills consume. Trigger when the user says "run the schema-therapy pipeline", "start the modelling pipeline", "impact map this product", "produce 00-impact-map.md", or hands a product intent to scope. NOT a general impact-mapping or strategy-workshop tool — this skill owns ONLY the schema-therapy scope-layer artifact at the head of the chain; downstream 01 carries actor names verbatim and realizes deliverables, 07 personas trace to actors/impacts.
+description: Entry skill (step 0) of the schema-therapy modelling pipeline. Use this to START the pipeline / turn a free-text product intent into the validated artifact specs/00-impact-map.md — the single measurable business goal, the business actors, the impacts (actor behaviour changes), and the high-level deliverables that the downstream schema-therapy skills consume — AND to AMEND that artifact when a scope change arrives. Trigger when the user says "run the schema-therapy pipeline", "start the modelling pipeline", "impact map this product", "produce 00-impact-map.md", or hands a product intent to scope; also trigger in Amend mode when an existing 00 must change — "add … to the scope", "amend the impact map", "update the scope document", "the scope also needs …". NOT a general impact-mapping or strategy-workshop tool — this skill owns ONLY the schema-therapy scope-layer artifact at the head of the chain; downstream 01 carries actor names verbatim and realizes deliverables, 07 personas trace to actors/impacts.
 ---
 
 # impact-map
@@ -41,7 +41,7 @@ actors/impacts).
 |-----------------------------------|-------------------------|---------|
 | The stated business objective (Why) | the **single Goal** statement | `## Goal` |
 | A named party who can produce / obstruct / consume the outcome | a **Business Actor** row | `## Business Actors` |
-| A desired change in what an actor *does* | an **Impact** row (behaviour change) | `## Impacts` |
+| A desired change in what an actor *does* | an **Impact** row (behaviour change; the Impact cell is a self-contained subject+verb statement — "Super-fans return more often", never a bare verb fragment relying on the actor column for its subject) | `## Impacts` |
 | A promised capability / option to support an impact | a **Deliverable** row | `## Deliverables` |
 
 This table doubles as the **artifact contract**: the downstream drift check
@@ -163,6 +163,53 @@ Then hand off to the plugin's drift-police agent as an **invocation**
 (`schema-therapy:drift-police`) if available — a handoff, **not a file
 dependency**. The skill's own pipeline **must go green without the police
 present**; the police are an extra guard, not a dependency.
+
+## Amend mode — iterating an existing 00
+
+Use this path **instead of** the Draft pipeline (§c) when `specs/00-impact-map.md`
+**and** its product-intent file already exist and a **scope delta** arrives. A
+scope delta is a distilled **1–3 line change statement** — the **only**
+conversational input this mode ever sees; everything else from the discussion
+stays **outside** the artifact. Amendment discipline is **theme H** of
+`references/validation-rules.md` (do not restate it here — reference it by
+pointer). The mechanical witness is the harness `--baseline` diff (simulation §8.1,
+check XD1).
+
+1. **Receive the delta verbatim.** If it is ambiguous (which impact does the new
+   deliverable serve? a new actor or an existing one?), ask **ONE** clarifying
+   question back — **never guess** (mirrors the Draft-mode ambiguity provision, §1).
+2. **Amend the intent file first** (H1). Weave the delta into the product-intent
+   file in plain business language — minimal edit, no conversational residue. The
+   intent file stays the single source the artifact is faithful to.
+3. **Re-derive 00, minimal-diff** (H2). Apply the intake table (§a) + catalog (incl.
+   theme H) touching **only** what the delta demands; every untouched row stays
+   byte-identical; re-pin the fingerprint over the new intent bytes.
+4. **Delta-scoped professor gate** (H3). Dispatch a **fresh** reviewer subagent
+   given **only**: the delta verbatim, the harness `--baseline` diff block, the full
+   catalog, and the amended artifact — **NOT** the conversation, **NOT** the old
+   drafts. Verdict per diff entry from the closed schema
+   `traces-to-delta | leak | style-drift`; any `leak`/`style-drift` ⇒ fix and
+   re-review. Bounded at **5**, non-pooled. (No-subagent fallback: a separate fresh
+   cold pass over the **same inputs only**.)
+5. **Lint + Simulation.** Before re-deriving (step 3), copy the pre-amendment 00 to
+   `specs/.00-impact-map.prev.md`, then run:
+
+   ```
+   node scripts/harness.mjs specs/00-impact-map.md --baseline specs/.00-impact-map.prev.md
+   ```
+
+   Green required. **Delete `specs/.00-impact-map.prev.md` after the run** — it must
+   not be left in `specs/`.
+6. **Emit + amendment report** (fixed format):
+   - the **delta verbatim**;
+   - the **diff table** with per-entry professor verdicts (from step 4);
+   - the harness **status line**;
+   - `Iterations to convergence: N`;
+   - the staleness note **verbatim**: "Artifacts 01–10 are now stale (doctrine §7).
+     Batch further scope deltas, then run the downstream cascade and the drift
+     police when the scope settles."
+   - the drift-police handoff as an **invocation** (`schema-therapy:drift-police`)
+     if available — a handoff, **not** a file dependency (unchanged from §c step 6).
 
 ## Harness reference
 

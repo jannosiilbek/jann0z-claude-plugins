@@ -17,6 +17,7 @@ Every rule cites its authority via `sources/SOURCES.md`. Sources referenced belo
 | E | Deliverables (What — options) | E1–E4 |
 | F | Hierarchy integrity | F1–F5 |
 | G | Naming, language & pipeline contract | G1–G6 |
+| H | Amendment discipline | H1–H4 |
 
 ---
 
@@ -273,3 +274,33 @@ The four-level hierarchy (goal → actors → impacts → deliverables) must res
 - **Fix:** Fingerprint the actual free-text product-intent file(s) consumed.
 - **Severity:** ⚠️
 - **Source:** [PLAN] (fingerprint exists to detect upstream product-intent drift; an unrelated or empty fingerprint defeats it).
+
+---
+
+## H — Amendment discipline
+
+This theme governs the **Amend** path (iterating an existing `specs/00-impact-map.md` from a scope delta — see SKILL.md "Amend mode"). It applies only when 00 already exists and a delta is being woven in; on a first Draft none of these rules fire. The mechanical backstop is the harness `--baseline` diff (the `baseline` block; check XD1) — these rules read that diff and judge what the harness cannot.
+
+### H1 — Intent-first amendment
+- **Detect:** An artifact element (an actor/impact/deliverable/goal change in the amended 00) has no backing in the **current** product-intent file — i.e. the amendment edited 00 without first weaving the change into the intent the artifact is fingerprinted against.
+- **Fix:** Amend the intent file first, in plain business language; re-derive 00 from it; re-pin the fingerprint over the new intent bytes. The intent file stays the single source 00 is faithful to.
+- **Severity:** ❌
+- **Source:** [PLAN] (SKILL.md step 5 semantic-drift contract — every artifact element is faithful to the intent, no invented elements; the amend path inherits this faithfulness gate).
+
+### H2 — Minimal diff
+- **Detect:** The harness `--baseline` diff carries a content entry (an `added`/`removed`/`changed` row, or `goalChanged`) that the scope delta does not demand; untouched rows are not byte-identical to the baseline (fingerprint churn is exempt — `fingerprintChanged` is expected on any amendment; the digest is re-pinned, while any captured-date annotation in the fingerprint body stays stable — the date is not demanded by the delta).
+- **Fix:** Revert the unrequested change; re-derive touching only what the delta demands, leaving every other row byte-identical to the baseline.
+- **Severity:** ❌
+- **Source:** [PLAN] (amend contract: a delta re-derives only what it touches; the `baseline` diff is the mechanical witness, XD1 §4.2).
+
+### H3 — Delta traceability (the leak gate)
+- **Detect:** Any `baseline` diff entry (`added`/`removed`/`changed`/`goalChanged`) that cannot be traced to the stated scope delta — judged by the delta-scoped professor over the mechanical diff, with a per-entry verdict from the closed schema `traces-to-delta | leak | style-drift`. Any `leak` or `style-drift` verdict is a finding.
+- **Fix:** Remove the leaked content (it belongs in the conversation, not the artifact) or correct the drifted style; if the content is genuinely wanted, it must arrive as its own scope delta and be amended through the normal path.
+- **Severity:** ❌
+- **Source:** [PLAN] (the harness diff is mechanical only — XD1 §4.2 reconciles counts but does not judge warrant; delta traceability is the professor's job).
+
+### H4 — One concern per delta
+- **Detect:** A single scope delta bundles multiple unrelated concerns (e.g. a new deliverable AND an actor rename in one statement).
+- **Fix:** Split into sequential deltas, each amended and reviewed separately, so every diff traces to exactly one concern.
+- **Severity:** ⚠️
+- **Source:** [PLAN] (amend hygiene: one concern per delta keeps the `baseline` diff legible and each entry traceable under H3).
