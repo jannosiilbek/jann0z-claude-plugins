@@ -5,11 +5,13 @@
 // by a committed edit, never ad hoc.
 
 // --- the closed 06 tag grammar (copied from the 06/08 lexicon) --------------
+// Five closed classes (@authz: marks 06's negative authorization scenarios).
 export const TAG_GRAMMAR = [
   /^@invariant:INV-[A-Za-z][A-Za-z0-9]*-\d+$/,
   /^@transition:[a-z][a-z0-9_]*$/,
   /^@terminal:[a-z][a-z0-9_]*$/,
   /^@policy:[A-Za-z0-9_-]+$/,
+  /^@authz:[a-z][a-z0-9_]*$/,
 ];
 export function isLegalTag(token) {
   return TAG_GRAMMAR.some((re) => re.test(token));

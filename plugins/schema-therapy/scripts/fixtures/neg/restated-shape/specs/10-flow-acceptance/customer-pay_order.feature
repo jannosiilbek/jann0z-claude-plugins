@@ -1,7 +1,7 @@
 # fingerprints:
-#   06-gherkin/order.feature@sha256:5d39d5142f5ded8a71a5bf6f9f6f90059bbe0e64dd3a2421a042ffe7c7e07502
-#   09-ui-flows/customer.xml@sha256:cc9b50b8f07662d2a1715e051c6f5b280a9d722f9c00ec0272b65160177311e1
-#   08-task-models/customer-pay_order.xml@sha256:7e4ae1cc5a6db95bc819c37dee364f2c349cda5fa3726dbd282906fe2a25dd0c
+#   06-gherkin/order.feature@sha256:52e9d7ad7ef384504624927026eae55c182cc40ac75c7d49cf0644b290b1a359
+#   09-ui-flows/customer.xml@sha256:4e30a591c552e376988677535188fa16f28b9d7beb16b25f287a666f2492e0b8
+#   08-task-models/customer-pay_order.xml@sha256:a41def9a8d80bc7b2a027cc662ef01933f7ddd99ae6e5f90a900546cbaf15f7b
 @task-model:customer-pay_order
 Feature: Pay order
 

@@ -141,6 +141,7 @@ dir('enum-listing', {
 // transition-dump: a comment restates the full 04 order table.
 dir('transition-dump', {
   'order.feature': `# fingerprints:
+#   01-event-storming.md@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 #   02-glossary.md@sha256:1111111111111111111111111111111111111111111111111111111111111111
 #   03-aggregates.md@sha256:2222222222222222222222222222222222222222222222222222222222222222
 #   04-erd.dbml@sha256:3333333333333333333333333333333333333333333333333333333333333333
@@ -148,12 +149,12 @@ dir('transition-dump', {
 # placed | Order Paid | paid
 # paid | Order Shipped | shipped
 # shipped | Order Delivered | delivered
-` + orderNo05.split('\n').slice(5).join('\n'),
+` + orderNo05.split('\n').slice(6).join('\n'),
   'coupon.feature': couponBase,
 });
 // missing-fingerprint: no leading # fingerprints: block.
 dir('missing-fingerprint', {
-  'order.feature': orderNo05.split('\n').slice(5).join('\n'),
+  'order.feature': orderNo05.split('\n').slice(6).join('\n'),
   'coupon.feature': couponBase,
 });
 // placeholder-fingerprint: a digest is a placeholder.
@@ -181,6 +182,7 @@ dir('extra-feature-file', {
   'order.feature': orderNo05,
   'coupon.feature': couponBase,
   'invoice.feature': `# fingerprints:
+#   01-event-storming.md@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 #   02-glossary.md@sha256:1111111111111111111111111111111111111111111111111111111111111111
 #   03-aggregates.md@sha256:2222222222222222222222222222222222222222222222222222222222222222
 #   04-erd.dbml@sha256:3333333333333333333333333333333333333333333333333333333333333333
@@ -200,6 +202,7 @@ dir('missing-feature-file', {
 // vacuous: a Feature: with no scenario (zero pickles). coupon valid for bijection.
 dir('vacuous', {
   'order.feature': `# fingerprints:
+#   01-event-storming.md@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 #   02-glossary.md@sha256:1111111111111111111111111111111111111111111111111111111111111111
 #   03-aggregates.md@sha256:2222222222222222222222222222222222222222222222222222222222222222
 #   04-erd.dbml@sha256:3333333333333333333333333333333333333333333333333333333333333333
@@ -208,6 +211,28 @@ Feature: Order
 `,
   'coupon.feature': couponBase,
 });
+// --- B7 authorization illegals ---
+// uncovered-authz: drop one @authz scenario (the Customer-may-not-ship negative) — its
+// B7 obligation (Order Shipped, Dispatcher-bound) is then uncovered ⇒ X-COV-AUTHZ.
+dir('uncovered-authz', {
+  'order.feature': orderNo05.replace(/\n  @authz:order\n  Scenario: A Customer may not ship a paid order[\s\S]*?Then the shipping attempt is rejected\n/, '\n'),
+  'coupon.feature': couponBase,
+});
+// authz-not-rejected: the @authz scenario's Then asserts no rejection ⇒ X-AUTHZ.
+dir('authz-not-rejected', {
+  'order.feature': orderNo05.replace('Then the shipping attempt is rejected', 'Then the shipping attempt is recorded'),
+  'coupon.feature': couponBase,
+});
+// authz-not-implied: an @authz scenario targets the SYSTEM-bound event 'Order Paid'
+// (Payment Gateway) — the domain implies no authorization rejection there ⇒ X-AUTHZ
+// (never invent a rejection the domain doesn't imply).
+dir('authz-not-implied', {
+  'order.feature': orderNo05.replace(
+    '  @authz:order\n  Scenario: A Customer may not ship a paid order\n    Given the order is paid\n    When the Customer attempts the Order Shipped event\n    Then the shipping attempt is rejected',
+    '  @authz:order\n  Scenario: A Customer may not ship a paid order\n    Given the order is paid\n    When the Customer attempts the Order Shipped event\n    Then the shipping attempt is rejected\n\n  @authz:order\n  Scenario: A Dispatcher may not pay a placed order\n    Given the order is placed\n    When the Dispatcher attempts the Order Paid event\n    Then the payment attempt is rejected'),
+  'coupon.feature': couponBase,
+});
+
 // wrong-reason-trap: TWO defects — uncovered invariant (B1) AND a forbidden synonym (D4).
 // The pinned OWNER is X-COV-INV; M17 also fires but is not the named owner.
 dir('wrong-reason-trap', {

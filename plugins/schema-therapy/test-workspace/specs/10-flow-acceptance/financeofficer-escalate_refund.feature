@@ -1,7 +1,7 @@
 # fingerprints:
-#   06-gherkin/refund.feature@sha256:75c6e2e5bb5a46f8072636a328d398b7c426f2d5bf60a72c6b732cd7296f1f49
-#   09-ui-flows/financeofficer.xml@sha256:591c2520cbd8e5a9130ee9292dc220ce9ca9f82b068daeadff36bb8ca20a803a
-#   08-task-models/financeofficer-escalate_refund.xml@sha256:96c257de84120100e0268ae4ba565d755ce4963a0d5f994b300cf943006d3a04
+#   06-gherkin/refund.feature@sha256:b25938e46714240ac9d3f41663a55167785ed8b13124ecf79e80a3406b1f45d3
+#   09-ui-flows/financeofficer.xml@sha256:9c9542ca3c661d66d27a3fbc479aefa1914b9cee0f93489de4e873b268fab0ac
+#   08-task-models/financeofficer-escalate_refund.xml@sha256:bce9721b79b849ae372075ef12715db9365d1b3f4d90278c5ab3324eddf5cdd7
 @task-model:financeofficer-escalate_refund
 Feature: Escalate refund
 

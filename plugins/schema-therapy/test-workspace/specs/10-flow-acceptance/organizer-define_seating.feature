@@ -1,7 +1,7 @@
 # fingerprints:
-#   06-gherkin/venue.feature@sha256:6575b40b1e30af2a1d4100373d39f411ee8a4f815b24453a9cfdd8fd0ab2da87
-#   09-ui-flows/organizer.xml@sha256:766030af6729a6b04e9645a9bfc78de756df3e070357fdae6f978da48bf82b2a
-#   08-task-models/organizer-define_seating.xml@sha256:25abc9ddcccec7081b8956cca6f5d55df89984b60f6ab05654fccf5f8bd1912a
+#   06-gherkin/venue.feature@sha256:1ebde44d9d10a50acf967e37a2de75db019d5ce7bb003e82637406505f5e21ff
+#   09-ui-flows/organizer.xml@sha256:b0233ce55bbc111717f1cc476ec17307fb54c2999f31268c0e909a938a69f659
+#   08-task-models/organizer-define_seating.xml@sha256:58fa68ead38d82b5bdaf9b3c047e5783eb08958d8cc2e53ff02b26cdb61b51fb
 @task-model:organizer-define_seating
 Feature: Define seating
 

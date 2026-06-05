@@ -119,10 +119,13 @@ flow_cost(model) =  Σ  count(event.klm)             over leaf-mapped Events on 
   nav hop costs `BB` = **1 token**. Counting a nav hop as `BB` (not `K`, a keypress) keeps the unit
   consistent with how the same flow's Events are costed and is deterministic. The **first** container
   is the landing/home screen the user is already on, so only `hops − 1` are charged.
-- **Conformance:** `flow_cost(model) ≤ model.Budget.klm` — **exact-value**; exceeding **fails
-  simulation** (rule **C-a**). 09 never edits 08; an over-budget flow is fixed by re-modeling 09 (or,
-  if truly infeasible, by an **08 regeneration** — renegotiating the budget is an 08 act, never a 09
-  edit). Cite the floor as [PLAN].
+- **Conformance:** `flow_cost(model)` is re-walked and compared to `model.Budget.klm` — **both
+  values reported**; exceeding is a **warning** (rule **C-a**, ⚠️): the budget is the 08 model's own
+  declared ceiling, so an overage is agent-review residue, never a gate failure. The **blocking**
+  flow-bloat floor is rule **C-d** (❌): screens visited on the realizing walk ≤ the 08 model's
+  nominal leaf count + 3. 09 never edits 08; an over-budget/bloated flow is fixed by re-modeling 09
+  (or, if the budget itself is wrong, by an **08 regeneration** — renegotiating the budget is an 08
+  act, never a 09 edit). Cite the floor as [PLAN].
 
 ---
 
@@ -132,13 +135,13 @@ flow_cost(model) =  Σ  count(event.klm)             over leaf-mapped Events on 
 |---|---|---|
 | **A. Structure** | A-a … A-l (12) | Pinned IFML-XMI subset: doc shape, ids, bindings, flows, home |
 | **B. Realization** | B-a … B-d (4) | Every 08 leaf task maps to a screen/event; nominal path walkable |
-| **C. Budget conformance** | C-a … C-c (3) | Flow-efficiency floor — KLM accounting ≤ 08 Budget |
+| **C. Budget conformance** | C-a … C-d (4) | Flow-efficiency floor — KLM accounting + screen-bloat ceiling |
 | **D. Lifecycle binding** | D-a … D-c (3) | Events on lifecycle entities ⊆ authority (05-if-promoted-else-04) |
 | **E. Language discipline** | E-a … E-d (4) | snake_case ids; forbidden synonyms; no invented bindings |
 | **F. Heuristic (professor lens)** | F-a … F-f (6) | NN/g visibility, user control, error prevention — advisory |
 
-**Total: 32 rules** — 22 contract (❌), 4 advisory-mechanical (⚠️), 6 judgment (⚠️/ℹ️).
-[PLAN]-marked contract rules: **A-c, A-e, A-i, A-k, B-a, B-d, C-a, D-a, E-d**.
+**Total: 33 rules** — 22 contract (❌), 5 advisory-mechanical (⚠️), 6 judgment (⚠️/ℹ️).
+[PLAN]-marked contract rules: **A-c, A-e, A-i, A-k, B-a, B-d, C-d, D-a, E-d**.
 
 ---
 
@@ -265,13 +268,28 @@ Grounds the document in the [MM] machine shape. The hand-rolled reader (oracle) 
 
 ## Theme C — Budget conformance (Flow-efficiency floor)
 
-### C-a — Realized flow cost ≤ 08 Budget.klm [PLAN]
+### C-a — Realized flow cost vs 08 Budget.klm (advisory) [PLAN]
 - **Detect:** For a realized 08 model, `flow_cost(model)` (per the pinned accounting above:
   Σ event-klm counts on the nominal path + `BB`×(hops−1)) **>** that model's `<Budget klm="…"/>`.
-- **Fix:** Re-model 09 to cut clicks/keystrokes/hops below budget. **Never edit 08.** If genuinely
-  infeasible, the budget itself is wrong — that is an **08 regeneration**, not a 09 change.
+- **Fix:** Re-model 09 to cut clicks/keystrokes/hops below budget where reasonable. **Never edit
+  08.** If the budget is genuinely wrong, that is an **08 regeneration**, not a 09 change.
+- **Severity:** ⚠️ — the budget is the 08 model's **own declared ceiling**, derived from its own
+  decomposition and measuring nothing external (08's W-BUDGET already guards that the declaration
+  matches the walker-computed sum). An overage is surfaced for agent judgment with both values and
+  the contributing path; the **blocking** flow-bloat floor is **C-d**.
+- **Source:** [PLAN] (Flow-efficiency floor — advisory arm; the blocking arm is C-d).
+
+### C-d — Screens visited ≤ 08 nominal leaf count + 3 [PLAN]
+- **Detect:** For a realized 08 model, the screens visited on the realizing walk (the `home`
+  container + one per hop of the W-REALIZE walk, revisits counted) **>** that model's nominal-path
+  leaf count **+ 3**.
+- **Fix:** Cut gratuitous intermediate screens — collapse pass-through containers, co-locate
+  consecutive nominal events, or add the missing direct `NavigationFlow`. **Never edit 08.**
 - **Severity:** ❌
-- **Source:** [PLAN] (Flow-efficiency floor: a 09 flow exceeding its 08 budget fails simulation).
+- **Source:** [PLAN] (Flow-efficiency floor: the ceiling is external to 09 — the 08 nominal leaf
+  count is the job's own step count, so a tight flow needs at most ~one screen per step; +3 grants
+  home/landing slack. A flow dragging the user through more screens than the job has steps is
+  bloated and fails simulation).
 
 ### C-b — Every nominal-path Event carries a valid `klm` string
 - **Detect:** A leaf-mapped Event on a nominal path lacks `klm=`, OR `klm` contains a token outside

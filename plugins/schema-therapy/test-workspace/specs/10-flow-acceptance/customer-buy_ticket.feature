@@ -1,7 +1,7 @@
 # fingerprints:
-#   06-gherkin/order.feature@sha256:e656728752b2cd3189c1188bebe5e70ccaf318e6d9b6f45f63028a8602f129e9
-#   09-ui-flows/customer.xml@sha256:f218a74ceddd1273d3679ce6ea83890bb304dee9ad41e7558423cc5f0c73a983
-#   08-task-models/customer-buy_ticket.xml@sha256:da02f76e64e8fe885555d49d5f911cffdd1830f1d002bbd1338a912886310b23
+#   06-gherkin/order.feature@sha256:e12871b7f61aa0375b3df07c24572709183fb55b864fca19856ea0fcb6dc3b2b
+#   09-ui-flows/customer.xml@sha256:6db976f512e9f664055c48b1b17bf6acee85e2030a2bcbfd471cd62547d47203
+#   08-task-models/customer-buy_ticket.xml@sha256:9357116330d12bf0740d1d1e80b21a5f6d6bbc5581cb309caea1bc29d9c23550
 @task-model:customer-buy_ticket
 Feature: Buy ticket
 

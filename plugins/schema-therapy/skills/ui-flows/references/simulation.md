@@ -18,7 +18,7 @@ pinned dialect's own hand-rolled reader, per the probe) and B3 (simulation desig
 exercise every relationship/path/edge; reuse over invention).
 
 It is **paired with** `references/validation-rules.md` (the closed rule catalog, Themes A–F:
-**A-a … A-l / B-a … B-d / C-a … C-c / D-a … D-c / E-a … E-d / F-a … F-f — 32 rules, 22 ❌**). Every
+**A-a … A-l / B-a … B-d / C-a … C-d / D-a … D-c / E-a … E-d / F-a … F-f — 33 rules, 22 ❌**). Every
 check below cites the catalog rule ID(s) it mechanizes. **The catalog is the review vocabulary; this
 file is the executable harness over it.** No check here exists without a catalog rule behind it.
 
@@ -32,8 +32,10 @@ proved **no scriptable IFML engine/validator exists**, so the authoritative vali
 "downstream instantiation" arm is the **flow-walk**: the harness re-derives each realized 08 model's
 nominal-path leaf sequence (the **vendored CTT walker PATTERN, copied from the `08` harness**), resolves
 each leaf to its mapped `Event`(s), and **walks** the `NavigationFlow` graph from the home container to
-prove the nominal path is *realizable* — then re-computes the KLM **flow cost** and compares it to the
-08 `Budget.klm`. This is the load-bearing layer designed below (§3.3 — the **flow-walk oracle**).
+prove the nominal path is *realizable* — then re-computes the KLM **flow cost** (compared to the 08
+`Budget.klm`, warn-only) and the **screens-visited count** (compared to the 08 nominal leaf count + 3,
+the blocking flow-bloat floor). This is the load-bearing layer designed below (§3.3 — the
+**flow-walk oracle**).
 
 The artifact is a **five-or-six-upstream** artifact (02 + both 04 + 07 + 08, plus **optional** 05),
 validated against `specs/02-glossary.md` (enum `### <Name>Status` tables + `## Forbidden Synonyms`),
@@ -122,7 +124,7 @@ three pinned, `flow_cost` is a **pure function of the model + its 08 nominal pat
 | Runtime | **Node.js ≥ 18** (plain ESM). Matches the sibling `task-models`/`statecharts`/`gherkin`/`glossary` harnesses (suite uniformity); probe ran on v24.13.0. |
 | Entry points | `scripts/harness.mjs` (the oracle; the 6-or-7-arg invocation above), `scripts/selftest.mjs` (runs the harness over every shipped fixture set and asserts the expected status + failing-check + upstream-route + the 05-present/absent authority records). |
 | **IFML-XMI-subset reader (the authoritative validator)** | **Hand-rolled, dependency-free**, vendored in `scripts/lib/xml.mjs`. The probe (§0) proved no scriptable IFML validator exists and the one installable reader (`ifml-moddle.fromXML`) parses leniently on a different dialect — so the harness **vendors a strict reader** over the pinned IFML-XMI subset (Theme A): the six element names (`IFMLModel`/`Realizes`/`ViewContainer`/`ViewComponent`/`Event`/`NavigationFlow`), the fixed attribute sets, the leading `<!-- fingerprints: … -->` comment, and the `<!-- 01-event: … -->` annotation comments (a generic DOM parser drops these). It produces the typed `ParseError` that triggers `malformed`. Element/property names are checked against the **closed MM lexicon** (`scripts/lib/lexicon.mjs`), itself derived from `ifml-moddle.schema.json` + `IFML-Metamodel.xmi` so reader and metamodel agree by construction. |
-| **Flow-walker (the oracle)** | **Hand-rolled, dependency-free**, vendored in `scripts/lib/graph.mjs`. Builds the `NavigationFlow` directed graph (Event→Container edges via `from`/`to`), runs **BFS** from the `home` container, and — per realized 08 model — verifies the nominal-path leaf-mapped Events are reachable **in order** (B-d) and computes the KLM **flow cost** (C-a). The strongest realizable oracle here: there is no IFML execution engine, so the harness *walks the graph* and *re-derives the cost* rather than trusting a declared number. |
+| **Flow-walker (the oracle)** | **Hand-rolled, dependency-free**, vendored in `scripts/lib/graph.mjs`. Builds the `NavigationFlow` directed graph (Event→Container edges via `from`/`to`), runs **BFS** from the `home` container, and — per realized 08 model — verifies the nominal-path leaf-mapped Events are reachable **in order** (B-d), computes the KLM **flow cost** (C-a, warn-only), and counts the **screens visited** against the bloat floor (C-d, blocking). The strongest realizable oracle here: there is no IFML execution engine, so the harness *walks the graph* and *re-derives the cost* rather than trusting a declared number. |
 | **CTT nominal-path walker (08 reader)** | **Hand-rolled, dependency-free**, vendored in `scripts/lib/taskmodel.mjs`. **COPIED from the `08` task-models harness `walker.mjs` PATTERN** (the nominal-path descent: enabling/concurrent → all children in order; `choice` → first document-order child; `disabling`/`suspendResume` → left; skip `optional`; `iterative` once), narrowed to the **nominal-path leaf list + leaf id/category + the per-model `Budget.klm`** 09 consumes. **Copied, never imported** (isolation directive). 09 does NOT re-certify 08's own tag/operator/KLM seams — that is the `08` harness's single-owned job (§9); it re-walks only to obtain the *ordered nominal leaf sequence* and the *budget integer* against which the flow is measured. |
 | **DBML reader (04-erd.dbml)** | **Constrained hand-rolled reader**, dependency-free, vendored in `scripts/lib/dbml.mjs`. Reads **only** the emitted 04 shape 09 needs: `Table <name> { … }` names (snake_case singular) + the **status column** per table (the `<col> <enum>` line whose enum type is in the status-enum family — the REAL emitted **snake_case `<name>_status`** convention, e.g. `order_status`/`event_status`, OR the PascalCase `<Name>Status` form, matched case/style-insensitively on the `status` suffix). **NO `@dbml/core` dependency** — justified below. |
 | **Markdown / SCXML readers** | Hand-rolled, dependency-free, vendored: `scripts/lib/md.mjs` (the `02`/`04-transitions.md`/`07` shape-reader — `### <Name>Status` value tables + `## Forbidden Synonyms` `Forbidden term\|Canonical term\|Reason`; `### <table>` `From\|Event\|To` + `∅` rows; `### <PersonaName>` blocks) **copied** from the sibling skills; `scripts/lib/scxml.mjs` (the optional 05 reader — `state` ids, `<!-- 01-event: … -->` annotations, the `<!-- supersedes: 04-transitions.md#<table> -->` target) **copied** from the `statecharts`/`gherkin` PATTERN, used **only when `--upstream-05` is present**, shape-read never simulated. |
@@ -132,7 +134,8 @@ three pinned, `flow_cost` is a **pure function of the model + its 08 nominal pat
 
 **Rationale for the flow-walk oracle over a parse-only harness.** An IFML model's load-bearing claims
 are *navigational* and *budgetary*: that the realized 08 nominal path is **walkable** from home (B-d)
-and that its realized **flow cost ≤ the 08 budget** (C-a). Neither is a shape fact a reader surfaces —
+and that the flow is **not bloated** — screens visited ≤ the 08 nominal leaf count + 3 (C-d), with the
+flow cost vs the 08 budget surfaced as the advisory arm (C-a). Neither is a shape fact a reader surfaces —
 both require *walking the NavigationFlow graph* and *summing KLM over the leaf-mapped events on the
 path*. Doctrine B3 names the strongest oracle ("run on a real engine"); the probe proved no IFML
 engine is pinnable, so the harness **vendors a flow-walker** and **walks** every realized model's
@@ -211,7 +214,9 @@ The scenario has **two halves**, because the artifact has two oracles:
 1. **Flow-walk runs** (§3.3) — the strongest oracle. Per realized 08 model: the CTT nominal path is
    re-walked, each interaction/user leaf resolved to its mapped Event(s), a navigation path from home
    realizing the leaf sequence is BFS-searched (W-REALIZE), the home is verified unique+reachable
-   (W-HOME), and the KLM flow cost is re-computed and compared to the 08 budget (W-COST).
+   (W-HOME), the KLM flow cost is re-computed and compared to the 08 budget (W-COST — ⚠️ warn-only:
+   the budget is 08's own declared ceiling), and the screens visited on the realizing walk are
+   compared to the 08 nominal leaf count + 3 (W-BLOAT — ❌ the blocking flow-bloat floor).
 2. **Mechanical scenarios** (§3.1–§3.2) — a walk over 09's own IFML claims (the hand-rolled model + the
    dialect lints) resolved against the parsed 02/04/05?/07/08 upstreams.
 
@@ -257,7 +262,8 @@ Closed traversal set (every relationship 09 claims becomes a walked edge):
    annotation present in the entity's **authority** (05-if-promoted-else-04) (A-k/D-a/D-b; R-AUTH).
 7. **NavigationFlow endpoint edges** — `from`∈Events, `to`∈Containers (A-j; tree/graph backbone).
 8. **Walk edges** — per realized 08 model: home uniqueness+reachability (W-HOME), nominal-path
-   realizability from home (W-REALIZE), flow-cost ≤ budget (W-COST).
+   realizability from home (W-REALIZE), flow-cost vs budget (W-COST, warn-only), screens visited ≤
+   nominal leaf count + 3 (W-BLOAT, blocking).
 9. **Language edges** — snake_case ids, no forbidden synonyms (verbatim-exempt), no invented bindings
    (E-a/E-b/E-c/E-d).
 
@@ -292,7 +298,8 @@ realizing path, the home-reachable set, and the **flow-cost integer** — are fi
 |----|------|-----------|--------------|
 | W-HOME | locate `home="true"` and BFS the container graph from it | **exactly one** home container AND **every** container is reachable from home (no island). Zero/two homes is the M-HOME ❌ precondition; an unreachable container is the W-HOME ❌ (per catalog A-l ❌ for count; reachability is the ⚠️/❌ reach arm — here ❌ when a *realized* container is stranded, ⚠️ when a non-realized decorative container is unreached). | A-l |
 | W-REALIZE | BFS the NavigationFlow graph from home, finding a path that visits the mapped Events of the ordered interaction/user leaf sequence **in order** | a path exists realizing the nominal leaf order from home (a required hop is never missing). **Pinned search:** BFS shortest hop-count path visiting the mapped events in sequence; remaining ambiguity broken by **document order** of events/flows. | B-d |
-| W-COST | over the realizing path, sum `flow_cost = Σ count(event.klm)` over the nominal leaf-mapped Events **+ `BB`×(hops−1)** (first/home container free) | `flow_cost(M) ≤ M.budget` (the 08 `Budget.klm`). **Both** the computed cost and the declared budget are reported, with the contributing event list + hop count. | C-a |
+| W-COST | over the realizing path, sum `flow_cost = Σ count(event.klm)` over the nominal leaf-mapped Events **+ `BB`×(hops−1)** (first/home container free) | `flow_cost(M)` vs `M.budget` (the 08 `Budget.klm`) — **⚠️ warn-only**: the budget is the 08 model's own declared ceiling (W-BUDGET in 08 guards its honesty); an overage is surfaced for agent review with **both** values + the contributing event list + hop count, never a gate failure. | C-a |
+| W-BLOAT | over the realizing walk, count screens visited = the home container + one per hop (revisits counted) | `screens(M) ≤ M.nominalLeafCount + 3` — **❌ blocking**: the ceiling is external to 09 (the job's own step count); a flow dragging the user through more screens than the job has steps (+3 slack) fails simulation. Both values reported. | C-d |
 
 **(a) The realizability walk (W-REALIZE).** The 09 model *claims* that its screens realize the 08 task
 flow. The harness proves this by **walking**: starting at home, it BFS-searches the NavigationFlow graph
@@ -303,9 +310,12 @@ and the point at which the walk stranded. **Pinned determinism:** shortest hop-c
 by the document order of the candidate events/flows, so the same model yields the same realizing path
 every run (§8).
 
-**(b) The budget verification (W-COST) — the load-bearing exact-value design.** The flow cost is the
-artifact's single most important numeric claim (the flow-efficiency ceiling against the 08 budget), so
-it is verified by **walking the realizing path and re-summing, not by an inline re-derivation**:
+**(b) The budget verification (W-COST, ⚠️ warn-only) — the re-walked exact-value design.** The flow
+cost is the artifact's most informative numeric claim, so it is verified by **walking the realizing
+path and re-summing, not by an inline re-derivation**. The comparison is **advisory**: the 08
+`Budget.klm` is the 08 model's own declared ceiling — a number derived from its own decomposition,
+measuring nothing external — and 08's W-BUDGET already blocks on declaration honesty, so a 09 overage
+is surfaced for agent judgment rather than failing the gate:
 
 1. The walker takes the **realizing path** from W-REALIZE: an ordered list of nominal leaf-mapped
    Events + the container `hops` traversed.
@@ -315,10 +325,20 @@ it is verified by **walking the realizing path and re-summing, not by an inline 
 3. It adds **`NAV_HOP_COST × (hops − 1)`** = `1 × (hops − 1)` (the first/home container is free; each
    subsequent hop is one button **click** = the single `BB` operator = `1 token`, per the catalog's
    Card/Moran/Newell click=`BB` convention measured in the 08 operator-token unit).
-4. `computedCost := Σ event-tokens + 1×(hops−1)`. **Assert `computedCost ≤ M.budget`** (the 08
-   `Budget.klm`). An over-budget flow is the `W-COST` failure (C-a) — reported with **both** the
-   computed cost and the declared budget + the contributing event/hop list, so the author sees exactly
-   what the walk counted. (09 never edits 08; an over-budget flow is fixed by re-modeling 09.)
+4. `computedCost := Σ event-tokens + 1×(hops−1)`. **Compare `computedCost` to `M.budget`** (the 08
+   `Budget.klm`). An over-budget flow is the `W-COST` **warning** (C-a, ⚠️) — reported with **both**
+   the computed cost and the declared budget + the contributing event/hop list, so the author sees
+   exactly what the walk counted. (09 never edits 08; an over-budget flow is improved by re-modeling
+   09. It never blocks the gate.)
+
+**(b2) The flow-bloat floor (W-BLOAT, ❌ blocking) — the gate the ceiling was really for.** Over the
+same realizing walk, the walker counts **screens visited** = the home container + one per hop
+(revisits counted — every hop drags the user through a screen). **Assert
+`screens ≤ M.nominalLeafCount + 3`** (the realized 08 model's nominal-path leaf count, +3 slack for
+home/landing). The ceiling is **external to 09** — the job's own step count — so unlike the 08-declared
+budget it measures something the 09 author does not control. A flow that needs more screens than the
+job has steps is bloated: that is the `W-BLOAT` failure (C-d), reported with both values + the hop
+count. Fixed by collapsing pass-through containers or adding the missing direct `NavigationFlow`.
 
 Because the nominal-path rule, the M-placement, the tokenizer, and `NAV_HOP_COST` are all **pinned and
 deterministic**, `computedCost` is a pure function of the model + its 08 nominal path — the same model
@@ -327,8 +347,9 @@ hand-computed cost, it **re-walks** and compares.
 
 **(c) No negative walk on the graph itself.** The flow-walker has no event-input to "fire wrongly" — the
 negatives here are the **illegal fixtures** (§3.4), each a 09 model with one injected defect the walker
-or a mechanical check must reject for the stated reason (the `over-budget` fixture is the W-COST
-negative; `unrealized-leaf`/`dangling-navflow` are the W-REALIZE negatives; `no-home`/`dup-home` the
+or a mechanical check must reject for the stated reason (the `flow-bloat` fixture is the W-BLOAT
+negative; `over-budget` is the W-COST **warn** witness — it passes the gate with the warning recorded;
+`unrealized-leaf`/`dangling-navflow` are the W-REALIZE negatives; `no-home`/`dup-home` the
 home negatives).
 
 ### 3.4 Shipped fixtures (`scripts/fixtures/`)
@@ -387,7 +408,8 @@ is recorded in `scripts/fixtures/manifest.json`.
 | `ghost-task-ref.xml` | either | an Event `task="t_nonexistent"` (no such 08 leaf) | M-TASKREF (B-c) | `fail` | B |
 | `dangling-navflow.xml` | either | a `NavigationFlow to="missing_container"` (endpoint unresolved) | M-NAVEND (A-j) | `fail` | A |
 | `unrealized-leaf/` | either | an interaction 08 leaf with NO mapped Event → nominal path not walkable | **X-COV-LEAF / W-REALIZE** (B-a/B-d) | `fail` | B (realization) |
-| `over-budget.xml` | either | extra hops/keystrokes push `flow_cost` > the 08 `Budget.klm` | **W-COST** (C-a) [both values reported] | `fail` | C (budget) |
+| `over-budget.xml` | either | extra keystrokes push `flow_cost` > the 08 `Budget.klm` | nothing blocking — **W-COST** (C-a) records a ⚠️ warn [both values reported] | `pass` (with warn) | C (budget) |
+| `flow-bloat/` | either | a chain of gratuitous pass-through containers pushes screens visited > nominal leaf count + 3 | **W-BLOAT** (C-d) [both values reported] | `fail` | C (budget) |
 | `ghost-01-event.xml` | either | a `submit` Event's `01-event` annotation absent from the entity authority | R-AUTH (D-a) | `fail` | D (lifecycle) |
 | `wrong-authority-event.xml` | `--upstream-05` | a `01-event` valid in the superseded **04** rows but `order` is promoted and the string is NOT in 05 | R-AUTH (D-b promotion precedence) | `fail` | D |
 | `realizes-other-persona.xml` | either | `dispatcher.xml` `<Realizes taskModel="picker-pick_order"/>` (08 of another persona) | M-REALIZES (A-e) | `fail` | A/B |
@@ -396,7 +418,7 @@ is recorded in `scripts/fixtures/manifest.json`.
 | `forbidden-synonym-id.xml` | either | a container `id="purchase_queue"` (forbidden `purchase` in free id) | M-FORBID (E-b) | `fail` | E (language) |
 | `non-snake-id.xml` | either | a `ViewContainer id="OrderQueue"` (not snake_case) | M-SNAKE/M-CID (E-a/A-f) | `fail` | E/A |
 | `05-claimed-but-absent/` | **(no 05)** | a model fingerprints `05-statecharts/order.scxml` while `--upstream-05` is absent | N-05ABSENT (binding rule) | `fail` | D |
-| `wrong-reason-trap.xml` | either | **two** defects — an over-budget flow (C-a) AND a ghost binding (A-i) — proves the negative reports **W-COST**, not M-BIND | W-COST isolates over M-BIND | `fail` (reason = W-COST) | C |
+| `wrong-reason-trap.xml` | either | **two** defects — a bloated flow (C-d) AND a ghost binding (A-i) — proves the negative reports **W-BLOAT**, not M-BIND | W-BLOAT isolates over M-BIND | `fail` (reason = W-BLOAT) | C |
 | `vacuous/` | `--no-checks` | structurally valid 09 but harness fed the disabled path | n/a | `broken-test` (zero checks) | — |
 | `budget-broken-08/` | `--upstream-05` | a **realized 08 model whose declared `Budget.klm` ≠ its own recomputed nominal cost** (broken ruler) | upstream pre-check | `fail` (class=`upstream-defect`→the named 08 file) | §9 |
 | `valid-09/` | `malformed-upstream-07` | 07 drops the `### <PersonaName>` blocks (bijection unanchorable) | n/a | `broken-test` | §9 |
@@ -406,7 +428,7 @@ is recorded in `scripts/fixtures/manifest.json`.
 | `valid-09/` | `malformed-upstream-05` | a supplied `05/order.scxml` not well-formed XML (authority unreadable) | n/a | `broken-test` | §9 |
 
 `wrong-reason-trap.xml` is the explicit doctrine §2 guard: it would "pass for the wrong reason" under a
-sloppy negative. The selftest asserts the failing-check ID equals `W-COST`, not merely that *some*
+sloppy negative. The selftest asserts the failing-check ID equals `W-BLOAT`, not merely that *some*
 check failed. `05-claimed-but-absent/` is the binding lifecycle-authority negative. `budget-broken-08/`
 is the §9 upstream-defect route (a realized 08 whose own budget is wrong — 09 cannot be measured
 against a broken ruler); the last five rows route to `broken-test` (an unparseable upstream).
@@ -461,7 +483,8 @@ catalog rule. The harness emits each check's `id`, `class`, `status`, and `rule`
 |----|-----------|--------------|
 | W-HOME | exactly one `home="true"` container AND every realized container is reachable from home by BFS. | A-l |
 | W-REALIZE | a navigation path from home realizes the ordered interaction/user nominal-leaf sequence's mapped Events in order (BFS shortest, doc-order tie-break). | B-d |
-| W-COST | the re-computed `flow_cost` (Σ nominal event-klm TOKEN counts + `BB`×(hops−1), `BB`=1 token, the 08-owned unit) **≤** the realized 08 `Budget.klm`; both values + path reported. | C-a |
+| W-COST | the re-computed `flow_cost` (Σ nominal event-klm TOKEN counts + `BB`×(hops−1), `BB`=1 token, the 08-owned unit) **vs** the realized 08 `Budget.klm`; both values + path reported. **⚠️ warn-only** (the budget is 08's own declared ceiling). | C-a |
+| W-BLOAT | screens visited on the realizing walk (home + one per hop, revisits counted) **≤** the realized 08 model's nominal leaf count **+ 3**; both values reported. **❌ blocking.** | C-d |
 
 ### 4.2 Resolution checks (`R` — a referenced element exists / maps in its owner)
 
@@ -480,7 +503,7 @@ catalog rule. The harness emits each check's `id`, `class`, `status`, and `rule`
 | M-BIJ | `{09 file slugs}` **deep-equals** `{07 persona slugs}` (both directions; a missing persona OR an extra file fails, naming the offending side + owner). | A-c |
 | M-ATTR | each model's `id` == `snake(persona)` == filename stem AND `persona` == a verbatim 07 `### <PersonaName>`. | A-c |
 | X-COV-LEAF | every interaction/user leaf of every realized 08 model has ≥1 mapped Event (`task=<leaf id>`). | B-a |
-| X-COST-INT | each realized 08 `Budget.klm` parses as a single non-negative integer (the value W-COST compares against). | C-a basis |
+| X-COST-INT | each realized 08 `Budget.klm` parses as a single non-negative integer (the value the W-COST warning compares against). | C-a basis |
 | X-RECON | the executed-check total equals the sum of class counters and equals the reconciliation target (§5); mismatch ⇒ `broken-test`. | §5 |
 
 ### 4.4 Reason-qualified-negative checks (`N` — an illegal input is rejected for the *stated* reason)
@@ -499,7 +522,7 @@ N-IDs map 1:1 to the fixture rows; abbreviated:
 | N6 | ghost task-ref | `task=` ∉ 08 leaves | M-TASKREF / R-TASK | B-c |
 | N7 | dangling navflow | endpoint unresolved | M-NAVEND | A-j |
 | N8 | unrealized leaf | interaction leaf with no mapped Event / unwalkable | **X-COV-LEAF / W-REALIZE** | B-a/B-d |
-| N9 | over budget | `flow_cost` > 08 budget | **W-COST** | C-a |
+| N9 | bloated flow | screens visited > nominal leaf count + 3 | **W-BLOAT** | C-d |
 | N10 | ghost 01-event | annotation ∉ authority | R-AUTH | D-a |
 | N11 | wrong-authority event | 04-row event but entity promoted, not in 05 | R-AUTH | D-b |
 | N12 | realizes other persona | 08 stem not this persona's | M-REALIZES / R-REALIZE | A-e |
@@ -538,7 +561,7 @@ edgesExpected = 1                                   (M-BIJ: file-set ↔ 07 bije
               + Σ|submit events on lifecycle entity| (R-AUTH: 01-event ∈ authority)
               + Σ|flows|                             (M-NAVEND: endpoints resolve)
               + Σ|models| (R-FP fingerprints)
-              + WALK: Σ|realized models| (W-HOME + W-REALIZE + W-COST)
+              + WALK: Σ|realized models| (W-HOME + W-REALIZE + W-COST + W-BLOAT)
 ```
 
 The **walk count** is reported separately in the summary (`counts.walker`) so the strongest-oracle
@@ -546,13 +569,14 @@ layer's coverage is visible: a `pass` with `counts.walker.total === 0` over an a
 realized models is itself a `broken-test` (the walker layer was skipped).
 
 **Every owned element exercised ≥1 time.** The harness asserts:
-- every `model` is touched by W-HOME + W-REALIZE + W-COST (walk), M-ATTR, R-FP (fingerprints);
+- every `model` is touched by W-HOME + W-REALIZE + W-COST + W-BLOAT (walk), M-ATTR, R-FP (fingerprints);
 - every `container` is touched by M-CID (id) + W-HOME (reachability);
 - every `component` is touched by M-CTYPE + R-BIND (binding);
 - every `event` is touched by M-ETYPE, R-TASK (if `task=`), M-KLM (if nominal-path), R-AUTH (if a
   lifecycle `submit`);
 - every `flow` is touched by M-NAVEND (endpoints);
-- every realized `budget` is touched by X-COST-INT (shape) + W-COST (the walked comparison).
+- every realized `budget` is touched by X-COST-INT (shape) + W-COST (the walked comparison, ⚠️);
+- every realized model's screen count is touched by W-BLOAT (the walked bloat floor, ❌).
 
 **Reconciliation formula (X-RECON — no silently dropped checks):**
 
@@ -591,7 +615,8 @@ that must fail). Abbreviated mapping (full ❌-reconciliation in the closing tab
 | Every leaf maps to an Event | B-a | X-COV-LEAF over `valid-09/` | `unrealized-leaf/` |
 | task= resolves to 08 leaf | B-c | R-TASK over `valid-09/` | `ghost-task-ref.xml` |
 | Nominal path walkable from home | B-d | W-REALIZE over `valid-09/` | `unrealized-leaf/` |
-| Flow cost ≤ 08 budget | C-a | W-COST over `valid-09/` | `over-budget.xml` |
+| Screens visited ≤ leaf count + 3 | C-d | W-BLOAT over `valid-09/` | `flow-bloat/` |
+| Flow cost vs 08 budget (warn) | C-a | W-COST over `valid-09/` | `over-budget.xml` (passes with W-COST warn) |
 | KLM well-formed | C-b | M-KLM over `valid-09/` | (bad-klm trap in type set) |
 | Lifecycle event ⊆ authority | D-a | R-AUTH over `valid-09/` | `ghost-01-event.xml` |
 | Promotion precedence (05>04) | D-b | R-AUTH over `valid-09/` (05 mode) | `wrong-authority-event.xml` |
@@ -655,17 +680,18 @@ agent output (§8).
   "reconciled": true,
   "coverage": { "elementsExercised": 0, "elementsTotal": 0, "behaviorsWithPosAndNeg": 0 },
   "flows": [
-    { "model": "dispatcher", "taskModel": "dispatcher-fulfil_order", "computedCost": 18, "budget": 20, "hops": 3, "nominalLeaves": 5, "realizable": true }
+    { "model": "dispatcher", "taskModel": "dispatcher-fulfil_order", "computedCost": 18, "budget": 20, "hops": 3, "screens": 4, "bloatLimit": 8, "nominalLeaves": 5, "realizable": true }
   ],
   "_note": "the flows[] values above are ILLUSTRATIVE schema examples, not pinned to any fixture — computedCost/budget/hops/nominalLeaves come from the model under test; the names are likewise illustrative (the real slug is snake(persona), the taskModel a <snake(persona)>-<snake(job)> 08 stem)",
   "checks": [
     { "id": "M-BIND", "class": "mechanical", "rule": "A-i", "status": "pass" },
-    { "id": "W-COST", "class": "walker", "rule": "C-a", "status": "pass" },
+    { "id": "W-COST", "class": "walker", "rule": "C-a", "status": "warn", "detail": "flow_cost 24 > Budget.klm 20 for dispatcher-fulfil_order (events [open_order MK=2, start_picking MPBB=4, …] + BB×(4-1)=6); re-model 09 to cut hops/clicks" },
+    { "id": "W-BLOAT", "class": "walker", "rule": "C-d", "status": "pass" },
     { "id": "R-AUTH", "class": "resolution", "rule": "D-a", "status": "pass" },
     { "id": "AJ-STATUS", "class": "agent-judged", "rule": "F-a", "verdict": "status-visible" }
   ],
   "findings": [
-    { "id": "W-COST", "rule": "C-a", "severity": "error", "detail": "flow_cost 24 > Budget.klm 20 for dispatcher-fulfil_order (events [open_order MK=2, start_picking MPBB=4, …] + BB×(4-1)=6); re-model 09 to cut hops/clicks" }
+    { "id": "W-BLOAT", "rule": "C-d", "severity": "error", "detail": "screens visited 9 > nominal leaf count 5 + 3 = 8 for dispatcher-fulfil_order (home + 8 hops); cut gratuitous intermediate screens" }
   ]
 }
 ```
@@ -674,8 +700,9 @@ agent output (§8).
   judged against (`05-scxml` only when `--upstream-05` present AND the entity is promoted; otherwise
   `04-table`). `upstream05: null` ⇔ the flag was absent.
 - The `flows[]` array records each realized model's computed flow cost vs the declared 08 budget + the
-  hop count + nominal-leaf count + realizability flag — the W-COST/W-REALIZE evidence, recorded for
-  transparency (the heart of the exact-value layer; both values always reported on an over-budget fail).
+  hop count + screens-visited vs bloat limit + nominal-leaf count + realizability flag — the
+  W-COST/W-BLOAT/W-REALIZE evidence, recorded for transparency (both values always reported on a
+  W-COST warn and on a W-BLOAT fail; `status:"warn"` checks never enter `findings[]` and never block).
 - The optional `class: "upstream-defect"` + `upstream: "<file>"` on a finding routes an
   02/04/05/07/08-origin defect (§9). It does **not** add a status; the status stays `fail` (taxonomy
   closed at four values).
@@ -738,8 +765,9 @@ the fix:
 1. **A realized 08 model's budget is sound** — its declared `<Budget klm>` equals its own recomputed
    nominal cost (via the copied CTT walker). **A realized 08 whose budget ≠ its own nominal cost is a
    broken ruler**: 09's flow cost cannot be meaningfully measured ≤ a budget the 08 itself contradicts.
-   This is the one 08 invariant 09 *must* re-derive (it is the precondition for C-a/W-COST to mean
-   anything). Routed `upstream-defect` → **the named 08 file**. Proven by `budget-broken-08/`. (09 does
+   This is the one 08 invariant 09 *must* re-derive (it is the precondition for the C-a/W-COST
+   comparison to mean anything). Routed `upstream-defect` → **the named 08 file**. Proven by
+   `budget-broken-08/`. (09 does
    NOT otherwise re-verify 08's tag/operator/KLM-alphabet seams — those are the `08` harness's
    single-owned job.)
 
@@ -792,7 +820,7 @@ way:** an *absent* `--upstream-05` is not a defect, only an *unreadable* supplie
 
 ---
 
-*This contract mechanizes catalog rules A-a … A-l / B-a … B-d / C-a … C-c / D-a … D-c / E-a … E-d /
+*This contract mechanizes catalog rules A-a … A-l / B-a … B-d / C-a … C-d / D-a … D-c / E-a … E-d /
 F-a … F-f. **Mechanical / walker ❌ coverage is complete:** every one of the 22 ❌-severity catalog
 rules has BOTH (a) a mechanical or walker owner check and (b) a dedicated negative fixture **that ships
 on disk** (a directory- or file-form set under `scripts/fixtures/`; the names identify the mutated model
@@ -816,21 +844,23 @@ asserts its owner fires. The full reconciliation (❌ rule → owner check → o
 | B-a | X-COV-LEAF | `unrealized-leaf/` |
 | B-c | M-TASKREF / R-TASK | `ghost-task-ref.xml` |
 | B-d | W-REALIZE | `unrealized-leaf/` (its unmapped leaf strands the walk) |
-| C-a | **W-COST** | `over-budget.xml` (both values reported) |
 | C-b | M-KLM | `bad-klm-token.xml` (`klm="MXP"`) |
+| C-d | **W-BLOAT** | `flow-bloat/` (both values reported) |
 | D-a | R-AUTH | `ghost-01-event.xml` |
 | D-b | R-AUTH | `wrong-authority-event.xml` |
 | E-a | M-SNAKE / M-CID | `non-snake-id.xml` |
 | E-b | M-FORBID | `forbidden-synonym-id.xml` |
 | E-d | M-BIND / R-BIND | `ghost-binding.xml` |
 
-*(The ⚠️/ℹ️ rules — C-c (nav-overhead accounting, mechanized inside W-COST's `BB`×(hops−1) term),
-D-c (state-dependent display → AJ-LIFEDISP), E-c (verbatim exemption → M-FORBID's masked spans),
-F-a/F-c/F-d/F-f (heuristic residue → AJ-STATUS/AJ-ERRPREV/AJ-LIFEDISP), F-b/F-e (mechanical
-subsets → M-BACKOUT/M-CONSIST ⚠️) — each carries a mechanical or agent-judged owner where one exists
-and an agent-judged residue where the rule is inherently semantic; none is left as a blocking ❌ on the
-agent. The **flow cost (C-a) is the load-bearing exact-value check** — verified by the walker
-re-deriving the nominal-path cost + nav overhead and comparing to the declared 08 budget, never by an
+*(The ⚠️/ℹ️ rules — C-a (flow cost vs the 08-declared budget → W-COST ⚠️, both values reported,
+`over-budget.xml` passes the gate with the warning), C-c (nav-overhead accounting, mechanized inside
+W-COST's `BB`×(hops−1) term), D-c (state-dependent display → AJ-LIFEDISP), E-c (verbatim exemption →
+M-FORBID's masked spans), F-a/F-c/F-d/F-f (heuristic residue → AJ-STATUS/AJ-ERRPREV/AJ-LIFEDISP),
+F-b/F-e (mechanical subsets → M-BACKOUT/M-CONSIST ⚠️) — each carries a mechanical or agent-judged
+owner where one exists and an agent-judged residue where the rule is inherently semantic; none is left
+as a blocking ❌ on the agent. The **flow-bloat floor (C-d) is the load-bearing blocking walk check** —
+verified by the walker counting screens visited on the realizing walk against the 08 nominal leaf
+count + 3, with the flow cost (C-a) re-derived alongside it as the advisory comparison, never by an
 inline formula. The selftest's COVERAGE array asserts the positive+negative floor over the §5 table and
 fails if any ❌ rule lacks either side. Pass = status `pass` = zero ❌ findings across Themes A–E,
-reconciled, ≥1 check executed, walker layer non-empty; Theme-F ⚠️/ℹ️ never block the gate.*
+reconciled, ≥1 check executed, walker layer non-empty; C-a/Theme-F ⚠️/ℹ️ never block the gate.*

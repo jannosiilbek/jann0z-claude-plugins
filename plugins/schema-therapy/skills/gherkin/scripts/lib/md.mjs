@@ -139,6 +139,50 @@ export function firstTable(section) {
 // 06-specific derivations over the parsed upstream shapes.
 // ===========================================================================
 
+// --- 01: domain events (actor-bound) + actors.
+//   `## Domain Events` holds an `Event | Actor | …` table — the actor BINDING per event.
+//   `## Actors` holds an `Actor | Kind | …` table — `Kind` ∈ {person, role, system, …}.
+// Returns { actorByEvent:Map(event→actor), actorKinds:Map(actor→kind), shapeOk }.
+// shapeOk is false when either section/table is absent (→ broken-test): the B7
+// authorization-obligation set cannot be built. An event with an empty/'—' Actor cell is
+// simply unbound (no obligation), never an error here.
+export function deriveEventStorming01(doc) {
+  const actorByEvent = new Map();
+  const actorKinds = new Map();
+  let eventsSectionFound = false;
+  let actorsSectionFound = false;
+  for (const [title, sec] of doc.sections) {
+    if (/^domain events$/i.test(title)) {
+      const t = firstTable(sec);
+      if (t) {
+        eventsSectionFound = true;
+        const evIdx = t.columns.findIndex((c) => /^event$/i.test(c));
+        const acIdx = t.columns.findIndex((c) => /^actor$/i.test(c));
+        for (const r of t.rows) {
+          const ev = stripBackticks(r[evIdx === -1 ? 0 : evIdx] || '');
+          const ac = stripBackticks(r[acIdx === -1 ? 1 : acIdx] || '');
+          if (!ev) continue;
+          if (ac && !/^[—–-]+$/.test(ac)) actorByEvent.set(ev, ac);
+        }
+      }
+    }
+    if (/^actors$/i.test(title)) {
+      const t = firstTable(sec);
+      if (t) {
+        actorsSectionFound = true;
+        const acIdx = t.columns.findIndex((c) => /^actor$/i.test(c));
+        const kIdx = t.columns.findIndex((c) => /^kind$/i.test(c));
+        for (const r of t.rows) {
+          const ac = stripBackticks(r[acIdx === -1 ? 0 : acIdx] || '');
+          const k = stripBackticks(r[kIdx === -1 ? 1 : kIdx] || '').toLowerCase();
+          if (ac) actorKinds.set(ac, k);
+        }
+      }
+    }
+  }
+  return { actorByEvent, actorKinds, shapeOk: eventsSectionFound && actorsSectionFound };
+}
+
 // --- 02: Terms + enums + forbidden synonyms.
 //   `## Terms` (or `## Glossary`) holds a `Term | …` table.
 //   `## Enums` holds `### <Aggregate>Status` subsections each a `Value | Derived from event` table.

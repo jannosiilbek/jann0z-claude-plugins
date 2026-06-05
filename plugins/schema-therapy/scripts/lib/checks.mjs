@@ -253,16 +253,16 @@ export function resolutionChecks(m, art) {
           } else if (tag.startsWith('policy:')) {
             const id = tag.slice('policy:'.length);
             if (!policies.has(id)) badTag.push(`${ft.stem}.feature @policy:${id} not a 03 policy`);
-          } else if (tag.startsWith('transition:') || tag.startsWith('terminal:')) {
+          } else if (tag.startsWith('transition:') || tag.startsWith('terminal:') || tag.startsWith('authz:')) {
             const id = tag.split(':')[1];
             if (!tables04.has(id)) badTag.push(`${ft.stem}.feature @${tag} entity '${id}' not a 04 table`);
           } else {
             badTag.push(`${ft.stem}.feature unknown tag namespace @${tag}`);
           }
         }
-        // When-embedded event strings: a transition/policy When must contain an
+        // When-embedded event strings: a transition/policy/authz When must contain an
         // authoritative 01 event string verbatim as a substring.
-        if (sc.tag && (sc.tag.startsWith('transition:') || sc.tag.startsWith('policy:'))) {
+        if (sc.tag && (sc.tag.startsWith('transition:') || sc.tag.startsWith('policy:') || sc.tag.startsWith('authz:'))) {
           for (const w of sc.whenLines) {
             eWhen++;
             const hit = [...authEvents, ...events01].some((ev) => w.includes(ev));

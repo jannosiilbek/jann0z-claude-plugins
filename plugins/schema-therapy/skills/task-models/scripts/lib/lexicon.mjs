@@ -43,12 +43,15 @@ export const TASK_ATTRS = new Set(['id', 'category', 'operator', 'scenario-tags'
 export const ELEMENTS = new Set(['TaskModel', 'Budget', 'Task']);
 
 // --- the closed 06 tag grammar (E5 / M22) ----------------------------------
-// Four closed classes. A token must match exactly one.
+// Five closed classes. A token must match exactly one. (@authz: marks 06's negative
+// authorization scenarios — legal in 06, but a rejection path, so an 08 leaf normally
+// references the positive-tag scenarios.)
 export const TAG_REGEXES = [
   /^@invariant:INV-[A-Za-z][A-Za-z0-9]*-\d+$/,
   /^@transition:[a-z][a-z0-9_]*$/,
   /^@terminal:[a-z][a-z0-9_]*$/,
   /^@policy:[A-Za-z0-9_-]+$/,
+  /^@authz:[a-z][a-z0-9_]*$/,
 ];
 export function isLegalTag(token) {
   return TAG_REGEXES.some((re) => re.test(token));

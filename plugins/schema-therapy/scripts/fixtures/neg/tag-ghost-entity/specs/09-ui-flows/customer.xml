@@ -5,8 +5,8 @@
        04-transitions.md       sha256:3a85ee85f4893a836892614bb810161d2a82ee7202c8fab1ae7672e0289d8535
        05-statecharts/order.scxml sha256:c28155f62f99cb37ae71a3556deba28cfcff69f854c10292a6163b83935152d7
        07-personas.md          sha256:c9474535212d01fcb171a9b77a6b9fd168928d8a9f9591d30c39eaec1ccbfc26
-       08-task-models/customer-place_order.xml sha256:75b638d45fe12de946d1337373c154f72e0202fc5f2618a074476d0d1b2afe76
-       08-task-models/customer-pay_order.xml sha256:7e4ae1cc5a6db95bc819c37dee364f2c349cda5fa3726dbd282906fe2a25dd0c
+       08-task-models/customer-place_order.xml sha256:f1fdc7866bef8584f2ded1c75ae32b92c6e951c2b079885065a44d15741a1d26
+       08-task-models/customer-pay_order.xml sha256:a41def9a8d80bc7b2a027cc662ef01933f7ddd99ae6e5f90a900546cbaf15f7b
 -->
 <IFMLModel id="customer" persona="Customer">
 

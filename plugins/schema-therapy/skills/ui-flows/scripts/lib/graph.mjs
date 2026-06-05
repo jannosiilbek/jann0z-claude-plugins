@@ -6,8 +6,14 @@
 //   W-REALIZE — a navigation path from home realizes the ordered interaction/user nominal-leaf
 //               sequence's mapped Events in order (BFS shortest hop-count, document-order
 //               tie-break) — B-d;
-//   W-COST    — the RE-COMPUTED flow_cost (Σ nominal event-klm instances + BB×(hops−1)) ≤ the
+//   W-COST    — the RE-COMPUTED flow_cost (Σ nominal event-klm instances + BB×(hops−1)) vs the
 //               realized 08 Budget.klm; BOTH values + the contributing path reported — C-a.
+//               ⚠️ WARN-ONLY: the budget is the 08 model's own declared ceiling (derived from its
+//               own decomposition, measuring nothing external), so exceeding it is surfaced for
+//               agent judgment, never a gate failure;
+//   W-BLOAT   — screens visited on the realizing walk (home + one per hop) ≤ the realized 08
+//               model's nominal leaf count + 3 — C-d. ❌ BLOCKING: this is the real flow-bloat
+//               floor — a flow that drags the user through gratuitous screens fails simulation.
 //
 // Every walked value is a PURE FUNCTION of the model + its 08 nominal path (pinned nominal
 // rule + pinned BFS-shortest/doc-order tie-break + pinned klm tokenizer + NAV_HOP_COST = BB =
@@ -190,19 +196,22 @@ export function runWalks(model, taskModel08) {
     else add('W-REALIZE', 'B-d', 'fail', realResult.detail);
   }
 
-  // --- W-COST: re-computed flow cost ≤ 08 budget.
+  // --- W-COST (⚠️ warn-only): re-computed flow cost vs the 08 budget. The budget is the 08
+  // model's own declared ceiling (a number derived from its own decomposition — W-BUDGET in 08
+  // already guards its honesty), so exceeding it here is agent-review residue, never a gate
+  // failure. The blocking flow-bloat floor is W-BLOAT below.
   let computedCost = null, costResult = null;
   if (realResult.ok) {
     costResult = cost(graph, realResult.firedEvents, realResult.hops);
     if (!costResult.ok) {
-      add('W-COST', 'C-a', 'fail', costResult.detail);
+      add('W-COST', 'C-a', 'warn', costResult.detail);
     } else {
       computedCost = costResult.computed;
       const budget = taskModel08.declaredBudget;
       if (budget == null) {
-        add('W-COST', 'C-a', 'fail', `08 Budget.klm is not a non-negative integer; computed cost=${computedCost}`);
+        add('W-COST', 'C-a', 'warn', `08 Budget.klm is not a non-negative integer; computed cost=${computedCost}`);
       } else if (computedCost > budget) {
-        add('W-COST', 'C-a', 'fail',
+        add('W-COST', 'C-a', 'warn',
           `flow_cost ${computedCost} > Budget.klm ${budget} for ${taskModel08.stem} ` +
           `(events [${costResult.contributing.map((c) => `${c.id} ${c.klm}=${c.instances}`).join(', ')}] ` +
           `+ BB×(${realResult.hops}-1)=${costResult.navOverhead}); re-model 09 to cut hops/clicks`);
@@ -211,12 +220,29 @@ export function runWalks(model, taskModel08) {
       }
     }
   } else {
-    add('W-COST', 'C-a', 'fail', 'flow not realizable ⇒ cost cannot be walked');
+    add('W-COST', 'C-a', 'warn', 'flow not realizable ⇒ cost cannot be walked');
+  }
+
+  // --- W-BLOAT (❌): screens visited on the realizing walk ≤ 08 nominal leaf count + 3.
+  // screens = home + one per hop (revisits counted — each hop drags the user through a screen).
+  // The ceiling is external to 09: the 08 nominal leaf count is the job's own step count, so a
+  // tight flow needs at most ~one screen per step; +3 grants home/landing slack.
+  const screens = realResult.ok ? realResult.hops + 1 : null;
+  const bloatLimit = taskModel08.nominalLeaves.length + 3;
+  if (!realResult.ok) {
+    add('W-BLOAT', 'C-d', 'fail', 'flow not realizable ⇒ screens visited cannot be walked');
+  } else if (screens > bloatLimit) {
+    add('W-BLOAT', 'C-d', 'fail',
+      `screens visited ${screens} > nominal leaf count ${taskModel08.nominalLeaves.length} + 3 = ${bloatLimit} ` +
+      `for ${taskModel08.stem} (home + ${realResult.hops} hops); cut gratuitous intermediate screens`);
+  } else {
+    add('W-BLOAT', 'C-d', 'pass');
   }
 
   return {
     walks, realizable: realResult.ok, hops: realResult.hops,
     computedCost, budget: taskModel08.declaredBudget,
+    screens, bloatLimit,
     nominalLeaves: taskModel08.nominalLeaves.length,
     contributing: costResult ? costResult.contributing : [],
     reachableCount: reachable.size,

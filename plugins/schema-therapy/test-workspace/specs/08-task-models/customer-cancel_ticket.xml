@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- fingerprints:
-       specs/06-gherkin/ticket.feature        sha256:3fcf82c1527f843f5c0018422c8263b4709029184db2513c8b235561c13c3099
+       specs/06-gherkin/ticket.feature        sha256:8a8fb5b2bf1240708b1561c4bacfaff1ed6e9681106914974cab002dd984ac44
        specs/07-personas.md                     sha256:0c557607a179b21eee8d6e3f612a00048e1d32432409f6eff01f12246a4c87e9
 -->
 <TaskModel id="customer-cancel_ticket"

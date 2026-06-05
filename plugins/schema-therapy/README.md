@@ -23,6 +23,11 @@ A chain of modelling skills, each owning exactly one artifact: scope → discove
 Together 06 + 10 make the built product end-to-end validatable: 06 proves the
 domain layer, 10 proves the assembled product.
 
+**Out of scope: sad-path UI.** 09 and 10 walk only the nominal (happy) paths.
+Domain rejections are covered by 06 `@invariant`/`@terminal`/`@authz` scenarios;
+screen-level error states (validation messages, retry affordances, error pages)
+are the implementation's responsibility and are deliberately unspecified here.
+
 Plugin-level: the `drift-police` agent + mechanical suite-drift script re-verify
 the whole `specs/` tree (resolution, DRY, staleness, semantic drift) as an
 independent double-assurance layer.
@@ -54,6 +59,15 @@ This drives all eleven steps in order and finishes with the drift-police audit
 Step by step instead: say "run the schema-therapy pipeline on product-intent.md
 and domain.md" to start (step 0), then "run schema-therapy step 1" … "step 10".
 Audit any time with "is the suite aligned".
+
+Re-running the pipeline command over an existing `specs/` tree **resumes**: a
+step whose artifacts exist with every declared upstream fingerprint still
+matching is skipped; only stale or missing steps run. After editing one
+upstream artifact, the cheap path is even shorter: regenerate it via its
+**owning skill** (e.g. "run schema-therapy step 1" after editing the domain),
+then run drift-police ("is the suite aligned") — its staleness findings route
+the **minimal** downstream regeneration to the owning skills, instead of
+re-walking all eleven steps.
 
 A complete worked example lives in [test-workspace/](test-workspace/) —
 the conference-ticketing intent + domain and their full green `specs/` tree

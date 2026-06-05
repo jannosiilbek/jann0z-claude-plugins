@@ -1,7 +1,7 @@
 # fingerprints:
-#   06-gherkin/event.feature@sha256:5e4e77c98b1eb4b675e71e42b41b43381780c2f06d91c48f7933b0164a764574
-#   09-ui-flows/organizer.xml@sha256:766030af6729a6b04e9645a9bfc78de756df3e070357fdae6f978da48bf82b2a
-#   08-task-models/organizer-schedule_event.xml@sha256:a4e00f617aa2e62478bb597d53c583c4bdb4fb77d00497000ec88569470c917f
+#   06-gherkin/event.feature@sha256:f3276485fa4fe05bec1199e3e58d81d89cecb1abb17a0521d9a8cfea0d05663c
+#   09-ui-flows/organizer.xml@sha256:b0233ce55bbc111717f1cc476ec17307fb54c2999f31268c0e909a938a69f659
+#   08-task-models/organizer-schedule_event.xml@sha256:9d0982a98122928dd343413d7fb1d0f08ff6c09df73a7eb70a01133e1ff78cb8
 @task-model:organizer-schedule_event
 Feature: Schedule event
 

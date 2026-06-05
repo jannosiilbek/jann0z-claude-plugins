@@ -15,8 +15,28 @@
 
   <ViewContainer id="order_queue" name="Order Queue" home="true">
     <ViewComponent id="queue_list" type="list" binding="invoice"/>
-    <Event id="open_order" type="select" task="select-order" klm="M5KPBB"/>
+    <Event id="open_order" type="select" task="select-order" klm="MPBB"/>
     <Event id="open_order_c" type="select" task="select-order-c" klm="MPBB"/>
+  </ViewContainer>
+
+  <ViewContainer id="hop_one" name="Hop One">
+    <Event id="go_hop_two" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="hop_two" name="Hop Two">
+    <Event id="go_hop_three" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="hop_three" name="Hop Three">
+    <Event id="go_hop_four" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="hop_four" name="Hop Four">
+    <Event id="go_hop_five" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="hop_five" name="Hop Five">
+    <Event id="go_order_detail" type="navigate"/>
   </ViewContainer>
 
   <ViewContainer id="order_detail" name="Order Detail">
@@ -33,8 +53,13 @@
     <Event id="back_to_queue" type="navigate"/>
   </ViewContainer>
 
-  <NavigationFlow from="open_order"    to="order_detail"/>
-  <NavigationFlow from="open_order_c"  to="order_detail"/>
-  <NavigationFlow from="back_to_queue" to="order_queue"/>
+  <NavigationFlow from="open_order"      to="hop_one"/>
+  <NavigationFlow from="go_hop_two"      to="hop_two"/>
+  <NavigationFlow from="go_hop_three"    to="hop_three"/>
+  <NavigationFlow from="go_hop_four"     to="hop_four"/>
+  <NavigationFlow from="go_hop_five"     to="hop_five"/>
+  <NavigationFlow from="go_order_detail" to="order_detail"/>
+  <NavigationFlow from="open_order_c"    to="order_detail"/>
+  <NavigationFlow from="back_to_queue"   to="order_queue"/>
 
 </IFMLModel>

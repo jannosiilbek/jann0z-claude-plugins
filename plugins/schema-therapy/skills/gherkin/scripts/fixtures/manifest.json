@@ -1,6 +1,7 @@
 {
   "description": "Expected (status, failingCheck, runFlag, upstreamRoute?, authorityRecord, errorShape?) per shipped fixture, per simulation.md §3.4/§3.5. `dir` is the 06 directory (relative to fixtures/). `runFlag` is with05|no05 (with05 passes --upstream-05). `failingCheck` is the OWNER check ID that MUST appear among failing/malformed checks or error findings for the stated reason; null = a clean pass. `authority` asserts the authority block. `errorShape` (parse negatives) is matched against the testdata/bad oracle. `upstreamDefect*` mark a §9 routed defect; `malformedUpstream` marks an unparseable-upstream run (broken-test). Standard upstreams default unless overridden.",
   "upstreams": {
+    "up01": "upstream-01.md",
     "up02": "upstream-02.md",
     "up03": "upstream-03.md",
     "up04dbml": "upstream-04.dbml",
@@ -11,8 +12,8 @@
     { "dir": "valid-06", "runFlag": "with05", "status": "pass", "failingCheck": null, "authority": { "order": "05-scxml", "coupon": "04-table" } },
     { "dir": "valid-06-no05", "runFlag": "no05", "status": "pass", "failingCheck": null, "authority": { "order": "04-table", "coupon": "04-table" } },
 
-    { "dir": "reg-valid", "runFlag": "no05", "up02": "regression-02.md", "up03": "regression-03.md", "up04dbml": "regression-04.dbml", "up04tr": "regression-04-transitions.md", "status": "pass", "failingCheck": null, "authority": { "order": "04-table", "coupon": "04-table" }, "regression": "hyphenated-policy (@policy:POL-1 resolves) + multi-word forbidden-token event 'Coupon Section Cleared' (no M17/M18 false-positive)" },
-    { "dir": "reg-forbidden-prose", "runFlag": "no05", "up02": "regression-02.md", "up03": "regression-03.md", "up04dbml": "regression-04.dbml", "up04tr": "regression-04-transitions.md", "status": "fail", "failingCheck": "M17", "regression": "forbidden 'Section' in FREE PROSE still fires M17 (the mandated-derivation exemption is span-scoped, not blanket)" },
+    { "dir": "reg-valid", "runFlag": "no05", "up01": "regression-01.md", "up02": "regression-02.md", "up03": "regression-03.md", "up04dbml": "regression-04.dbml", "up04tr": "regression-04-transitions.md", "status": "pass", "failingCheck": null, "authority": { "order": "04-table", "coupon": "04-table" }, "regression": "hyphenated-policy (@policy:POL-1 resolves) + multi-word forbidden-token event 'Coupon Section Cleared' (no M17/M18 false-positive) + single-human-actor 01 (zero B7 obligations)" },
+    { "dir": "reg-forbidden-prose", "runFlag": "no05", "up01": "regression-01.md", "up02": "regression-02.md", "up03": "regression-03.md", "up04dbml": "regression-04.dbml", "up04tr": "regression-04-transitions.md", "status": "fail", "failingCheck": "M17", "regression": "forbidden 'Section' in FREE PROSE still fires M17 (the mandated-derivation exemption is span-scoped, not blanket)" },
 
     { "dir": "illegal/not-gherkin", "runFlag": "no05", "status": "malformed", "failingCheck": "W-PARSE", "errorShape": "(1:1): expected: #EOF, #Language, #TagLine, #FeatureLine, #Comment, #Empty, got 'not gherkin'" },
     { "dir": "illegal/inconsistent-cells", "runFlag": "no05", "status": "malformed", "failingCheck": "W-PARSE", "errorShape": "inconsistent cell count within the table" },
@@ -47,6 +48,10 @@
     { "dir": "illegal/05-claimed-but-absent", "runFlag": "no05", "status": "fail", "failingCheck": "R-FINGERPRINT", "n05absent": true },
     { "dir": "illegal/vacuous", "runFlag": "no05", "status": "fail", "failingCheck": "W-INST" },
 
+    { "dir": "illegal/uncovered-authz", "runFlag": "no05", "status": "fail", "failingCheck": "X-COV-AUTHZ" },
+    { "dir": "illegal/authz-not-rejected", "runFlag": "no05", "status": "fail", "failingCheck": "X-AUTHZ" },
+    { "dir": "illegal/authz-not-implied", "runFlag": "no05", "status": "fail", "failingCheck": "X-AUTHZ" },
+
     { "dir": "illegal/wrong-reason-trap", "runFlag": "no05", "status": "fail", "failingCheck": "X-COV-INV", "trap": true, "trapOwner": "X-COV-INV", "trapAlsoPresent": "M17" },
 
     { "dir": "valid-06", "runFlag": "with05", "up03": "broken-upstream-03.md", "status": "fail", "failingCheck": "R-TAGTARGET", "upstreamDefect": true, "upstreamDefectFile": "03-aggregates.md", "upstreamDefectElement": "INV-Order-1" },
@@ -55,6 +60,7 @@
     { "dir": "valid-06", "runFlag": "with05", "status": "broken-test", "failingCheck": null, "noEngine": true, "args": ["--no-install", "--force-missing-deps", "/tmp/gherkin-nonexistent-node-modules"] },
     { "dir": "valid-06", "runFlag": "with05", "status": "broken-test", "failingCheck": null, "vacuous": true, "args": ["--no-checks"] },
 
+    { "dir": "valid-06-no05", "runFlag": "no05", "up01": "malformed-upstream-01.md", "status": "broken-test", "failingCheck": null, "malformedUpstream": "01" },
     { "dir": "valid-06-no05", "runFlag": "no05", "up02": "malformed-upstream-02.md", "status": "broken-test", "failingCheck": null, "malformedUpstream": "02" },
     { "dir": "valid-06-no05", "runFlag": "no05", "up04tr": "malformed-upstream-04-transitions.md", "status": "broken-test", "failingCheck": null, "malformedUpstream": "04" },
     { "dir": "valid-06", "runFlag": "with05", "up05": "malformed-upstream-05", "status": "broken-test", "failingCheck": null, "malformedUpstream": "05" }

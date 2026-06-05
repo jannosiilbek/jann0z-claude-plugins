@@ -5,7 +5,7 @@
        04-transitions.md       sha256:b3953d456bbc9d5d5615d1110ac5fd2d052826a33a444fae2250ea1b78ee2759
        05-statecharts/ticket.scxml sha256:04261089844499a10976ad65b7c44cf5fb1d4a645f73f8ed7db4ea831427fb1a
        07-personas.md          sha256:0c557607a179b21eee8d6e3f612a00048e1d32432409f6eff01f12246a4c87e9
-       08-task-models/gateagent-admit_ticket.xml sha256:487975cb4d915b9e0af80263663eb0ddc0117a230469da3faf8679e909346076
+       08-task-models/gateagent-admit_ticket.xml sha256:c3d8258b807beaefe6f3450584155af8d95ccbece8378209531aeab89bfe4a7a
 -->
 <IFMLModel id="gateagent" persona="GateAgent">
 

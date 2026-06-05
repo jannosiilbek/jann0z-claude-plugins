@@ -12,6 +12,7 @@
 import {
   classifyTag, toSnake, isSnakeCase, policyTagRef, isValidDigest, isPlaceholderDigest,
   hasActionVerb, plainTokens, wordTokens, rawTokens, RESTATEMENT_WINDOW_N,
+  HUMAN_ACTOR_KINDS,
 } from './lexicon.mjs';
 
 export const P = (id, rule, edges = 0) => ({ id, rule, status: 'pass', detail: '', edges });
@@ -194,7 +195,7 @@ export function rTagTarget(feat, ctx) {
     if (!c) continue;
     if (c.kind === 'invariant') {
       if (!ctx.invariantIds.has(c.ref)) return F('R-TAGTARGET', 'A6', `${feat.fileBase}: @invariant:${c.ref} does not resolve to a 03 invariant`, feat.scenarios.length);
-    } else if (c.kind === 'transition' || c.kind === 'terminal') {
+    } else if (c.kind === 'transition' || c.kind === 'terminal' || c.kind === 'authz') {
       if (!ctx.entitySnakes.has(c.ref)) return F('R-TAGTARGET', 'A6', `${feat.fileBase}: @${c.kind}:${c.ref} does not resolve to a 04/05 entity`, feat.scenarios.length);
     } else if (c.kind === 'policy') {
       if (!ctx.policyRefs.has(c.ref)) return F('R-TAGTARGET', 'A6', `${feat.fileBase}: @policy:${c.ref} does not resolve to a 03 policy`, feat.scenarios.length);
@@ -203,17 +204,24 @@ export function rTagTarget(feat, ctx) {
   return P('R-TAGTARGET', 'A6', feat.scenarios.length);
 }
 
-// R-EVENT — each @transition/@policy scenario's When embeds the exact 01 event string.
+// R-EVENT — each @transition/@policy/@authz scenario's When embeds the exact 01 event string.
 export function rEvent(feat, ctx) {
   let edges = 0;
   let firstMiss = null;
   for (const sc of feat.scenarios) {
     if (!sc.sourceTag) continue;
     const c = classifyTag(sc.sourceTag);
-    if (!c || (c.kind !== 'transition' && c.kind !== 'policy')) continue;
+    if (!c || (c.kind !== 'transition' && c.kind !== 'policy' && c.kind !== 'authz')) continue;
     edges++;
     const whenText = sc.whenSteps.map((s) => s.text).join(' ');
-    if (c.kind === 'policy') {
+    if (c.kind === 'authz') {
+      const events = ctx.entityEvents.get(c.ref) || new Set();
+      let found = false;
+      for (const ev of events) { if (ev && whenText.includes(ev)) { found = true; break; } }
+      if (!found && !firstMiss) {
+        firstMiss = `${feat.fileBase}: @authz:${c.ref} scenario '${sc.title}' When does not embed any exact 01 event string of entity '${c.ref}'`;
+      }
+    } else if (c.kind === 'policy') {
       const pol = ctx.policies.find((p) => policyTagRef(p.name) === c.ref);
       const expected = pol ? pol.sourceEvent01 : null;
       if (expected && !whenText.includes(expected) && !firstMiss) {
@@ -256,10 +264,12 @@ export function rTerm(feat) {
   return P('R-TERM', 'D1', edges);
 }
 
-// R-FINGERPRINT — leading # fingerprints: block names all four base upstreams (+ each
+// R-FINGERPRINT — leading # fingerprints: block names all five base upstreams (+ each
 // consumed 05 when 05 present), each a 64-hex digest. (A4 / M5). Also the N-05ABSENT
-// guard: a 05 fingerprint while --upstream-05 is absent ⇒ fail.
-const BASE_UPSTREAMS = ['02-glossary.md', '03-aggregates.md', '04-erd.dbml', '04-transitions.md'];
+// guard: a 05 fingerprint while --upstream-05 is absent ⇒ fail. 01 is a base upstream
+// because the B7 authorization obligations derive from its actor bindings — a 01 edit
+// must mark 06 stale.
+const BASE_UPSTREAMS = ['01-event-storming.md', '02-glossary.md', '03-aggregates.md', '04-erd.dbml', '04-transitions.md'];
 export function rFingerprint(feat, { up05Present, consumed05 }) {
   if (!feat.fingerprints.hasHeader) return F('R-FINGERPRINT', 'A4', `${feat.fileBase}: no leading '# fingerprints:' block before Feature:`, 1);
   const named = new Set(feat.fingerprints.lines.map((l) => l.file));
@@ -434,6 +444,100 @@ export function xCovPol(features, policies) {
   }
   if (firstMiss) return F('X-COV-POL', 'B4', firstMiss, policies.length);
   return P('X-COV-POL', 'B4', policies.length);
+}
+
+// ===========================================================================
+// B7 — authorization obligations (the 01 actor binding turned into a contract).
+// ===========================================================================
+// authzObligations(authorityByEntity, es01) → [{entity, event01, actor, otherHumans}].
+// One obligation per DISTINCT authoritative non-∅ transition event that is (a) bound in
+// 01 to a HUMAN actor (kind person/role) AND (b) in a domain where ≥1 OTHER human actor
+// exists. System/scheduler-bound and unbound events are exempt — a negative
+// authorization scenario must never be invented where the domain implies none. Creation
+// (∅-row) events are exempt: a rejection scenario needs a prior state to stand on.
+export function authzObligations(authorityByEntity, es01) {
+  const humanActors = [...es01.actorKinds]
+    .filter(([, k]) => HUMAN_ACTOR_KINDS.has(k))
+    .map(([a]) => a);
+  const obligations = [];
+  for (const [entity, auth] of authorityByEntity) {
+    const seen = new Set();
+    for (const t of auth.transitions) {
+      if (t.from === '∅' || !t.event01 || seen.has(t.event01)) continue;
+      seen.add(t.event01);
+      const actor = es01.actorByEvent.get(t.event01);
+      if (!actor) continue; // unbound — exempt
+      if (!HUMAN_ACTOR_KINDS.has(es01.actorKinds.get(actor) || '')) continue; // system — exempt
+      const otherHumans = humanActors.filter((a) => a !== actor);
+      if (otherHumans.length === 0) continue; // no other human actor — exempt
+      obligations.push({ entity, event01: t.event01, actor, otherHumans });
+    }
+  }
+  return obligations;
+}
+
+// X-AUTHZ — every @authz scenario is a well-formed authorization negative: its When
+// embeds an exact authoritative event of the tagged entity (R-EVENT owns absence), that
+// event carries a B7 obligation (else the scenario invents a rejection the domain
+// doesn't imply), the Given/When names a 01 human actor OTHER than the bound one (the
+// attempting actor), and the Then-block asserts rejection.
+export function xAuthz(feat, ctx) {
+  let edges = 0;
+  let firstMiss = null;
+  for (const sc of feat.scenarios) {
+    if (!sc.sourceTag) continue;
+    const c = classifyTag(sc.sourceTag);
+    if (!c || c.kind !== 'authz') continue;
+    edges++;
+    const whenText = sc.whenSteps.map((s) => s.text).join(' ');
+    const gwText = sc.givenSteps.concat(sc.whenSteps).map((s) => s.text).join(' ');
+    const thenText = sc.thenSteps.map((s) => s.text).join(' ');
+    const events = ctx.entityEvents.get(c.ref) || new Set();
+    let ev = null;
+    for (const e of events) { if (e && whenText.includes(e)) { ev = e; break; } }
+    if (!ev) continue; // no resolvable event — R-EVENT (D3) owns that failure
+    const ob = (ctx.authzObligations || []).find((o) => o.entity === c.ref && o.event01 === ev);
+    if (!ob) {
+      if (!firstMiss) firstMiss = `${feat.fileBase}: @authz:${c.ref} scenario '${sc.title}' targets event '${ev}' which implies no authorization rejection (not bound to a human 01 actor, or no other human actor exists) — never invent a rejection the domain doesn't imply`;
+      continue;
+    }
+    const namesOther = ob.otherHumans.some((a) => wordOrPhraseIncludes(gwText, a));
+    if (!namesOther) {
+      if (!firstMiss) firstMiss = `${feat.fileBase}: @authz:${c.ref} scenario '${sc.title}' names no 01 human actor other than the bound '${ob.actor}' as the attempting actor`;
+      continue;
+    }
+    if (!/\brejected\b/i.test(thenText)) {
+      if (!firstMiss) firstMiss = `${feat.fileBase}: @authz:${c.ref} scenario '${sc.title}' Then-block does not assert the attempt is rejected`;
+      continue;
+    }
+  }
+  if (firstMiss) return F('X-AUTHZ', 'B7', firstMiss, edges);
+  return P('X-AUTHZ', 'B7', edges);
+}
+
+// X-COV-AUTHZ — every B7 obligation has ≥1 @authz:<entity> scenario whose When embeds
+// the exact obligated event. Walks EVERY obligation edge (never short-circuits) so the
+// coverage-edge count reconciles whether or not a miss is found.
+export function xCovAuthz(features, obligations) {
+  const scByEntity = new Map();
+  for (const f of features) for (const sc of f.scenarios) {
+    if (!sc.sourceTag) continue;
+    const c = classifyTag(sc.sourceTag);
+    if (c && c.kind === 'authz') {
+      if (!scByEntity.has(c.ref)) scByEntity.set(c.ref, []);
+      scByEntity.get(c.ref).push(sc);
+    }
+  }
+  let firstMiss = null;
+  for (const ob of obligations) {
+    const scs = scByEntity.get(ob.entity) || [];
+    const covered = scs.some((sc) => sc.whenSteps.map((s) => s.text).join(' ').includes(ob.event01));
+    if (!covered && !firstMiss) {
+      firstMiss = `actor-bound event '${ob.event01}' (actor '${ob.actor}') of entity '${ob.entity}' has no @authz:${ob.entity} negative scenario`;
+    }
+  }
+  if (firstMiss) return F('X-COV-AUTHZ', 'B7', firstMiss, obligations.length);
+  return P('X-COV-AUTHZ', 'B7', obligations.length);
 }
 
 // X-ONEWHEN — each scenario has exactly one Action (When) step (C3). (M10)
@@ -627,7 +731,10 @@ export function m18InventedEntity(feat, ctx) {
   // scan, so an authoritative-derivation span contributes no spurious capitalized token.
   const eventSpans = [...ctx.allEvents].filter((e) => /\s/.test(e)); // multi-word events
   const multiWordTerms = [...ctx.terms].filter((t) => /\s/.test(t));
-  const maskSpans = eventSpans.concat(multiWordTerms);
+  // multi-word 01 actor names (e.g. 'Gate Agent' in a B7 @authz scenario) are mandated
+  // upstream vocabulary — masked so their leading word never reads as an invented entity.
+  const multiWordActors = [...(ctx.actorNames01 || [])].filter((a) => /\s/.test(a));
+  const maskSpans = eventSpans.concat(multiWordTerms, multiWordActors);
   for (const sc of feat.scenarios) {
     for (const s of sc.allSteps) {
       // "the <X> event occurs" where <X> is not any known 01/04 event string. (Run on the

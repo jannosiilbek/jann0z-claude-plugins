@@ -17,3 +17,9 @@ Feature: Order
     Given an order in the queue
     When the order is cancelled
     Then the order is cancelled
+
+  @authz:order
+  Scenario: A picker may not cancel an order
+    Given an order in the queue
+    When a picker attempts cancellation
+    Then the cancellation attempt is rejected

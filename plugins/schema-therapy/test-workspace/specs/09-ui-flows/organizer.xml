@@ -5,10 +5,10 @@
        04-transitions.md       sha256:b3953d456bbc9d5d5615d1110ac5fd2d052826a33a444fae2250ea1b78ee2759
        05-statecharts/event.scxml sha256:63e1a110e20cf1b45d8241ec7b5a2057cd68a0b452db061d581832808a1be8b6
        07-personas.md          sha256:0c557607a179b21eee8d6e3f612a00048e1d32432409f6eff01f12246a4c87e9
-       08-task-models/organizer-open_event.xml sha256:d328f56016c28e51c210d0d72f5c09dea8868a7b08e8c55973e2591adfdd660d
-       08-task-models/organizer-schedule_event.xml sha256:a4e00f617aa2e62478bb597d53c583c4bdb4fb77d00497000ec88569470c917f
-       08-task-models/organizer-register_venue.xml sha256:6ea0a3385d205c803ee735fdb24276343bc05f2226b539de8a6d995ba0eafd00
-       08-task-models/organizer-define_seating.xml sha256:25abc9ddcccec7081b8956cca6f5d55df89984b60f6ab05654fccf5f8bd1912a
+       08-task-models/organizer-open_event.xml sha256:8d765354e4d0681cdf4ab4eebccb2adabb2f2039eedb1edc7f542a7b72dcfc72
+       08-task-models/organizer-schedule_event.xml sha256:9d0982a98122928dd343413d7fb1d0f08ff6c09df73a7eb70a01133e1ff78cb8
+       08-task-models/organizer-register_venue.xml sha256:a44aa5b1fe9ac3d3da58998e57dbbaa42ef81548941e4e47462238c8cf10931a
+       08-task-models/organizer-define_seating.xml sha256:58fa68ead38d82b5bdaf9b3c047e5783eb08958d8cc2e53ff02b26cdb61b51fb
 -->
 <IFMLModel id="organizer" persona="Organizer">
 

@@ -20,7 +20,7 @@ instantiation must succeed) and B3 (simulation design — strongest oracle = run
 format's real engine; reuse over invention).
 
 It is **paired with** `references/validation-rules.md` (the closed rule catalog, A1–A8 /
-B1–B6 / C1–C9 / D1–D5 / E1–E4 — 32 rules). Every check below cites the catalog rule ID(s)
+B1–B7 / C1–C9 / D1–D5 / E1–E4 — 33 rules). Every check below cites the catalog rule ID(s)
 it mechanizes. **The catalog is the review vocabulary; this file is the executable harness
 over it.** No check here exists without a catalog rule behind it.
 
@@ -38,7 +38,7 @@ with no scenario/example) is **vacuous** — it instantiates nothing — and is 
 pass (§3.3 W-INST). This is the same strongest-oracle clause that bites in `erd` and
 `statecharts`; it is designed precisely below.
 
-The artifact is a **four-or-five-upstream** artifact, validated against
+The artifact is a **five-or-six-upstream** artifact, validated against
 `specs/02-glossary.md` (Terms, enums `### <Aggregate>Status`, forbidden synonyms),
 `specs/03-aggregates.md` (aggregates, invariants `INV-<Agg>-<n>`, cross-aggregate
 policies), BOTH `specs/04-erd.dbml` + `specs/04-transitions.md` (data model + transition
@@ -48,6 +48,7 @@ directory plus an **optional** 05-dir flag:
 
 ```
 node scripts/harness.mjs <06-dir> \
+     --upstream-01 <01-event-storming.md> \
      --upstream-02 <02-glossary.md> \
      --upstream-03 <03-aggregates.md> \
      --upstream-04-dbml <04-erd.dbml> \
@@ -143,7 +144,7 @@ reads `e.errors[]` (each `{message, location}`) to classify against the negative
 | Markdown parser | **Hand-rolled line/table/heading parser**, dependency-free, vendored in `scripts/lib/md.mjs` — shared shape-reader for `02-glossary.md`, `03-aggregates.md`, and `04-transitions.md`. **Copied** from the sibling skills (same pinned 02/03/04 shapes). The `.dbml` is parsed by `@dbml/core` (copied from the `erd` harness) solely as a parse-validity gate + table/enum enumeration on `04-erd.dbml` (unparseable `.dbml` ⇒ broken-test). |
 | Dependency pin | `scripts/package.json` pins `"@cucumber/gherkin": "39.1.0"`, `"@cucumber/messages": "32.3.1"`, and `"@dbml/core": "8.2.5"` **exactly** (no `^`/`~`); a committed `scripts/package-lock.json` locks the trees. Versions recorded in the JSON summary's `tooling` block so a drifted re-run is detectable. |
 | Assertion lib | None external — a vendored `assert`-style closed grammar in `scripts/lib/checks.mjs` (the enumerated check classes of §4). |
-| Closed lexicons | `scripts/lib/lexicon.mjs` — the **snake_case validator** (`^[a-z][a-z0-9_]*$`), the **enum-value-shape detector** (a token matching the enum-value shape that must ∈ 02 values — D5/M-INVENT), the **closed tag grammar** (`@invariant:` / `@transition:` / `@terminal:` / `@policy:` regexes), the **Then-block action-verb blocklist** (§2, C4), and the **forbidden-synonym scan** (read fresh per run from 02). Closed and vendored; extended only by a committed edit, never ad hoc. |
+| Closed lexicons | `scripts/lib/lexicon.mjs` — the **snake_case validator** (`^[a-z][a-z0-9_]*$`), the **enum-value-shape detector** (a token matching the enum-value shape that must ∈ 02 values — D5/M-INVENT), the **closed tag grammar** (`@invariant:` / `@transition:` / `@terminal:` / `@policy:` / `@authz:` regexes), the **Then-block action-verb blocklist** (§2, C4), and the **forbidden-synonym scan** (read fresh per run from 02). Closed and vendored; extended only by a committed edit, never ad hoc. |
 
 **Rationale for the parse+compile oracle over a regex/lint harness.** Gherkin, like DBML
 and SCXML, **has** a real engine of its formalism — the `@cucumber/gherkin` reference
@@ -204,16 +205,16 @@ AST shape + cross-artifact resolution that the parser does not surface.**
 | M2 | Each file is named `<snake_case(03 AggregateName)>.feature` exactly (no casing/plural/paraphrase drift). | A2 | `fail` |
 | M3 | Each file **parses clean** on `@cucumber/gherkin` (no `CompositeParserException`). On throw, the diagnostic is matched against the negative oracle. | A5 | `malformed` |
 | M4 | Exactly one `Feature:` per file; its name text **==** the exact 03 `### <AggregateName>` string (verbatim, not the snake_case stem, not a paraphrase). | A3 | `fail` |
-| M5 | **Fingerprint block present, well-formed, leading.** A `# fingerprints:` comment block appears **before** the `Feature:` line (read from `gherkinDocument.comments`, ordered by location, all with location.line < the `Feature:` line); it names all four base upstreams (`02-glossary.md`, `03-aggregates.md`, `04-erd.dbml`, `04-transitions.md`) each `<file>@sha256:<64-hex>` (64 chars `[0-9a-f]`, none a placeholder `0000…`/`xxxx…`/`<hex>`); **and**, when `--upstream-05` is present, names every `05-statecharts/<entity>.scxml` whose transitions this feature consumes. | A4 | `fail` |
-| M6 | **Exactly one source tag per scenario, from the closed grammar.** Every `scenario`/`scenarioOutline` carries **exactly one** tag matching `@invariant:INV-<Agg>-<n>` \| `@transition:<entity>` \| `@terminal:<entity>` \| `@policy:<Name>`; zero, two, or an out-of-namespace tag ⇒ fail. (Tag-whitespace is impossible — the parser rejects it at M3.) | A6 | `fail` |
-| M7 | **Tag target resolves.** `@invariant:INV-<Agg>-<n>` id ∈ 03 invariants; `@transition:<entity>` / `@terminal:<entity>` stem ∈ 04 table names (snake_case) — and, when 05 present, ∈ the promoted-entity set where authority is 05; `@policy:<Name>` ∈ 03 `## Cross-Aggregate Policies` rows (whitespace→`_`, **internal hyphens preserved** — an id-style policy name `POL-1` stays `@policy:POL-1`; the closed `@policy:` / `@invariant:` character classes admit `-` so a hyphenated source name can both classify and resolve). An unresolved referent ⇒ fail. | A6 | `fail` |
+| M5 | **Fingerprint block present, well-formed, leading.** A `# fingerprints:` comment block appears **before** the `Feature:` line (read from `gherkinDocument.comments`, ordered by location, all with location.line < the `Feature:` line); it names all five base upstreams (`01-event-storming.md`, `02-glossary.md`, `03-aggregates.md`, `04-erd.dbml`, `04-transitions.md`) each `<file>@sha256:<64-hex>` (64 chars `[0-9a-f]`, none a placeholder `0000…`/`xxxx…`/`<hex>`); **and**, when `--upstream-05` is present, names every `05-statecharts/<entity>.scxml` whose transitions this feature consumes. | A4 | `fail` |
+| M6 | **Exactly one source tag per scenario, from the closed grammar.** Every `scenario`/`scenarioOutline` carries **exactly one** tag matching `@invariant:INV-<Agg>-<n>` \| `@transition:<entity>` \| `@terminal:<entity>` \| `@policy:<Name>` \| `@authz:<entity>`; zero, two, or an out-of-namespace tag ⇒ fail. (Tag-whitespace is impossible — the parser rejects it at M3.) | A6 | `fail` |
+| M7 | **Tag target resolves.** `@invariant:INV-<Agg>-<n>` id ∈ 03 invariants; `@transition:<entity>` / `@terminal:<entity>` / `@authz:<entity>` stem ∈ 04 table names (snake_case) — and, when 05 present, ∈ the promoted-entity set where authority is 05; `@policy:<Name>` ∈ 03 `## Cross-Aggregate Policies` rows (whitespace→`_`, **internal hyphens preserved** — an id-style policy name `POL-1` stays `@policy:POL-1`; the closed `@policy:` / `@invariant:` character classes admit `-` so a hyphenated source name can both classify and resolve). An unresolved referent ⇒ fail. | A6 | `fail` |
 | M8 | **English dialect.** No `# language:` header, or `# language: en`; any non-`en`/unsupported code ⇒ caught at M3 (parser-rejected) or flagged here. | A8 | warn-only (⚠️) |
 | M9 | **Scenario title is behavioral.** Title is non-empty, not `Test …`/`User clicks …`/`Verify …`, and not a verbatim restatement of its step text. | A7 | warn-only (⚠️) |
 | M10 | **Single `When` (one action/event).** Per scenario (pre-expansion), `count(steps where keyword.trim()==='When' OR keywordType==='Action') === 1`. >1 explicit-When ⇒ fail. *(The `When … And <action>` case — a `Conjunction` step carrying a second action — is the agent-judged residue AJ-CONJ, §6, because `And` text is not mechanically classifiable as action-vs-context.)* | C3 | `fail` |
 | M11 | **G/W/T role discipline + keyword order.** Step `keywordType` sequence per scenario matches `Context* (Conjunction)* Action (Conjunction)* Outcome+ (Conjunction)*` — Context (Given) precede the single Action (When) precede Outcome (Then); no Outcome before the Action; no Action after an Outcome. | C4 | `fail` |
 | M12 | **No action verbs in `Then`-block.** Steps in the Outcome block (the first `Outcome` step + its trailing `Conjunction` steps) contain no token from the closed **action-verb blocklist** (`click`, `press`, `type`, `enter`, `submit`, `place`, `cancel`, `pay`, `ship`, `create`, `delete`, `add`, `remove`, `send`, `issue`, `redeem`, … — the pinned 06 list in `lexicon.mjs`, drawn from the 04 event verbs + UI mechanics). A `Then` performing an action ⇒ fail. | C4 | `fail` |
 | M13 | **Background scope.** `Background` (when present) holds only `Context`/`Conjunction` (Given) steps — no `When`/`Then`; ≤4 steps. A `When`/`Then` in Background ⇒ fail; >4 Given steps ⇒ ⚠️. | C7 | `fail` (action in bg) / ⚠️ (length) |
-| M14 | **`When` embeds the exact 01 event string.** For every `@transition:` / `@policy:` scenario, the single `Action` (`When`) step text **contains the exact 01 event string** (the 04 `Event` cell for the transition/policy) as a literal substring. Missing/paraphrased ⇒ fail. | D3 | `fail` |
+| M14 | **`When` embeds the exact 01 event string.** For every `@transition:` / `@policy:` / `@authz:` scenario, the single `Action` (`When`) step text **contains the exact 01 event string** (the 04 `Event` cell for the transition/policy) as a literal substring. Missing/paraphrased ⇒ fail. | D3 | `fail` |
 | M15 | **State steps use 02 enum values verbatim.** Every token in a `Given`/`Then` step matching the **enum-value shape** (the snake_case/TitleCase form of a `### <Aggregate>Status` `Value`) **∈** that aggregate's 02 enum values verbatim. A state-shaped token not in 02 ⇒ fail (the "no invented state token" rule). | D2, D5 | `fail` |
 | M16 | **Domain concepts use 02 Terms verbatim.** Step text naming a domain concept uses the exact 02 `Term` (no paraphrase/plural-drift of a known Term). | D1 | `fail` |
 | M17 | **No forbidden synonyms in free prose.** No 02 `Forbidden term` appears in any step text, title, tag, description, or comment (whole-word; tokens that ARE a 02 Term/enum value verbatim are exempt from sub-token scanning, as in the erd L12 exemption). **A forbidden sub-token whose occurrence lies INSIDE a MANDATED verbatim derivation is exempt** — i.e. inside an embedded exact 01 event string (any event from the authoritative-transition / 02-enum-derivation set, which D3 compels the `When` to embed) or a verbatim 02 Term / 02 enum value occurrence. Those spans are masked before tokenising; only forbidden tokens in free prose fire. (e.g. forbidden `Section` inside the exact event `Seating Section Defined` does not fire; `Section` in free prose does.) | D4 | `fail` |
@@ -280,7 +281,7 @@ Closed traversal set (every relationship 06 claims becomes a walked edge):
 
 1. **Bijection edge** — `{feature files} == {03 aggregates}` (M1).
 2. **Tag-resolution edge** — each scenario's one source tag resolves to a real 03 invariant
-   / 04|05 entity / 03 policy (M6/M7).
+   / 04|05 entity / 03 policy (M6/M7); `@authz:<entity>` resolves like `@transition:` (A6).
 3. **Invariant-coverage edge** — each 03 invariant has ≥1 `@invariant:` scenario whose
    `When` attempts the forbidden action (mechanical subset: scenario exists + tag resolves;
    the "actually violating" semantics is agent residue AJ-VIOLATE) (B1).
@@ -291,6 +292,10 @@ Closed traversal set (every relationship 06 claims becomes a walked edge):
    `@terminal:<entity>` negative scenario (B3).
 6. **Policy-coverage edge** — each 03 policy has a `@policy:<Name>` scenario; eventual-mode
    ⇒ `Then eventually …` phrasing (B4).
+6b. **Authorization-coverage edge** — each B7 obligation (an authoritative non-creation
+   transition event bound in 01 to a human actor, with ≥1 other human actor) has ≥1
+   `@authz:<entity>` scenario: exact event embedded, a different 01 human actor attempting,
+   `Then` rejected; exempt events admit no `@authz` scenario (B7).
 7. **No-contradiction edge** — no scenario asserts a `From→To` (Given state → Then state
    under the `When` event) absent from the **authority** (B5).
 8. **Instantiation edge** — each feature parses + compiles to ≥1 pickle (B2; §3.3).
@@ -349,7 +354,7 @@ aggregates with ≥1 invariant each and ≥1 `## Cross-Aggregate Policies` row (
 mode — e.g. `OrderShipsCoupon` → `Then eventually …`).
 
 **Valid 06 directory** (`fixtures/valid-06/`) — `order.feature` + `coupon.feature`,
-covering **everything**: a leading `# fingerprints:` block (four base upstreams + the
+covering **everything**: a leading `# fingerprints:` block (five base upstreams + the
 `05-statecharts/order.scxml` line, present only because `order` consumes 05); `Feature:
 Order` / `Feature: Coupon` (exact 03 names); one `@invariant:` scenario per 03 invariant
 (its `When` attempts the forbidden action); one `@transition:<entity>` scenario per
@@ -384,6 +389,9 @@ expected `(status, failingCheck, upstreamRoute?, authorityRecord?)` is recorded 
 | `contradicting-scenario/` | `--upstream-05` | a scenario asserting a `From→To` **not** in the authority (uses the superseded 04 edge for the promoted `order`) | M-NOCONTRA (B5) | `fail` |
 | `missing-terminal/` | either | a terminal state with no `@terminal:` negative scenario | M-COV-TERM (B3) | `fail` |
 | `uncovered-policy/` | either | a 03 policy with no `@policy:` scenario | M-COV-POL (B4) | `fail` |
+| `uncovered-authz/` | either | a B7-obligated actor-bound event with no `@authz:` scenario | X-COV-AUTHZ (B7) | `fail` |
+| `authz-not-rejected/` | either | an `@authz` scenario whose `Then` asserts no rejection | X-AUTHZ (B7) | `fail` |
+| `authz-not-implied/` | either | an `@authz` scenario targeting a SYSTEM-bound event (a rejection the domain doesn't imply) | X-AUTHZ (B7) | `fail` |
 | `eventual-as-immediate/` | either | an eventual-mode policy phrased as an immediate `Then` (no `eventually`) | M-COV-POL (B4) | `fail` |
 | `bad-tag-namespace.feature` | either | a `@requirement:…` tag (outside the closed grammar) | M6 (A6) | `fail` |
 | `tag-target-unresolved.feature` | either | `@invariant:INV-Order-9` (no such invariant in 03) | M7 (A6) | `fail` |
@@ -485,11 +493,11 @@ and `rule` in its JSON summary (§7). **Five** classes — the four B3 classes p
 | R-BIJECT | `{feature files} == {03 aggregates}` (snake_case bijection). | A1 |
 | R-TAG | each scenario has exactly one closed-grammar source tag. | A6 |
 | R-TAGTARGET | each tag's referent resolves (INV ∈ 03 / entity ∈ 04|05 / policy ∈ 03). | A6 |
-| R-EVENT | each `@transition`/`@policy` `When` embeds the exact 01 event string. | D3 |
+| R-EVENT | each `@transition`/`@policy`/`@authz` `When` embeds the exact 01 event string. | D3 |
 | R-STATE | each state-shaped token in `Given`/`Then` ∈ the 02 enum values. | D2, D5 |
 | R-TERM | each domain-concept token uses a 02 Term verbatim. | D1 |
 | R-AUTHORITY | each entity's authority is `05-if-promoted-else-04`; no scenario asserts a `From→To` absent from it. | B5 |
-| R-FINGERPRINT | the leading `# fingerprints:` block names all four base upstreams (+ each consumed 05 when 05 present), each a 64-hex digest. | A4 |
+| R-FINGERPRINT | the leading `# fingerprints:` block names all five base upstreams (+ each consumed 05 when 05 present), each a 64-hex digest. | A4 |
 
 ### 4.3 Exact-value / coverage-arithmetic checks (`X` — exact counts against the derived graph)
 
@@ -499,6 +507,8 @@ and `rule` in its JSON summary (§7). **Five** classes — the four B3 classes p
 | X-COV-TRANS | every **authoritative** transition has ≥1 `@transition:` scenario whose `When` embeds the exact 01 event. | B2 |
 | X-COV-TERM | every **authoritative** terminal state has a `@terminal:` negative scenario. | B3 |
 | X-COV-POL | every 03 policy has a `@policy:` scenario; eventual-mode ⇒ `Then eventually …`. | B4 |
+| X-COV-AUTHZ | every B7 obligation (an authoritative non-creation transition event bound in 01 to a human actor, with ≥1 other human actor defined) has ≥1 `@authz:<entity>` scenario whose `When` embeds the exact event. | B7 |
+| X-AUTHZ | every `@authz` scenario is well-formed: targets an obligated event (never an exempt one — a rejection the domain doesn't imply is itself the failure), names a 01 human actor other than the bound one, and its `Then`-block asserts rejection. | B7 |
 | X-ONEWHEN | each scenario has exactly one `Action` (When) step. | C3 |
 | X-ROLEORDER | step `keywordType` sequence is `Context* Action Conjunction* Outcome+ …` (no Outcome-before-Action). | C4 |
 | X-FEATURE-ONE | exactly one `Feature:` per file. | A3 |
@@ -528,6 +538,8 @@ defect is rejected AND that the failing-check ID matches the defect's owner rule
 | N14 | multi-When | >1 `When` | M10 / X-ONEWHEN | C3 |
 | N15 | action in `Then` | blocklisted verb in Outcome block | M12 / X-ROLEORDER | C4 |
 | N16 | missing event string | `When` omits exact 01 event | M14 / R-EVENT | D3 |
+| N18 | uncovered authz obligation | an actor-bound event with no `@authz:` scenario | X-COV-AUTHZ | B7 |
+| N19 | malformed authz scenario | `Then` not a rejection / targets an exempt event | X-AUTHZ | B7 |
 | N17 | invented state token | state ∉ 02 enum | M15 / R-STATE | D2/D5 |
 | N18 | invented entity/event | not upstream-defined | M18 | D5 |
 | N19 | forbidden synonym | 02 forbidden term used | M17 | D4 |
@@ -619,6 +631,7 @@ closing table):
 | Every transition covered | B2 | X-COV-TRANS over `valid-06/` (05) + `valid-06-no05/` | `uncovered-transition/`, `uncovered-transition-04/` |
 | Every terminal covered | B3 | X-COV-TERM over `valid-06/` | `missing-terminal/` |
 | Every policy covered | B4 | X-COV-POL over `valid-06/` | `uncovered-policy/`, `eventual-as-immediate/` |
+| Every authz obligation covered + well-formed | B7 | X-COV-AUTHZ / X-AUTHZ over `valid-06/` | `uncovered-authz/`, `authz-not-rejected/`, `authz-not-implied/` |
 | No authority contradiction | B5 | R-AUTHORITY over `valid-06/` | `contradicting-scenario/` |
 | 05-if-promoted-else-04 | binding | both run modes pass | `05-claimed-but-absent/` |
 | Single When | C3 | X-ONEWHEN over `valid-06/` | `multi-when.feature` |
@@ -753,7 +766,7 @@ value out of asserted positions:
 
 ## 9 — Upstream-defect routing (how a 02/03/04/05 defect is reported without patching around it)
 
-06 is validated *against* four-or-five upstreams. The harness **never silently repairs or
+06 is validated *against* five-or-six upstreams. The harness **never silently repairs or
 works around** a bad upstream — it surfaces the defect and routes it to the file that owns
 the fix:
 
@@ -824,6 +837,7 @@ or engine owner check and (b) a dedicated negative fixture. The full reconciliat
 | B2 | X-COV-TRANS / W-INST | `uncovered-transition/` / `uncovered-transition-04/` / `vacuous.feature` |
 | B3 | X-COV-TERM | `missing-terminal/` |
 | B4 | X-COV-POL | `uncovered-policy/` / `eventual-as-immediate/` |
+| B7 | X-COV-AUTHZ / X-AUTHZ | `uncovered-authz/` / `authz-not-rejected/` / `authz-not-implied/` |
 | B5 | R-AUTHORITY | `contradicting-scenario/` |
 | C1 | M12 (subset) / AJ-DECL | `action-in-then.feature` |
 | C2 | X-ROLEORDER (one-behavior subset) | (covered via multi-When / role-order) |

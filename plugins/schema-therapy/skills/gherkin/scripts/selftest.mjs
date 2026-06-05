@@ -47,6 +47,7 @@ function fx(p) { return join(FIXTURES, p); }
 function argsFor(f) {
   const dir = f.dir.startsWith('NONEXISTENT') ? fx(f.dir) : fx(f.dir);
   const args = [HARNESS, dir,
+    '--upstream-01', fx(f.up01 || U.up01),
     '--upstream-02', fx(f.up02 || U.up02),
     '--upstream-03', fx(f.up03 || U.up03),
     '--upstream-04-dbml', fx(f.up04dbml || U.up04dbml),
@@ -207,7 +208,7 @@ process.stderr.write('PART 7 — authority switch (the 05 beyond-04 refunded edg
     `04 authority has fewer transitions than 05 (${rNo.json && rNo.json.counts.coverage.transitions} < ${rWith.json && rWith.json.counts.coverage.transitions}) — the beyond-04 edge`);
   // valid-06 vs valid-06-no05 both pass in their pinned modes.
   const v05 = run(MANIFEST.fixtures.find((x) => x.dir === 'valid-06' && x.runFlag === 'with05' && !x.up03 && !x.up05 && !x.args));
-  const vno = run(MANIFEST.fixtures.find((x) => x.dir === 'valid-06-no05' && x.runFlag === 'no05' && !x.up04tr));
+  const vno = run(MANIFEST.fixtures.find((x) => x.dir === 'valid-06-no05' && x.runFlag === 'no05' && !x.up01 && !x.up04tr));
   ok(v05.json && v05.json.status === 'pass', 'valid-06 WITH 05 ⇒ pass');
   ok(vno.json && vno.json.status === 'pass', 'valid-06-no05 WITHOUT 05 ⇒ pass');
   // total authoritative transitions: order(5 via 05)+coupon(2) = 7 WITH 05;
@@ -277,7 +278,7 @@ process.stderr.write('PART 11 — determinism / byte-identical double run\n');
 {
   const v05 = MANIFEST.fixtures.find((x) => x.dir === 'valid-06' && x.runFlag === 'with05' && !x.up03 && !x.up05 && !x.args);
   ok(run(v05).stdout === run(v05).stdout, 'valid-06 (with05) run twice ⇒ byte-identical stdout');
-  const vno = MANIFEST.fixtures.find((x) => x.dir === 'valid-06-no05' && x.runFlag === 'no05' && !x.up04tr);
+  const vno = MANIFEST.fixtures.find((x) => x.dir === 'valid-06-no05' && x.runFlag === 'no05' && !x.up01 && !x.up04tr);
   // interleave a different run, then re-run: still identical (fresh parse per file).
   const a = run(vno).stdout;
   run(MANIFEST.fixtures.find((x) => x.dir === 'illegal/multi-when'));
@@ -306,6 +307,9 @@ process.stderr.write('PART 12 — coverage floor (positive AND negative per ❌ 
     ['B3', 'X-COV-TERM', 'valid-06', 'with05', 'illegal/missing-terminal', 'X-COV-TERM'],
     ['B4', 'X-COV-POL', 'valid-06', 'with05', 'illegal/uncovered-policy', 'X-COV-POL'],
     ['B5', 'R-AUTHORITY', 'valid-06', 'with05', 'illegal/contradicting-scenario', 'R-AUTHORITY'],
+    ['B7', 'X-COV-AUTHZ', 'valid-06', 'with05', 'illegal/uncovered-authz', 'X-COV-AUTHZ'],
+    ['B7s', 'X-AUTHZ', 'valid-06', 'with05', 'illegal/authz-not-rejected', 'X-AUTHZ'],
+    ['B7i', 'X-AUTHZ', 'valid-06', 'with05', 'illegal/authz-not-implied', 'X-AUTHZ'],
     ['C3', 'X-ONEWHEN', 'valid-06', 'with05', 'illegal/multi-when', 'X-ONEWHEN'],
     ['C4', 'M12', 'valid-06', 'with05', 'illegal/action-in-then', 'M12'],
     ['D2', 'M15', 'valid-06', 'with05', 'illegal/invented-state', 'M15'],
@@ -320,7 +324,7 @@ process.stderr.write('PART 12 — coverage floor (positive AND negative per ❌ 
   const posCache = new Map();
   const posJson = (dir, flag) => {
     const k = `${dir}|${flag}`;
-    if (!posCache.has(k)) posCache.set(k, run(MANIFEST.fixtures.find((x) => x.dir === dir && x.runFlag === flag && !x.up03 && !x.up05 && !x.args && !x.up04tr)).json);
+    if (!posCache.has(k)) posCache.set(k, run(MANIFEST.fixtures.find((x) => x.dir === dir && x.runFlag === flag && !x.up01 && !x.up03 && !x.up05 && !x.args && !x.up04tr)).json);
     return posCache.get(k);
   };
   let covered = 0;
