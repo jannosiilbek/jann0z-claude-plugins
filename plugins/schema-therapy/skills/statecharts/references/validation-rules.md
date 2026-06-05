@@ -32,7 +32,8 @@ edited** — 05 declares supersession instead.
   the suite *is* conformance (authority #2).
 - The formalism's concepts (hierarchy/XOR-AND decomposition, orthogonality,
   history, depth) → **Harel 1987**
-  (`sources/gathered/harel-1987-statecharts-visual-formalism.pdf`); normative on
+  (image-scan original not redistributable as text — see the Harel 1987 entry in
+  `sources/SOURCES.md` for the canonical URL); normative on
   *why* statecharts are shaped this way, never overriding the Rec on SCXML
   execution (authority #3).
 - Executable interpreter (dormant, version-pinned) → **SCION

@@ -11,7 +11,7 @@ machine shape = the OMG metamodel XMI (mirrored by the community moddle JSON sch
 
 | Title | Version/Edition | Publication status | Publication date | Canonical URL | Class |
 |---|---|---|---|---|---|
-| Interaction Flow Modeling Language (IFML) Specification | 1.0 (doc `formal/15-02-05`) | OMG formal/published, current | 2015-02 (adopted 2014-03) | https://www.omg.org/spec/IFML/1.0/PDF | **gathered** → `ifml-1.0-formal-15-02-05.pdf` |
+| Interaction Flow Modeling Language (IFML) Specification | 1.0 (doc `formal/15-02-05`) | OMG formal/published, current | 2015-02 (adopted 2014-03) | https://www.omg.org/spec/IFML/1.0/PDF | **gathered** → `ifml-1.0-formal-15-02-05.txt` |
 | IFML 1.0 Metamodel — XMI (UML/MOF) | 1.0 (`ptc/14-03-16`, ns `20140301`) | OMG normative machine artifact | 2014-03 | https://www.omg.org/spec/IFML/20140301/IFML-Metamodel.xmi | **gathered** → `IFML-Metamodel.xmi` |
 | IFML Ecore metamodel (Eclipse IFML editor) | repo @ commit `fb9be76` | Open source (MIT), community impl. of OMG MM | committed 2014-12-02 | https://github.com/ifml/ifml-editor/blob/fb9be768890fa981ec55dd6b0aaad22c280da019/plugins/IFMLEditor/model/IFML-Metamodel.ecore | **gathered** → `IFML-Metamodel.ecore` (+ `.genmodel`) |
 | `ifml-moddle` IFML metamodel — moddle JSON schema | npm `0.3.1` | Open source (MIT), community moddle wrapper | 2023-06-21 | https://www.npmjs.com/package/ifml-moddle | **gathered** → `ifml-moddle.schema.json` (+ `ifml-moddle.ifmldi.schema.json`, `ifml-moddle.LICENSE`) |
@@ -21,7 +21,7 @@ machine shape = the OMG metamodel XMI (mirrored by the community moddle JSON sch
 
 ## Gathered files (relative links)
 
-- [`ifml-1.0-formal-15-02-05.pdf`](./ifml-1.0-formal-15-02-05.pdf) — OMG IFML 1.0 normative spec, complete (17 pp; compact metamodel spec, single PDF per OMG About-IFML).
+- [`ifml-1.0-formal-15-02-05.txt`](./ifml-1.0-formal-15-02-05.txt) — OMG IFML 1.0 normative spec, complete (17 pp; compact metamodel spec, single doc per OMG About-IFML).
 - [`IFML-Metamodel.xmi`](./IFML-Metamodel.xmi) — OMG normative metamodel (UML/MOF XMI). 77+ classes; `ViewContainer`, `ViewComponent`, `InteractionFlow`, `Event`, `Action`, `ParameterBinding`, etc.
 - [`IFML-Metamodel.ecore`](./IFML-Metamodel.ecore) — Eclipse EMF Ecore form (pinned commit `fb9be76`).
 - [`IFML-Metamodel.genmodel`](./IFML-Metamodel.genmodel) — EMF genmodel companion (pinned commit `fb9be76`).
@@ -29,6 +29,8 @@ machine shape = the OMG metamodel XMI (mirrored by the community moddle JSON sch
 - [`ifml-moddle.ifmldi.schema.json`](./ifml-moddle.ifmldi.schema.json) — IFML Diagram Interchange schema (moddle JSON). MIT.
 - [`ifml-moddle.LICENSE`](./ifml-moddle.LICENSE) — MIT license for the moddle artifacts.
 - [`PROBE-transcript.md`](./PROBE-transcript.md) — full empirical tooling-probe evidence.
+
+PDF originals replaced by plain-text extractions for plugin shipping; canonical URLs above remain the authoritative format.
 
 ## Exclusions
 

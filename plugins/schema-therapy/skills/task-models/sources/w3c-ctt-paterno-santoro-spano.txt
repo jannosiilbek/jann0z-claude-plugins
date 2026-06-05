@@ -1,0 +1,276 @@
+ConcurTaskTrees
+
+Fabio Paternò, Carmen Santoro, Lucio Davide Spano
+http://giove.isti.cnr.it/
+HIIS Laboratory, ISTI-C.N.R. 
+Pisa, Italy
+
+Use of Task Models
+
+ Improve understanding of the application 
+
+domain
+
+ Record the result of interdisciplinary 
+
+discussion
+
+ Support effective design
+ Support  usability evaluation
+ Support the user during a session
+ Documentation
+
+2
+
+Task modelling
+
+ Flexible and expressive notations with 
+
+precise semantics
+
+ Systematic methods able to indicate how
+to use information in the task models
+
+ Availability of automatic tools to 
+
+manipulate and use such information 
+efficiently
+
+3
+
+Task Models
+
+ They represent a synchronization point 
+
+among users, designers, and 
+developers 
+
+ They are high-level descriptions that 
+can also be understood by people 
+without programming background 
+ Provide precise requirements for the 
+
+user interface software development as 
+well.
+
+4
+
+What task models can represent
+
+ Task models can be represented at various 
+
+abstraction levels
+
+ The main high-level tasks are considered in 
+
+requirements analysis
+
+ When designers aim to provide precise design 
+
+indications then the activities are represented at 
+a small granularity
+
+ The subject of a task model can be either an 
+
+entire application or one of its parts
+
+ The application can be either a complete, 
+
+running interactive system or a prototype under 
+development
+
+5
+
+Use of task models in the 
+design cycle
+
+Requirements of
+The New System
+
+Envisioned System's
+Task Model
+
+Current Prototype's
+Task Model
+
+Task Modelling
+
+Design
+
+Existing System's
+Task Model
+
+Early System's
+Prototype
+
+Evaluation
+
+Design And
+Software
+Development
+
+Reverse
+Modelling
+
+Engineered
+Prototype
+
+6
+
+CTT Evolution
+
+ First Publication was INTERACT’97
+ Widely used in Universities and 
+
+Industries
+
+ Various extensions proposed
+ Applications in many domains (Web, 
+safety critical systems, ERP, serious 
+games, …)
+
+7
+
+The ConcurTaskTrees 
+Notation
+
+Hierarchical 
+structure
+
+Temporal relations
+
+Task Allocation
+
+8
+
+Temporal operators
+
+Enabling 
+
+Disabling  
+
+Interruption 
+
+Choice
+
+Iteration
+
+T1 >> T2 or T1 [ ]>> T2 
+
+T1 [> T2 
+
+T1 |> T2
+
+T1 [ ] T2 
+
+T1* or T1{n} 
+
+Concurrency 
+
+T1 |||  T2      T1 |[]| T2
+
+Optionality
+
+[T] 
+
+Order Independency T1 |=| T2
+
+9
+
+Task and attributes
+
+Interaction tasks
+Selection
+
+Edit
+
+Control
+
+…
+
+Application task
+
+Overview
+
+Feedback
+
+Generating alerts
+
+Grouping
+
+...
+
+10
+
+MetaModel
+
+11
+
+PreConditions
+
+Deriving info from temporal 
+operators
+
+Progettazione di Interfacce Utenti e Valutazione di Usabilità - Fabio Paternò
+
+13
+
+Presentation Task Sets
+
+ Presentations indicate set of elements enabled at the 
+
+same time
+
+ Analyisis of temporal operators to identify sets of tasks
+
+enabled at the same time
+
+{SelectSingleRoom, SelectDoubleRoom}, {ShowAvailability}, {SelectRoom}
+
+14
+
+Heuristics for PTSs
+
+15
+
+Modelling Multi-User 
+Applications
+
+t1
+
+User1
+
+t2
+
+User2
+
+t3
+
+User3
+
+t1(User1)  t3 (User3)
+
+Cooperative part
+
+16
+
+Cooperative aspects
+
+Comparison and goals
+
+ More flexible than ANSI standard
+ More interaction-oriented than BPMN 
+
+and workflow notations
+
+ Create standard, which can then push 
+
+adoption, 
+
+ Possibility of building new tools for 
+
+improved presentations and processing
+
+18
+
+

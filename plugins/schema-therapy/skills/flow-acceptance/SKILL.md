@@ -1,20 +1,20 @@
 ---
 name: flow-acceptance
 description: >-
-  Schema-therapy step 10 — the pipeline's TERMINAL artifact. Turns the domain layer (06 tags) +
-  the task models (08 nominal paths) + the screen flows (09 IFML) into one executable Gherkin
-  acceptance feature PER 08 task model: a scenario chain that walks the 09 flow screen by screen
-  and binds each step's outcome to the 06 scenario it realizes by tag — domain assertions live in
-  06 and are never restated. Consumes specs/06-gherkin/, specs/08-task-models/, specs/09-ui-flows/;
-  OWNS specs/10-flow-acceptance/<persona>-<job>.feature. Together 06 (domain layer) + 10 (built
-  product end to end) make the product validatable. Use when authoring or reviewing 10
-  flow-acceptance features in a schema-therapy pipeline run. NOT general Gherkin/BDD or e2e-testing
-  authoring — a closed, lint-gated pipeline step over a verified screen graph.
+  Step 10 of the schema-therapy modelling pipeline (the TERMINAL artifact) —
+  produces specs/10-flow-acceptance/<persona>-<job>.feature, one executable
+  Gherkin acceptance feature per 08 task model that walks the 09 flow screen by
+  screen and binds each step's outcome to the 06 scenario it realizes by tag.
+  Trigger ONLY inside the schema-therapy pipeline: "run schema-therapy step 10",
+  "produce 10-flow-acceptance", "build the schema-therapy flow-acceptance features",
+  "do the flow-acceptance step of the modelling pipeline". NOT a general
+  Gherkin/BDD or e2e-testing authoring tool — owns only this pipeline artifact.
 ---
 
 # flow-acceptance (10) — the terminal acceptance artifact
 
-10 owns **exactly one `.feature` per 08 task model**. Each feature is a scenario chain that walks
+Step 10 of the **schema-therapy** modelling pipeline (the terminal artifact). 10 owns
+**exactly one `.feature` per 08 task model**. Each feature is a scenario chain that walks
 the persona's 09 screen flow from its `home` container, tracing real `NavigationFlow` edges in the
 order of the 08 nominal-path leaves, and binds every walked leaf's outcome to the 06 scenario it
 realizes **by tag**. 06 validates the domain layer; 10 validates the built product end to end.

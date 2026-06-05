@@ -24,7 +24,7 @@ materials** (the W3C conformance test suite plus an SCXML interpreter).
 
 ## Gathered files (relative links)
 
-- [Harel 1987 paper (PDF, 44 pp)](gathered/harel-1987-statecharts-visual-formalism.pdf) — author-distributed copy via state-machine.com (`Harel87.pdf`); identical content also mirrored at dubroy.com.
+- [Harel 1987 paper (44 pp)](gathered/harel-1987-statecharts-visual-formalism.txt) — author-distributed copy via state-machine.com (`Harel87.pdf`); identical content also mirrored at dubroy.com. **The PDF original was an image-only scan with no embedded text layer; the `.txt` is a stub pointing to the canonical URL — consult the URL above for the actual text.**
 - [W3C SCXML Recommendation (HTML)](gathered/w3c-scxml-recommendation-2015.html) — full `REC-scxml-20150901`, stored under the W3C Document License (copies permitted).
 - [W3C SCXML Errata (HTML)](gathered/w3c-scxml-errata.html) — normative corrections to the Recommendation.
 - [W3C IRP — assertion/test manifest](gathered/w3c-irp-tests/manifest.xml) — full machine-readable manifest mapping every normative assertion to its conformance test(s).
@@ -46,6 +46,8 @@ materials** (the W3C conformance test suite plus an SCXML interpreter).
 > (~200 numbered tests, several with `a`/`b`/`c` variants) is retrievable from
 > the manifest at the canonical URL above; only a representative slice is stored
 > here. Full retrieval coordinate: `https://www.w3.org/Voice/2013/scxml-irp/<id>/test<id>.txml`.
+
+PDF originals replaced by plain-text extractions for plugin shipping; canonical URLs above remain the authoritative format.
 
 ## Validation notes
 

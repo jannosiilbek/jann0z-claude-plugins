@@ -18,13 +18,13 @@ entities' transition tables with statecharts (never edits 04); 06 references 04'
 entities/relationships.
 
 **Normative authorities** (per `sources/SOURCES.md` authority ruling):
-- Relational model, keys, 1NF → **Codd 1970** (`sources/codd-1970-relational-model.pdf`).
+- Relational model, keys, 1NF → **Codd 1970** (`sources/codd-1970-relational-model.txt`).
 - 2NF/3NF → **Codd 1971/72** (cite-only), taught via **Kent 1983**
   (`sources/kent-1983-five-normal-forms.html`); when phrasings conflict the formal
   original wins, Kent is the redistributable teaching restatement.
 - BCNF/4NF → Boyce–Codd 1974 / Fagin 1977 (cite-only), summarized by Kent 1983 — **advisory only**.
 - Entities, relationships, cardinality, relations-as-first-class → **Chen 1976**
-  (`sources/chen-1976-entity-relationship-model.pdf`).
+  (`sources/chen-1976-entity-relationship-model.txt`).
 - DBML language → **`@dbml/core` 8.2.5 is the normative parser** (executable oracle),
   authoritative over the prose docs (`sources/dbml-docs/docs.md`).
 - SQL runtime behaviour → **PGlite 0.5.1 / PostgreSQL 18.3** (`sources/SOURCES.md`).

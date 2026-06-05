@@ -12,6 +12,24 @@ check below cites the catalog rule ID(s) it mechanizes. **The catalog is the rev
 vocabulary; this file is the executable harness over it.** No check here exists without a
 catalog rule behind it.
 
+## Index
+
+Open the section the verdict points at; an agent debugging a `malformed`/`broken-test` result can locate the right section from this table alone.
+
+| § | Title | What you find |
+|---|-------|---------------|
+| §0 | Oracle summary | status taxonomy (`pass`/`fail`/`malformed`/`broken-test`) + no-vacuous-green rule |
+| §1 | Tooling record | runtime, entry points, harness invocation, hand-rolled-parser rationale |
+| §2 | Lint checks | structural `L*` checks + which fail ⇒ `malformed` vs `fail` |
+| §3 | Closed fixture / scenario format | derived scenario graph + shipped illegal fixtures (`broken-test` causes) |
+| §4 | Closed assertion grammar | resolution / exact-value / negative / agent-judged check vocabulary |
+| §5 | Coverage floor & reconciliation | intake/edge counts, X5 reconciliation, ❌-rule completeness table |
+| §6 | Agent-judged checks | semantic `AJ*` checks + closed verdict schemas |
+| §7 | Output contract | stdout JSON shape, exit codes, `baseline` block |
+| §8 | Determinism | no clock/randomness; byte-identical re-runs |
+| §8.1 | Amendment-mode diff (`--baseline`) | element-level diff + XD1 reconciliation |
+| §9 | No upstream-defect class | why free-text intent is out of harness scope |
+
 ## 0 — Oracle summary (doctrine §2)
 
 - **No engine, no executable corpus.** Impact Mapping is a facilitation and diagramming

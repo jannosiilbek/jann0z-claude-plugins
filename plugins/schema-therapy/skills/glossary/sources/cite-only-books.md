@@ -17,7 +17,7 @@ excerpts/summaries that may be quoted.
   Language concept; every other source here derives from it.
 - Public, openly-licensed derivative of its pattern summaries: the **DDD Reference
   (2015-03, CC BY 4.0)**, gathered in this folder as
-  `evans-ddd-reference-2015-03.txt` / `.pdf`. The Reference's pattern summaries were
+  `evans-ddd-reference-2015-03.txt`. The Reference's pattern summaries were
   "extracted from the original text of the book, edited for brevity, but otherwise
   unmodified" and placed in the Creative Commons in 2006 with Pearson's agreement.
   => For the glossary skill, quote the **DDD Reference** (open) rather than the book.

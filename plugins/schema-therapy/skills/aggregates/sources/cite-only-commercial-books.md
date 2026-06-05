@@ -22,7 +22,7 @@ authoritative *public* excerpts/summaries that the skill may lean on instead.
   - A delete removes everything inside the boundary at once.
   - When a change is committed, **all invariants of the whole Aggregate must be satisfied**.
 - **Authoritative *public* surrogate** (free, gatherable): the **DDD Reference** by the same
-  author distills these definitions verbatim — see `ddd-reference-2015-03.pdf` (Aggregates entry).
+  author distills these definitions verbatim — see `ddd-reference-2015-03.txt` (Aggregates entry).
   Use the DDD Reference, not the book text, for quotable definitions.
 
 ## 2. Vernon — *Implementing Domain-Driven Design* (IDDD)
@@ -39,7 +39,7 @@ authoritative *public* excerpts/summaries that the skill may lean on instead.
   Aggregate Design" essays — same author, same rules, fuller worked examples.
 - **Authoritative *public* surrogate** (free, gatherable): Vernon's three-part
   **"Effective Aggregate Design"** essays are the publicly licensed condensation of this
-  chapter's argument — see `vernon-effective-aggregate-design-part-1/2/3.pdf`.
+  chapter's argument — see `vernon-effective-aggregate-design-part-1/2/3.txt`.
   Use the essays, not the book text, for quotable rules.
 
 ---

@@ -1,0 +1,3587 @@
+Information 
+
+Retrieval 
+
+P.  BAXENDALE, 
+
+Editor 
+
+A  Relational  Model  of  Data 
+Large  Shared  Data  Banks 
+
+for 
+
+E.  F.  CODD 
+IBM  Research  Laboratory,  San  Jose,  California 
+
+Future 
+
+having 
+
+users 
+
+of 
+
+large 
+
+data 
+
+banks 
+
+must 
+
+be 
+
+protected 
+
+from 
+
+to 
+
+know 
+
+how 
+
+the 
+
+data 
+
+is  organized 
+
+in 
+
+the  machine 
+
+(the 
+
+internal 
+
+representation). 
+
+A 
+
+prompting 
+
+service 
+
+which 
+
+supplies 
+
+such 
+
+information 
+
+is  not 
+
+a  satisfactory 
+
+solution. 
+
+Activities 
+
+of  users 
+
+at 
+
+terminals 
+
+and 
+
+most 
+
+application 
+
+programs 
+
+should 
+
+remain 
+
+unaffected 
+
+when 
+
+the 
+
+internal 
+
+representation 
+
+of  data 
+
+is  changed 
+
+and 
+
+are 
+
+even 
+
+when 
+
+some 
+
+aspects 
+
+of 
+
+the 
+
+external 
+
+representation 
+
+changed. 
+
+Changes 
+
+in  data 
+
+representation 
+
+will 
+
+often 
+
+be 
+
+needed 
+
+as  a 
+
+result 
+
+of 
+
+changes 
+
+in  query, 
+
+update, 
+
+and 
+
+report 
+
+traffic 
+
+and 
+
+natural 
+
+growth 
+
+in 
+
+the 
+
+types 
+
+of 
+
+stored 
+
+information. 
+
+Existing 
+
+noninferential, 
+
+formatted 
+
+data 
+
+systems 
+
+provide 
+
+users 
+
+with 
+
+tree-structured 
+
+files 
+
+or 
+
+slightly 
+
+more 
+
+general 
+
+network 
+
+models 
+
+of 
+
+the 
+
+data. 
+
+In  Section 
+
+1, 
+
+inadequacies 
+
+of 
+
+these  models 
+
+are 
+
+discussed. 
+
+A  model 
+
+based 
+
+on  n-ary 
+
+relations, 
+
+a  normal 
+
+form 
+
+data 
+
+for 
+
+data 
+
+base 
+
+relations, 
+
+and 
+
+the 
+
+concept 
+
+of 
+
+a  universal 
+
+sublanguage 
+
+are 
+
+introduced. 
+
+In  Section 
+
+2,  certain 
+
+opera- 
+
+tions 
+
+on 
+
+relations 
+
+(other 
+
+than 
+
+logical 
+
+inference) 
+
+are 
+
+discussed 
+
+and 
+
+applied 
+
+to 
+
+the 
+
+problems 
+
+of 
+
+redundancy 
+
+and 
+
+consistency 
+
+in  the 
+
+user’s  model. 
+
+KEY  WORDS 
+
+AND 
+
+PHRASES: 
+
+data 
+
+bank, 
+
+data 
+
+base, 
+
+organization, 
+
+hierarchies 
+
+of 
+
+data, 
+
+networks 
+
+of 
+
+data, 
+
+data  structure, 
+relations, 
+
+derivability, 
+
+data 
+
+redundancy, 
+
+consistency, 
+
+composition, 
+
+join, 
+
+retrieval 
+
+language, 
+
+predicate 
+
+calculus, 
+
+security, 
+
+data 
+
+integrity 
+
+CR  CATEGORIES: 
+
+3.70, 
+
+3.73, 
+
+3.75, 
+
+4.20, 
+
+4.22, 
+
+4.29 
+
+1.  Relational 
+
+Model 
+
+and  Normal 
+
+Form 
+
+INTR~xJ~TI~N 
+
+1 .I. 
+This  paper  is  concerned  with 
+
+the  application  of  ele- 
+mentary  relation  theory  to  systems which  provide  shared 
+access to  large banks of  formatted  data.  Except  for  a paper 
+by  Childs  [l],  the  principal  application  of  relations  to  data 
+systems has been to  deductive  question-answering systems. 
+Levein  and Maron  [2] provide  numerous references to  work 
+in  this  area. 
+
+In  contrast,  the  problems treated  here are those of  data 
+independence-the  independence  of  application  programs 
+in  data  types  and 
+and  terminal  activities 
+changes in  data  representation-and 
+certain  kinds  of  data 
+inconsistency which  are  expected  to  become troublesome 
+even in  nondeductive  systems. 
+
+from  growth 
+
+The  relational  view  (or  model)  of  data  described  in 
+Section  1 appears to  be superior in  several respects to  the 
+graph  or  network  model  [3,4]  presently  in  vogue  for  non- 
+inferential  systems. It  provides  a means of  describing data 
+with  its  natural  structure  only-that 
+is, without  superim- 
+posing any  additional  structure  for  machine representation 
+purposes. Accordingly, 
+it  provides  a  basis for  a high  level 
+data  language which  will  yield  maximal  independence be- 
+tween  programs  on the  one hand  and  machine representa- 
+tion  and  organization  of  data  on the  other. 
+
+A  further  advantage  of  the  relational  view  is  that 
+
+it 
+forms  a sound basis for  treating  derivability, 
+redundancy, 
+and consistency of relations-these  are discussed in  Section 
+2.  The  network  model,  on  the  other  hand,  has spawned a 
+number  of  confusions, not  the  least of  which  is mistaking 
+the  derivation  of  connections  for  the  derivation  of  rela- 
+tions  (see remarks  in  Section  2 on the  “connection  trap”). 
+the  relational  view  permits  a clearer evaluation 
+of  the  scope and  logical  limitations  of  present  formatted 
+data  systems, and  also the  relative  merits  (from  a logical 
+standpoint)  of  competing  representations  of  data  within  a 
+single  system.  Examples  of  this  clearer  perspective  are 
+cited  in  various  parts  of  this  paper.  Implementations  of 
+systems to  support  the  relational  model are not  discussed. 
+
+Finally, 
+
+1.2.  DATA  DEPENDENCIES IN PRESENT SYSTEMS 
+The  provision  of  data  description  tables in  recently  de- 
+veloped  information  systems represents a  major  advance 
+toward  the  goal of  data  independence [5,6,7].  Such tables 
+facilitate  changing certain  characteristics  of the data  repre- 
+sentation  stored  in  a  data  bank.  However,  the  variety  of 
+data  representation  characteristics  which  can  be changed 
+without  logically  impairing  some application  programs  is 
+still  quite  limited.  Further, 
+the  model  of  data  with  which 
+users interact  is still  cluttered  with  representational  prop- 
+in  regard  to  the  representation  of  col- 
+erties,  particularly 
+lections  of  data  (as opposed to  individual  items).  Three  of 
+the  principal  kinds  of  data  dependencies which  still  need 
+to  be removed  are:  ordering  dependence, indexing  depend- 
+ence, and  access path  dependence. In  some systems these 
+dependencies are  not  clearly  separable from  one another. 
+in  a 
+data  bank  may  be stored in  a variety  of ways,  some involv- 
+ing  no  concern for  ordering,  some permitting  each element 
+to  participate  in  one ordering  only,  others permitting  each 
+element to  participate  in  several orderings. Let  us consider 
+those existing  systems which  either  require  or  permit  data 
+elements to  be stored in  at  least one total  ordering which  is 
+closely  associated with  the  hardware-determined  ordering 
+of  addresses. For  example,  the  records of  a file  concerning 
+parts  might  be  stored  in  ascending order  by  part  serial 
+number.  Such  systems normally  permit  application  pro- 
+grams to  assume that  the  order  of  presentation  of  records 
+from  such a file  is identical  to  (or  is a subordering  of)  the 
+
+1.2.1.  Ordering  Dependence.  Elements  of  data 
+
+Volume 
+
+13 
+
+/  Number 
+
+6 
+
+/  June, 
+
+1970 
+
+Communications 
+
+of 
+
+the 
+
+ACM 
+
+377 
+
+stored  ordering.  Those  application 
+programs  which 
+advantage  of  the  stored  ordering  of  a  file  are  likely 
+to  operate  correctly 
+to  replace  that  ordering  by  a different  one.  Similar 
+hold 
+pointers. 
+
+if  for  some  reason  it  becomes  necessary 
+remarks 
+
+for  a  stored  ordering 
+
+implemented 
+
+take 
+to  fail 
+
+by  means  of 
+
+It  is  unnecessary 
+
+because  all  the  well-known 
+marketed 
+today 
+order  of  presentation 
+on  the  other.  Significant 
+solved  to  provide 
+
+systems 
+fail  to  make  a  clear  distinction 
+
+to  single  out  any  system  as  an  example, 
+that  are 
+between 
+on  the  one  hand  and  stored  ordering 
+
+information 
+
+implementation 
+this  kind  of  independence. 
+
+problems  must  be 
+
+of 
+
+1.2.2. 
+
+standpoint, 
+
+to  improve 
+
+the  context 
+
+indices  from 
+
+to  create  and  destroy 
+
+Indexing  Dependence. 
+
+and  terminal  activities 
+
+is  usually 
+component 
+
+as  indices  come  and  go? 
+data  systems 
+formatted 
+
+for- 
+In 
+of  as  a  purely 
+thought 
+matted  data,  an  index 
+representa- 
+of  the  data 
+performance-oriented 
+to  queries  and  updates 
+tion. 
+response 
+It  tends 
+to  insertions 
+response 
+and,  at  the  same  time,  slow  down 
+an  index 
+and  deletions.  From  an  informational 
+If  a 
+component  of  the  data  representation. 
+is  a  redundant 
+system  uses  indices  at  all  and  if  it  is  to  perform  well 
+in  an 
+environment  with  changing  patterns  of  activity  on  the  data 
+time  to 
+bank,  an  ability 
+then  arises: 
+time  will  probably  be  necessary.  The  question 
+Can  application  programs 
+remain 
+invariant 
+Present 
+approaches 
+vides 
+version  of  IMS 
+file:  a  choice  between  no  indexing  at  all 
+quential  organization) 
+only 
+neither  case  is  the  user’s  application 
+existence  of 
+[8],  however, 
+to  be  indexed  and  to  incorporate 
+ture  by  means  of  additional 
+taking  advantage  of  the  performance 
+in- 
+dexing  chains  must  refer  to  those  chains  by  name.  Such  pro- 
+if  these  chains  are  later 
+grams  do  not  operate  correctly 
+removed. 
+
+different 
+pro- 
+released 
+for  each 
+se- 
+key 
+In 
+logic  dependent  on  the 
+IDS 
+provided 
+indices. 
+to  select  attributes 
+indices  into  the  file  struc- 
+programs 
+
+on  the  primary 
+indexed  sequent,ial  organization). 
+
+take  widely 
+[7]  unconditionally 
+The  presently 
+
+to  indexing.  TDMS 
+indexing  on  all  attributes. 
+
+the  unconditionally 
+permits 
+
+the  user  with  a  choice 
+
+chains.  Application 
+
+the  fle  designers 
+
+benefit  of  these 
+
+(the  hierarchic 
+
+(the  hierarchic 
+
+[5]  provides 
+
+indexing 
+
+or 
+
+1.2.3.  Access  Path  Dependence.  Many  of  the  existing 
+
+data  systems  provide  users  with 
+
+formatted 
+files  or  slightly  more  general  network  models  of  the  data. 
+Application 
+these  sys- 
+tems  tend  to  be  logically 
+are  changed  in  structure.  A  simple  example 
+
+to  work  with 
+if  the  trees  or  networks 
+
+developed 
+impaired 
+
+tree-structured 
+
+programs 
+
+follows. 
+
+Suppose  the  data  bank  contains 
+
+information 
+
+about  parts 
+the  part  number,  part  name, 
+
+quantity-on-hand, 
+
+and  quantity-on-order 
+
+and  projects.  For  each  part, 
+part  description, 
+are  recorded.  For  each  project, 
+the  project  number,  project 
+name,  project  description  are  recorded.  Whenever  a project 
+the  quantity  of  that  part  com- 
+makes  use  of  a certain  part, 
+that 
+mitted 
+is  also  recorded.  Suppose 
+to  the  given  project 
+to  declare  or 
+the  system 
+Then,  any  one 
+define  the  data  in  terms  of  tree  structures. 
+for  the  infor- 
+of  the  hierarchical 
+mation  mentioned  above 
+
+structures  may  be  adopted 
+
+the  user  or  file  designer 
+
+(see  Structures 
+
+requires 
+
+l-5). 
+
+Structure  1.  Projects  Subordinate 
+
+to  Parts 
+
+File 
+
+F 
+
+Segment 
+PART 
+
+PROJECT 
+
+Fields 
+part  # 
+part  name 
+part  description 
+quantity-on-hand 
+quantity-on-order 
+project  # 
+project  name 
+project 
+quantity 
+
+description 
+
+committed 
+
+Structure 
+
+2.  Parts  Subordinate 
+
+to  Projects 
+
+File 
+
+F 
+
+Sqmeut 
+
+Fields 
+
+PROJECT 
+
+PART 
+
+project  # 
+project 
+project 
+
+name 
+description 
+
+part  # 
+part  name 
+part  description 
+quantity-on-hand 
+quantity-on-order 
+quantity 
+
+committed 
+
+Structure 
+
+3.  Parts  and  Projects 
+Relationship 
+
+Subordinate 
+
+as  Peers 
+
+to  Projects 
+
+Commitment 
+File 
+F 
+
+Segment 
+PART 
+
+PART 
+
+part  # 
+quantity 
+
+committed 
+
+4.  Parts  and  Projects  as  Peers 
+Relationship 
+
+Subordinate 
+
+to  Parts 
+
+Fields 
+
+part  # 
+part  name 
+part  description 
+quantity-on-hand 
+quantity-on-order 
+project  # 
+project  name 
+project 
+
+description 
+
+Fields 
+
+part  # 
+part  description 
+quantity-on-hand 
+quantity-on-order 
+project  # 
+quantity 
+project  # 
+project  name 
+project 
+
+description 
+
+committed 
+
+part  # 
+part  name 
+part  description 
+quantity-on-hand 
+quantity-on-order 
+project  # 
+project  name 
+project  description 
+part # 
+project  # 
+quantity  committed 
+
+G 
+
+PROJECT 
+
+Structure 
+Commitment 
+File 
+F 
+
+Segnren1 
+PART 
+
+PROJECT 
+
+G 
+
+PROJECT 
+
+FCZC 
+F 
+
+G 
+
+H 
+
+PROJECT 
+
+COMMIT 
+
+Structure 
+Commitment 
+.%&-,,ZC,,t 
+PART 
+
+5.  Parts,  Projects, 
+Relationship 
+Ficlds 
+
+and 
+as  Peers 
+
+378 
+
+Communications 
+
+of 
+
+the 
+
+ACM 
+
+Volume 
+
+13 
+
+/  Number 
+
+6  /  June, 
+
+1970 
+
+If  a  program  P  is  developed 
+
+is  “alpha.” 
+
+out 
+the  part 
+for  every  part 
+The 
+regardless  of  which 
+to 
+this 
+
+is  selected 
+
+for 
+
+above-that 
+
+of  printing 
+committed 
+
+Now, 
+
+consider 
+
+the  problem 
+
+system 
+
+information 
+
+this  problem. 
+
+fail  on  at  least 
+
+to  determine  which 
+
+in  the  project  whose  project  name 
+observations  may  be  made 
+tree-oriented 
+
+number,  part  name,  and  quantity 
+used 
+following 
+available 
+tackle 
+problem  assuming  one  of  the  five  structures 
+is,  P  makes  no  test 
+P  will 
+fect-then 
+structures.  More  specifically, 
+fail  with  all  the  others; 
+it  will 
+or  4,  it  will 
+1  or  2,  it  will 
+simple 
+which 
+made  to  exceute  a  reference 
+systems 
+execute  a reference 
+The  reader  who 
+programs 
+
+in  each  case.  In  the  absence  of  a  test 
+structure 
+
+is  not  convinced 
+for  this  simple  problem. 
+
+this  as  an  error) 
+
+treat 
+
+is  in  effect,  P  fails  because  an  attempt 
+to  a nonexistent 
+
+or  no  attempt 
+to  a file  containing  needed  information. 
+
+to  determine 
+
+is 
+file  (available 
+is  made  to 
+
+should  develop  sample 
+
+structure 
+
+is  in  ef- 
+three  of  the  remaining 
+
+if  P succeeds  with  structure 
+if P succeeds  with 
+structure 
+
+5, 
+3 
+
+fail  with  at  least  1,2,  and  5;  if  P succeeds  with 
+is 
+fail  with  at  least  3,  4,  and  5.  The  reason 
+
+Since,  in  general, 
+tion  programs  which 
+by 
+the  system, 
+&ructure 
+
+becomes  necessary. 
+
+it  is  not  practical 
+test  for  all  tree  structurings 
+
+to  develop  applica- 
+permitted 
+
+these  programs 
+
+fail  when  a  change 
+
+in 
+
+Systems  which  provide  users  with  a  network  model  of 
+the  tree  and 
+to 
+is  required 
+to  the  data.  It  does 
+
+into  similar  difficulties. 
+
+(or  his  program) 
+
+In  both 
+
+cases, 
+
+the  data  run 
+network 
+the  user 
+exploit  a collection  of  user  access  paths 
+not  matter  whether 
+with  pointer-defined 
+IDS 
+is  extremely 
+just  the  opposite.  The  consequence, 
+representation, 
+come  dependent 
+access  paths. 
+
+the  correspondence 
+
+on  the  continued 
+
+is  that 
+
+these  paths  are  in  close  correspondence 
+paths 
+
+representation-in 
+
+in  the  stored 
+
+simple, 
+
+in  TDMS 
+
+it  is 
+regardless  of  the  stored 
+terminal  activities  and  programs  be- 
+existence  of  the  user 
+
+the  policy 
+
+is  to  adopt 
+
+that  once  a 
+to  this 
+is  defined  it  will  not  be  made  obsolete  un- 
+that  path  have  become 
+is  not  practical,  because  the  number 
+total  model 
+
+One  solution 
+user  access  path 
+til  all  application 
+obsolete.  Such  a policy 
+of  access  paths 
+in  the 
+users  of  a  data  bank  would  eventually 
+large. 
+
+the  community 
+become  excessively 
+
+programs 
+
+using 
+
+for 
+
+of 
+
+VIEW  OF  DATA 
+
+1.3.  A  RELATIONAL 
+The  term  relation  is  used here  in  its  accepted  mathe- 
+matical  sense. Given  sets X1 ,  S, ,  . . .  ,  S,  (not  necessarily 
+distinct),  R  is a relation  on these n  sets if  it  is a set of  n- 
+tuples  each  of  which  has  its  first  element  from  S1,  its 
+second element from  Sz , and so on.’  We  shall refer  to  Si  as 
+the  jth  domain of  R. As  defined  above,  R is  said to  have 
+degree n.  Relations  of  degree 1 are often  called unary,  de- 
+gree 2 binary,  degree 3 ternary,  and  degree n  n-ary. 
+
+For  expository  reasons, we  shall frequently  make use of 
+an  array  representation  of  relations,  but  it  must  be  re- 
+membered that  this  particular  representation  is not  an  es- 
+sential part  of the  relational  view  being expounded.  An  ar- 
+
+1 More  concisely,  R is  a  subset 
+87%. 
+sz  x 
+
+*.* 
+
+x 
+
+of 
+
+the  Cartesian 
+
+product 
+
+81  X 
+
+ray  which  represents an n-ary  relation  R has the  following 
+properties : 
+
+(1)  Each  row  represents an n-tuple  of R. 
+(2)  The  ordering  of  rows is immaterial. 
+(3)  All  rows are distinct. 
+(4)  The  ordering  of  columns  is  significant-it 
+
+corre- 
+sponds to  the  ordering  S1,  Sz ,  . . .  ,  S,  of  the  do- 
+mains on which  R is defined  (see, however,  remarks 
+below  on  domain-ordered  and  domain-unordered 
+relations ) . 
+
+(5)  The  significance  of  each  column  is  partially  con- 
+veyed  by  labeling  it  with  the  name  of  the  corre- 
+sponding domain. 
+
+The  example  in  Figure  1 illustrates  a relation  of  degree 
+4,  called  supply,  which  reflects  the  shipments-in-progress 
+of  parts  from  specified  suppliers  to  specified  projects  in 
+specified quantities. 
+
+supply 
+
+(supplier 
+
+part 
+
+project 
+
+quantity) 
+
+1 
+1 
+2 
+2 
+4 
+
+2 
+3 
+3 
+7 
+1 
+
+5 
+5 
+7 
+5 
+1 
+
+17 
+23 
+9 
+4 
+12 
+
+FIG.  1.  A  relation 
+
+of  degree 
+
+4 
+
+One might  ask:  If  the  columns are labeled by  the  name 
+of  corresponding  domains, why  should the  ordering  of  col- 
+umns matter?  As  the  example  in  Figure  2 shows, two  col- 
+umns  may  have  identical  headings  (indicating  identical 
+domains)  but  possess distinct  meanings with  respect to  the 
+relation.  The  relation  depicted  is called  component. It  is a 
+ternary  relation,  whose first  two  domains are  called  part 
+and  third  domain  is called  quantity.  The  meaning of  com- 
+ponent  (2, y,  z)  is that  part  x  is an immediate  component 
+(or subassembly) of  part  y,  and z units  of part  5 are needed 
+to  assemble one unit  of  part  y.  It  is a relation  which  plays 
+a critical  role in  the  parts  explosion problem. 
+
+component 
+
+(part 
+1 
+2 
+3 
+2 
+3 
+4 
+6 
+
+part 
+
+quantity) 
+
+5 
+5 
+5 
+6 
+6 
+7 
+7 
+
+9 
+7 
+2 
+12 
+3 
+1 
+1 
+
+FIG.  2.  A  relation 
+
+with-two 
+
+identical 
+
+domains 
+
+It  is a remarkable  fact  that  several existing  information 
+files)  fail 
+systems  (chiefly  those based on  tree-structured 
+to  provide  data  representations  for  relations  which  have 
+two  or  more  identical  domains.  The  present  version  of 
+IMS/360 
+
+[5] is an  example of  such a system. 
+
+The  totality  of  data  in  a data  bank  may  be viewed  as a 
+collection  of  time-varying 
+relations.  These relations  are of 
+assorted degrees. As  time  progresses, each n-ary  relation 
+may  be subject  to  insertion  of  additional  n-tuples,  deletion 
+of  existing  ones, and alteration  of  components of  any  of its 
+existing  n-tuples. 
+
+Volume 
+
+13 
+
+/  Number 
+
+6 
+
+/  June, 
+
+1970 
+
+Communications 
+
+of 
+
+the 
+
+ACM 
+
+379 
+
+remembering 
+
+be  burdened  with 
+
+that  users  deal,  not  with 
+
+but  with 
+counterparts.2 
+
+In  many  commercial,  governmental, 
+
+and  scientific  data 
+some  of  the  relations  are  of  quite  high  de- 
+banks,  however, 
+gree  (a  degree  of  30  is  not  at  all  uncommon).  Users  should 
+not  normally 
+the  domain 
+(for  example,  the  ordering  supplier, 
+ordering  of  any  relation 
+in  the  relation  supply). 
+then  part,  then  project,  then  quantity 
+Accordingly,  we  propose 
+relations 
+which  are  domain-ordered, 
+their  domain-unordered 
+domains  must  be  uniquely 
+given  relation,  without 
+are  two  or  more  identical  domains,  we  require 
+that 
+name,  which 
+domain 
+component  of  Figure  2,  the 
+first  domain  part  might  be 
+qualified  by  the  role  name  sub,  and  the  second  by  super,  so 
+component  and 
+that  users  could  deal  with 
+regard 
+its  domains-sub.part 
+to  any  ordering  between these domains. 
+
+relationships  which  are 
+this, 
+identifiable  at  least  within  any 
+there 
+in  each  case 
+role 
+that 
+in  the  relation 
+
+the  domain  name  be  qualified  by  a  distinctive 
+the  role  played  by 
+
+to  identify 
+in  the  given  relation.  For  example, 
+
+using  position.  Thus,  where 
+
+quantity-without 
+
+the  relationship 
+
+To  accomplish 
+
+super.part, 
+
+serves 
+
+To sum up, it  is proposed that  most users should interact 
+with  a relational  model of the data  consisting of a collection 
+of time-varying  relationships  (rather  than  relations).  Each 
+user need not  know  more  about  any  relationship  than  its 
+name together  with  the  names of  its  domains  (role  quali- 
+fied whenever  necessary):  Even  this  information  might  be 
+offered  in  menu  style  by  the  system  (subject  to  security 
+and  privacy  constraints)  upon  request  by  the  user. 
+
+There  are usually  many  alternative  ways  in  which  a re- 
+lational  model  may  be  established for  a  data  bank.  In 
+(or  normal  form),  we 
+order  to  discuss a  preferred  way 
+must  first  introduce  a  few  additional  concepts  (active 
+foreign  key,  nonsimple  domain) 
+domain,  primary  key, 
+and establish some links  with  terminology  currently 
+in  use 
+in  information  systems programming.  In  the  remainder  of 
+this  paper,  we shall not  bother  to  distinguish  between  re- 
+lations  and  relationships  except  where  it  appears advan- 
+tageous to  be explicit. 
+
+Consider an example of  a data  bank  which  includes rela- 
+tions  concerning  parts,  projects,  and  suppliers.  One  rela- 
+tion  called part  is defined on the  following  domains: 
+
+(1)  part  number 
+(2)  part  name 
+(3)  part  color 
+(4)  part  weight 
+(5)  quantity  on hand 
+(6)  quantity  on order 
+
+and possibly other  domains as well.  Each  of  these domains 
+is, in  effect,  a pool  of  values,  some or  all  of  which  may  be 
+represented in  the  data  bank  at  any  instant.  While  it  is 
+conceivable  that,  at  some instant,  all  part  colors are pres- 
+that  all  possible  part  weights,  part 
+ent,  it 
+
+is  unlikely 
+
+2 In  mathematical 
+those  relations 
+(see  Section  2.1.1). 
+* Naturally, 
+puter  system, 
+of  the  data 
+
+terms,  a  relationship 
+
+is  an  equivalence 
+
+class  of 
+
+that  are  equivalent 
+
+under  permutation 
+
+of  domains 
+
+as  with  any  data  put 
+
+into  and  retrieved 
+
+the  user  will  normally  make 
+
+if  he  is  aware  of  its  meaning. 
+
+from  a  com- 
+far  more  effective  use 
+
+names,  and  part  numbers  are.  We  shall  call  the  set  of 
+values represented at some instant  the  active domain at  that 
+instant. 
+
+Normally,  one domain  (or  combination  of  domains)  of a 
+given  relation  has values  which  uniquely  identify  each ele- 
+ment  (n-tuple)  of  that  relation.  Such  a  domain  (or  com- 
+bination) 
+is  called  a  primary  key.  In  the  example  above, 
+part  number  would  be  a  primary  key,  while  part  color 
+would  not  be. A  primary  key  is nonredundant if  it  is either 
+a  simple  domain  (not  a  combination)  or  a  combination 
+such  that  none  of  the  participating  simple  domains  is 
+superfluous  in  uniquely  identifying  each element.  A  rela- 
+tion  may  possess more  than  one  nonredundant  primary 
+key.  This  would  be the  case in  the  example if  different  parts 
+were  always  given  distinct  names.  Whenever  a  relation 
+has two  or  more nonredundant  primary  keys,  one of  them 
+is arbitrarily  selected and called the primary  key  of  that  re- 
+lation. 
+
+A  common  requirement  is  for  elements of  a  relation  to 
+cross-reference other  elements of  the  same relation  or  ele- 
+ments of  a different  relation.  Keys  provide  a user-oriented 
+means (but  not  the  only  means)  of  expressing such cross- 
+references. We  shall  call  a  domain  (or  domain  combma- 
+tion)  of  relation  R  a foreign  key if  it  is not  the  primary  key 
+of  R but  its  elements are values of  the  primary  key  of  some 
+relation  S  (the  possibility  that  S and R  are identical  is not 
+excluded).  In  the  relation  supply  of  Figure  1, the  combina- 
+tion  of  supplier,  part,  project is the  primary  key,  while  each 
+of  these three  domains taken  separately  is a foreign  key. 
+
+In  previous  work  there  has been  a  strong  tendency  to 
+treat  the  data in  a data  bank  as consisting of two  parts,  one 
+part  consisting of  entity  descriptions  (for  example, descrip- 
+tions  of  suppliers)  and  the  other  part  consisting  of  rela- 
+tions  between  the  various  entities  or  types  of  entities  (for 
+example,  the  supply  relation).  This  distinction  is difficult 
+to  maintain  when  one may  have  foreign  keys  in  any  rela- 
+tion  whatsoever.  In  the  user’s relational  model  there  ap- 
+pears  to  be  no  advantage  to  making  such  a  distinction 
+(there  may  be some advantage,  however,  when one applies 
+relational  concepts to  machine representations of the  user’s 
+set of  relationships). 
+
+So far,  we have  discussed examples of relations which  are 
+defined  on  simple domains-domains  whose elements are 
+atomic  (nondecomposable) values.  Nonatomic  values  can 
+be discussed within  the  relational  framework.  Thus,  some 
+domains may  have  relations  as elements.  These relations 
+may,  in  turn,  be defined  on nonsimple domains, and  so on. 
+For  example,  one of  the  domains on which  the  relation  em- 
+ployee is defined might  be salary  history.  An  element of  the 
+salary history  domain is a binary  relation  defined on the  do- 
+main date and the  domain salary. The  salary  history  domain 
+is the  set of  all such binary  relations.  At  any  instant  of time 
+there  are  as many  instances of  the  salary  history  relation 
+in  the  data  bank  as there  are employees. In  contrast,  there 
+is only  one instance of the  employee relation. 
+
+The  terms attribute  and repeating  group in  present data 
+base terminology  are  roughly  analogous to  simple domain 
+
+380 
+
+Communications 
+
+of 
+
+the 
+
+ACM 
+
+Volume 
+
+13 
+
+/  Number 
+
+6  /  June, 
+
+1970 
+
+type  and 
+
+terminology 
+
+is  due  to  failure 
+
+and  nonsimple  domain,  respectively.  Much  of  the  confusion 
+be- 
+in  present 
+tween 
+and  between 
+(as  in  “record”) 
+of  a  user  model  of  the  data  on  the  one  hand 
+components 
+and 
+the 
+other  hand 
+
+representation 
+(again,  we  cite  “record” 
+
+counterparts 
+as  an  example). 
+
+their  machine 
+
+to  distinguish 
+
+instance 
+
+on 
+
+FORM 
+
+1.4.  NORMAL 
+A  relation  whose domains  are  all  simple  can  be  repre- 
+sented  in  storage  by  a  two-dimensional  column-homo- 
+geneous array  of  the  kind  discussed above.  Some  more 
+complicated  data  structure  is necessary for  a relation  with 
+one or more nonsimple domains. For  this reason (and others 
+to  be cited  below)  the  possibility  of  eliminating  nonsimple 
+domains  appears worth  investigating!  There  is, in  fact,  a 
+very  simple  elimination  procedure,  which  we  shall  call 
+normalization. 
+
+Consider,  for  example,  the  collection  of  relations  ex- 
+hibited  in  Figure  3 (a).  Job  history  and  children  are  non- 
+simple domains of  the  relation  employee. Salary  history  is a 
+nonsimple domain  of  the  relation  job  history.  The  tree  in 
+Figure  3 (a)  shows just  these interrelationships  of  the  non- 
+simple domains. 
+
+employee 
+I 
+
+jobhistory 
+I 
+salaryhistory 
+
+children 
+
+jobhistory, 
+
+children) 
+
+employee 
+jobhistory 
+salaryhistory 
+children 
+
+(man#,  name,  birthdate, 
+(jobdate, 
+
+title,  salaryhistory) 
+
+(salarydate,  salary) 
+
+(childname, 
+
+birthyear) 
+
+FIG. 
+
+3(a).  Unnormalized 
+
+set 
+
+employee’ 
+jobhistory’ 
+salaryhistory’ 
+children’ 
+
+(man#,  name,  birthdate) 
+(man#,  jobdate, 
+
+title) 
+
+(man#,  jobdate,  salarydate,  salary) 
+
+(man#,  childname,  birthyear) 
+
+FIG. 
+
+3(b). 
+
+Normalized 
+
+set 
+
+Normalization  proceeds as follows.  Starting  with  the  re- 
+lation  at  the  top  of  the  tree,  take  its  primary  key  and  ex- 
+pand  each  of  the  immediately  subordinate  relations  by 
+inserting  this  primary  key  domain or  domain combination. 
+The  primary  key  of  each expanded  relation  consists of  the 
+primary  key  before  expansion augmented  by  the  primary 
+key  copied down  from  the  parent  relation.  Now,  strike  out 
+from  the  parent  relation  all nonsimple domains, remove the 
+top  node  of  the  tree,  and  repeat  the  same sequence of 
+operations on  each remaining  subtree. 
+
+The  result  of  normalizing  the  collection  of  relations  in 
+Figure  3 (a)  is the  collection  in  Figure  3 (b).  The  primary 
+key  of  each  relation  is  italicized  to  show how  such keys 
+are expanded by  the  normalization. 
+
+4  M.  E.  Sanko  of  IBM,  San  Jose,  independently 
+domains. 
+desirability 
+
+of  eliminating 
+
+nonsimple 
+
+recognized 
+
+the 
+
+If  normalization  as described above  is to  be applicable, 
+the  unnormalized  collection  of  relations  must  satisfy  the 
+following  conditions : 
+
+(1)  The  graph  of  interrelationships  of  the  nonsimple 
+
+domains is a collection  of  trees. 
+
+(2)  No  primary  key  has a component  domain which  is 
+
+nonsimple. 
+
+The  writer  knows  of  no application  which  would  require 
+any  relaxation  of  these conditions.  Further  operations of a 
+normalizing  kind  are possible. These  are not  discussed in 
+this  paper. 
+
+The  simplicity  of the array  representation  which becomes 
+feasible when  all  relations  are  cast  in  normal  form  is not 
+only  an  advantage  for  storage purposes but  also for  com- 
+munication  of bulk  data  between systems which  use widely 
+different  representations  of  the  data.  The  communication 
+form  would  be a suitably  compressed version  of  the  array 
+representation  and  would  have  the  following  advantages: 
+(1)  It  would  be  devoid  of  pointers  (address-valued  or 
+
+displacement-valued ) . 
+
+(2)  It  would  avoid  all  dependence on  hash addressing 
+
+schemes. 
+
+(3)  It  would  contain  no indices or  ordering  lists. 
+If  the  user’s relational  model is set up  in  normal  form, 
+names of items  of data  in  the  data  bank  can take  a simpler 
+form  than  would  otherwise  be  the  case. A  general  name 
+would  take  a form  such as 
+
+R (g).r.d 
+
+where  R  is  a  relational  name;  g is a  generation  identifier 
+(optional);  r  is a role name  (optional);  d is a domain name. 
+Since g is needed only  when  several generations of  a given 
+relation  exist,  or  are  anticipated  to  exist,  and  r  is needed 
+only  when  the  relation  R  has two  or  more domains named 
+d,  the  simple form  R.d  will  often  be  adequate. 
+
+1.5.  SOME  LINGUISTIC 
+ASPECTS 
+The  adoption  of  a relational  model of  data,  as described 
+above,  permits  the  development  of  a  universal  data  sub- 
+language  based on  an  applied  predicate  calculus. A  first- 
+order predicate  calculus s&ices  if  the  collection  of  relations 
+is in  normal  form.  Such  a language would  provide  a yard- 
+stick  of  linguistic  power  for  all  other  proposed data  Ian- 
+guages, and would  itself  be a strong  candidate  for  embed- 
+ding  (with  appropriate  syntactic  modification)  in a variety 
+of  host  Ianguages  (programming,  command-  or  problem- 
+oriented).  While  it  is  not  the  purpose  of  this  paper  to 
+its  salient  features 
+describe  such  a  language  in  detail, 
+would  be as follows. 
+
+Let  us denote  the  data  sublanguage by  R  and  the  host 
+language by  H.  R  permits  the  declaration  of  relations  and 
+their  domains. Each  declaration  of  a relation  identifies  the 
+primary  key  for  that  relation.  Declared  relations are added 
+to  the  system catalog  for  use by  any  members of  the  user 
+community  who  have  appropriate  authorization.  H  per- 
+mits  supporting  declarations  which  indicate,  perhaps less 
+permanently,  how  these relations  are represented in  stor- 
+
+Volume 
+
+13 
+
+/  Number 
+
+6 
+
+/  June, 
+
+1970 
+
+Communications 
+
+of 
+
+the 
+
+ACM 
+
+381 
+
+age.  R  permits 
+of  data  from 
+quest 
+
+the  specification 
+
+the  data  bank.  Action  on  such  a  retrieval 
+constraints. 
+
+for  retrieval  of  any  subset 
+re- 
+
+lies 
+its 
+in 
+In  a  large 
+large  number 
+even  when  we  as- 
+
+the  data  sublanguage 
+ability). 
+its  computing 
+
+is  subject 
+The  universality 
+ability 
+
+to  security 
+of 
+descriptive 
+(not 
+data  bank  each  subset  of  the  data  has  a very 
+(and  sensible)  descriptions, 
+of  possible 
+there 
+(as  we  do)  that 
+sume 
+subroutines 
+the  system 
+to  which 
+qualifying  data  for  retrieval.  Thus, 
+expressions  which 
+have 
+formulas  of  an  applied  predicate  calculus. 
+that 
+express 
+the  selected  predicate  calculus.  For  example, 
+prenex  normal 
+Arithmetic 
+
+the  descriptive 
+
+this  descriptive 
+
+(in  whatever 
+
+to  preserve 
+
+is  chosen)  every 
+
+syntax 
+
+power 
+
+power 
+
+is  only  a  finite  set  of  function 
+
+has  access 
+the  class  of  qualification 
+can  be  used  in  a  set  specification  must 
+
+for  use 
+
+in 
+
+of  the  class  of  well-formed 
+It  is  well  known 
+
+form  are  adequate 
+
+[9]. 
+functions  may  be  needed  in  the  qualification 
+
+it  is  unnecessary 
+
+to 
+formula  of 
+in 
+those 
+
+just 
+
+or  other  parts  of  retrieval 
+be  defined  in  H  and  invoked 
+
+statements. 
+in  R. 
+
+A  set  so  specified  may  be  fetched 
+
+Such  functions 
+
+can 
+
+for  query  purposes 
+t,ake 
+
+representation. 
+
+to  any  ordering 
+
+only,  or  it  may  be held  for  possible  changes.  Insertions 
+the  form  of  adding  new  elements 
+to  declared  relations  with- 
+out  regard 
+in  their 
+machine 
+for 
+the  community 
+to  the  individual  user  or  sub- 
+from  de- 
+communities) 
+clared  relations.  Some  deletions  and  updates  may  be  trig- 
+gered  by  others, 
+if  deletion  and  update  dependencies  be- 
+tween  specified  relations  are  declared 
+
+that  may  be  present 
+Deletions  which  are  effective 
+
+take  the  form  of  removing  elements 
+
+(as  opposed 
+
+in  R. 
+
+effect  that 
+
+One  important 
+
+in  the  previous 
+
+the  view  adopted 
+
+data 
+toward 
+has  on  the  language  used  to  retrieve 
+it  is  in  the  naming  of 
+data  elements  and  sets.  Some  aspects  of  this  have  been  dis- 
+cussed 
+view,  users  will  often  be  burdened  with 
+more  relat,ion  names 
+names  are  associated  with  paths 
+than  with 
+
+coining  and  using 
+since 
+rather 
+
+necessary, 
+types) 
+
+than  are  absolutely 
+
+the  usual  network 
+
+section.  With 
+
+relations. 
+
+(or  path 
+
+Once  a  user  is  aware 
+
+that  a certain 
+
+relation 
+
+is  stored,  he 
+
+will  expect 
+of  its  arguments 
+ments  as 
+Everest) 
+many  current 
+(logically) 
+symmetry 
+
+as  “knowns” 
+
+to  be  able  to  exploit5  it  using  any  combination 
+argu- 
+and 
+(like 
+from 
+(missing 
+which  we  shall  call 
+
+because 
+is  a  system 
+systems) 
+
+remaining 
+information 
+
+“unknowns,” 
+is  there.  This 
+
+the 
+feature 
+
+informat.ion 
+
+the 
+
+symmetric  expZoitation  of  relations.  Naturally, 
+in  performance 
+
+is  not  to  be  expected. 
+
+exploitation 
+
+of  a  single  binary 
+
+To  support  symmetric 
+
+to  be  named  and  controlled 
+
+re- 
+two  directed  paths  are  needed.  For  a relation  of  de- 
+is 
+
+lation, 
+gree  n,  the  number  of  paths 
+n  factorial. 
+Again, 
+ary  relation 
+nested  expression 
+Feldman’s 
+[lo], 
+names  have  to  be  coined  instead  of  only  n  +  1 with  direct 
+the 
+n-ary  notation  as  described 
+
+in  which  every  n- 
+(n  >  2)  has  to  be  expressed  by  the  user  as  a 
+(see 
+only  binary 
+then  2n  -  1 
+
+in  Section  1.2.  For  example, 
+
+if  a  relational  view 
+
+LEAP  System 
+
+for  example) 
+
+is  adopted 
+
+involving 
+
+relations 
+
+6 Exploiting 
+
+a  relation 
+
+includes  query,  update,  and  delete. 
+
+4-ary  relation  supply  of  Figure  1, which  entails  5 names in 
+n-ary  notation,  would  be represented  in  the  form 
+
+P  (supplier,  &  (part,  R  (project,  quantity))) 
+
+in  nested binary  notation  and,  thus,  employ  7 names. 
+
+-4 further  disadvantage  of  this  kind  of  expression is its 
+this  asymmetry  does not  prohibit 
+asymmetry.  Although 
+symmetric  exploitation, 
+it  certainly  makes some bases of 
+interrogation  very  awkward  for  the  user to  express  (con- 
+sider,  for  example,  a  query  for  those parts  and  quantities 
+related  to  certain  given  projects  via  &  and R). 
+
+NAMED,  AND  STORED  RELATIONS 
+
+1.6.  EXPRESSIBLE, 
+Associated with  a data  bank  are two  collections  of  rela- 
+tions:  the  named  set and the  expressible set. The  named set 
+is the  collection  of all those relations  that  the community  of 
+users can identify  by  means of a simple name  (or identifier). 
+A  relation  R  acquires membership in the  named set when a 
+suitably  authorized  user  declares R;  it  loses membership 
+when  a suitably  authorized  user cancels the  declaration  of 
+R. 
+
+The  expressible set is the  total  collection  of  relations that 
+can be designated by  expressions in the data  language. Such 
+expressions are constructed  from  simple names of  relations 
+in the  named set; names of  generations, roles and domains; 
+logical  connectives;  the  quantifiers  of  the  predicate  calcu- 
+1~s;~ and  certain  constant  relation  symbols such as =  ,  >  . 
+The  named set is a subset of  the  expressible set-usually  a 
+very  small subset. 
+
+Since some relations  in the  named set may  be time-inde- 
+pendent  combinations  of  others  in  that  set, it  is useful to 
+the  named  set  a  collection  of 
+consider  associating  with 
+statements that  define these time-independent  constraints. 
+We  shall postpone further  discussion of  this  until  we have 
+introduced  several  operations  on relations  (see Section  2). 
+One of  the  major  problems confronting  the  designer of a 
+data  system which  is to  support  a relational  model for  its 
+users is that  of  determining  the  class of  stored  representa- 
+tions  to  be  supported.  Ideally, 
+the  variety  of  permitted 
+data  representations  should be just  adequate  to  cover  the 
+spectrum  of  performance  requirements  of  the  total  col- 
+lection  of  installations.  Too  great  a  variety 
+leads to  un- 
+necessary overhead  in  storage and  continual  reinterpreta- 
+tion  of  descriptions for  the  structures  currently  in  effect. 
+
+For  any  selected class of  stored representations  the  data 
+system  must  provide  a means of  translating  user requests 
+expressed in  the  data  language of  the  relational  model into 
+the  current 
+elhcient-actions 
+corresponding-and 
+stored  representation.  For  a high  level  data  language this 
+presents a challenging design problem.  Nevertheless, it  is a 
+problem  which  must be solved-as  more users obtain  con- 
+current  access to  a large  data  bank,  responsibility  for  pro- 
+viding  efficient  response and  throughput  shifts  from  the 
+individual  user to  the  data  system. 
+
+on 
+
+instant 
+
+6 Because  each  relation 
+every 
+of  time, 
+can  be  expressed 
+elements 
+
+in  a  practical 
+the  existential 
+in  terms  of  a  function 
+
+in  any  finite  set. 
+
+data  bank 
+
+is  a  finite  set  at 
+
+and  universal 
+that  counts  the  number  of 
+
+quantifiers 
+
+382 
+
+Communications 
+
+of 
+
+the 
+
+ACM 
+
+Volume 
+
+13 
+
+/  Number 
+
+6 
+
+/  June, 
+
+1970 
+
+2.  Redundancy 
+
+and  Consistency 
+
+2.1.  OPERATIONS  ON  RELATIONS 
+Since relations are sets, all of the  usual set operations are 
+applicable  to  them.  Nevertheless,  the  result  may  not  be a 
+relation;  for  example,  the  union  of  a binary  relation  and  a 
+ternary  relation  is not  a relation. 
+
+The  operations  discussed below  are  specifically  for  rela- 
+tions. These operations  are introduced  because of their  key 
+from  other  relations.  Their 
+role  in  deriving 
+information  sys- 
+principal  application  is in  noninferential 
+logical  inference 
+tems-systems  which  do  not  provide 
+services-although 
+is  not  necessarily 
+destroyed  when  such services are  added. 
+
+their  applicability 
+
+relations 
+
+Most  users would  not  be  directly  concerned with  these 
+operations. Information  systems designers and people con- 
+cerned with  data  bank  control  should,  however,  be  thor- 
+oughly  familiar  with  them. 
+
+2.1.1.  Permutation. 
+
+relation  has  an  array 
+A  binary 
+representation  with  two  columns. Interchanging  these col- 
+umns  yields  the  converse  relation.  More  generally,  if  a 
+permutation  is applied to  the  columns of  an n-ary  relation, 
+the  resulting  relation  is  said  to  be  a  permutation 
+of  the 
+given  relation.  There  are,  for  example,  4!  =  24 permuta- 
+tions  of  the  relation  supply 
+in  Figure  1, if  we  include  the 
+identity  permutation  which  leaves the  ordering  of  columns 
+unchanged. 
+
+is,  however,  relevant 
+
+Since the  user’s relational  model  consists of  a collection 
+of  relationships  (domain-unordered  relations),  permuta- 
+tion  is not  relevant  to  such a model considered in  isolation. 
+It 
+to  the  consideration  of  stored 
+representations of  the  model.  In  a  system which  provides 
+the  set  of  queries 
+symmetric  exploitation  of  relations, 
+answerable by  a  stored  relation 
+to  the  set 
+answerable by  any  permutation  of  that  relation.  Although 
+it  is logically  unnecessary to  store both  a relation  and some 
+permutation  of  it,  performance  considerations could  make 
+it  advisable. 
+
+is  identical 
+
+2.1.2.  Projection. 
+
+Suppose now  we  select certain  col- 
+umns of  a  relation  (striking  out  the  others)  and  then  re- 
+move from  the  resulting  array  any  duplication  in the  rows. 
+The  final  array  represents a relation  which  is said to  be a 
+projection 
+
+of  the  given  relation. 
+
+A  selection  operator  ?r  is  used to  obtain  any  desired 
+permutation,  projection,  or  combination  of  the  two  opera- 
+tions.  Thus,  if  L  is a  list  of  lc  indices7  L  = 
+-  .  -  ,  ik 
+and R  is an n-ary  relation  (n  2  k ),  then  rrL (R  ) is the k-ary 
+relation whose jth  column is column ii  of R  (j  =  1,2,  * * .  ,k) 
+except  that  duplication  in  resulting  rows is removed.  Con- 
+sider the  relation  supply  of Figure  1. A  permuted  projection 
+of  this  relation  is exhibited  in  Figure  4.  Note  that,  in  this 
+particular  case, the  projection  has fewer n-tuples  than  the 
+relation  from  which  it  is derived. 
+
+i1, 
+
+ii, 
+
+2.1.3.  Join. 
+
+Suppose we  are  given  two  binary  rela- 
+tions,  which  have  some domain  in  common.  Under  what 
+circumstances  can  we  combine  these  relations  to  form  a 
+
+7 When  dealing  with 
+qualified  whenever  necessary) 
+
+relationships, 
+
+we  use  domain  names 
+instead  of  domain  positions. 
+
+(role- 
+
+ternary  relation  which  preserves all  of  the  information  in 
+the  given  relations? 
+
+The  example in  Figure  5 shows two  relations  R,  S, which 
+are  joinable  without 
+loss of  information,  while  Figure  6 
+shows a  join  of  R  with  S.  A  binary  relation  R  is joinable 
+with  a binary  relation  S if  there  exists a ternary  relation  U 
+such that  7r12 (U)  =  R  and  ‘1~23 (U)  =  S. Any  such ternary 
+relation  is called a  join  of  R  with  S.  If  R,  S  are binary  rela- 
+tions  such that  ~2 (R)  =  ~1 (S),  then  R  is joinable  with  S. 
+One  join  that  always  exists  in  such a  case is the  natural 
+join  of  R  with  S defined  by 
+
+R*S 
+
+= 
+
+{(a,  b,  c):R(a, 
+
+b)  A  S(b,  c)) 
+
+where R  (a, b)  has the  value  true  if  (a, b)  is a member of  R 
+and  similarly  for  S(b,  c).  It  is immediate  that 
+
+and 
+
+TB(R*S) 
+
+=  R 
+
+T33(R*S) 
+
+=  S. 
+
+Note  that  the  join  shown in  Figure  6 is the  natural  join 
+of  R  with  S from  Figure  5. Another  join  is shown in  Figure 
+7. 
+
+II31  hPPb/) 
+
+(project 
+
+supplier) 
+
+5 
+5 
+1 
+7 
+
+1 
+2 
+4 
+2 
+
+FIG.  4.  A  permuted 
+
+projection 
+
+of  the  relation 
+
+in  Figure  1 
+
+R 
+
+(supplier 
+1 
+2 
+2 
+
+Part) 
+1 
+1 
+2 
+
+S 
+
+(part 
+
+project) 
+
+1 
+1 
+2 
+
+1 
+2 
+1 
+
+FIG. 
+
+5.  Two 
+
+joinable 
+
+relations 
+
+R*S 
+
+(supplier 
+
+part 
+
+project) 
+
+1 
+1 
+2 
+2 
+2 
+
+1 
+1 
+1 
+1 
+2 
+
+1 
+2 
+1 
+2 
+1 
+
+FIG. 
+
+6.  The  natural 
+
+join  of  R  with  S  (from  Figure  5) 
+
+U 
+
+(supplier 
+
+part 
+
+project) 
+
+1 
+2 
+2 
+
+1 
+1 
+2 
+
+2 
+1 
+1 
+
+FIG. 
+
+7.  Another 
+
+join  of  R  with  S  (from  Figure  5) 
+
+Inspection  of  these  relations  reveals  an  element  (ele- 
+(the  domain  on which  the  join 
+ment  1)  of  the  domain  part 
+that  it  possesses more 
+is  to  be  made)  with  the  property 
+than  one relative  under  R  and  also under  S.  It  is this  ele- 
+
+Volume 
+
+13 
+
+/  Number 
+
+6 
+
+/  June, 
+
+1970 
+
+Communications 
+
+of 
+
+the 
+
+ACM 
+
+383 
+
+ment  which  gives  rise  to  the  plurality 
+in  the  joining  domain 
+ment 
+respect 
+with 
+
+to  the  joining  of  R  with  S. 
+
+of  joins.  Such  an  ele- 
+is  called  a  point  of  ambiguity 
+
+If  either  ~1  (R)  or  S is  a function: 
+
+no  point  of  ambiguity 
+can  occur  in  joining  R  with  S.  In  such  a  case,  the  natural 
+join  of  R  with  S  is  the  only  join  of  R  with  S.  Note 
+the 
+is  necessary,  because 
+“of  R  with  S” 
+reiterated  qualification 
+S  might  be joinable  with  R  (as  well  as  R  with  S),  and  this 
+In  Figure 
+join  would  be  an  entirely  separate  consideration. 
+is  a  function. 
+5,  none  of  the  relations  R,  7r21(R),  S,  ?rzl(S) 
+
+that 
+
+Ambiguity 
+
+in  the  joining  of  R  with  S  can  sometimes  be 
+resolved  by  means  of  other  relations.  Suppose  we  are  given, 
+of  R  and  S,  a  rela- 
+or  can  derive 
+tion  T  on  the  domains  project  and  supplier  with 
+the  follow- 
+ing  properties 
+
+from  sources 
+
+independent 
+
+: 
+
+(1)  m(T) 
+
+=  m(S), 
+
+(2)  m(T) 
+
+=  al(R), 
+
+(3)  T(i 
+
+s> +~P(R(& 
+
+P>  A  S(P,~))~ 
+
+(4)  R(s,  P>  -+  3j(Soj\,.i) 
+
+*  T(.A  s)), 
+
+(5)  S@,.i)  +  3s(T(.?,  s>  A  R(s,  P>>, 
+
+then  we  may  form  a three-way  join  of  R,  S,  T;  that  is,  a 
+ternary  relation  such that 
+
+mz(U)  =  R, 
+
+7r23(U) 
+
+=  s, 
+
+ml(U)  =  T. 
+
+Such a join  will  be called a cyclic  3-join  to  distinguish  it 
+from  a linear  S-join  which  would  be a  quaternary  relation 
+V  such that 
+
+m(V) = R, 
+
+lr23W) 
+
+= s, 
+
+lr34(V)  =  T. 
+
+While  it  is possible for  more than  one cyclic  3-join  to  exist 
+(see Figures 8,9,  for  an example),  the  circumstances under 
+which  this  can occur  entail  much  more  severe constraints 
+
+R  (s  P) 
+1  a 
+2  a 
+2  b 
+
+s 
+
+(P  23 
+
+T 
+
+0’  s) 
+
+a  d 
+
+b&Ii 
+b  e 
+
+d  1 
+d  2 
+e  2 
+e  2 
+
+FIG.  8.  Binary 
+
+relations  with  a  plurality 
+
+of  cyclic  3-joins 
+
+u  b  P  8 
+1  a  d 
+2  a  e 
+2  b  d 
+2  b  e 
+
+TJ’ 
+
+(s  P 
+
+i) 
+
+1  a  d 
+2  a  d 
+2  a  e 
+2  b  d 
+2  b  e 
+
+FIG.  9.  Two  cyclic  3-joins  of  the  relations 
+
+in  Figure  8 
+
+than  those for  a plurality  of  2-joins. To  be specific, the  re- 
+lations  R,  S,  T  must  possess points  of  ambiguity  with 
+respect to  joining  R  with  S  (say  point  x),  S  with  T  (say 
+
+8 A  function 
+but  not  one-many. 
+
+is  a  binary 
+
+relation,  which 
+
+is  one-one  or  many-one, 
+
+y),  and  T  with  R  (say  a),  and,  furthermore,  y  must  be a 
+relative  of  x  under  S,  z  a  relative  of  y  under  T,  and  x  a 
+relative  of  z  under  R.  Note  that  in  Figure  8  the  points 
+2  =  a;  y  =  d;  x  =  2 have  this  property. 
+
+The  natural  linear  3-join  of  three  binary  relations  R,  S, 
+
+T  is given  by 
+
+R*S*T  =  { (a,  b, c, d):R  (a,  b)  A  S (b, c)  A  T (c, d)} 
+
+where parentheses are not  needed on the  left-hand  side be- 
+cause the  natural  2-join  (*)  is associative.  To  obtain  the 
+cyclic  counterpart,  we introduce  the  operator  y  which  pro- 
+duces a relation  of  degree n  -  1 from  a relation  of  degree n 
+by  tying  its  ends together.  Thus,  if  R  is an n-ary  relation 
+(n  2  2),  the  tie of R  is defined by  the  equation 
+
+r(R)  =  {(a~,  a2,  .-. 
+
+,  a,-l):R(ul, 
+
+az,  ... 
+
+,  a,-~,  a,) 
+
+A  al  =  a,). 
+
+We  may  now represent the  natural  cyclic  S-join  of  R,  S,  T 
+by  the  expression 
+
+y  (R*S*T). 
+
+Extension  of  the  notions  of  linear  and  cyclic  S-join  and 
+their  natural  counterparts  to  the  joining  of  n  binary  rela- 
+tions  (where n  2  3)  is obvious.  A  few  words may  be ap- 
+propriate,  however,  regarding  the  joining  of relations  which 
+are  not  necessarily binary.  Consider  the  case of  two  rela- 
+tions  R  (degree r ),  S  (degree s)  which  are to  be joined  on 
+p  of  their  domains  (p  <  T,  p  <  s).  For  simplicity,  sup- 
+pose these p  domains are the  last  p  of  the  r  domains of R, 
+and the  first  p of  the  s domains of S.  If  this  were not  so, we 
+could  always  apply  appropriate  permutations  to  make  it 
+so.  Now,  take  the  Cartesian  product  of  the  first  r-p  do- 
+mains  of  R,  and  call  this  new  domain  A.  Take  the  Car- 
+tesian product  of  the  last  p  domains of  R,  and  call  this  B. 
+Take  the  Cartesian  product  of  the  last  s-p  domains of  S 
+and  call  this  C. 
+
+We  can  treat  R  as if  it  were  a  binary  relation  on  the 
+domains A,  B.  Similarly,  we can  treat  S  as if  it  were a bi- 
+nary  relation  on  the  domains B,  C.  The  notions  of  linear 
+and  cyclic  S-join  are now  directly  applicable.  A  similar  ap- 
+proach  can be taken  with  the  linear  and cyclic  n-joins  of n 
+relations  of  assorted degrees. 
+
+2.1.4.  Composition.  The  reader  is  probably 
+
+familiar 
+with  the  notion  of  composition  applied  to  functions.  We 
+shall discuss a generalization  of  that  concept  and  apply  it 
+to  binary  relations.  Our  definitions  of  composition 
+first 
+and composability  are based very  directly  on the definitions 
+of  join  and  joinability  given  above. 
+
+Suppose we are  given  two  relations  R,  S.  T  is  a cam- 
+position of R with  S if  there  exists a. join  U of R with  S such 
+that  T  =  aI3 (U)  .  Thus,  two  relations  are  composable if 
+and  only  if  they  are  joinable.  However,  the  existence of 
+more than  one join  of R with  S does not  imply  the existence 
+of more than  one composition  of  R with  S. 
+
+Corresponding  to  the  natural  join  of  R  with  S  is  the 
+
+384 
+
+Communications 
+
+of 
+
+the 
+
+ACM 
+
+Volume 
+
+13 
+
+/  Number 
+
+6  /  June, 
+
+1970 
+
+ndural  composition9  of  R  with  S  defined  by 
+
+R.S  =  TH(R*S). 
+
+the  relations  R,  S  from  Figure  5,  their  natural  com- 
+is  exhibited 
+
+in  Figure  10  and  another  composition 
+the  join  exhibited 
+
+in  Figure  11  (derived 
+
+from 
+
+Taking 
+position 
+is  exhibited 
+in  Figure  7). 
+
+R.  S 
+
+(project 
+
+supplier) 
+
+1 
+1 
+2 
+
+1 
+2 
+1 
+
+FIG.  10.  The  natural 
+
+composition 
+
+of  R  with  S  (from  Figure  5) 
+
+T 
+
+(project 
+1 
+2 
+
+supplier) 
+2 
+1 
+
+FIQ.  11.  Another 
+
+composition 
+
+of  R  with  S  (from  Figure  5) 
+
+When  two  or  more  joins  exist,  the  number  of  distinct 
+compositions may  be as few  as one or as many  as the  num- 
+ber  of  distinct  joins.  Figure  12 shows an  example  of  two 
+relations which  have  several 
+joins  but  only  one composition. 
+Note  that  the  ambiguity  of  point  c is lost  in  composing R 
+with  S,  because of unambiguous  associations made via  the 
+points  a,  b, d,  e. 
+
+R 
+
+(supplier 
+
+part) 
+
+S 
+
+(part 
+
+project) 
+
+1 
+1 
+1 
+2 
+2 
+2 
+
+z 
+c 
+
+8 
+e 
+
+; 
+c 
+
+: 
+e 
+
+; 
+f  
+is 
+
+f 
+
+FICA  12.  Many 
+
+joins,  only  one  composition 
+
+Extension  of  composition  to  pairs  of  relations  which  are 
+not  necessarily binary  (and  which  may  be of  different  de- 
+grees) follows  the  same pattern  as extension  of  pairwise 
+joining  to  such relations. 
+
+A  lack  of understanding  of relational  composition has led 
+several  systems  designers into  what  may  be  called  the 
+connection trap.  This  trap  may  be described in  terms of  the 
+following  example.  Suppose  each  supplier  description  is 
+linked  by  pointers  to  the  descriptions of  each part  supplied 
+by  that  supplier,  and  each  part  description  is  similarly 
+linked  to  the  descriptions  of  each project  which  uses that 
+part.  A  conclusion  is now  drawn  which  is,  in  general,  er- 
+roneous: namely that,  if  all possible paths are followed from 
+a given  supplier  via  the  parts  he  supplies to  the  projects 
+using those parts,  one will  obtain  a valid  set of  all  projects 
+supplied  by  that  supplier.  Such  a  conclusion  is  correct 
+only  in  the  very  special case that  the  target  relation  be- 
+tween  projects  and  suppliers is,  in  fact,  the  natural  com- 
+position  of the  other  two  relations-and  we must normally 
+add  the  phrase “for  all  time,”  because this  is usually  im- 
+plied  in  claims concerning  path-following 
+
+techniques. 
+
+0 Other  writers 
+tural  one,  and  accordingly 
+the  composition-see, 
+
+tend 
+
+to  ignore  compositions 
+
+other 
+
+than 
+
+refer  to  this  particular 
+
+composition 
+
+for  example,  Kelley’s 
+
+“General 
+
+Topology.” 
+
+the  na- 
+as 
+
+2.1.5.  Restriction.  A  subset of  a  relation  is a  relation. 
+One way  in  which  a relation  S  may  act  on a relation  R  to 
+generate a subset of  R  is through  the  operation  restriction 
+of R  by  S.  This  operation  is a generalization  of  the  restric- 
+tion  of  a function  to  a subset of  its  domain,  and is defined 
+as follows. 
+
+Let  L,  M  be  equal-length  lists  of  indices  such  that 
+L  =  iI,&., 
+e-s , jk  where k  5  degree 
+of R and k  6  degree of S. Then  the L,  M  restriction  of R by 
+S  denoted  RLIMS is the  maximal  subset R’  of  R  such that 
+
+***  ,ik,M 
+
+=  jI,j2, 
+
+?rL(R’)  =  TM(S). 
+
+The  operation  is defined  only  if  equality  is applicable  be- 
+tween  elements of  ?T+, (R)  on the  one hand  and  rjh (S)  on 
+the  other  for  all  h  =  1, 2,  . . .  , k. 
+
+The  three  relations R, S, R’  of Figure  13 satisfy  the  equa- 
+
+tion  R'  =  Rw~wsS. 
+R  (8  P  ~3 
+1aA 
+a  A 
+2 
+2  a  B 
+2bA 
+2  b  B 
+
+s  (P  8 
+a  A 
+c  B 
+b  B 
+
+R'  (8  P  3 
+1aA 
+2  a  A 
+2  b  B 
+
+FIG.  13.  Example  of  restriction 
+
+We  are now in  a position  to  consider various  applications 
+
+of  these operations  on relations. 
+
+2.2.  REDUNDANCY 
+Redundancy  in  the  named set  of  relations  must  be dis- 
+tinguished from  redundancy  in  the stored set of representa- 
+tions.  We  are  primarily  concerned  here  with  the  former. 
+for 
+To  begin with,  we need a precise notion  of  derivability 
+relations. 
+
+Suppose 0 is  a collection  of  operations  on relations  and 
+each operation  has the  property 
+that  from  its  operands it 
+yields  a unique  relation  (thus  natural  join  is eligible,  but 
+join  is not ).  A  relation  R is O-derivable from  a set S of rela- 
+tions  if  there  exists a sequence of  operations from  the  col- 
+lection  0 which,  for  all  time,  yields  R  from  members of  S. 
+The  phrase “for  all time”  is present, because we are dealing 
+with  time-varying  relations, and our interest  is in derivabil- 
+ity  which  holds  over  a  significant  period  of  time.  For  the 
+named set of relationships  in  noninferential  systems, it  ap- 
+pears that  an  adequate collection  &  contains the  following 
+operations:  projection,  natural  join,  tie,  and  restriction. 
+Permutation 
+is  irrelevant  and  natural  composition  need 
+not  be included,  because it  is obtainable  by  taking  a natural 
+join  and then  a projection.  For  the  stored set of representa- 
+tions,  an adequate collection  e2 of  operations would  include 
+permutation  and additional  operations concerned with  sub- 
+setting  and merging relations,  and ordering  and connecting 
+their  elements. 
+
+2.2.1.  Strong Redundancy.  A  set of relations is strongly 
+redundant if  it  contains at  least one relation  that  possesses 
+a projection  which  is  derivable  from  other  projections  of 
+relations  in  the  set.  The  following  two  examples are  in- 
+tended  to  explain  why  strong  redundancy  is defined  this 
+way,  and to  demonstrate  its  practical  use. In  the  first  ex- 
+
+Volume 
+
+13 
+
+/  Number 
+
+6  /  June, 
+
+1970 
+
+Communications 
+
+of 
+
+the 
+
+ACM 
+
+385 
+
+ample  the  collection  of  relations 
+ing  relation 
+
+: 
+
+consists  of  just 
+
+the  follow- 
+
+employee  (serial  #,  name,  manager#,  managername) 
+
+with  serial#  as  the  primary 
+key.  Let  us  denote 
+that 
+
+key  and  manager#  as  a  foreign 
+
+the  active  domain  by  A,,  and  suppose 
+
+A,  (munuger#)  c  A, (serial#) 
+
+and 
+
+At (managername) C  At (name) 
+
+for  all  time  t.  In  this  case the  redundancy  is obvious:  the 
+domain  managername is  unnecessary.  To  see that  it  is  a 
+strong  redundancy  as defined  above,  we  observe that 
+m4 (employee) =  ~12 (empZoyee)&r3 (employee). 
+In  the  second example the  collection  of  relations includes a 
+relation  S  describing  suppliers with  primary  key  s#, a re- 
+lation  D  describing  departments  with  primary  key  d#,  a 
+relation  J  describing projects  with  primary  key  j#,  and the 
+following  relations : 
+
+lJ (s#, d#,  - * * >t 
+
+Q(s#,j#, 
+
+.-->, 
+
+R(d#,j#, 
+
+**->, 
+
+where in  each case - - -  denotes domains other  than  s#, d#, 
+j#.  Let  us suppose the  following  condition  C is  known  to 
+hold  independent  of  time:  supplier  s supplies department 
+d  (relation  P ) if  and only  if  supplier s supplies some project 
+j  (relation  Q)  to  which  d is assigned (relation  R).  Then,  we 
+can write  the  equation 
+
+m(P) 
+
+=  m(Q)-w(R) 
+
+and thereby  exhibit  a strong  redundancy. 
+
+reason  for 
+
+An  important 
+
+the  existence  of  strong  re- 
+dundancies in  the  named  set of  relationships  is user con- 
+venience. A  particular  case of  this  is the  retention  of  semi- 
+obsolete relationships  in  the  named  set  so that  old  pro- 
+grams that  refer  to  them  by  name can continue  to  run  cor- 
+rectly.  Knowledge  of  the  existence of  strong  redundancies 
+in  the  named  set enables a  system  or  data  base adminis- 
+trator  greater freedom in the  selection of  stored representa- 
+tions  to  cope more  efficiently  with  current  traffic. 
+If  the 
+strong redundancies in  the  named set are directly  reflected 
+in  strong  redundancies in  the  stored set  (or  if  other  strong 
+redundancies are introduced  into  the  stored set),  then,  gen- 
+erally  speaking,  extra  storage  space and  update  time  are 
+consumed with  a  potential  drop  in  query  time  for  some 
+queries and in  load  on the  central  processing units. 
+
+2.2.2.  Weak  Redundancy.  A  second  type  of  redun- 
+dancy  may  exist.  In  contrast  to  strong  redundancy  it  is not 
+characterized  by  an  equation.  A  colIection  of  relations  is 
+weakly redundant if  it  contains a relation  that  has a projec- 
+tion  which  is not  derivable  from  other  members but  is  at 
+all  times  a  projection  of  some join  of  other  projections  of 
+relations  in  the  collection. 
+
+We  can exhibit  a weak redundancy  by  taking  the  second 
+example  (cited  above)  for  a  strong  redundancy,  and  as- 
+suming now  that  condition  C  does not  hold  at  all  times. 
+
+The  relations  al2 (P),  7r12 (Q),  7r12 (R )  are complexlo relations 
+with  the  possibility  of  points  of  ambiguity  occurring  from 
+time  to  time  in  the  potential  joining  of  any  two.  Under 
+these  circumstances,  none  of  them  is  derivable  from  the 
+other  two.  However,  constraints  do  exist  between  them, 
+since each is a projection  of  some cyclic  join  of the  three of 
+them.  One  of  the  weak  redundancies can be  characterized 
+by  the  statement:  for  all  time,  1r12 (P)  is some composition 
+of  ~12 (Q)  with  ‘~~1 (R).  The  composition  in  question  might 
+be the  natural  one at  some instant  and a nonnatural  one at 
+another  instant. 
+
+Generally  speaking,  weak  redundancies  are inherent  in 
+the  logical  needs of  the  community  of  users. They  are not 
+If 
+removable  by  the  system  or  data  base administrator. 
+they  appear  at  all,  they  appear in  both  the  named set and 
+the  stored  set of representations. 
+
+2.3.  CONSISTENCY 
+Whenever  the  named  set  of  relations  is  redundant  in 
+either  sense, we shall associate with  that  set a collection  of 
+statements  which  define all of  the  redundancies which  hold 
+independent  of  time  between  the  member relations.  If  the 
+information  system  lacks-and 
+tailed  semantic information  about  each named relation,  it 
+cannot  deduce  the  redundancies  applicable  to  the  named 
+set.  It  might,  over  a  period  of  time,  make  attempts  to 
+induce  the  redundancies, but  such attempts  would  be  fal- 
+lible. 
+
+it  most probably  will-de- 
+
+Given  a  collection  C  of  time-varying 
+
+relations,  an  as- 
+sociated set Z  of constraint  statements and an instantaneous 
+value  V  for  C,  we shall  call  the  state  (C,  2,  V)  consistent 
+or  inconsistent according  as V  does or  does not  satisfy  2. 
+For  example,  given  stored  relations  R,  S,  T  together  with 
+the  constraint  statement  “nlz(T) 
+is  a  composition  of 
+5~12 (R)  with  ~12 (X)“,  we may  check from  time  to  time  that 
+the  values stored for  R,  S,  T  satisfy  this  constraint.  An  al- 
+gorithm  for  making  this  check would  examine the  first  two 
+columns of  each of R,  S,  T  (in whatever  way  they  are repre- 
+sented in  the  system)  and  determine  whether 
+
+(1)  ?rl(T)  =  rl(R), 
+
+(2) 
+
+?rz(T) 
+
+=  7r2@), 
+
+(3)  for  every  element pair  (a,  c)  in  the  relation  al2 (T) 
+
+there  is an  element  b such that  (a,  b)  is  in  a12(R) 
+and  (b, c)  is in  7r12(S). 
+
+There  are practica1  problems  (which  we  shall not  discuss 
+here)  in  taking  an  instantaneous  snapshot  of  a  collection 
+of  relations,  some of  which  may  be  very  large  and  highly 
+variable. 
+
+It  is important  to  note  that  consistency as defined above 
+is a property  of the  instantaneous  state of a data  bank,  and 
+is  independent  of  how  that  state  came  about.  Thus,  in 
+particular, 
+there  is  no  distinction  made  on  the  basis of 
+whether  a user generated an inconsistency  due to  an act  of 
+omission or  an act  of  commission. Examination  of  a simple 
+
+IO A  binary 
+function. 
+
+relation 
+
+is  complex 
+
+if  neither 
+
+it  nor  its  converse 
+
+is  a 
+
+386 
+
+Communications 
+
+of 
+
+the 
+
+AMC 
+
+Volume 
+
+13 
+
+/  Number 
+
+6 
+
+/  June, 
+
+1970 
+
+example  will  show 
+conventional) 
+Suppose 
+
+the  reasonableness 
+
+of  this 
+
+(possibly  un- 
+
+approach 
+
+to  consistency. 
+
+(2,5) 
+
+in  W(R). 
+
+to  department 
+
+(in  the  particular 
+
+in  the  near  future 
+
+j  and  j  is  assigned 
+
+the  strong  or  weak 
+
+On  the  other  hand, 
+
+(2, j) 
+the  input 
+
+the  named  set  C  includes 
+
+(2,  5)  into  7~12 (P)  by  inserting 
+
+the  relations  S,  J,  D, 
+in  Section  2.2  and  that  P,  Q,  R 
+described 
+redundancies 
+it 
+case  now  under  consideration, 
+
+5. Accordingly, 
+in  ~12 (P).  Now,  a user  introduces 
+some  appropri- 
+inconsistent. 
+
+P,  Q,  R  of  the  example 
+possess  either 
+therein 
+does  not  matter  which  kind  of  redundancy  occurs).  Further, 
+suppose  that  at  some  time  t the  data  bank  state  is  consistent 
+and  contains  no  project 
+that  supplier  2  supplies 
+j  such 
+project 
+there  is  no  element 
+the  element 
+ate  element  into  P.  The  data  bank  state  is now 
+The  inconsistency 
+sion,  if  the  input 
+project 
+department 
+intends 
+which  will  have  the  effect  of  introducing 
+and  (5,  j) 
+might  have  been  faulty. 
+intended 
+whose 
+a  consistent 
+is 
+normally  have  no  way  of  resolving 
+interrogating 
+ated  the  inconsistency 
+
+could  have  arisen 
+from  an  act  of  omis- 
+(2,  5)  is  correct,  and  there  does  exist  a 
+to 
+j  and  j  is  assigned 
+that 
+the  user 
+likely 
+into  Q  and  R 
+to  insert  elements 
+into  al2 (Q) 
+(2,  5) 
+the  user 
+element 
+into 
+state 
+the  system  will 
+
+a  consistent 
+that 
+this  question  without 
+
+j  such  that  supplier  2 supplies 
+5.  In  this  case,  it  is  very 
+
+transform 
+state.  The  point 
+
+to  insert  some  other  element 
+
+It  could  be  the  case  that 
+
+). 
+There  are,  of  course,  several  possible  ways 
+
+and  respond 
+for  possible 
+
+and  if  it  is  not  remedied  within 
+
+in  which  a 
+to  them. 
+system 
+In  one  approach 
+inconsist- 
+ency  whenever  an  insertion,  deletion,  or  key  update  occurs. 
+Naturally, 
+these  operations  down. 
+has  been  generated,  details  are  logged 
+If  an  inconsistency 
+some  reasonable 
+internally, 
+for 
+time 
+of  the  data  is  notified.  Another 
+the  security  and  integrity 
+checking  as  a  batch 
+approach 
+operation  once  a day  or  less  frequently. 
+the 
+in  the  data  bank  state  at 
+inconsistencies 
+which 
+if  the  system  main- 
+down 
+checking 
+This 
+of  all  state-changing 
+tains  a  journal 
+latter  approach  would 
+if  few  non- 
+certainly 
+transitory 
+
+remain 
+time  can  be  tracked 
+
+such  checking  will  slow 
+
+the  user  or  someone 
+
+the  user  who  cre- 
+
+insertion  would 
+
+its  environment 
+
+is  to  conduct 
+
+inconsistencies 
+
+inconsistencies 
+
+transactions. 
+
+be  superior 
+
+can  detect 
+
+the  system 
+
+responsible 
+
+consistency 
+
+into  P-an 
+
+occurred. 
+
+(perhaps 
+
+interval, 
+
+causing 
+
+checks 
+
+Inputs 
+
+either 
+
+SUMMARY 
+
+2.4. 
+In  Section  1 a relational  model of  data  is proposed as a 
+basis for  protecting  users of  formatted  data  systems from 
+the  potentially  disruptive  changes in  data  representation 
+caused by  growth  in  the  data  bank  and  changes in  traffic. 
+A  normal  form  for  the  time-varying  collection  of  relation- 
+ships is introduced. 
+
+In  Section  2  operations  on  relations  and  two  types  of 
+redundancy  are  defined  and  applied  to  the  problem  of 
+maintaining  the  data  in  a consistent state.  This  is bound to 
+become a serious practical  problem  as more and more dif- 
+ferent  types  of  data  are integrated  together  into  common 
+data  banks. 
+
+Many  questions  are  raised  and  left  unanswered.  For 
+example,  only  a  few  of  the  more  important  properties  of 
+the data  sublanguage in  Section  1.4 are mentioned.  Neither 
+the  purely  linguistic  details  of  such  a  language nor  the 
+implementation  problems are  discussed. Nevertheless,  the 
+material  presented  should  be  adequate  for  experienced 
+systems  programmers  to  visualize  several  approaches. It 
+is also hoped that  this  paper  can contribute  to  greater  pre- 
+cision in  work  on formatted  data  systems. 
+
+Acknowledgment. 
+
+It  was C.  T.  Davies  of  IBM  Pough- 
+keepsie  who  convinced  the  author  of  the  need  for  data 
+independence in  future  information  systems. The  author 
+wishes to  thank  him  and  also F.  P.  Palermo,  C.  P.  Wang, 
+E.  B.  Altman,  and  M.  E.  Senko  of  the  IBM  San Jose Re- 
+search Laboratory 
+
+for  helpful  discussions. 
+
+RECEIVED 
+
+SEPTEMBER, 
+
+1969;  REVISED 
+
+FEBRUARY, 
+
+1970 
+
+REFERENCES 
+
+1.  CHILDS, 
+
+D.  L.  Feasibility 
+
+-a  general  structure 
+relation.  Proc. 
+Amsterdam, 
+
+p.  162-172. 
+R.  E.,  AND  MARON, 
+execution 
+
+inference 
+11  (Nov.  1967),  715-721. 
+
+2.  LEVEIN, 
+
+of  a  set-theoretical 
+based  on  a  reconstituted 
+
+of 
+IFIP  Cong.,  1968,  North  Holland  Pub.  Co., 
+
+data  structure 
+definition 
+
+M.  E.  A  computer 
+
+system 
+
+and  data 
+
+retrieval. 
+
+Comm.  ACM 
+
+for 
+10, 
+
+3.  BACHMAN, 
+
+C.  W.  Software 
+
+for 
+
+random 
+
+access  processing. 
+
+Datumation 
+
+(Apr.  1965),  3641. 
+
+4.  MCGEE,  W.  C.  Generalized 
+in  Automatic 
+
+view 
+New  York,  1969,  pp.  77-149. 
+
+Programming 
+
+file  processing. 
+
+In  Annual 
+
+6,  13,  Pergamon 
+
+Re- 
+Press, 
+
+5.  Information 
+
+Management 
+
+tion  Manual  H20-0524-1. 
+July  1968. 
+
+System/360,  Application 
+Descrip- 
+IBM  Corp.,  White  Plains,  N.  Y., 
+
+6.  GIS 
+
+(Generalized 
+
+Information 
+
+tion  Manual 
+1965. 
+
+H20-0574. 
+
+System),  Application 
+
+Descrip- 
+IBM  Corp.,  White  Plains,  N.  Y., 
+
+R.  E.  Treating 
+time-shared 
+
+7.  BLEIER, 
+SDC 
+Proc.  ACM 
+Wayne,  Pa.,  pp.  41-49. 
+
+hierarchical 
+data  management 
+
+data  structures 
+system 
+
+(TDMS). 
+22nd  Nat.  Conf.,  1967,  MD1  Publications, 
+
+in  the 
+
+A. 
+
+9.  CHURCH, 
+
+8.  IDS  Reference  Manual  GE  625/635,  GE 
+Pheonix,  Ariz.,  CPB  1093B,  Feb.  1968. 
+to  Mathematical 
+Introduction 
+ton  U.  Press,  Princeton,  N.J.,  1956. 
+J.  A.,  AND  ROVNER, 
+ative  language.  Stanford  Artificial 
+Aug.  1,  1968. 
+
+10.  FELDMAN, 
+
+An 
+
+Inform.  Sys.  Div., 
+
+Logic 
+
+I.  Prince- 
+
+P.  D.  An  Algol-based 
+
+associ- 
+Intelligence  Rep.  AI-66, 
+
+Volume 
+
+13 
+
+/  Number 
+
+6 
+
+/  June, 
+
+1970 
+
+Communications 
+
+of 
+
+the 
+
+ACM 
+
+38’7 
+
+

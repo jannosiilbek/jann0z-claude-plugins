@@ -1,0 +1,43 @@
+Aggregate Design Canvas
+
+1. Name
+
+3. State Transitions
+
+2. Description
+
+4. Enforced Invariants
+
+6. Handled Commands
+
+8. Throughput
+
+Average Maximum
+
+Command handling rate  
+
+Total number of clients  
+
+Concurrency conflict chance  
+
+5. Corrective Policies
+
+7. Created Events
+
+9. Size
+
+Average Maximum
+
+Event growth rate  
+
+Lifetime of a single instance  
+
+Number of events persisted  
+
+Aggregate Design Canvas v1.1 designed by Kacper Gunia & Domain- Driven Design Crew.
+For more information visit https://github.com/ddd- crew/aggregate- design- canvas.
+
+This work is licensed under a Creative Commons Attribution 4.0 International License, CC BY 4.0.
+To view a copy of the license, visit https://creativecommons.org/licenses/by/4.0/.
+
+

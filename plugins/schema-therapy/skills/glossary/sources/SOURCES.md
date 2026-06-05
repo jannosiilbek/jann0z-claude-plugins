@@ -8,7 +8,7 @@ content. All validation performed on **2026-06-04**.
 
 | Title | Version / Edition | Publication status | Publication date | Canonical URL | Class | Validation date |
 |---|---|---|---|---|---|---|
-| Evans — *DDD Reference: Definitions and Pattern Summaries* ([local text](./evans-ddd-reference-2015-03.txt), [local PDF](./evans-ddd-reference-2015-03.pdf)) | 2015-03 (first & only print edition; CC BY 4.0) | Final / current — newest published edition | March 2015 (© 2015) | <https://www.domainlanguage.com/ddd/reference/> | gatherable | 2026-06-04 |
+| Evans — *DDD Reference: Definitions and Pattern Summaries* ([local text](./evans-ddd-reference-2015-03.txt)) | 2015-03 (first & only print edition; CC BY 4.0) | Final / current — newest published edition | March 2015 (© 2015) | <https://www.domainlanguage.com/ddd/reference/> | gatherable | 2026-06-04 |
 | Fowler — *Ubiquitous Language* (bliki) ([notes](./fowler-bliki-notes.md)) | Single canonical version | Final / live | 31 Oct 2006 | <https://martinfowler.com/bliki/UbiquitousLanguage.html> | cite-only (notes + verbatim quotes stored) | 2026-06-04 |
 | Fowler — *Bounded Context* (bliki) ([notes](./fowler-bliki-notes.md)) | Single canonical version | Final / live | 15 Jan 2014 | <https://martinfowler.com/bliki/BoundedContext.html> | cite-only (notes + verbatim quotes stored) | 2026-06-04 |
 | ddd-crew — *Bounded Context Canvas* README ([local copy](./ddd-crew-bounded-context-canvas-readme.md)) | Canvas v5 | Living document — current; last pushed 2026-05-17 | n/a (continuously maintained) | <https://github.com/ddd-crew/bounded-context-canvas> | gatherable | 2026-06-04 |
@@ -23,6 +23,8 @@ gathered README reflects the master branch at validation date.
 
 **Executable sources:** none. Verified — this domain (ubiquitous language / glossaries)
 has no executable spec or runnable artifact.
+
+PDF originals replaced by plain-text extractions for plugin shipping; canonical URLs above remain the authoritative format.
 
 ## Exclusions
 

@@ -17,8 +17,9 @@ implied. See the upstream LICENSE for full terms.
 
 ## Classic papers
 
-The PDFs and HTML of Codd 1970, Chen 1976, and Kent 1983 are stored from
-public/author-hosted mirrors for research reference. Copyright remains with the
+The plain-text extractions and HTML of Codd 1970, Chen 1976, and Kent 1983 are
+stored from public/author-hosted mirrors for research reference (the PDF
+originals were replaced by plain-text extractions for plugin shipping). Copyright remains with the
 respective authors / ACM. The Kent 1983 HTML retains its original ACM
 permission-to-copy notice (copies for personal/classroom use permitted with
 citation). These are gathered under fair-use/research-reference grounds; consult

@@ -1,6 +1,13 @@
 ---
 name: event-storming
-description: Step 1 of the schema-therapy modelling pipeline. Use this to "event storm" the upstream impact map (specs/00-impact-map.md) plus a free-text domain description into the validated artifact specs/01-event-storming.md — the domain events, actors, hotspots, and per-aggregate lifecycle skeletons that the downstream schema-therapy skills (glossary → aggregates → erd → statecharts → gherkin) consume. Trigger when the user says "run the schema-therapy pipeline", "start the modelling pipeline", "event storm this domain", "produce 01-event-storming.md", or hands a domain write-up (and its impact map) to model. NOT a general BDD/Gherkin, glossary, or ERD authoring tool — adjacent plugins own that ground; this skill owns only the EventStorming big-picture artifact at the head of the chain.
+description: >-
+  Step 1 of the schema-therapy modelling pipeline — produces
+  specs/01-event-storming.md (domain events, actors, hotspots, per-aggregate
+  lifecycle skeletons). Trigger: "run the schema-therapy pipeline", "start the
+  modelling pipeline", "event storm this domain", "produce 01-event-storming.md",
+  or when handed a domain write-up (and its impact map) to model. NOT a general
+  BDD/Gherkin, glossary, or ERD authoring tool — owns only this pipeline
+  artifact.
 ---
 
 # event-storming

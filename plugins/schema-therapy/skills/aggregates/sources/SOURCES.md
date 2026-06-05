@@ -23,14 +23,16 @@ No **executable** sources exist for this domain (verified — aggregate design i
 
 ## Gathered files (relative links)
 
-- [`ddd-reference-2015-03.pdf`](./ddd-reference-2015-03.pdf) — full 59-page reference, downloaded, complete, verified author/year/license on p.1.
-- [`vernon-effective-aggregate-design-part-1.pdf`](./vernon-effective-aggregate-design-part-1.pdf) — 6 pp, complete.
-- [`vernon-effective-aggregate-design-part-2.pdf`](./vernon-effective-aggregate-design-part-2.pdf) — 5 pp, complete.
-- [`vernon-effective-aggregate-design-part-3.pdf`](./vernon-effective-aggregate-design-part-3.pdf) — 5 pp, complete.
+- [`ddd-reference-2015-03.txt`](./ddd-reference-2015-03.txt) — full 59-page reference, downloaded, complete, verified author/year/license on p.1.
+- [`vernon-effective-aggregate-design-part-1.txt`](./vernon-effective-aggregate-design-part-1.txt) — 6 pp, complete.
+- [`vernon-effective-aggregate-design-part-2.txt`](./vernon-effective-aggregate-design-part-2.txt) — 5 pp, complete.
+- [`vernon-effective-aggregate-design-part-3.txt`](./vernon-effective-aggregate-design-part-3.txt) — 5 pp, complete.
 - [`aggregate-design-canvas-readme.md`](./aggregate-design-canvas-readme.md) — full README (canvas sections + guidance), downloaded from `master`.
-- [`aggregate-design-canvas-v1.1.pdf`](./aggregate-design-canvas-v1.1.pdf) — current canvas template (superseded v1 deleted).
+- [`aggregate-design-canvas-v1.1.txt`](./aggregate-design-canvas-v1.1.txt) — current canvas template (superseded v1 deleted).
 - [`fowler-ddd-aggregate-bliki-notes.md`](./fowler-ddd-aggregate-bliki-notes.md) — faithful note-capture (page, not a download).
 - [`cite-only-commercial-books.md`](./cite-only-commercial-books.md) — bibliographic identity + public-surrogate pointers for the two commercial books.
+
+PDF originals replaced by plain-text extractions for plugin shipping; canonical URLs above remain the authoritative format.
 
 ## Validation notes
 

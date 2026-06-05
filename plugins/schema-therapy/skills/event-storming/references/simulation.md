@@ -12,6 +12,22 @@ check below cites the catalog rule ID(s) it mechanizes. **The catalog is the rev
 vocabulary; this file is the executable harness over it.** No check here exists without a
 catalog rule behind it.
 
+## Index
+
+Open the section the verdict points at; an agent debugging a `malformed`/`broken-test`/`upstream-defect` result can locate the right section from this table alone.
+
+| § | Title | What you find |
+|---|-------|---------------|
+| §0 | Oracle summary | status taxonomy + the `upstream-defect` finding class + 00-seam authority |
+| §1 | Tooling record | runtime, entry points (incl. `--upstream-00`), parser rationale |
+| §2 | Lint checks | structural `L*` checks + `malformed` vs `fail` + sentinel definition |
+| §3 | Closed fixture / scenario format | derived graph, shipped illegal fixtures, pinned 00 format (seam authority) |
+| §4 | Closed assertion grammar | resolution / exact-value / negative / agent-judged check vocabulary |
+| §5 | Coverage floor & reconciliation | intake/edge counts, seam edges, positive+negative mapping |
+| §6 | Agent-judged checks | semantic `AJ*` checks + closed verdict schemas |
+| §7 | Output contract | stdout JSON shape, exit codes, finding `locus` routing |
+| §8 | Determinism | no clock/randomness; byte-identical re-runs |
+
 ## 0 — Oracle summary (doctrine §2)
 
 - **No engine, no executable corpus.** EventStorming is a whiteboard notation with an

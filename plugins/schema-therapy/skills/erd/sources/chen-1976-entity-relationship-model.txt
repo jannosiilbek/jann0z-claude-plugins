@@ -1,0 +1,1536 @@
+LIBRARY
+
+OF THE
+MASSACHUSETTS INSTITUTE
+OF TECHNOLOGY
+
+.28
+
+1414
+
+MAY 18 1977
+Ji/BRARie*.
+
+Center for Information Systems Research
+Massachusetts Institute of Technology
+Alfred P Sloan School of Management
+50 Memorial Drive
+Cambridge, Massachusetts, 02139
+
+617 253-1000
+
+THE ENTITY-RELATIONSHIP MODEL:
+TOWARD A UNIFIED VIEW OF DATA
+
+By
+
+Peter Pin-Shan Chen
+
+CISR No. 30
+
+WP
+
+913-77
+
+March
+
+1977
+
+.(Vvsi4
+
+M.I.T. LIBRARIES
+MAY 1 8 1977
+RE'JtlvLiJ
+
+The Entity-Relationship Model—Toward a
+Unified View of Data
+
+PETER PIN-SHAN CHEN
+
+Massachusetts Institute of Technology
+
+A data model, called the entity-relationship model, is proposed. This model incorporates some of
+the important semantic information about the real world. A special diagrammatic technique is
+introduced as a tool for database design. An example of database design and description using
+the model and the diagrammatic techniciuc is given Some implications for data integrity, infor-
+mation retrieval, and data manipulation are discussed.
+
+The entity-relationship model can be used as a basis for unification of dilTcrent views of data:
+the network model, the relational model, and the entity set model. Semantic ambiguities in lhe.se
+models are analyzed. Po.ssible ways to derive their views of data from the entity-relationship
+model are presented.
+
+Key Words and Phrases: database design, logical view of data, semantics of data, data models,
+entity-relationship model, relational model. Data Base Task Group, network model, entity set
+model, data definition and manipulation, data integrity atid consistency
+CR Categories: S.oO, 3.70, 4.33, 4.34
+
+1. INTRODUCTION
+
+The logical view of data has been an important i.s.siie in recent years. Three major
+data models have been proposed; the network nnjdel [2, 3, 7], the relational model
+[8], and the entity set model [25]. These models have their own strengths and
+weaknesses. The network model provides a more natural view of data by separating
+entities and relationships (to a certain extent), but its capabilitN- to acnieve data
+independence has been challenged [8]. The relational model is based oii relational
+theory and can achieve a high degree of data independence, but it may lose some
+important semantic information about the real world [12, 15, 23]. The entity set
+model, which is based on set theory, also achieves a high degree of data inde-
+pendence, but its viewing of values such as "3" or "red" may not be natural to
+some people [25].
+
+This paper presents the entity-relationship model, which has most of the ad-
+vantages of the above three models. The entity-relationship model adopts the
+more natural view that the real world consists of entities and relationships. It
+
+Copyright © 1976, Association for Computing Machinery, Inc. General permission tc republish,
+but not for profit, all or part of this nuilerial is granted provided that .\CM's copyright notice is
+given and that reference is made to ihe publication, to its date of issue, and to the fact that
+reprinting privileges were granted by permission of (he .Association for Computing Machinery.
+A version of this paper waa presented at the Intermitional Conference on Very Large Data Hases,
+Framingham, Maas , Sept. 22-24, l!)","!.
+Author's address: Center for Information System Research, Alfred P. Sloan School of Manage-
+ment, Massachusetts Institute of Technology, Cambridge, MA 02139.
+
+ACM Transactions on Datubaee Systems, Vul I. No I, Mnrcft l'.17C., Pages 9-.3li
+
+073119^2
+
+:
+
+)
+
+10
+
+•
+
+p. P.-S. Chen
+
+iiu'Drponitos stmio of the important semantic information about tlip real world
+(other work in database scniantics can be fouiul in [1, 12, 1'), '21, '2'.i, and '-"•]).
+The model can achieve a liijih degree of data independence and is based on set
+theory and relation theor\'.
+
+The entity-relationship model can be used as a basis for a unified view of data.
+Most work in the jiast has emphasized tlu' difference between the network incjdel
+and tlie relati<;nal model [22]. Recentlj', several attempts have been macJe to
+reduce the differences of the three data n\odels [4, 19, 20, HO, 31]. This paper u.ses
+the entity-relationship model as a framework from which t'le three existing data
+models may be derived. The reader may view the entity-relationship model as a
+generalization or extension of existing models.
+
+This jiapcr is organized into three parts (Sections 2-4). Section 2 introduces
+the entity-relation.ship model using a framework of multilevel views of data.
+Section 3 describes the semantic information in the model and its implications for
+data description and data manipulation. A special diagrammatric technique, the
+entity-relationship diagram, is introduced as a tool for database design. Section 4
+analyzes tlic network model, the relational model, and the entity set model, and
+describes how they may be derived from the entity-relationship model.
+
+2. THE ENTITY-RELATIONSHIP MODEL
+
+2.1 Multilevel Views of Data
+
+In the study of a data model, we should identify the levels of logical views of data
+with which the model is concerned. Extending the framework developed in [IS, 25],
+we can identify four levels of views of data (Figure 1)
+
+(1) Information concerning entities and relationships which exist in our minds.
+(2) Information structure—organization of information in which entities and
+
+relationships are represented by data.
+
+(3) Access-path-independent data structure^the data structures whicli are not
+
+involved w ith search schemes, indexing schemes, etc.
+
+(4) Acce.s.s-path-dependent data structure.
+In the f(jllowing sec t ions, we shall tievelop the entity-relationship model step by
+Step for the first two levels. As we shall see later in the paper, the network model,
+as currently implement«'d, is mainly concerned with level 4; the relational model is
+mainly concerned with levels 3 and 2; the entity set model ii mainly i(incerned
+with levels 1 and 2.
+
+2.2 Information Concerning Entities and Relationships (Level 1
+At this level we consider entities and relationships. An enlity is a "thing" which
+can be distinctly identified. A specihc person, company, or event is an example of
+an entity. A relationshii) is an association among entities. For instance, "father-son"
+is a relationship between two "person" entities.'
+
+•It is possible that some people tuny view something (e.g. marriage) as an entity while other
+people may view it a-s a relalionsliip We think that this is a decision which hits to be made by
+the enterpri.se administrator [27]. lie should dotine what are entities and what are relationships
+so that the distinction is suitable for his cnvironinenl.
+
+ACM Transuchoiis on Database Syslem.i. Vol. 1, No 1, March 1970.
+
+The Entity-Relationship Model
+
+LEVELS OF LOGICAL VIEWS
+
+MODELS
+
+ENTITY-RELATIONSHIP NETWORK RELATIONAL ENTITY-SET
+
+LEVEL I
+
+INFORMATION CONCERNING
+ENTITIES AND
+RELATIONSHIPS
+
+ENTITIES
+ENTITY SETS
+RELATIONSHIPS
+RELATIONSHIP SETS
+
+LEVEL 2
+
+ATTRIBUTES
+VALUES
+VALUE SETS
+ROLES
+
+I
+
+INFORMATION STRUCTURE
+
+ENTITY/RELATIONSHIP^
+RELATION -•
+
+ENTITIES
+RELATIONSHIPS
+
+ATTRIBUTES
+VALUES
+
+I
+
+I
+
+I
+
+.[---^
+3NF
+
+""•
+SIMILAR-»-RELATIONS
+
+I
+
+ENTITIES
+ENTITY SETS
+ROLES
+
+ENTITY
+DESCRIPTION
+SETS
+
+LEVEL 3
+
+ACCESS- PATH-
+INDEPENDENT
+DATA STRUCTURE
+
+LEVEL 4
+
+ACCESS -PATH-
+DEPENDENT
+DATA STRUCTURE
+
+ENTITY-RELATIONSHIP
+DIAGRAM
+
+I
+
+TABLE
+
+DECOMPOSITION
+
+APPROACH
+
+RELATIONS
+(TABLES)
+
+RECORDS
+DATA-STRUCTURE-
+SETS
+
+DATA-STRUCTURE-
+DIAGRAM
+
+Fig. 1. Analysis of data models using multiple levels of logiral views
+
+The database of an enterprise contains relevant information concerning entities
+and relationships in which the enterprise is interested. A complete description of
+an entity or relationship may not be recorded in the database of an enterprise.
+It is impossible (and, perhaps, unnecessary) to record every pote.itiahy available
+piece of information about entities and relationships. From iif)\v on, we shall
+consider only the entities and relationships (and the information concerning them)
+which are to enter into the design of a database.
+
+2.2.1 Entity and Entity Set. Let e denote an entity which exists in our minds.
+Entities are classified into different enllti/ nets such as EMPLOYEE, PROJECT,
+and DEPARTMENT. There is a predicate associated with each entity set to test
+whether an entity belongs to it. For example, if we know an entity is in the entity
+set EMPLOYEE, then we know that it has the properties common to the other
+entities in the entity set EMPLOYEE. Among these properties is the afore-
+mentioned test predicate. Let /?, denote entity sets. Xotc that entity .sets may not
+be nmtually disjoint. For example, an entity which belongs to the entity set AfALE-
+PERSON' also belongs to the entity set PERSON. In this case, ^LVLE-PERSON
+is a subset of PERSON.
+
+2.2.2 Relationshij), Itole, and Relationship Set. Consider a.s.sociations among
+entities. A relationship set, R„ is a mathematical relation ['>] among n entities,
+ACM 'I'ransactions (m Database Systems. \'ol. I, No 1. .March I'JTO,
+
+12
+
+P. P.-S. Ch«n
+
+eiH'li taken I'ldin nii entity set;
+
+I [.''I. '•J,
+
+.
+
+.
+
+, «'»
+
+I
+
+I
+
+<•,
+
+I
+
+/•.',,
+
+I-..
+
+I
+
+/'.'.,
+
+.
+
+.
+
+, („ I
+
+/','„!,
+
+aiul eaeli tiipli' nl' eiitilii'S, [<'i, c...,
+X'cile tlint (lie /,', in tlie
+above (leiinit lull in:i\ mil he distinct, l''(ir exainpli', a "niairiane" is a leliit Kmsliip
+between two entities in tlie entity set I'l'lltSOX
+
+, c,, ], is :i iiinliiiiishiii
+
+.
+
+.
+
+,
+
+The roll' dl" an eiitilv in a relatiiiiislii|i is (lie Innclioii tliat
+
+it iieMuiius in
+
+llie
+
+relationsln|i
+
+"Illlsliaml" ami "wile" are roles
+
+The niilel ln^', nt iiililn:;
+
+in
+
+llie
+
+(lelinitiiin uf relal i<inslii|) (note tlial square Ixiukets were iiseili i;in lie ilio|i|>e(| il'
+
+roles of ent It les in tile relatioiislii|i are expiieil ly slated as iollows ('i, 'i,ra i j,
+r„ („), w llere '', is (he rule of r, in (he i eliitionslli|)
+
+.
+
+, .,
+
+'_*.'_'
+
+i 5 Attribute, \ aliii', and \'aliie Set. The inforiiiation about an iii(i(\ or a
+relationship is obtained by <ibservatioii or iiieaslireiiieiit , and is expn; id li\ a m(
+of a( t nbii(e-\'alne pairs. "I{", "red", "I'eter", and '.IoIiunoii ' are value:;
+\iililes
+are elassilied into dilTerent inlur xrls. such as Kl'd';'!', COl.t'lt, h'lKST \ \ MM,
+and LAST NAM I'',
+There is a predicate associated with each \aliie Mt to (est
+whether a value belongs to it. A value in a value set iiia\ be ei|iiivaleiit (o another
+l''or example, "I.!" in value sel l\('ll is ei|invaleiil
+value in ;i dilTeient value set
+to " 1" in value set I'l'll'l T.
+
+An (illnhuli- can be formally delined as a funition uhieli maps from an enlil\'
+
+set or a relationship set into a v.iluc set or a ('artesian produel of value .sets.
+
+/: H, or l{,
+
+r.or l., X V „ X ••• X l',„.
+
+Kiniire 2 ilhist rales some attributes delined on entity set I'l'lUSt )N. The ill tribute
+A(1M maps into value set/ NO ( )!''
+^ ivAKS, .An all ribute can map into a ( 'artesian
+i'"or example, the attribute N A M I'! maps into value .sets
+product, of value sets.
+KIUST NAMK, and I.AS'I' NAMl']. Note that more (han one attribute may map
+from the same entity set into the s.ame value .set (or same uronii of value sets).
+For example, NA.MI': and Al/l'I'lUN A 11 VI'! NAMIO map from the entity wt,
+KMl'LOVKK into value sets KIUHT NAMKand bAST NAMK Therefore, alt n
+bule and value set are tlilTerent concepts allliou)(li (hey may have the same name
+in some I'ases (for example, lOM l'l,( >N' hi!'; \() maps from MM I'bOV'iOl'; to value
+set I'lMI'liOVi'll'l NO). This (listinclion is mil clear in the network model and in
+many existing data management systems. Also note that an at tribute is delined as
+11 function. Therefore, it maps a ^iven entity to ii single value (or a single (uple of
+values it) the ease of a C'artesiaii product of value sets).
+
+Note that relationships also hav<> attributes
+
+( 'onsider the relationship set
+IMlOJKCr VVOlMxKH (i-'inure 'A). The attribute IM';i{( 'KN'I'Af M'l Ol' 11 M K,
+which is the portion of time a particular employee is (committed to a particular
+projei't, IS an attribute delined on the relationship set i'UO.II'.t 'T WOK K I'dt,
+is neither an attribute of IvVI I'bOYI'M'; nor an attribute of I'UX ).ll';( 'T, since its
+meaniuK dependH on both the employee and project involved. The concept of
+attribute of relationship is important in understatidinK the semantics of <latii ami
+in dctermimtiK the fimclionid dependencies anions dala.
+
+It
+
+'2.2A (Conceptual Information Structure. We an- now concerned with how to
+ornniiize the inforni.ition associated with entities and relationships The method
+proposed in this pa[ier is to separate the inf<irnialioii about entities from the iiifor-
+
+AC'M I riliuiiotloiiii .,11 IlKliilinnii Syiilrinii, V'.l
+
+I, No I, Mitroli 1117)1
+
+The Entity-Relationship Model
+
+13
+
+ENTITY SET
+
+ATTRIBUTES
+
+VALUE SETS
+
+El
+
+(EMPLOYEE)
+
+(EMPLOYEE-NO)
+
+Fig. 2. Attributes defined on the entity set PERSON
+
+nation about relationships. We shall see that this separation is useful in identifying
+functional dependencies among data.
+
+Figure 4 illustrates in table form the information about entities in an entity set.
+Each row of values is related to the same entity, and each column is related to a
+value set which, in turn, is related to an attribute. The ordering of rows and columns
+
+is insignificant.
+
+Figure 5 illustrates information about relationships in a relationship set. Note
+that each row of values is related to a relationship which is indicated by a group
+of entities, each having a specific role and belonging to a specific entity set.
+
+Note that Figures 4 and 2 (and also Figures ;') and 3) are different forms of the
+same information. The table form is used for easily relating to the relational model.
+ACM TransBOtiuiia on DutabaK Systems, VoL I, No. 1. March 1976.
+
+14
+
+P. P.-S. Chen
+
+ENTITY SETS
+
+RELATIONSHIP SETS
+
+ATTRIBUTE
+
+VALUE SET
+
+(EMPLOYEE)
+
+Fig. 3. Attributes defined on the relationship set PKOJECT- WORKER
+
+2.3 Information Structure (Level 2)
+
+The entities, relationships, and values at level 1 (see Figures 2- 5) are eoiieeptiial
+objects in our minds (i.e. we were in the conceptual realm [1<S, 27]). At level 2,
+we consider representations of conceptual objects. We assume that there exist
+direct representations of values. In the following, we shall describe how to represent
+entities and relationships.
+
+2.3.1 Primary Key. In Figure 2 the values of attribute EMPLOYEE-NO can
+be used to identify entities in entity set EMPLOYEE if each employee has a
+different employee number. It is possible that more than one attribute is needed
+to identify the entities in an entity set. It is also possible that several groups of
+attributes may be used to identify entities. Basically, an entity key is a group of
+attributes such that the mapping from the entity set to the corresponding group
+of value sets is one-to-one. If we cannot find such one-to-one mapping on available
+data, or if simplicity in identifying entities is desired, we may define an artificial
+attribute and a value set so that such mapping is possible. In the case where
+
+ACM Transactions un Database Systems, Vol. 1. No. 1, March 1976.
+
+The Entity-Relationship Mociel
+
+•
+
+15
+
+16
+
+P. P.-S. Chen
+
+EMPOYEE-NO
+
+EMPLOYEE-NO
+
+AGE
+
+Fig. 6. Representing entities by values (employee numbers)
+
+several keys exist, we usually choose a seniantically meaningful key as the entity
+primary key (PK).
+
+P'igure 6 is obtained by merging the entity set EMPLOYEE with value set
+EMPLOYEE- NO in Figure 2. We should notice some semantic implications of
+Figure 6. Each value in the value set EMPLOYEE-NO represents an entity
+(employee). Attributes map from the value set EMPLOYEE-XO to other value
+sets. Also note that the attribute EMPLOYEE-NO maps froni the value set
+EMPLOYEE-NO to itself.
+
+2.3.2 Entity/Relationship Relations. Information about entities in an entity
+set can now be organized in a form shown in Figure 7. Note that Figure 7 is similar
+to Figure 4 except that entities are represented by the values of their primary
+keys. The whole table in Figure 7 is an entity relation, and each row is an entity
+
+tuple.
+
+Since a relationship is identified by the involved entities, tlie primary key of a
+relationship can be represented by the primary keys of the involved entities. In
+
+ACM Transactiona on Database SysteniB, Vol. 1, No. J, Maroti 1976
+
+The Entity-Relationship Model
+
+17
+
+ATTRIBUTE
+
+VALUE SET
+(DOMAIN)
+
+ENTITY
+(TUPLE)
+
+18
+
+P. P.-S. Chen
+
+PRIMARY
+
+ENTITY
+RELATION NAME
+
+ROLE
+
+ENTITY
+ATTRIBUTE
+
+VALUE SET
+(DOMAIN)
+
+ENTITY
+TUPLE
+
+The Entity-Relationship Model
+
+19
+
+EMPLOYEE
+
+WORKER /PROJECT-
+WORKER
+
+PROJECT
+
+PROJECT
+
+ENTITY SET
+
+RELATIONSHIP
+SET
+
+ENTITY SET
+
+Fig. 10. A simple entity-relationship diagram
+
+3. ENTITY-RELATIONSHIP DIAGRAM AND INCLUSION OF SEMANTICS ll'<
+
+DATA DESCRIPTION AND MANIPULATION
+
+3.1 System Analysis Using the Entity-Relationship Diagram
+
+In this section we introduce a diagrammatic technique for exhibit ing entities and
+relationslii[)s: the entity-relationship diagram.
+
+Figure 10 illustrates the relationship set PROJECT-WORKKR and the entity
+sets EMPLOYEE and PROJECT using this diagrammatic tecluiitiue Each entity
+set is represented by a rectangular box, and each relationship .set is represented by
+a diamond-shaped box. The fact that the relationship set PROJECT-WORKER
+is defined on the entity sets EMPLOYEE and PROJECT is represented by the
+lines connecting the rectangular boxes. The roles of the entities in the relationship
+are stated.
+
+DEPARTMENT
+
+SUPPLIER
+
+M^XTPROJ-WORtOv^ N
+
+EMPLOYEE
+
+PROJECT
+
+PART
+
+PROJ-
+.MANAGER
+
+<^MP-DEP^
+
+DEPENDENT
+
+<^MPONENT>
+
+Fig. U. An entity-relationship iliagram for analy.sis of infonnalioii in a manvif.icturing firm
+ACM Traiiauolions on Database Sysletiis, Vol 1. No 1. March 197b.
+
+IaJji^ i^y--^
+
+20
+
+•
+
+P. P.-S. Chen
+
+Figure 11 illustrates a more complete diagram of some entity sets and relationship
+sets which niif^ht be of interest t(j a manufacturing company. DEPARTMl^XT,
+EMPLOYEE, DEPENDENT, PROJECT, SUPPLIER, and PART are entity
+sets. DEPARTMENT EMPLOYEE, EMPLOYEE-DEPENDENT, PROJECT-
+WORKER, PROJECT MANAGER, SIPPLIER PROJECT PART, PRO-
+JECT-PART, and CONfPONENT arc relationship sets. The COMPONENT
+relationship describes what subparts (and quantities) are needed in making super-
+parts. The meaning of the other relationshij) sets need not b^^ explained.
+
+Several important eharaeteristics about relationships in general can be found in
+
+Figure 11:
+
+( 1 ) A relationship set may be defined on more than two entity sets. For example,
+the SUPPLIER-PROJECT-PART relationship set is defined on three entity sets:
+SUPPLIER, PROJECT, and PART.
+
+(2) A relationship .set may be defined on only one entity set. For example, the
+
+relationship set COMPONENT is defined on one entity set, PART.
+
+(3) There may be more than one relationship set defined on given entity sets.
+For example, the relationship sets PROJECT WORKER and PROJECT
+MANAGER are defined on the entity sets PROJECT and EMPLOYEE.
+
+(4) The diagram can distinguish between l:*i, m:n, anr! 1:1 mappings. The
+relationship set DEPARTMENT-EMPLOYEE is a \:n mapping, that is, one
+department may have n (^J = 0, 1, 2, .
+. .) emploj'ees and each employee works for
+only one department. The relationship set PROJECT-WORKER is an ?»:/i
+mapping, that is, each project may have zero, one, or more employees assigned to
+it and each employee may be a.ssigned to zero, one, or more projects. It is also
+possible to express 1:1 mappings such as the relationship set MARRIAGE. Infor-
+mation about the number of entities in each entity set which is allowed in a relati(jn-
+ship set is indicated by specifying "1", "m", "n" in the diagram. The relational
+model and the entity set modeFdo not include this type of information; the network
+model cannot express a 1 : 1 mapping easily.
+
+(5) The diagram can express the existence dependency of one entity tj'pe on
+another. For example, the arrow in the relationship set EMPLOYEE-DEPEND-
+ENT indicates that existence of an entity in the entity set DEPENDENT de-
+pends on the corresponding entity in the entity set EMPLOYEE. That is, if an
+employee leaves the cf)mpany, his dependents may no longer be of interest.
+
+Note that the entity set DEPENDENT is shown as a special rectangular box.
+This indicates that at level 2 the information about entities in this set is organized
+as a weak entity relation (using the primary key of EMPLOYEE as a part of its
+primary key).
+
+3.2 An Example of a Database Design and Description
+
+There are four steps in designing a database using the entity-relationship model:
+(1) identify the entity sets and the relationship sets of interest; (2) identify
+semantic information in the relationship sets such as whether a certain relationship
+
+' This mapping information is included in DIAM II [24].
+
+ACM Transactiona on Database Systems, Vol. 1, No. 1, March 1970.
+
+The Entity-Relationship Model
+
+21
+
+set is an l:n mapping; (3) define the value sets and attributes; (4) organize data
+into entity relationship relati(jns and decide primary keys.
+
+Let us use the manufacturing company discussed in Section 3.1 as an examjile.
+The results of the first two steps of database design are expressed in an entity-
+relationship diagram as shown in Figure 11. The third step is to define value sets
+and attributes (see Figures 2 and 3). The fourth step is to decide the primary
+keys for the entities and the relationships and to organize data as entity/relation-
+ship relations. Xote that each entity/relationship set in Figure 11 has a corre-
+sponding entity relationship relation. We shall use the names of the entity sets
+(at level 1) as the names of the corresponding entity/relationship relations (at
+level 2) as long as no confusion will result.
+
+At the end of the section, we illustrate a schema (data definition) for a .>mall
+part of the database in tin- above manufacturing coni|)any example (the syntax
+of the data definition is not important). Note that value sets are (lefiiicii with
+specifications of representations and allowable values. For example, values in
+EMPL(^YEE-XO are represented as 4-digit integers and range from
+to 2000.
+We then declare three entity relations: EMPLOYEE, PROJECT, and DE-
+PEXDEXT. The attributes and value sets defined on the entity setj as well as
+the primary keys are stated. DEPEXDEXT is a weak entity relation since it uses
+EMPLOVEE.PK as part of its primary key. We also declare two relationship
+relations: PROJECT -WORKER and EMPLOYEE-DEPEXDEXT. The roles
+and involved entities in the relationships are specified. We use EMPIjOYEE.PK
+to mdicate the name of the entity relation (EMPLOYEE) and whatever attribute-
+value-set pairs are used as the primary keys in that entity relation. The maximum
+number of entities from an entity set in a relation is stated. For example, PR(3JECT-
+WORKER is an m:n mapping. We may specify the values of ni and n. We may
+also specify the minimum number of entities in addition to the maximum number.
+EMPLOYEE-DEPEXDEXT is a weak relationship relation since jne of the
+related entity relations, DEPEXDEXT, is a weak entity relation. No^e that the
+existence dependence of the dependents on the supporter is also stated.
+
+DECLARE
+
+:
+
+:
+
+22
+
+P. P.-S. Chen
+
+DECLARE
+
+REGULAR ENTITY R ELATION PROJECT
+ATTHIBUTE/VALUE-SET
+
+PROJECT-NO/PHOJECT-NO
+
+PRIMARY KEY;
+
+PROJECT-NO
+
+DECLARK
+
+REGULAR RELATIONSHIP RELATION PROJECT-WORKER
+ROLE/ENTITY-RELATION. PK/MAX-NO-OF-ENTITIE.S
+
+W0RKEl{7l<;MPL0YEE.PK/m
+PROJECT/ PROJECT.PK/n
+
+(m;n mapping)
+
+ATTRIBUTE/VALUE-SET :
+
+PERCENTAGE-OF-TIME/PERCENTAGE
+
+DECLARE
+
+WEAK RELATIONSHIP RELATION EMPLOYEE-DEPENDENT
+ROLE/ENTITY-RELATION. PKM A X-NO-OF-ENTITIES
+
+SUPPORTER/EMPLOYEE.Pk/I
+DEPENDENT/DEPENDENT.PK 'n
+EXISTENCE OF DEPENDENT DEPENDS ON
+EXISTENCE OF SUPPORTER
+
+DECLARE
+
+WEAK ENTITY RELATION DEPENDENT
+ATTR I BUTE /VALUE-SET
+
+NAME/FIRST-NAME
+AGE/NO-OF-YEARS
+
+PRIMARY KEY:
+NAME
+EMPLOYEE.PK THROUGH EMPLOYEE-DEPENDENT
+
+3.3 Implications on Data Integrity
+
+Some work has been done on data integrity for other models [8, 14, 16, 28]. With
+explicit concept.s of entity arul relationship, the entity-relationship model will be
+useful in understanding and specifying constraints for maintaining data integrity.
+For example, there are three major kinds of constraints on values:
+
+(1) Constraints on allowable, values for a value set. This point was diseu.ssed in
+
+defining the schema in Section 3.2.
+
+(2) Constraints on perjuitled values for a certain attribute. In some cases, not
+all allowable values in a value set are permitted for some attributes. For example,
+we may have a restriction of ages of employees to between 20 and 65. That is,
+
+AGE(el e (20,05), where e € EMPLOYEE.
+
+Note that we use the level 1 notations to clarify the semantics. Since each entity/
+relationship set has a corresponding entity/relationship relaticjn, the above expres-
+sion can be easily translated into level 2 notations.
+
+(3) Constraints on existing values in the database. There are two types of
+
+constraints:
+
+(i) Constraints between sets of existing values. For example,
+
+|NAME(t) I
+
+e f MALE -PERSON I C jNAME(e) | e £ PERSON).
+
+ACM Transactions on Databane Systems, Vol. I, No. 1, March 1976.
+
+The Entity-Relationship Model
+
+•
+
+23
+
+(ii) Constraints between particular values. For example,
+
+TAX(e) < SALARY (f), e € EMPLOYEE
+
+or
+
+BUDGET(€,) =X;BUDGET(f;), where f. € COMPANY
+
+e, t DEPARTMENT
+
+and Ce„f,] t COMPANY-DEPARTMENT.
+
+3.4 Semantics and Set Operations of Information Retrieval Requests
+
+The senianties of information retrieval requests beeonie ver\- elear if the requests
+are based on the etitity-relationship model of data. For clarit}-, we first diseu.ss
+the situation at levt^l 1. C'oneeptually, the information elcmrnts aif orgamzed as
+in Figures 4 and 5 (on Figures 2 and 3). ^lany information retrieval rec(Uests ean
+be considered as a combination of the following ba.sic types of <ipcrations:
+
+(.1) Selection of a subset of values from a value set.
+(2) Selection of a subset of entities from an entity set (i.e. selection of certain
+rows in Figure 4). Entities are selected b>' stating the values of certain attributes
+(i.e. subsets of value .sets) and or their relationships \Mth other entities.
+
+(3) Selection of a subset of relationsliips from a relationshij) set li.e. .selection
+of certain rows in Figure .')). Relationships are selected by stating *hc values of
+certain attribute(s) and or by identifying certain entities in the relaiionship.
+
+(4) Selection of a subset of attributes (i.e. .selection of columns in l-'ignres 4
+
+and 5).
+
+An information retrieval re(|uest like "What are the ages of the eni[ilo\ces whose
+weights are greater than 170 and who art' assigned to the project with PKO.II'X'T-
+NO 254?"' can be expressed as:
+
+|AGE(e) 1 e e EMPLOYEE, WEIGIlT(e) > 170,
+[e, e,] € PROJECT-WORKER, e, € PROJECT,
+PROJECT-NO (e,) =2541;
+
+or
+
+jAGE(EMPLOYEE) | WEIGHT(EMPLOYEE) > 170,
+[EMPLOYEE,PROJECT] P PROJECT-WORKER,
+PROJECT-NO(EMPLOYEE) = L'54).
+
+To retrieve information as organized in Figure 6 at level 2, "entities" and
+"relationships" in (2) and (3) should be replaced by "entity PK" and 'relationship
+PK." The above information retrieval request can be expressed as:
+
+lAGE(EMPLOYEE.PK) [ WEIGHT(EMPLOYEE.PK) > 170
+(WORKEH/EMPLOYEK.PK.PROJECT/PROJECT.PK) t | PROJECT-WORKER. PK|,
+PROJECT-NO (PR(XJECT.PK) = 254|.
+
+To retrieve information as organized in entit\- relationship relations 'Figures 7,
+
+8, and 9), we can express it in a SEyLKL-like language [(>]:
+
+SELECT
+FROM
+WHERE
+
+AGE
+EMPLOYEE
+WEIGHT > 170
+
+ACM Traii-'actions (in Tlatabase Systems, Vol 1. .S'o
+
+I. March CtTb
+
+24
+
+P. P.-S. Chen
+
+Table I. Insertion
+
+level 1
+
+The Entity-Relationship Model
+
+25
+
+Table III. Deletion
+
+level 1
+
+26
+
+P. P.-S. Chen
+
+ROLE
+
+DOMAIN
+
+TUPLE
+
+The Entity-Relationship Model
+
+27
+
+28
+
+.
+
+P. P.-S. Chen
+
+^ini^ ^""Z'Ti '^'P'f '''''''' '•^•^t'^d to description of entities or relationships
+femce an attribute is defined as a function, it maps an entity in an entity set to a
+single value in a value set (see Figure 2). At level 2, the values of the pr mlrv kev
+are used to represent entities. Therefore, nonkey value sets (domains) Trefunc'
+NO-OF vHrI -ir" 'r7'^' ^f ^ ^^'^ ^''' ^^'^"^'^'^' '" Figures Gand"7,
+AU Uf \ EARb ,s functionally dependent on EMPLOYEE-NO) Since a relation
+may have several keys, the nonkey value sets will functionally d pen'on a'k ,
+value set The key value sets will be mutually functional!; dependen" on each
+other. Similarly, in a relationship relation the nonkey value sets wi 1 be u ictLal v
+dependent on the prime-key value sets (for example, in Figure 8, PERtTVTAGF
+IS functionally dependent <.n EMPLOVEE-XO and PROJECT XO)
+(2) Functional dependencies related to entities in a reiation.ship. Xute tlc.t
+m Figure 11 we identify the types of mappings (1:., .,:., etc.) fo
+'""i"""snip
+p
+sets, l-or exampe, PROJECT-\r\\'Ar;PR i< > 1 •,
+-^ -^-NAt.hK IS a l.;( mapping. Let us assume that
+PROTFrT vn i
+PROJECT -XO IS the primary key in the entity relation PROJECT In the re-
+lationship re ation PROJECT-MANAGER, the value .set EMPLOYEE-NO Ji 1
+be functionally dependent on the value set PROJECT NO (i e ea.'h nroiect has
+only one manager).
+
+f "j^^ti u.i.-.
+
+relation
+
+ih
+
+^"
+
+t
+
+.
+
+The distmction between level 1 (Figure 2) and level 2 (Figures
+and 7) and
+he separation of entity relation (Figure 7) from relationship -elation (Figure 8)
+clarifies the semantics of functional dependencies among data
+
+of "rebt^"''^'^''"''""'
+of
+
+Versus Entity-Relationship Relations. From the definition
+relatu n, any grouping of domains can be considered to be a relation. To avoid
+undesirable properties in mamtaming relations, a normalization process is proposed
+to transform arbitrary relations into the first normal form, then into the second
+normal form, and finally into the third normal form (3NF) [9
+111 We shall
+show that the entity and relati<,nship relations in the entity-relationship model
+are similar to 3XF relations but with clearer semantics and without u'ng the
+transformation operation.
+Let us use a simplified version of an example of normalization described in [9]
+The following three relations are in first normal form (that is, there is no doniain
+whose elements are themselves relations) :
+
+^
+
+EMPLOYEE (EMPLOYEE-NO)
+PAKT (PART-NO, PAHT-DESCRIPTION. QUANTITY-ON-HAND)
+PART-PROJECT (PAKT-NO, PROJECT-NO, PROJECT-DESCRIPTION,
+
+PROJECT-MANAGER-NO, QUANTITY-COMMITTED).
+
+FMPmvp^ x-M ''r:''"
+ai^ uilderlined
+
+P.I^f^JECT-MANAGER-NO actually contains the-
+' '"'"' '"'"''"• '" '''" '"'''''''' ^'"^^•' •^'•'"^^'•>- '^^-^
+
+form'^'''"
+
+'"'""' ""'" ''P^'''''^ *" transform the relations above into third normal
+
+EMPLOYEE' ( EMPLOYEE-NO )
+PART- (PARjr-NO, PART^^ESCRIPTION, QUANTITY-ON-HAND)
+AC.\I Transactiona on Database .SystemB, Vul 1, No 1, March 1970.
+
+:
+
+The Entity-Relationship Model
+
+•
+
+29
+
+PROJECT' ( PROJECT-NO , PROJECT-DESCRIPTION, PROJECT-MANAGEli-NO;
+PART-PROJECT' ( PART-NO , PROJECT-NO , QUANTITY-COMMITTED;.
+
+Using the entity-relationship diagram in Figure 11, the following entity and
+
+relationship relations can be easily derived
+
+entity
+
+relations
+
+PART' ' ( PART-NO , PART-DESCRIPTION, QUANTITY-ON-HAND)
+PROJECT' ' ( PROJECT-NO , PROJECT-DESCRIPTION)
+EMPLOYEE ' '( EMPLOYEE-NO )
+
+relationship
+
+relations
+
+PART-PROJECT' ' (PART/PART-NO , PROJECT/PROJECT-NO ,
+QUANTITY-COMMITTED)
+
+PROJECT-MANAGER' ' ( PROJECT/PROJECT-NO ,
+
+MANAGER/EMPLOYEE-NO ).
+
+The role names of the entities in relationships (such as MANACiER) are indicated.
+Tiu" entity relation names associated with the PKs of entities in reiation.><hips and
+the value set names have been f)mitted.
+
+Xote that in the example above, entity, relationshiji relatioi\s are similar to the
+3NF relations. In the 3x\F approach, PROJECT-M AXAGER-NO is included in
+the relation PROJECT' since PROJECT-MANAGER-NO is assumed to be
+functionally dependent on PROJECT-NO. In the entity-relationship model,
+PROJECT-MANAGER NO (i.e. EMPLOYEE-NO of a project manager) is
+included in a relationship relation PROJECT-MANAGER since ExMPLOYEE-NO
+is considered as an entity PK in this case.
+
+Also note that in the 3NF approach, changes in functional dependencies of data
+may cause some relations not to be in 3NF. For example, if we make a new as-
+sumption that one project may have more than one manager, the relation
+PROJECT' is no longer a 3\F relation and has to be split into two relations as
+PROJECT" and PROJECT-MANAGER". Using the entity-relationship model,
+no such change is necessary. Therefore, we may say that by using the entity-
+relationship model we can arrange data in a form similar to 3NF relations but with
+clear semantic meaning.
+
+It is interesting to note that the decomposition (or transformation) approach
+described above for normalization of relations may be viewed as a bottom-up
+approach in database design.^ It starts with arbitrary relations (level 3 in Figure 1)
+and then uses some semantic information (functional dependencies of data) to
+transform them int(j 3NF relations (level 2 in Figure 1). The entity-relationship
+model adopts a top-down approach, utilizing the semantic information to organize
+data in entity/relationship relations.
+
+4.2 The Network Model
+
+4.2.1 Semantics of the Data-Structure Diagram. One of the best ways to explain
+the network model is by u.se of the data-structure diagram [3]. Figure 16(a) illus-
+trates a data-structure diagram. Ivich rectangular box represents a record type.
+
+'Although the dooomposition approach wa.s emphn-sized in the relationiil nwdcl litcrulurc, it
+a procedure to obtain 3NF and may not l>o an intrinsic properly of UNF.
+
+is
+
+ACM Traiouctiuiis on Datubaue Systems, Vol. I. No. 1, Maroli I'.*7C.
+
+30
+
+P. P.-S. Chen
+
+(a)
+
+DEPARTMENT
+
+The Entity-Relationship Model
+
+•
+
+31
+
+(b)
+
+HUSBAND
+
+WIFE
+
+(a)
+
+PERSON
+
+MARRIAGE
+
+PERSON
+
+\y
+
+Fig.
+
+18. Data-striirtiire-.set de-
+
+fined oil the same rei'ord type
+
+Fig. 10.
+
+Rfl:itioii.-.liip M.M<l!l.\r;r. I:ii d:ita -irir
+
+ture diagram ^l)l entity ri'hitioii-,liiij ilia(;raiii
+
+Figure 19(a)) [20]. 'I'lie currcsponding Piitit\-relatioiisliip diagrani i-^ shown in
+Figure 19(b).
+
+It is clear now tliat arrows in a data-strueturo diagrani do not aK\a>s represent
+; /; relation-
+
+relatiousliijjs of entities. I'lven in the case that an arrow reiireseiils a
+ship, the arrow only represents a unidirectional relationship ["JO] i although it
+possible to find tlie owner-record from a ineniher-record) . In the entit\ -relationship
+model, both directions of the relationship are represt'uted (the roles of both en-
+tities are specified), liesides the semantic ambiguity in its arrows, the network.
+model is awkward in handling changes in semantics. For exam|)le, if the relationship
+between DEPARTMENT and EMPLOYEE changes fn^ii a 1:« mapping to an
+m:n mapping (i.e. one employee may belong to several de|)artments) , we must
+create a relationship record DEPARTMENT-EMPLOYEE in the network model.
+
+is
+
+1
+
+DEPARTMENT
+
+EMPLOYEE
+
+PROJECT
+
+SUPPLIER
+
+PART
+
+DEPENDENT
+
+PROJECT-
+WORKER
+
+Fig. 20. The data structure diagram derived from the entity-relationship diagram in Fig. 11
+ACM Tmnsaotions on Database Syetciiii'. Vol 1, .No 1, Murcb 1070.
+
+COMPONENT
+
+1
+
+32
+
+P. P.-S. Chen
+
+DEPT
+
+DEP
+
+EMP
+
+PROJ
+
+SUPP
+
+PART
+
+DEPT-
+EMP
+
+PROJ-
+MAGR
+
+PROJ-
+PAR,
+
+COMP
+
+Fig. 21. The "disciplined" data structure diagram derived from tfie eiitily-relatioii>liip diagram
+
+in Fig. 1
+
+In the entity-relationship model, all kinds of mappings in relationships are handled
+uniformly.
+
+The entity-rehitionsliip model can be used as a tool in the structured design of
+databases using the network model. The user first draws an entity-rt'lationship
+diagram (Figure 11). He may simply translate it into a data-structure diagram
+(Figure 20). using the rules specified above. He may also follow a discipline that
+every entity (jr relationsliip must be mapped onto a record (that is, "reiationshij)
+records" are created for all types of relationships no matter that they are 1 : /; or
+m:n mappings). Thus, in Figure 11, all one needs to do is to change the diamonds
+to boxes and to add arrowiieads on the appropriate lines. Using this a()proach
+three more boxes-^DEPAHTMENT-EMPLOVEE, EMPLOYEE~DI';PEN'D-
+E.\T, and PROJECT MAXAtiER -will be added to Figure 20 (see Figure 21).
+The validity constraints discussed in Sections 3.8-3.5 will also be useful.
+
+4.3 The Entity Set Model
+
+4.3.1 The Entity Set View. The basic element of the entity set model is the
+entity. Entities have names {entili/ names) such as "Peter Jones", "blue", or
+'"22". Entity names having some pro])ertie8 in common are collected into an
+enlity-naine-ftct, which is referenced by the entUy-name-set-name suth as "\AME",
+"COLOR", and "QUAXTITY".
+
+An entity is represented by the entity-name-set-name/cntity-name pair such as
+XAME/ Peter Jones, EMPLOYEE-XO/25()(), and \O-OF-VEARS/20. An entity
+is described by its association with other entities. Figure 22 illustrates the entity
+set view of data The "DEPARTMEXT" of entity EMPLOYEE- XO/256G is the
+entity DEPARTMIOXT .XO/40o. In other words, "DICPARTMEXT" is the n.le
+that the entitv DEPARTMEXT XO/tO") plays to describe the entity IvM-
+PLOYEE XO/2r.titi. Similarly, th.- "XAME", "ALTERXATIVl': XAME", or
+"A(;E"of E.MPLOYEE XO, 2a(lt) is "XAME/ I'eter Jones", "NA.ME Sam Jones",
+or "X()-OF-YEARS/20", respectively. The description of the entity EMPLOYEE-
+ACM Transaotiona on Database Systenis, Vol I, No 1, March 197tJ.
+
+1
+
+The Entity-Relationship Model
+
+33
+
+XO/2566 i.s a collectioti of the ri'latcd ciititiu.s and their lolcs (tlic entities and
+roles eireled b\- the dotted line). An example of the fiilitij (Icscrijilion of 'KM-
+PLOVEE-\e) 2566" lin its full-blown, unfaetored form) is illustrated by the set
+of role-nan\e entity-name-set-iiame,'eiitity-iuime triplets shown in Figure Xi. Con-
+ceptually, the entity set model differs from the entity-relationship model in the
+following ways:
+
+[1) In the entity set model, everything is treated as an entity. For example,
+"COLOR 'RL.A.CK'' and "XO-OF-YEARS/'45" are entities. In the entity-relation-
+ship model, "blue" and "36" are usually treated as values. Note tr -ating values as
+entities may cause semantic problems. For example, in Figure ?'l, what is the
+and
+difference
+"XAME Sam Jones"? Do they represent different entities?
+
+between "EMPLOYEE-XO/2566", "XAME Peter
+
+J(jnes",
+
+(2) Oidy binary relationships are used in the entity .set model, ^ while n-a.T\
+
+relationships may be used in the entity-relationship model.
+
+-
+
+QEMPLOYEE-NO/2566
+
+\DEPARTMENT
+
+^EPARTMENT-NO/406)
+
+I
+
+Fig. 22. The eiility-set view
+
+» In DIAM II [24], (i-ary relationships mny l>e treated a.s special ra.ses of identifiers.
+
+ACM Transactions on Database Systems, Vol 1. No 1, March 1976
+
+34
+
+P. P.-S. Chen
+
+THE ENTITY-
+RELATIONSHIP
+MODEL TERMINOLOGY
+
+ATTRIBUTE
+OR ROLE
+
+VALUE SET
+
+VALUE
+
+THE ENTITY SET
+MODEL TERMINOLOGY
+
+ROLE-NAME
+
+ENTITY-NAME-
+SET-NAME"
+
+"EMTITY-NAME"
+
+IDENTIFIER
+
+The Entity-Relationship Model
+
+•
+
+35
+
+gestions (Figure 21 was suggested by one of the referees) . This paper was motivated
+by a series of discussions with Charles Bachman. The author is also indebted to
+E.F. Codd and M.E. Senko for their valuable comments and discussions in revising
+this paper.
+
+REFERENCES
+
+1. Abrial, jr. Data semantics. In Data Base Management, .J.W. Klimljie and K.L. Koffenian,
+
+Eds., North-Holland Pub. Co., Amsterdam, 1974, pp. 1-60.
+
+2. Bachm.\n, C.W. Software for random access processing. Datamation II (April 196o), 36-41.
+3. Bachman, C.W. Data structure diagrams. Data Base I, 2 (Summer 1969), 4-10.
+4. Bachman, C.W. Trends in database management— 1975. Proc, AFIPS 1975 NCC, Vol. 44,
+
+AFIPS Press, Montvale, N.J., pp. 569-576.
+
+5. BiRKHOFF, G., AND Bartee, T.C. Modem Applied Algebra. McCiraw-Hill, New York, 1970
+6. Chamberlin, D.D., and Raymond, F.B. SEQUEL: \ structured Englisli query language
+
+Proc. .\C.\I-SIGMOD 1974, Workshop, Ann Arbor, Michigan, M;iy, 1974.
+
+7. CODASYL. Data ba.se task group report. ACM, New York, 1971.
+8. CoDD, E.F. A relational model of data for large shared data banks. Conun. ACM IS, 6 (June
+
+1970), 377-387.
+
+9. Codd, E.F. Normalized data ba.se structure; A brief tutorial. Proc. ACM-SIGFIDET 1971,
+
+Workshop, San Diego, Calif., Nov. 1971, pp. 1-18.
+
+10. CoDD, E.F. A data base sublanguage founded on the relational calculus. Proc. ACM-SIG-
+
+FIDET 1971, Workshop, San Diego, Calif., Nov. 1971, pp. 3.5-68.
+
+11. Codd, E.F. Recent investigations in relational data base systems. Proc. IFIP Congress
+
+1974, North-Holland Pub. Co., .\msterdam, pp. 1017-1021.
+
+12. Deheneffe, C, Hennebept, H., and Paulus, W. Relational model for data ba.se. Proc
+
+IFIP Congress 1974, North-Holland Pub. Co., Amsterdam, pp. 1022-1025.
+
+13. Dodu, G.G. APL— a language for associate data handling in PL'I. Proc. AFIPS 1906
+
+FJCC, Vol. 29, Spartan Books, New York, pp. 677-684.
+
+14. Eswaran, K.P., and Chamberlin, D.D. Functional specifications of a subsystem for data
+
+base integrity. Proc. Very Large Data Base Conf., Framingham, Mass., Sept.
+48-68.
+
+1975, pp.
+
+15. Hai.naut, J.L., and Lecharlier, B. An extensible semantic model of data ba.se and its
+data language. Proc. IFIP Congress 1974, North-Holland Pub. Co., Anrsterdam, pp. 1026-
+1030.
+
+16. Hammer, M.M., and McLeod, D.J. Semantic integrity in a relation data base system. Proc.
+
+Very Large Data Base Conf., Framingham, Mass., Sept. 1975, pp. 25-47.
+
+17. LlNDGREEN, P. Basic operations on information as a basis for data base design. Proc IFIP
+
+Congress 1974, North-Holland Pub. Co., Amsterdam, pp. 993-997.
+
+18. Mealy, G.H. Another look at data base. Proc. AFIPS 1967 FJCC, Vol. 31, AFIPS Press,
+
+Montvale, N.J., pp. 525-534.
+
+19. NussEN, G.M. Data structuring in the DDL and the relational model. In Data Base Manage-
+ment, J.W. Klimbie and K.L. Koffeman, Eds., North-Holland Pub. Co., Amsterdam, 1974,
+pp. 363-379.
+
+20. Olle, T.W. Current and future trends in data base management systems. Proc. IFIP Con-
+
+gress 1974, North-Holland Pub. Co., Amsterdam, pp. 998-1006
+
+21. RouasopoDLOs, N., and Mylopoclos, J. Using semantic networks for data base manage-
+ment. Proc. Very Large Data Base Conf., Framingham, Mass., Sept. 1975, pp. 144-172.
+22. Rdstin, R. (Ed.). Proc. ACM-SOGMOD 1974— debate on data models. Ann Arbor, Mich.,
+
+May 1974.
+
+23. SCHMID, H.A., A.VD SwENSON, JR. On the semantics of the relational model. Proc. ACM-
+
+SIGMOD 1975, Conference, San Jose, Calif., May 197.5, pp. 211-233.
+
+24. Senko, M.E. Data description language in the concept of multilevel structured description:
+DIAM II with FORAL. In Data Base Description, B.C.M. Dougue, and G.M. Nijssen, Eds.,
+North-Holland Pub. Co., Amsterdam, pp. 239-258.
+
+ACM Transactions on Database Systems, Vol. 1, No. 1. Maroh 1976
+
+.
+
+Date Due
+
+jur- o i^r
+
+^^S^0^
+
+JUL 2 3 198$
+
+IttY 2 f -86
+
+MAY ^ o ml
+
+Fe:m
+
+DEC. 29 1992
+
+DEC.
+
+4 1995
+
+»
+
+' 'J
+
+Lib-26-(;7
+
+MAR
+
+4
+
+3 TD6Q aOD fiOT
+
+30fi
+
+J5 143 w no.905- 77
+
+Lotte. /Accommodation of work t
+
+"""o^ooo
+
+iilyn
+504307
+
+D«BKJ
+
+3 TQflD ODD am 2flE
+
+III
+
+-J5 143 w no.906- 77
+ar
+30995
+
+D*PKS
+
+Vinod Kri/Goals and perceptions i
+
+000.3.5.427.
+
+3 Toao OD
+
+640 M3t.
+
+Vv\'
+
+HD28.M414 no.908- 77
+Lorange, Peter/Strategic control
+745215
+
+.D«B.KS.
+
+00150820
+
+3 TDflD DOE 233 SflO
+
+T-J5 143 w no.909- 77
+Kobrm, Stephe/Multmational corporati
+730938
+
+00035425
+
+D^BKS
+
+3 TOflO 000 flMO
+
+3t>0
+
+HD28.M414 no.910- 77
+Madnick, Stuar/Trends in computers and
+730941
+
+D»BK^
+D»BKS
+
+QOO.3543.6 .
+
+1
+
+TOflO 000 flMO 701
+
+cjil
+
+nc*
+
+T-J5 143 w no.912- 77
+Beckhard. Rich/Managing organizational
+745173 ..
+
+.D.^BKS^
+
+3 TOflO 002 233 SSh
+
+iiliiii
+
+HD28.M414 no.913- 77
+Chen, Peter P. /The entity-relationship
+731192
+
+.000.35.437
+
+D»BKS
+
+3 TOflO 000 flMO 733
+
+

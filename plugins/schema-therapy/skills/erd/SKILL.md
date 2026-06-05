@@ -1,6 +1,13 @@
 ---
 name: erd
-description: Step 4 of the schema-therapy modelling pipeline. Use this to turn the validated specs/02-glossary.md AND specs/03-aggregates.md into the two-file artifact 04 — specs/04-erd.dbml (a DBML data model: tables, columns, enums, relationships, keys) PLUS specs/04-transitions.md (a transition table for every lifecycle entity). Trigger ONLY inside the schema-therapy pipeline: "run schema-therapy step 4", "produce 04-erd.dbml", "build the schema-therapy ERD from 02+03", "do the erd step of the modelling pipeline". Consumes 02-glossary.md AND 03-aggregates.md; downstream schema-therapy skills (05 statecharts may supersede a per-entity transition table; 06 gherkin references entities) consume this artifact. NOT a general data-modelling / DBML / database-design tool — adjacent plugins own that ground; this skill owns only the schema-therapy 04 artifact at this one pipeline step.
+description: >-
+  Step 4 of the schema-therapy modelling pipeline — produces the two-file 04
+  artifact specs/04-erd.dbml (DBML data model) PLUS specs/04-transitions.md (a
+  transition table per lifecycle entity). Trigger ONLY inside the schema-therapy
+  pipeline: "run schema-therapy step 4", "produce 04-erd.dbml", "build the
+  schema-therapy ERD from 02+03", "do the erd step of the modelling pipeline".
+  NOT a general data-modelling / DBML / database-design tool — owns only this
+  pipeline artifact.
 ---
 
 # erd
@@ -27,8 +34,8 @@ plugins own that ground; every trigger is scoped to this one pipeline step.
 Two binding contracts live beside this file. **Load each only at the stage that
 needs it** (progressive disclosure):
 
-- `references/validation-rules.md` — the closed rule catalog A1–A6 / B1–B9 /
-  C1–C9 / D1–D7 / E1–E4 (35 rules, the review vocabulary). Load at **Draft** and
+- `references/validation-rules.md` — the closed rule catalog (35 rules — see the
+  catalog's theme index, the review vocabulary). Load at **Draft** and
   **Professor**.
 - `references/simulation.md` — the executable harness contract (the three-layer
   engine oracle). You do not need it to run the harness; load it only to interpret a
@@ -91,7 +98,7 @@ checks from the same mapping.)
   DBML `note` or transitions prose; reference upstream by name (E1/E3). Never use a 02
   forbidden synonym in any identifier or note (E2).
 
-## c. Draft-time scenario authoring (`specs/04-scenarios.json`)
+### Draft-time scenario authoring (`specs/04-scenarios.json`)
 
 Optionally ship a **domain scenario file** the harness runs on the live PGlite engine —
 the *domain* counterpart to its generic structural probes. Derive it from 03 invariants;
@@ -111,12 +118,12 @@ query per 03 invariant. `expect` declares `{ rowCount }` or `{ class }` — **ne
 literal engine-generated value**. A model with zero domain scenarios still gets the full
 generic `E-*` engine battery (no vacuous engine pass).
 
-## d. The 6-step pipeline
+## c. The 6-step pipeline
 
 Run these in order. The harness is the **sole executable pass/fail authority**.
 
-1. **Draft.** Build both files from the intake table (§a) and artifact contract (§b);
-   author `04-scenarios.json` (§c). Load `references/validation-rules.md`.
+1. **Draft.** Build both files from the intake table (§a) and artifact contract (§b,
+   incl. the scenario-authoring subsection). Load `references/validation-rules.md`.
 
 2. **Professor gate** (bounded ≤ 5 rounds). Review against the catalog. **The professor
    OWNS the blocking 2NF/3NF (B3/B4) and C8 cascade judgments** that the harness can only

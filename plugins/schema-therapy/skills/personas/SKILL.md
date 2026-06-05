@@ -1,6 +1,13 @@
 ---
 name: personas
-description: Step 7 of the schema-therapy modelling pipeline. Use this to turn the validated specs/00-impact-map.md AND specs/01-event-storming.md into specs/07-personas.md — goal-directed personas (Cooper-discipline goals = end states, not tasks) each grounded in exactly one 00 Business Actor, with jobs-to-be-done whose Outcomes resolve to 01 domain events. Trigger ONLY inside the schema-therapy pipeline: "run schema-therapy step 7", "produce 07-personas.md", "build the schema-therapy personas from 00 and 01", "do the personas step of the modelling pipeline". Consumes specs/00-impact-map.md (business actors + impacts) and specs/01-event-storming.md (domain events) ONLY; downstream schema-therapy skills (08 builds one task model per persona-job, 09 builds one flow model per persona) consume this artifact. NOT a general persona / UX-research / user-modelling authority — adjacent plugins own that ground; this skill owns only the schema-therapy 07 artifact at this one pipeline step.
+description: >-
+  Step 7 of the schema-therapy modelling pipeline — produces specs/07-personas.md
+  (goal-directed personas, each grounded in one 00 Business Actor, with
+  jobs-to-be-done whose Outcomes resolve to 01 domain events). Trigger ONLY
+  inside the schema-therapy pipeline: "run schema-therapy step 7", "produce
+  07-personas.md", "build the schema-therapy personas from 00 and 01", "do the
+  personas step of the modelling pipeline". NOT a general persona / UX-research /
+  user-modelling authority — owns only this pipeline artifact.
 ---
 
 # personas

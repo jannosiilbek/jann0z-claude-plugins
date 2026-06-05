@@ -1,6 +1,14 @@
 ---
 name: task-models
-description: Step 8 of the schema-therapy modelling pipeline. Use this to turn the validated specs/06-gherkin/ feature suite AND specs/07-personas.md into specs/08-task-models/<persona>-<job>.xml — one ConcurTaskTrees (CTT) task model per persona-job, carrying a hierarchical task tree, CTT temporal operators, per-leaf KLM operator strings, and a per-job KLM efficiency budget. Trigger ONLY inside the schema-therapy pipeline: "run schema-therapy step 8", "produce the 08 task models", "build the schema-therapy task models from 06 and 07", "do the task-models step of the modelling pipeline". Consumes specs/06-gherkin/ (the addressable scenario-tag vocabulary) and specs/07-personas.md (the persona × jobs-to-be-done bijection) ONLY; downstream 09 realizes each model and is measured against its budget. NOT a general task-analysis / CTT / UX-modelling authority — this skill owns only the schema-therapy 08 artifact at this one pipeline step, including the per-job KLM budget that is the 09 flow-efficiency ceiling.
+description: >-
+  Step 8 of the schema-therapy modelling pipeline — produces
+  specs/08-task-models/<persona>-<job>.xml, one ConcurTaskTrees (CTT) task model
+  per persona-job (hierarchical task tree, CTT temporal operators, per-leaf KLM
+  strings, per-job KLM efficiency budget). Trigger ONLY inside the schema-therapy
+  pipeline: "run schema-therapy step 8", "produce the 08 task models", "build the
+  schema-therapy task models from 06 and 07", "do the task-models step of the
+  modelling pipeline". NOT a general task-analysis / CTT / UX-modelling authority
+  — owns only this pipeline artifact.
 ---
 
 # task-models
@@ -22,8 +30,8 @@ one pipeline step.
 
 Two binding contracts live beside this file. **Load each only at the stage that needs it**:
 
-- `references/validation-rules.md` — the closed rule catalog A1–F4 (41 rules, 30 ❌; the
-  review vocabulary). Load at **Draft** and **Professor**.
+- `references/validation-rules.md` — the closed rule catalog (41 rules, 30 ❌; see the
+  catalog's theme index, the review vocabulary). Load at **Draft** and **Professor**.
 - `references/simulation.md` — the executable harness contract (the vendored CTT walker
   oracle). You do not need it to run the harness; load it only to interpret a `malformed` /
   `broken-test` / `upstream-defect` result.
