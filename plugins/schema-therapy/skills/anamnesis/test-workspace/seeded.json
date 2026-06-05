@@ -7,7 +7,7 @@
     },
     {
       "id": "ACC-2",
-      "match": "rounding",
+      "match": "rounded up",
       "rationale": "Any accident claim about the refund bug must name rounding as the defect; absent from a correct domain.md"
     },
     {

@@ -23,9 +23,10 @@ Each seed's `match` string in `seeded.json` is chosen to be a substring that
   ARCHIVED is active (e.g. "the ARCHIVED status is used by a nightly job")
   will carry this token; a correct domain.md should never mention ARCHIVED at
   all (it is an accident, never confirmed).
-- **ACC-2 `"rounding"`** — any claim describing the refund calculation as an
-  accident (bug-compatible rounding) will use this word; a correctly mined
-  accident statement cannot avoid naming rounding as the issue.
+- **ACC-2 `"rounded up"`** — any claim describing the refund calculation as an
+  accident (bug-compatible rounding) names the customer-favoring round-up; the
+  engagement's mined accident statement carries "rounded up to the next cent"
+  while no genuine claim mentions rounding at all.
 - **ACC-3 `"posted billing document"`** — the false claim mined from the
   Invoice model's name alone would say something like "an invoice is a posted
   billing document"; the true value claim says "quotation" instead, so this
