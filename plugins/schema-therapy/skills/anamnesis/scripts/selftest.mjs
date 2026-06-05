@@ -17,7 +17,10 @@
 //   7. the vacuous --no-checks run reports broken-test with zero executed checks;
 //   8. byte-identical double-runs over valid-single;
 //   9. the 35-row §6 coverage floor with the coverage.behaviorsWithPosAndNeg === 35 honesty
-//      assertion (harness constant === table length).
+//      assertion (harness constant === table length);
+//  10. seeded-engagement acceptance: the committed test-workspace engagement passes handoff,
+//      is deterministic, and every seeded accident is adjudicated+absent from domain.md while
+//      every seeded value is confirmed+present in domain.md.
 //
 // Exit 0 ONLY when every assertion passes. Zero external deps. Runtime < 5 min.
 
@@ -241,7 +244,75 @@ process.stderr.write('PART 9 — coverage floor: 35 ❌ rules, pos + neg, distin
 }
 
 // ===========================================================================
+// PART 10 — Seeded-engagement acceptance: the committed test-workspace engagement is
+// regression-locked against seeded.json.
+// ===========================================================================
+process.stderr.write('PART 10 — seeded-engagement acceptance (test-workspace regression lock)\n');
+{
+  const TW = join(__dirname, '..', 'test-workspace');
+
+  // 10.1 — harness on TW with --gate handoff → pass, exit 0, zero unconfirmed, zero locked,
+  //         exactly one render entry for domain.md.
+  const r1 = runArgs([TW, '--gate', 'handoff']);
+  ok(r1.json !== null, 'TW handoff emits parseable JSON');
+  ok(r1.json !== null && r1.json.status === 'pass', `TW handoff status === pass (got ${r1.json && r1.json.status})`);
+  ok(r1.code === 0, `TW handoff exit === 0 (got ${r1.code})`);
+  ok(r1.json !== null && r1.json.counts.claims.unconfirmed === 0, `TW handoff counts.claims.unconfirmed === 0 (got ${r1.json && r1.json.counts.claims.unconfirmed})`);
+  ok(r1.json !== null && r1.json.counts.claims.locked === 0, `TW handoff counts.claims.locked === 0 (got ${r1.json && r1.json.counts.claims.locked})`);
+  const renders1 = r1.json && r1.json.renders;
+  ok(Array.isArray(renders1) && renders1.length === 1 && renders1[0].file === 'domain.md',
+    `TW handoff has exactly one render entry for domain.md (got ${Array.isArray(renders1) ? renders1.map((r) => r.file).join(',') : 'none'})`);
+
+  // 10.2 — second run is byte-identical (determinism over the real engagement).
+  const r2 = runArgs([TW, '--gate', 'handoff']);
+  ok(r1.stdout === r2.stdout && r1.stdout.length > 0, 'TW handoff double-run is byte-identical');
+
+  // 10.3 — load seeded.json, domain.md, and parse ledger.jsonl.
+  const seeded = JSON.parse(readFileSync(join(TW, 'seeded.json'), 'utf8'));
+  const domainMd = readFileSync(join(TW, 'domain.md'), 'utf8');
+  const ledgerLines = readFileSync(join(TW, 'anamnesis', 'ledger.jsonl'), 'utf8')
+    .split('\n').filter((l) => l.trim().length > 0);
+  const ledger = ledgerLines.map((l) => JSON.parse(l));
+
+  // 10.4 — vacuous-key guard: accidents.length >= 4 and values.length >= 4.
+  ok(seeded.accidents.length >= 4, `seeded.json accidents.length >= 4 (got ${seeded.accidents.length})`);
+  ok(seeded.values.length >= 4, `seeded.json values.length >= 4 (got ${seeded.values.length})`);
+
+  // 10.5 — every accidents[] entry: ≥1 ledger claim with status === 'accident' whose statement
+  //         contains match (case-insensitive) AND a verdict object present; match must NOT appear
+  //         in domain.md (case-insensitive).
+  for (const acc of seeded.accidents) {
+    const matchLower = acc.match.toLowerCase();
+    const adjudicated = ledger.filter(
+      (c) => c.status === 'accident' &&
+             typeof c.statement === 'string' &&
+             c.statement.toLowerCase().includes(matchLower) &&
+             c.verdict !== null && typeof c.verdict === 'object'
+    );
+    ok(adjudicated.length >= 1,
+      `[${acc.id}] seeded accident adjudicated + never rendered — ≥1 ledger claim (status:accident, statement contains "${acc.match}", verdict present) (got ${adjudicated.length})`);
+    ok(!domainMd.toLowerCase().includes(matchLower),
+      `[${acc.id}] seeded accident "${acc.match}" is absent from domain.md`);
+  }
+
+  // 10.6 — every values[] entry: ≥1 ledger claim with status === 'confirmed' whose statement
+  //         contains match (case-insensitive); match DOES appear in domain.md (case-insensitive).
+  for (const val of seeded.values) {
+    const matchLower = val.match.toLowerCase();
+    const confirmed = ledger.filter(
+      (c) => c.status === 'confirmed' &&
+             typeof c.statement === 'string' &&
+             c.statement.toLowerCase().includes(matchLower)
+    );
+    ok(confirmed.length >= 1,
+      `[${val.id}] seeded value confirmed + rendered — ≥1 ledger claim (status:confirmed, statement contains "${val.match}") (got ${confirmed.length})`);
+    ok(domainMd.toLowerCase().includes(matchLower),
+      `[${val.id}] seeded value "${val.match}" is present in domain.md`);
+  }
+}
+
+// ===========================================================================
 process.stderr.write(`\n${passed} passed, ${failed} failed\n`);
 if (failed) { process.stderr.write('SELFTEST FAILED:\n' + fails.map((f) => '  - ' + f).join('\n') + '\n'); process.exit(1); }
-process.stderr.write('SELFTEST PASSED — every fixture status+owner+exit asserted; wrong-reason isolated (R-ACC owner + L-CONFIRM co-fires); S3 matrix + dry arithmetic unit-proven; renderer honesty proven (R-DET re-renders, never trusts the file); gate-interplay per-context; vacuous guarded; byte-identical double-run; 35 ❌ rules pos+neg with the harness coverage constant honesty-checked.\n');
+process.stderr.write('SELFTEST PASSED — every fixture status+owner+exit asserted; wrong-reason isolated (R-ACC owner + L-CONFIRM co-fires); S3 matrix + dry arithmetic unit-proven; renderer honesty proven (R-DET re-renders, never trusts the file); gate-interplay per-context; vacuous guarded; byte-identical double-run; 35 ❌ rules pos+neg with the harness coverage constant honesty-checked; seeded-engagement acceptance (test-workspace regression-locked against seeded.json).\n');
 process.exit(0);
