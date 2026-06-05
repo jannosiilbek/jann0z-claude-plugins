@@ -1,7 +1,7 @@
 # fingerprints:
-#   06-gherkin/order.feature@sha256:e656728752b2cd3189c1188bebe5e70ccaf318e6d9b6f45f63028a8602f129e9
-#   09-ui-flows/customer.xml@sha256:f218a74ceddd1273d3679ce6ea83890bb304dee9ad41e7558423cc5f0c73a983
-#   08-task-models/customer-place_order.xml@sha256:37eb9a1cd98c28707c085f8d287b0378e02d8ff631aee3a162161eb5041bb576
+#   06-gherkin/order.feature@sha256:e12871b7f61aa0375b3df07c24572709183fb55b864fca19856ea0fcb6dc3b2b
+#   09-ui-flows/customer.xml@sha256:6db976f512e9f664055c48b1b17bf6acee85e2030a2bcbfd471cd62547d47203
+#   08-task-models/customer-place_order.xml@sha256:6dd4d2bc9723865355b0ab151ece4488b6a0ca231e8bb6c10a53f16fe9f13d93
 @task-model:customer-place_order
 Feature: Place order
 

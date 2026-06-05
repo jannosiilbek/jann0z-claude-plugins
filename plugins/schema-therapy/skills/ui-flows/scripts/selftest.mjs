@@ -3,9 +3,10 @@
 // doctrine §3): a regression suite proving the harness catches false-greens. It demonstrates:
 //   1. every manifest fixture produces the EXACT expected status + owner-check + exit + the
 //      05-present/absent authority record;
-//   2. the wrong-reason trap reports the W-COST (walker) owner, NOT merely the co-present
+//   2. the wrong-reason trap reports the W-BLOAT (walker) owner, NOT merely the co-present
 //      M-BIND — the negative reports its OWNER reason, both defects detected;
-//   3. over-budget proves W-COST reports BOTH the computed AND the declared value + the path;
+//   3. over-budget proves W-COST is WARN-ONLY (the gate passes) yet still reports BOTH the
+//      computed AND the declared value + the path; flow-bloat proves W-BLOAT blocks;
 //   4. WALKER HONESTY: mutating a NavigationFlow or a klm in a scratch copy CHANGES the
 //      computed cost — a dedicated assertion over an inline temp variant (the walker re-walks,
 //      it does not trust a declared number);
@@ -91,6 +92,10 @@ for (const fx of MANIFEST.fixtures) {
     ok(json.reconciled === true, `[${tag}] clean pass reconciled === true`);
     ok(json.counts.walker.total > 0, `[${tag}] clean pass ran the walker (non-empty oracle)`);
   }
+  if (fx.warnOwner) {
+    ok(json.checks.some((c) => c.id === fx.warnOwner && c.status === 'warn'),
+      `[${tag}] warn-owner ${fx.warnOwner} among warn-status checks (advisory, non-blocking)`);
+  }
   if (fx.authority) {
     for (const [ent, src] of Object.entries(fx.authority)) {
       ok(json.authority[ent] === src, `[${tag}] authority[${ent}] === ${src} (got ${json.authority[ent]})`);
@@ -108,7 +113,7 @@ for (const fx of MANIFEST.fixtures) {
 // ===========================================================================
 // PART 2 — Wrong-reason trap: OWNER is W-COST (walker), NOT M-BIND (both fire).
 // ===========================================================================
-process.stderr.write('PART 2 — wrong-reason trap reports W-COST (not M-BIND)\n');
+process.stderr.write('PART 2 — wrong-reason trap reports W-BLOAT (not M-BIND)\n');
 {
   const trap = MANIFEST.fixtures.find((f) => f.trap);
   ok(!!trap, 'manifest declares a wrong-reason trap fixture');
@@ -117,25 +122,38 @@ process.stderr.write('PART 2 — wrong-reason trap reports W-COST (not M-BIND)\n
   const ids = rejectionIds(json);
   ok(ids.includes(trap.trapOwner), `trap reports the OWNER ${trap.trapOwner} (the walker isolates over M-BIND)`);
   ok(ids.includes(trap.trapNotOwner), `trap ALSO detects the co-present ${trap.trapNotOwner} (both fire)`);
-  const wc = json.findings.find((f) => f.id === 'W-COST');
-  ok(!!wc, 'trap reports a W-COST finding');
-  ok(trap.owner === 'W-COST', 'manifest pins trap owner to W-COST (not M-BIND)');
+  const wb = json.findings.find((f) => f.id === 'W-BLOAT');
+  ok(!!wb, 'trap reports a W-BLOAT finding');
+  ok(trap.owner === 'W-BLOAT', 'manifest pins trap owner to W-BLOAT (not M-BIND)');
 }
 
 // ===========================================================================
 // PART 3 — Over-budget: W-COST reports BOTH the computed AND the declared value + path.
 // ===========================================================================
-process.stderr.write('PART 3 — over-budget reports BOTH values + the path\n');
+process.stderr.write('PART 3 — over-budget WARNS (gate passes) reporting BOTH values + the path; flow-bloat BLOCKS\n');
 {
   const ob = MANIFEST.fixtures.find((f) => f.dir === 'over-budget' && f.bothValues);
-  const { json } = run(ob);
-  const wc = json.findings.find((f) => f.id === 'W-COST');
-  ok(!!wc, 'over-budget reports a W-COST finding');
+  const { json, code } = run(ob);
+  ok(json.status === 'pass' && code === 0, `over-budget passes the gate (W-COST is warn-only; got ${json.status})`);
+  ok(!json.findings.some((f) => f.id === 'W-COST'), 'over-budget W-COST never enters findings (warn, not fail)');
+  const wc = json.checks.find((c) => c.id === 'W-COST' && c.status === 'warn');
+  ok(!!wc, 'over-budget reports a W-COST warn check');
   ok(wc && /flow_cost\s+\d+/.test(wc.detail), 'W-COST detail reports the COMPUTED flow_cost');
   ok(wc && /Budget\.klm\s+\d+/.test(wc.detail), 'W-COST detail reports the DECLARED Budget.klm');
   ok(wc && /events \[/.test(wc.detail), 'W-COST detail lists the contributing event/hop path');
   const fl = json.flows.find((f) => f.realizable && f.computedCost > f.budget);
   ok(!!fl, 'flows[] records an over-budget model with computedCost > budget (both values present)');
+
+  // flow-bloat: the blocking arm — screens visited > 08 nominal leaf count + 3 ⇒ fail.
+  const fb = MANIFEST.fixtures.find((f) => f.dir === 'flow-bloat');
+  const r = run(fb);
+  ok(r.json.status === 'fail' && r.code === 1, `flow-bloat fails the gate (W-BLOAT is blocking; got ${r.json.status})`);
+  const wb = r.json.findings.find((f) => f.id === 'W-BLOAT');
+  ok(!!wb, 'flow-bloat reports a W-BLOAT finding');
+  ok(wb && /screens visited\s+\d+/.test(wb.detail), 'W-BLOAT detail reports the COMPUTED screens-visited count');
+  ok(wb && /leaf count\s+\d+/.test(wb.detail), 'W-BLOAT detail reports the 08 nominal leaf count + slack');
+  const bfl = r.json.flows.find((f) => f.realizable && f.screens > f.bloatLimit);
+  ok(!!bfl, 'flows[] records the bloated model with screens > bloatLimit (both values present)');
 }
 
 // ===========================================================================
@@ -380,5 +398,5 @@ process.stderr.write('PART 10 — coverage floor: 22 ❌ rules, pos + neg, disti
 // ===========================================================================
 process.stderr.write(`\n${passed} passed, ${failed} failed\n`);
 if (failed) { process.stderr.write('SELFTEST FAILED:\n' + fails.map((f) => '  - ' + f).join('\n') + '\n'); process.exit(1); }
-process.stderr.write('SELFTEST PASSED — every fixture status+owner asserted; wrong-reason isolated; walker honesty proven; authority switch + N-05ABSENT + upstream-defect routing verified; vacuous guarded; byte-identical; 22 ❌ rules pos+neg.\n');
+process.stderr.write('SELFTEST PASSED — every fixture status+owner asserted; wrong-reason isolated; walker honesty proven; W-COST warn-only + W-BLOAT blocking verified; authority switch + N-05ABSENT + upstream-defect routing verified; vacuous guarded; byte-identical; 22 ❌ rules pos+neg.\n');
 process.exit(0);

@@ -1,8 +1,8 @@
 # fingerprints:
-#   06-gherkin/refund.feature@sha256:75c6e2e5bb5a46f8072636a328d398b7c426f2d5bf60a72c6b732cd7296f1f49
-#   06-gherkin/ticket.feature@sha256:3fcf82c1527f843f5c0018422c8263b4709029184db2513c8b235561c13c3099
-#   09-ui-flows/financeofficer.xml@sha256:591c2520cbd8e5a9130ee9292dc220ce9ca9f82b068daeadff36bb8ca20a803a
-#   08-task-models/financeofficer-request_refund.xml@sha256:0c6d62573474445e4fc4b859773ff17bc4cbdb432bc6afce725bc7c82f7d62ef
+#   06-gherkin/refund.feature@sha256:b25938e46714240ac9d3f41663a55167785ed8b13124ecf79e80a3406b1f45d3
+#   06-gherkin/ticket.feature@sha256:8a8fb5b2bf1240708b1561c4bacfaff1ed6e9681106914974cab002dd984ac44
+#   09-ui-flows/financeofficer.xml@sha256:9c9542ca3c661d66d27a3fbc479aefa1914b9cee0f93489de4e873b268fab0ac
+#   08-task-models/financeofficer-request_refund.xml@sha256:5d8be6f8b2d9c369739e1c3e00fd4176a9b5e699b08d6841457c46a7e237a194
 @task-model:financeofficer-request_refund
 Feature: Request refund
 

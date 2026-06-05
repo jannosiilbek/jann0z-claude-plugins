@@ -1,4 +1,5 @@
 # fingerprints:
+#   01-event-storming.md@sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 #   02-glossary.md@sha256:1111111111111111111111111111111111111111111111111111111111111111
 #   03-aggregates.md@sha256:2222222222222222222222222222222222222222222222222222222222222222
 #   04-erd.dbml@sha256:3333333333333333333333333333333333333333333333333333333333333333
@@ -34,3 +35,9 @@ Feature: Coupon
     Given the coupon is expired
     When the Coupon Redeemed event occurs again
     Then the coupon remains expired
+
+  @authz:coupon
+  Scenario: A Dispatcher may not redeem an issued coupon
+    Given the coupon is issued
+    When the Dispatcher attempts the Coupon Redeemed event
+    Then the redemption attempt is rejected

@@ -1,6 +1,6 @@
 ---
 name: gherkin
-description: Step 6 of the schema-therapy modelling pipeline — the FINAL artifact. Use this to turn the modelled domain into executable BDD behavior at specs/06-gherkin/<aggregate>.feature, one .feature file per 03 aggregate, each scenario tagged to its upstream obligation (invariant / transition / terminal / policy). Trigger ONLY inside the schema-therapy pipeline: "run schema-therapy step 6", "produce 06-gherkin", "write the gherkin/feature files from the model", "do the gherkin step of the modelling pipeline". Consumes specs/02-glossary.md, specs/03-aggregates.md, specs/04-erd.dbml + specs/04-transitions.md, and specs/05-statecharts/*.scxml WHEN emitted (the lifecycle authority for promoted entities; else 04). 06 is terminal — nothing consumes it, it never edits upstream. NOT a general Gherkin / BDD / Cucumber-authoring tool — that ground is owned elsewhere; this skill owns only the schema-therapy 06 artifact at this one pipeline step.
+description: Step 6 of the schema-therapy modelling pipeline — the FINAL artifact. Use this to turn the modelled domain into executable BDD behavior at specs/06-gherkin/<aggregate>.feature, one .feature file per 03 aggregate, each scenario tagged to its upstream obligation (invariant / transition / terminal / policy / authz). Trigger ONLY inside the schema-therapy pipeline: "run schema-therapy step 6", "produce 06-gherkin", "write the gherkin/feature files from the model", "do the gherkin step of the modelling pipeline". Consumes specs/01-event-storming.md (actor bindings), specs/02-glossary.md, specs/03-aggregates.md, specs/04-erd.dbml + specs/04-transitions.md, and specs/05-statecharts/*.scxml WHEN emitted (the lifecycle authority for promoted entities; else 04). 06 is terminal — nothing consumes it, it never edits upstream. NOT a general Gherkin / BDD / Cucumber-authoring tool — that ground is owned elsewhere; this skill owns only the schema-therapy 06 artifact at this one pipeline step.
 ---
 
 # gherkin
@@ -24,8 +24,10 @@ aggregates / policies (03), the transition rows (04), or the lifecycle machines 
 does **not** claim general Gherkin / BDD / Cucumber-authoring territory — other ground
 owns that; every trigger is scoped to this one pipeline step.
 
-**Inputs:** `specs/02-glossary.md`, `specs/03-aggregates.md`, `specs/04-erd.dbml`
-**AND** `specs/04-transitions.md`, plus `specs/05-statecharts/*.scxml` **when emitted**.
+**Inputs:** `specs/01-event-storming.md` (actor bindings + actor kinds — the B7
+authorization-obligation source), `specs/02-glossary.md`, `specs/03-aggregates.md`,
+`specs/04-erd.dbml` **AND** `specs/04-transitions.md`, plus
+`specs/05-statecharts/*.scxml` **when emitted**.
 **Output:** `specs/06-gherkin/<aggregate>.feature` per 03 aggregate.
 
 **Lifecycle-authority rule (binding).** For an entity **promoted** to 05, that
@@ -38,8 +40,8 @@ records the choice in its `authority` block.
 Two binding contracts live beside this file. **Load each only at the stage that needs
 it** (progressive disclosure):
 
-- `references/validation-rules.md` — the closed rule catalog A1–A8 / B1–B6 / C1–C9 /
-  D1–D5 / E1–E4 (32 rules, the review vocabulary). Load at **Draft** and **Professor**.
+- `references/validation-rules.md` — the closed rule catalog A1–A8 / B1–B7 / C1–C9 /
+  D1–D5 / E1–E4 (33 rules, the review vocabulary). Load at **Draft** and **Professor**.
 - `references/simulation.md` — the executable harness contract (the `@cucumber/gherkin`
   parse+compile oracle + mechanical reader). Load it only to interpret a `malformed` /
   `broken-test` / `upstream-defect` result.
@@ -63,22 +65,24 @@ a state/entity/event, never drop a coverage obligation.**
 | An **authoritative** transition (05 scxml if promoted, else 04 row) | ≥1 happy-path scenario tagged `@transition:<entity>`: `Given` the `From` state, `When` embeds the exact 01 event, `Then` the `To` state | B2 |
 | An **authoritative** terminal state (no outgoing transition / `<final>`) | a negative scenario tagged `@terminal:<entity>`: `Given` the terminal state, `When` a further event, `Then` rejected / unchanged | B3 |
 | A 03 `## Cross-Aggregate Policies` row | ≥1 scenario tagged `@policy:<PolicyName>`; **eventual** mode ⇒ `Then eventually <consequence>` | B4 |
+| An **authoritative** non-creation transition event bound in 01 to a **human** actor (kind `person`/`role`), where 01 defines ≥1 **other** human actor | one negative scenario tagged `@authz:<entity>`: `Given` the from-state, `When` a **different** 01 human actor attempts the exact 01 event, `Then` the attempt is rejected. System/scheduler-bound and unbound events are **exempt** — never invent a rejection the domain doesn't imply | B7 |
 | A 02 `Term` / `### <Aggregate>Status` enum value | the verbatim step language (domain concept / lifecycle state) | D1 / D2 |
 | A 01 event string (the 04 `Event` cell) | embedded **verbatim** as a literal substring in the `When` step | D3 |
 
-**Event-phrasing convention (the ONE pinned form).** A `@transition`/`@policy` `When`
+**Event-phrasing convention (the ONE pinned form).** A `@transition`/`@policy`/`@authz` `When`
 contains the **exact 01 event string** as a literal substring, in domain words — e.g.
 for event `Order Placed`: `When the Order Placed event occurs`. No transform variant.
 
 **Tag grammar (closed).** Exactly **one** source tag per scenario, from
 `@invariant:INV-<Agg>-<n>` / `@transition:<entity>` / `@terminal:<entity>` /
-`@policy:<PolicyName>` (`<entity>` = snake_case 04/05 stem; `<PolicyName>` whitespace→`_`).
-No other namespace; tags carry no whitespace (parser-rejected).
+`@policy:<PolicyName>` / `@authz:<entity>` (`<entity>` = snake_case 04/05 stem;
+`<PolicyName>` whitespace→`_`). No other namespace; tags carry no whitespace
+(parser-rejected).
 
 **This table doubles as the downstream drift contract — 06 is the FINAL artifact, so
 nothing downstream re-checks it; the harness verifies the table *in reverse*:** every 03
-aggregate resolves to a file, every invariant/authoritative-transition/terminal/policy
-to a tagged scenario, every `When` embeds its exact 01 event, every state/Term to its 02
+aggregate resolves to a file, every invariant/authoritative-transition/terminal/policy/
+actor-bound-event obligation to a tagged scenario, every `When` embeds its exact 01 event, every state/Term to its 02
 owner. This is the only safety net 06 has — keep it exact.
 
 ## b. Artifact contract (directory + fingerprints + authority)
@@ -89,11 +93,11 @@ owner. This is the only safety net 06 has — keep it exact.
   its name text = the exact 03 `### <AggregateName>` verbatim (A3).
 - **Fingerprint block (A4):** a **leading** `# fingerprints:` comment block **before**
   the `Feature:` line (Gherkin comments are legal only at the start of a line), listing
-  ALL consumed upstreams, one `<file>@sha256:<64-hex>` per line — always the four base
-  upstreams `02-glossary.md`, `03-aggregates.md`, `04-erd.dbml`, `04-transitions.md`,
-  **plus** each `05-statecharts/<entity>.scxml` this feature's scenarios consume.
-  Recompute on every regeneration:
-  `shasum -a 256 specs/02-glossary.md specs/03-aggregates.md specs/04-erd.dbml specs/04-transitions.md specs/05-statecharts/<entity>.scxml`.
+  ALL consumed upstreams, one `<file>@sha256:<64-hex>` per line — always the five base
+  upstreams `01-event-storming.md`, `02-glossary.md`, `03-aggregates.md`, `04-erd.dbml`,
+  `04-transitions.md`, **plus** each `05-statecharts/<entity>.scxml` this feature's
+  scenarios consume. Recompute on every regeneration:
+  `shasum -a 256 specs/01-event-storming.md specs/02-glossary.md specs/03-aggregates.md specs/04-erd.dbml specs/04-transitions.md specs/05-statecharts/<entity>.scxml`.
 - **Authority rule (binding, §b above):** judge each entity's transition/terminal
   coverage against `05-if-promoted-else-04`. When 05 was **not** emitted, do **not**
   fingerprint any `05-statecharts/*.scxml` and do **not** assert a supersedes-only edge
@@ -111,7 +115,8 @@ Run these in order. The harness is the **sole executable pass/fail authority**.
 
 1. **Draft.** For each 03 aggregate, build `<aggregate>.feature` from the intake table
    (§a) and artifact contract (§b): the fingerprint block, the `Feature:` line, one
-   tagged scenario per invariant / authoritative transition / terminal / policy. Decide
+   tagged scenario per invariant / authoritative transition / terminal / policy /
+   actor-bound-event authorization obligation (B7). Decide
    each entity's authority (`05-if-promoted-else-04`). Load
    `references/validation-rules.md`.
 
@@ -142,12 +147,13 @@ Run these in order. The harness is the **sole executable pass/fail authority**.
 5. **Final DRY + semantic drift.** Re-read every emitted file: no restated invariant
    text, no enum dumps, no transition-table dumps, no forbidden synonyms; every scenario
    references upstream only by its tag. Confirm the intake table (§a) resolves in reverse
-   for every obligation (every invariant / transition / terminal / policy has its tagged
-   scenario; every `When` embeds its exact 01 event).
+   for every obligation (every invariant / transition / terminal / policy / B7
+   authorization obligation has its tagged scenario; every `When` embeds its exact 01
+   event).
 
 6. **Emit + a fixed-format report.** Emit the files. The report must include a
    **coverage-by-source table** (counts of invariants / transitions / terminals /
-   policies, each covered? + the authority each entity was judged against) and
+   policies / authz obligations, each covered? + the authority each entity was judged against) and
    `Iterations to convergence: N`. Then hand off to **drift-police** as an invocation
    (the schema-therapy drift agent re-verifies the §a contract across artifacts — the
    only post-emit guard for this terminal artifact).
@@ -156,6 +162,7 @@ Run these in order. The harness is the **sole executable pass/fail authority**.
 
 ```
 node scripts/harness.mjs specs/06-gherkin \
+  --upstream-01 specs/01-event-storming.md \
   --upstream-02 specs/02-glossary.md \
   --upstream-03 specs/03-aggregates.md \
   --upstream-04-dbml specs/04-erd.dbml \

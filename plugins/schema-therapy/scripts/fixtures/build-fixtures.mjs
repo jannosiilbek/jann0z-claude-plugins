@@ -294,6 +294,7 @@ const h05order = sha(a05);
 
 // ---- 06 order.feature ----
 const a06 = `# fingerprints:
+#   01-event-storming.md@sha256:${h01}
 #   02-glossary.md@sha256:${h02}
 #   03-aggregates.md@sha256:${h03}
 #   04-erd.dbml@sha256:${h04dbml}
@@ -323,6 +324,12 @@ Feature: Order
     Given an Order in status placed
     When the Order Paid event occurs
     Then eventually the Customer is credited
+
+  @authz:order
+  Scenario: A non-owning actor may not cancel a placed Order
+    Given an Order in status placed
+    When the Customer attempts the Order Cancelled event
+    Then the request is rejected
 `;
 writeFileSync(join(SPECS, '06-gherkin', 'order.feature'), a06);
 const h06order = sha(a06);

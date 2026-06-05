@@ -6,7 +6,8 @@
 //   - VENDORED IFML-XMI-subset reader (the authoritative validator, §0/§1; xml.mjs).
 //   - FLOW-WALK ORACLE (§3.3; graph.mjs): per realized 08 model — W-HOME (one home + all
 //     containers reachable), W-REALIZE (BFS-shortest realizing walk of the ordered nominal
-//     leaf sequence), W-COST (re-computed flow_cost ≤ 08 Budget.klm, both values reported).
+//     leaf sequence), W-COST (re-computed flow_cost vs 08 Budget.klm, both values reported —
+//     ⚠️ warn-only), W-BLOAT (screens visited ≤ 08 nominal leaf count + 3 — ❌ blocking).
 //   - COPIED CTT nominal-path walker (§1; taskmodel.mjs) for the nominal leaves + budget.
 //   - MECHANICAL / RESOLUTION / EXACT-VALUE checks (§2/§4; checks.mjs).
 //   - 05-AUTHORITY switching (§3.5): promoted entities vs the scxml graph; unpromoted vs 04;
@@ -338,7 +339,7 @@ function main() {
     // --- WALKER: per realized 08 model ---------------------------------------
     for (const tm of realized) {
       realizedModelCount += 1;
-      edgesExpected += 1; edgesWalked += 1; // the walk edge (W-HOME+W-REALIZE+W-COST per model)
+      edgesExpected += 1; edgesWalked += 1; // the walk edge (W-HOME+W-REALIZE+W-COST+W-BLOAT per model)
 
       // upstream-defect pre-check: broken ruler ⇒ route → the named 08 file, skip the walk.
       if (!tm.budgetSound) {
@@ -355,15 +356,18 @@ function main() {
       const w = runWalks(model, tm);
       for (const wk of w.walks) {
         walks += 1; summary.counts.walker.walks += 1;
-        allChecks.push(C.rec(wk.id, 'walker', wk.rule, wk.status === 'fail' ? 'fail' : 'pass', wk.detail));
+        allChecks.push(C.rec(wk.id, 'walker', wk.rule, wk.status, wk.detail));
         if (wk.status === 'fail') {
           findings.push({ id: wk.id, rule: wk.rule, severity: 'error', detail: `${stem}/${tm.stem}: ${wk.detail}` });
           process.stderr.write(`WALK FAIL ${wk.id} (${stem}/${tm.stem}): ${wk.detail}\n`);
+        } else if (wk.status === 'warn') {
+          process.stderr.write(`WALK WARN ${wk.id} (${stem}/${tm.stem}): ${wk.detail}\n`);
         } else walksPassed += 1;
       }
       flows.push({
         model: stem, taskModel: tm.stem,
         computedCost: w.computedCost, budget: w.budget, hops: w.hops,
+        screens: w.screens, bloatLimit: w.bloatLimit,
         nominalLeaves: w.nominalLeaves, realizable: w.realizable,
       });
     }

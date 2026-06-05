@@ -25,6 +25,13 @@ realizes **by tag**. 06 validates the domain layer; 10 validates the built produ
 The full rule catalog (30 rules, Themes A–E) is `references/validation-rules.md`; the executable
 harness contract is `references/simulation.md`. This file is the authoring procedure.
 
+**Out of scope: sad-path UI.** 10 walks only the **nominal (happy) path** of each 08 task model
+over the 09 screen graph. Domain rejections are already covered by 06's
+`@invariant`/`@terminal`/`@authz` scenarios (bound there, never restated here); **screen-level
+error states** (validation messages, failure screens, retry affordances) are the
+implementation's responsibility and are deliberately unspecified — never invent sad-path walk
+scenarios.
+
 ## 1 — Mechanical intake (what maps to what)
 
 10 is **terminal** — nothing downstream consumes it. It reads a **narrow slice** of three upstreams:
@@ -33,7 +40,7 @@ harness contract is `references/simulation.md`. This file is the authoring proce
 |---|---|---|
 | `specs/08-task-models/<persona>-<job>.xml` | each model (1:1) + its **nominal-path leaf order** + each leaf's `scenario-tags` | one `.feature` per model; the walk order; the outcome obligations |
 | `specs/09-ui-flows/<persona>.xml` | `ViewContainer` ids, `home="true"`, `Event` ids + `task=` + `01-event` annotations, `NavigationFlow` edges, the `persona` attribute | the walk vocabulary (screens, interactions, navigations) + the persona's natural name |
-| `specs/06-gherkin/*.feature` | the **tag vocabulary** (closed grammar `@invariant:`/`@transition:`/`@terminal:`/`@policy:`) | the outcome-binding targets |
+| `specs/06-gherkin/*.feature` | the **tag vocabulary** (closed grammar `@invariant:`/`@transition:`/`@terminal:`/`@policy:`/`@authz:`) | the outcome-binding targets |
 
 10 **coins nothing**: every screen id, Event id, `01-event` string, and 06 tag must appear verbatim
 upstream. 10 **never edits** 06/08/09, and **never restates** a 06 domain assertion (it binds by tag).

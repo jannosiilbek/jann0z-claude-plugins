@@ -29,3 +29,9 @@ Feature: Account money movement
     Given an account holder
     When they open the dashboard
     Then the balance is shown
+
+  @authz:account
+  Scenario: A teller may not confirm another holder's transfer
+    Given a captured amount
+    When a teller attempts to confirm
+    Then the confirmation attempt is rejected

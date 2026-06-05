@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- fingerprints:
-       specs/06-gherkin/venue.feature        sha256:6575b40b1e30af2a1d4100373d39f411ee8a4f815b24453a9cfdd8fd0ab2da87
+       specs/06-gherkin/venue.feature        sha256:1ebde44d9d10a50acf967e37a2de75db019d5ce7bb003e82637406505f5e21ff
        specs/07-personas.md                     sha256:0c557607a179b21eee8d6e3f612a00048e1d32432409f6eff01f12246a4c87e9
 -->
 <TaskModel id="organizer-register_venue"

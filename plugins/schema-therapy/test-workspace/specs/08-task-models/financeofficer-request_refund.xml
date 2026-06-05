@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- fingerprints:
-       specs/06-gherkin/ticket.feature        sha256:3fcf82c1527f843f5c0018422c8263b4709029184db2513c8b235561c13c3099
-       specs/06-gherkin/refund.feature        sha256:75c6e2e5bb5a46f8072636a328d398b7c426f2d5bf60a72c6b732cd7296f1f49
+       specs/06-gherkin/ticket.feature        sha256:8a8fb5b2bf1240708b1561c4bacfaff1ed6e9681106914974cab002dd984ac44
+       specs/06-gherkin/refund.feature        sha256:b25938e46714240ac9d3f41663a55167785ed8b13124ecf79e80a3406b1f45d3
        specs/07-personas.md                     sha256:0c557607a179b21eee8d6e3f612a00048e1d32432409f6eff01f12246a4c87e9
 -->
 <TaskModel id="financeofficer-request_refund"

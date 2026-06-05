@@ -18,23 +18,32 @@
 // and a 03 policy name may legally carry hyphens (e.g. `POL-1`). `policyTagRef()` preserves
 // hyphens (only whitespace→`_`), so the @policy: character class MUST admit `-` or no tag
 // string for a hyphenated policy could both classify (here) AND resolve (policyTagRef). The
-// @transition:/@terminal: namespaces are snake_case 04/05 entity stems (no hyphen legal —
-// `toSnake` maps `-`→`_`), so they stay [a-z0-9_].
+// @transition:/@terminal:/@authz: namespaces are snake_case 04/05 entity stems (no hyphen
+// legal — `toSnake` maps `-`→`_`), so they stay [a-z0-9_].
 export const TAG_INVARIANT = /^@invariant:(INV-[A-Za-z][A-Za-z0-9]*-\d+)$/;
 export const TAG_TRANSITION = /^@transition:([a-z][a-z0-9_]*)$/;
 export const TAG_TERMINAL = /^@terminal:([a-z][a-z0-9_]*)$/;
 export const TAG_POLICY = /^@policy:([A-Za-z0-9_-]+)$/;
+export const TAG_AUTHZ = /^@authz:([a-z][a-z0-9_]*)$/;
 
 // Classify a tag string into {kind, ref} or null if not a source tag. `kind` ∈
-// {invariant, transition, terminal, policy}.
+// {invariant, transition, terminal, policy, authz}.
 export function classifyTag(name) {
   let m;
   if ((m = TAG_INVARIANT.exec(name))) return { kind: 'invariant', ref: m[1] };
   if ((m = TAG_TRANSITION.exec(name))) return { kind: 'transition', ref: m[1] };
   if ((m = TAG_TERMINAL.exec(name))) return { kind: 'terminal', ref: m[1] };
   if ((m = TAG_POLICY.exec(name))) return { kind: 'policy', ref: m[1] };
+  if ((m = TAG_AUTHZ.exec(name))) return { kind: 'authz', ref: m[1] };
   return null;
 }
+
+// Human-actor kinds (the 01 `## Actors` `Kind` column vocabulary): a `person` or `role`
+// actor is a HUMAN; a `system` actor is not. Consumed by the B7 authorization obligation
+// (X-AUTHZ / X-COV-AUTHZ): only a human-bound 01 event, in a domain with at least one
+// OTHER human actor, implies a negative authorization scenario — system/scheduler events
+// never do (a rejection the domain doesn't imply must never be invented).
+export const HUMAN_ACTOR_KINDS = new Set(['person', 'role']);
 
 // snake_case validator (file stems, entity tags). lowercase, starts with a letter,
 // only [a-z0-9_]. (A2 / M2)

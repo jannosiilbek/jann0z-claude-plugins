@@ -1,5 +1,5 @@
 {
-  "description": "Expected (status, owner, route, run-mode, authority) tuples for each shipped ui-flows (09) fixture per simulation.md §3.4/§3.5/§3.6. `dir` is the 09 directory passed positionally. The upstreams default to the shared mini set (up02/up04dbml/up04tr/up07/up08); a fixture may OVERRIDE one to a malformed variant. `run` is `with05` (pass --upstream-05 upstream-05) or `no05` (omit it). `owner` is the check ID that MUST appear among the harness's failing/malformed rejections for the stated reason. `route` (when present) is the upstream file an upstream-defect finding must name. `authority` (when present) is asserted against summary.authority. `trap:true` marks the wrong-reason trap whose OWNER must be W-COST (isolated over the co-present M-BIND). `vacuous:true`, `brokenTest:true`, `upstreamDefect:true` mark the special run-modes. Every negative carries EXACTLY ONE injected defect (a fixture failing for any other reason is itself broken-test). The mini upstream-04.dbml uses the REAL emitted snake_case `<name>_status` enum convention (`order_status`/`coupon_status`), so the Theme-D lifecycle authority (M-ANNOT/R-AUTH) is exercised against the convention 04 actually ships; the KLM budgets in upstream-08 are denominated in the 08-owned operator-TOKEN unit (BB=1 token), matching the 08 walker. selftest PART 5b proves the snake_case lifecycle detection (authority block non-empty + ghost-01-event fires R-AUTH against it).",
+  "description": "Expected (status, owner, route, run-mode, authority) tuples for each shipped ui-flows (09) fixture per simulation.md §3.4/§3.5/§3.6. `dir` is the 09 directory passed positionally. The upstreams default to the shared mini set (up02/up04dbml/up04tr/up07/up08); a fixture may OVERRIDE one to a malformed variant. `run` is `with05` (pass --upstream-05 upstream-05) or `no05` (omit it). `owner` is the check ID that MUST appear among the harness's failing/malformed rejections for the stated reason. `route` (when present) is the upstream file an upstream-defect finding must name. `authority` (when present) is asserted against summary.authority. `trap:true` marks the wrong-reason trap whose OWNER must be W-BLOAT (isolated over the co-present M-BIND). `warnOwner` (when present) is a check ID that MUST appear among the harness's warn-status checks (⚠️ advisory, never blocking — the over-budget fixture passes the gate with a W-COST warning). `vacuous:true`, `brokenTest:true`, `upstreamDefect:true` mark the special run-modes. Every negative carries EXACTLY ONE injected defect (a fixture failing for any other reason is itself broken-test). The mini upstream-04.dbml uses the REAL emitted snake_case `<name>_status` enum convention (`order_status`/`coupon_status`), so the Theme-D lifecycle authority (M-ANNOT/R-AUTH) is exercised against the convention 04 actually ships; the KLM budgets in upstream-08 are denominated in the 08-owned operator-TOKEN unit (BB=1 token), matching the 08 walker. selftest PART 5b proves the snake_case lifecycle detection (authority block non-empty + ghost-01-event fires R-AUTH against it).",
   "defaults": {
     "up02": "upstream-02.md",
     "up04dbml": "upstream-04.dbml",
@@ -25,7 +25,8 @@
     { "dir": "ghost-task-ref", "run": "with05", "status": "fail", "owner": "M-TASKREF", "rule": "B-c" },
     { "dir": "dangling-navflow", "run": "with05", "status": "fail", "owner": "M-NAVEND", "rule": "A-j" },
     { "dir": "unrealized-leaf", "run": "with05", "status": "fail", "owner": "X-COV-LEAF", "rule": "B-a" },
-    { "dir": "over-budget", "run": "with05", "status": "fail", "owner": "W-COST", "rule": "C-a", "bothValues": true },
+    { "dir": "over-budget", "run": "with05", "status": "pass", "owner": null, "warnOwner": "W-COST", "rule": "C-a", "bothValues": true },
+    { "dir": "flow-bloat", "run": "with05", "status": "fail", "owner": "W-BLOAT", "rule": "C-d" },
     { "dir": "ghost-01-event", "run": "with05", "status": "fail", "owner": "R-AUTH", "rule": "D-a" },
     { "dir": "wrong-authority-event", "run": "with05", "status": "fail", "owner": "R-AUTH", "rule": "D-b" },
     { "dir": "realizes-other-persona", "run": "with05", "status": "fail", "owner": "R-REALIZE", "rule": "A-e" },
@@ -35,7 +36,7 @@
     { "dir": "non-snake-id", "run": "with05", "status": "fail", "owner": "M-SNAKE", "rule": "E-a" },
     { "dir": "05-claimed-but-absent", "run": "no05", "status": "fail", "owner": "N-05ABSENT", "rule": "D-a" },
 
-    { "dir": "wrong-reason-trap", "run": "with05", "status": "fail", "owner": "W-COST", "trap": true, "trapOwner": "W-COST", "trapNotOwner": "M-BIND" },
+    { "dir": "wrong-reason-trap", "run": "with05", "status": "fail", "owner": "W-BLOAT", "trap": true, "trapOwner": "W-BLOAT", "trapNotOwner": "M-BIND" },
 
     { "dir": "vacuous", "run": "with05", "status": "broken-test", "owner": null, "vacuous": true, "args": ["--no-checks"] },
 
@@ -65,7 +66,7 @@
       { "rule": "B-a", "owner": "X-COV-LEAF", "neg": "unrealized-leaf" },
       { "rule": "B-c", "owner": "M-TASKREF", "neg": "ghost-task-ref" },
       { "rule": "B-d", "owner": "W-REALIZE", "neg": "unrealized-leaf" },
-      { "rule": "C-a", "owner": "W-COST", "neg": "over-budget" },
+      { "rule": "C-d", "owner": "W-BLOAT", "neg": "flow-bloat" },
       { "rule": "C-b", "owner": "M-KLM", "neg": "bad-klm-token" },
       { "rule": "D-a", "owner": "R-AUTH", "neg": "ghost-01-event" },
       { "rule": "D-b", "owner": "R-AUTH", "neg": "wrong-authority-event" },

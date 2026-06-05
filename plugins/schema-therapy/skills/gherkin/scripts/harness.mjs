@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // harness.mjs — the executable pass/fail ORACLE for artifact 06 (the directory artifact
 // `specs/06-gherkin/` holding one `<aggregate>.feature` BDD feature file per 03
-// aggregate). Validated against FOUR-OR-FIVE upstreams (02/03/04-erd.dbml/
-// 04-transitions.md + optional 05-statecharts/). Implements references/simulation.md
-// EXACTLY:
+// aggregate). Validated against FIVE-OR-SIX upstreams (01-event-storming.md/02/03/
+// 04-erd.dbml/04-transitions.md + optional 05-statecharts/). Implements
+// references/simulation.md EXACTLY:
 //   - STRONGEST-ORACLE ENGINE (§3.3): every .feature is PARSED on @cucumber/gherkin
 //     39.1.0 AND COMPILED to pickles; parse-clean + ≥1 pickle is the instantiation
 //     assertion (zero pickles ⇒ vacuous ⇒ fail W-INST); a parse throw ⇒ malformed,
@@ -22,6 +22,7 @@
 // Node ≥18, plain ESM.
 // Usage:
 //   node scripts/harness.mjs <06-dir> \
+//     --upstream-01 <01-event-storming.md> \
 //     --upstream-02 <02-glossary.md> --upstream-03 <03-aggregates.md> \
 //     --upstream-04-dbml <04-erd.dbml> --upstream-04-transitions <04-transitions.md> \
 //     [--upstream-05 <05-dir>] [--no-checks] [--no-install] [--force-missing-deps <dir>]
@@ -29,7 +30,7 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import * as E from './lib/engine.mjs';
-import { parse as parseMd, deriveGlossary02, deriveAggregates03, deriveTransitions04 } from './lib/md.mjs';
+import { parse as parseMd, deriveGlossary02, deriveAggregates03, deriveTransitions04, deriveEventStorming01 } from './lib/md.mjs';
 import { parse as parseScxml, scxmlGraph, ScxmlParseError } from './lib/scxml.mjs';
 import * as C from './lib/checks.mjs';
 import { toSnake, policyTagRef, classifyTag, plainTokens, rawTokens, RESTATEMENT_WINDOW_N } from './lib/lexicon.mjs';
@@ -39,11 +40,12 @@ const TOOLING = { gherkin: '39.1.0', messages: '32.3.1', dbmlCore: '8.2.5', node
 
 function parseArgs(argv) {
   const args = argv.slice(2);
-  const o = { dir: null, up02: null, up03: null, up04dbml: null, up04tr: null, up05: null, noChecks: false, noInstall: false, forceMissingDeps: null };
+  const o = { dir: null, up01: null, up02: null, up03: null, up04dbml: null, up04tr: null, up05: null, noChecks: false, noInstall: false, forceMissingDeps: null };
   const pos = [];
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
-    if (a === '--upstream-02') o.up02 = args[++i];
+    if (a === '--upstream-01') o.up01 = args[++i];
+    else if (a === '--upstream-02') o.up02 = args[++i];
     else if (a === '--upstream-03') o.up03 = args[++i];
     else if (a === '--upstream-04-dbml') o.up04dbml = args[++i];
     else if (a === '--upstream-04-transitions') o.up04tr = args[++i];
@@ -62,6 +64,7 @@ function baseSummary(opt, status) {
   return {
     skill: 'gherkin',
     artifactDir: opt.dir,
+    upstream01: opt.up01,
     upstream02: opt.up02, upstream03: opt.up03,
     upstream04Dbml: opt.up04dbml, upstream04Transitions: opt.up04tr,
     upstream05: opt.up05 || null,
@@ -72,7 +75,7 @@ function baseSummary(opt, status) {
       intake: { features: 0, scenarios: 0, steps: 0, tags: 0 },
       checks: { engine: 0, resolution: 0, exactValue: 0, negative: 0, agentJudged: 0, total: 0 },
       engine: { parsed: 0, compiled: 0, pickles: 0, total: 0 },
-      coverage: { invariants: 0, transitions: 0, terminals: 0, policies: 0 },
+      coverage: { invariants: 0, transitions: 0, terminals: 0, policies: 0, authz: 0 },
       edgesWalked: 0, edgesExpected: 0,
     },
     reconciled: false,
@@ -90,8 +93,8 @@ function emit(summary, status) {
 
 async function main() {
   const opt = parseArgs(process.argv);
-  if (!opt.dir || !opt.up02 || !opt.up03 || !opt.up04dbml || !opt.up04tr) {
-    process.stderr.write('usage: node scripts/harness.mjs <06-dir> --upstream-02 <02> --upstream-03 <03> --upstream-04-dbml <04.dbml> --upstream-04-transitions <04-transitions.md> [--upstream-05 <05-dir>]\n');
+  if (!opt.dir || !opt.up01 || !opt.up02 || !opt.up03 || !opt.up04dbml || !opt.up04tr) {
+    process.stderr.write('usage: node scripts/harness.mjs <06-dir> --upstream-01 <01> --upstream-02 <02> --upstream-03 <03> --upstream-04-dbml <04.dbml> --upstream-04-transitions <04-transitions.md> [--upstream-05 <05-dir>]\n');
     process.exit(EXIT['broken-test']);
   }
   const summary = baseSummary(opt, 'pass');
@@ -121,20 +124,24 @@ async function main() {
     try { return readFileSync(p, 'utf8'); }
     catch (e) { brokenUpstream(label, `cannot read (${e.message})`); }
   };
+  const t01 = readOr(opt.up01, '01-event-storming.md');
   const t02 = readOr(opt.up02, '02-glossary.md');
   const t03 = readOr(opt.up03, '03-aggregates.md');
   const t04dbml = readOr(opt.up04dbml, '04-erd.dbml');
   const t04tr = readOr(opt.up04tr, '04-transitions.md');
 
-  let doc02, doc03, doc04tr;
+  let doc01, doc02, doc03, doc04tr;
+  try { doc01 = parseMd(t01); } catch (e) { brokenUpstream('01-event-storming.md', e.message); }
   try { doc02 = parseMd(t02); } catch (e) { brokenUpstream('02-glossary.md', e.message); }
   try { doc03 = parseMd(t03); } catch (e) { brokenUpstream('03-aggregates.md', e.message); }
   try { doc04tr = parseMd(t04tr); } catch (e) { brokenUpstream('04-transitions.md', e.message); }
 
+  const es01 = deriveEventStorming01(doc01);
   const glossary02 = deriveGlossary02(doc02);
   const aggregates03 = deriveAggregates03(doc03);
   const transitions04 = deriveTransitions04(doc04tr);
 
+  if (!es01.shapeOk) brokenUpstream('01-event-storming.md', 'missing ## Domain Events or ## Actors table (B7 obligation set unbuildable)');
   if (!glossary02.shapeOk) brokenUpstream('02-glossary.md', 'missing ## Enums or ## Forbidden Synonyms section');
   if (!transitions04.shapeOk) brokenUpstream('04-transitions.md', 'missing ## Transition Tables section / no ### entity block');
 
@@ -197,18 +204,23 @@ async function main() {
   const exemptTokens = new Set();
   for (const v of allEnumValues) exemptTokens.add(v.toLowerCase());
   for (const t of terms) exemptTokens.add(t.toLowerCase());
-  // verbatim MANDATED-derivation spans (exact 01 events + 02 Terms + 02 enum values): a
-  // forbidden sub-token (M17) or invented-entity capture (M18) inside one of these is a
-  // compelled upstream string (D3), not free prose — masked before those scans.
-  const verbatimSpans = [...new Set([...allEvents, ...terms, ...allEnumValues])];
+  // verbatim MANDATED-derivation spans (exact 01 events + 01 actor names + 02 Terms +
+  // 02 enum values): a forbidden sub-token (M17) or invented-entity capture (M18) inside
+  // one of these is a compelled upstream string (D3/B7), not free prose — masked before
+  // those scans.
+  const actorNames01 = new Set(es01.actorKinds.keys());
+  const verbatimSpans = [...new Set([...allEvents, ...terms, ...allEnumValues, ...actorNames01])];
   const knownEntityVocab = new Set();
   for (const a of aggregates03.aggregates) knownEntityVocab.add(a);
-  const knownAllVocab = new Set([...allEnumValues, ...terms, ...aggregates03.aggregates, ...allEvents]);
+  const knownAllVocab = new Set([...allEnumValues, ...terms, ...aggregates03.aggregates, ...allEvents, ...actorNames01]);
   const knownAllVocabLower = new Set([...knownAllVocab].map((s) => String(s).toLowerCase()));
   // invariant restatement windows + transition windows.
   const invariantWindows = aggregates03.invariants.map((i) => ({ id: i.id, tokens: rawTokens(i.ruleText) }));
   const transitionWindows = [];
   for (const ent of transitions04.entities) for (const r of ent.rows) transitionWindows.push(rawTokens(`${r.from} ${r.event01} ${r.to}`));
+
+  // B7 authorization obligations (01 actor bindings × the authoritative transition set).
+  const obligations = C.authzObligations(authorityByEntity, es01);
 
   const ctx = {
     invariantIds, entitySnakes, policyRefs, policies: aggregates03.policies,
@@ -217,6 +229,7 @@ async function main() {
     forbidden: glossary02.forbidden, exemptTokens, verbatimSpans, enums: glossary02.enums,
     allEvents, knownEntityVocab, knownAllVocab, knownAllVocabLower,
     invariantWindows, transitionWindows,
+    actorNames01, authzObligations: obligations,
   };
 
   // --- upstream self-checks (§9) BEFORE 06→0n resolution ---------------------
@@ -324,6 +337,7 @@ async function main() {
     pushX(C.xOneWhen(feat));
     pushX(C.xRoleOrder(feat));
     pushX(C.xFeatureOne(feat));
+    pushX(C.xAuthz(feat, ctx));
   }
 
   // --- coverage arithmetic (X-COV-*) -----------------------------------------
@@ -331,6 +345,7 @@ async function main() {
   const covTrans = C.xCovTrans(features, authorityByEntity); pushX(covTrans);
   const covTerm = C.xCovTerm(features, authorityByEntity); pushX(covTerm);
   const covPol = C.xCovPol(features, aggregates03.policies); pushX(covPol);
+  const covAuthz = C.xCovAuthz(features, obligations); pushX(covAuthz);
 
   // coverage counts (intake of obligations).
   let authTransitions = 0, authTerminals = 0;
@@ -340,9 +355,10 @@ async function main() {
     transitions: authTransitions,
     terminals: authTerminals,
     policies: aggregates03.policies.length,
+    authz: obligations.length,
   };
-  const coverageEdgesWalked = (covInv.edges || 0) + (covTrans.edges || 0) + (covTerm.edges || 0) + (covPol.edges || 0);
-  const coverageEdgesExpected = aggregates03.invariants.length + authTransitions + authTerminals + aggregates03.policies.length;
+  const coverageEdgesWalked = (covInv.edges || 0) + (covTrans.edges || 0) + (covTerm.edges || 0) + (covPol.edges || 0) + (covAuthz.edges || 0);
+  const coverageEdgesExpected = aggregates03.invariants.length + authTransitions + authTerminals + aggregates03.policies.length + obligations.length;
 
   // --- §9 upstream-defect routing --------------------------------------------
   if (!self03.ok) {
@@ -389,8 +405,8 @@ async function main() {
     edgesExpected += 1; // R-FINGERPRINT
     edgesExpected += feat.scenarios.length; // R-TAG
     edgesExpected += feat.scenarios.length; // R-TAGTARGET
-    // R-EVENT edges = @transition/@policy scenarios
-    edgesExpected += feat.scenarios.filter((sc) => { const c = sc.sourceTag && classifyTag(sc.sourceTag); return c && (c.kind === 'transition' || c.kind === 'policy'); }).length;
+    // R-EVENT edges = @transition/@policy/@authz scenarios
+    edgesExpected += feat.scenarios.filter((sc) => { const c = sc.sourceTag && classifyTag(sc.sourceTag); return c && (c.kind === 'transition' || c.kind === 'policy' || c.kind === 'authz'); }).length;
     // R-STATE edges = given+then steps
     let gt = 0; for (const sc of feat.scenarios) gt += sc.givenSteps.length + sc.thenSteps.length;
     edgesExpected += gt; // R-STATE
@@ -400,8 +416,10 @@ async function main() {
     edgesExpected += feat.scenarios.length; // X-ONEWHEN
     edgesExpected += feat.scenarios.length; // X-ROLEORDER
     edgesExpected += 1; // X-FEATURE-ONE
+    // X-AUTHZ edges = @authz scenarios
+    edgesExpected += feat.scenarios.filter((sc) => { const c = sc.sourceTag && classifyTag(sc.sourceTag); return c && c.kind === 'authz'; }).length;
   }
-  edgesExpected += coverageEdgesExpected; // X-COV-INV + X-COV-TRANS + X-COV-TERM + X-COV-POL
+  edgesExpected += coverageEdgesExpected; // X-COV-INV + X-COV-TRANS + X-COV-TERM + X-COV-POL + X-COV-AUTHZ
   summary.counts.edgesExpected = edgesExpected;
 
   summary.counts.checks = {

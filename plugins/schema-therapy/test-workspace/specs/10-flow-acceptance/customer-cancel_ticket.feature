@@ -1,7 +1,7 @@
 # fingerprints:
-#   06-gherkin/ticket.feature@sha256:3fcf82c1527f843f5c0018422c8263b4709029184db2513c8b235561c13c3099
-#   09-ui-flows/customer.xml@sha256:f218a74ceddd1273d3679ce6ea83890bb304dee9ad41e7558423cc5f0c73a983
-#   08-task-models/customer-cancel_ticket.xml@sha256:2d6fbfa239c14478563d877779a53c6a5872c3b94d8a7ecd320f53bb14cbf640
+#   06-gherkin/ticket.feature@sha256:8a8fb5b2bf1240708b1561c4bacfaff1ed6e9681106914974cab002dd984ac44
+#   09-ui-flows/customer.xml@sha256:6db976f512e9f664055c48b1b17bf6acee85e2030a2bcbfd471cd62547d47203
+#   08-task-models/customer-cancel_ticket.xml@sha256:e2553719a65bd8dd8f2ae20caa60bf4b29a1434d1283abf1b0d821afb8b18252
 @task-model:customer-cancel_ticket
 Feature: Cancel ticket
 

@@ -47,3 +47,21 @@ Feature: Order
     Given the order is paid
     When the Order Shipped event occurs
     Then eventually the Coupon is issued
+
+  @authz:order
+  Scenario: A Customer may not ship a paid order
+    Given the order is paid
+    When the Customer attempts the Order Shipped event
+    Then the shipping attempt is rejected
+
+  @authz:order
+  Scenario: A Customer may not deliver a shipped order
+    Given the order is shipped
+    When the Customer attempts the Order Delivered event
+    Then the delivery attempt is rejected
+
+  @authz:order
+  Scenario: A Dispatcher may not cancel a placed order
+    Given the order is placed
+    When the Dispatcher attempts the Order Cancelled event
+    Then the cancellation attempt is rejected

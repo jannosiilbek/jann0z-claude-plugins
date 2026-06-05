@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- fingerprints:
-       specs/06-gherkin/event.feature        sha256:5e4e77c98b1eb4b675e71e42b41b43381780c2f06d91c48f7933b0164a764574
+       specs/06-gherkin/event.feature        sha256:f3276485fa4fe05bec1199e3e58d81d89cecb1abb17a0521d9a8cfea0d05663c
        specs/07-personas.md                     sha256:0c557607a179b21eee8d6e3f612a00048e1d32432409f6eff01f12246a4c87e9
 -->
 <TaskModel id="organizer-schedule_event"

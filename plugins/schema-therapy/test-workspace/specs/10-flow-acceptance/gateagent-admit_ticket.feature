@@ -1,7 +1,7 @@
 # fingerprints:
-#   06-gherkin/ticket.feature@sha256:3fcf82c1527f843f5c0018422c8263b4709029184db2513c8b235561c13c3099
-#   09-ui-flows/gateagent.xml@sha256:a658d778c3c5e884a248a8d7ac178dd6481d77375e12ab177289d269c81adaa4
-#   08-task-models/gateagent-admit_ticket.xml@sha256:487975cb4d915b9e0af80263663eb0ddc0117a230469da3faf8679e909346076
+#   06-gherkin/ticket.feature@sha256:8a8fb5b2bf1240708b1561c4bacfaff1ed6e9681106914974cab002dd984ac44
+#   09-ui-flows/gateagent.xml@sha256:6fe8bcaad186c658d4fda82143bb2b6d4baa450a56748699b3aa82eaa71b6a72
+#   08-task-models/gateagent-admit_ticket.xml@sha256:c3d8258b807beaefe6f3450584155af8d95ccbece8378209531aeab89bfe4a7a
 @task-model:gateagent-admit_ticket
 Feature: Admit ticket
 

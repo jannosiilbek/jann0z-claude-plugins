@@ -1,4 +1,5 @@
 # fingerprints:
+#   01-event-storming.md@sha256:8808edde01f35a1a3d5d6a4aba10133d725920d68c42d432c6d5bbc5d872ddd4
 #   02-glossary.md@sha256:5f13227739cd2a3444b73a7c531d1d4de611054b81ba40bda62c1e6966ed4fca
 #   03-aggregates.md@sha256:ac07c8635123654f57f21235d857ab809782c2e0b9f3fbf0938fb8a51fb398d4
 #   04-erd.dbml@sha256:3e8dfce8ca142390d7b5efcc820ef5bf4dcb1605be000834df1178d830cde622
@@ -83,3 +84,21 @@ Feature: Event
     Given an Event in status scheduled holding sold Ticket admissions
     When the Event Rescheduled event occurs
     Then eventually each affected Ticket reaches status holder_notified
+
+  @authz:event
+  Scenario: A Customer may not schedule a created Event
+    Given an Event in status created
+    When the Customer attempts the Event Scheduled event
+    Then the request is rejected
+
+  @authz:event
+  Scenario: A Gate Agent may not reschedule a scheduled Event
+    Given an Event in status scheduled
+    When the Gate Agent attempts the Event Rescheduled event
+    Then the request is rejected
+
+  @authz:event
+  Scenario: A Finance Officer may not cancel a scheduled Event
+    Given an Event in status scheduled
+    When the Finance Officer attempts the Event Cancelled event
+    Then the request is rejected

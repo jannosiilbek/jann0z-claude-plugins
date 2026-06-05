@@ -1,7 +1,7 @@
 # fingerprints:
-#   06-gherkin/venue.feature@sha256:6575b40b1e30af2a1d4100373d39f411ee8a4f815b24453a9cfdd8fd0ab2da87
-#   09-ui-flows/organizer.xml@sha256:766030af6729a6b04e9645a9bfc78de756df3e070357fdae6f978da48bf82b2a
-#   08-task-models/organizer-register_venue.xml@sha256:6ea0a3385d205c803ee735fdb24276343bc05f2226b539de8a6d995ba0eafd00
+#   06-gherkin/venue.feature@sha256:1ebde44d9d10a50acf967e37a2de75db019d5ce7bb003e82637406505f5e21ff
+#   09-ui-flows/organizer.xml@sha256:b0233ce55bbc111717f1cc476ec17307fb54c2999f31268c0e909a938a69f659
+#   08-task-models/organizer-register_venue.xml@sha256:a44aa5b1fe9ac3d3da58998e57dbbaa42ef81548941e4e47462238c8cf10931a
 @task-model:organizer-register_venue
 Feature: Register venue
 

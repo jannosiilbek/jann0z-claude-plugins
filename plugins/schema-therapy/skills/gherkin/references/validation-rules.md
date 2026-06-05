@@ -5,7 +5,9 @@ Validation catalog for **artifact 06** of the `schema-therapy` pipeline — the
 `specs/06-gherkin/` — holding **one `.feature` file per 03 aggregate**, encoding
 the **executable behavior scenarios** for the modelled domain.
 
-**Inputs:** `specs/02-glossary.md` (terms, enums `### <Aggregate>Status`,
+**Inputs:** `specs/01-event-storming.md` (the `Domain Events` actor bindings +
+the `Actors` kind table — the B7 authorization-obligation source),
+`specs/02-glossary.md` (terms, enums `### <Aggregate>Status`,
 forbidden synonyms), `specs/03-aggregates.md` (aggregates, boundaries,
 invariants `INV-<Agg>-<n>`, cross-aggregate policies),
 `specs/04-erd.dbml` + `specs/04-transitions.md` (data model + transition
@@ -49,12 +51,15 @@ contain.
   snake_case filename, not a paraphrase.
 - **Fingerprint block (PINNED).** Each file opens with a comment block listing
   ALL consumed upstreams as `<file>@sha256:<64-hex>`, one per line, before the
-  `Feature:` line. Always: `02-glossary.md`, `03-aggregates.md`,
-  `04-erd.dbml`, `04-transitions.md`. Plus, for **each** 05 file this feature's
-  scenarios consume, that `<entity>.scxml`. Form (Gherkin comments start with
-  `#`, the only legal placement per the reference — start of a new line):
+  `Feature:` line. Always: `01-event-storming.md` (the B7 authorization
+  obligations derive from its actor bindings), `02-glossary.md`,
+  `03-aggregates.md`, `04-erd.dbml`, `04-transitions.md`. Plus, for **each** 05
+  file this feature's scenarios consume, that `<entity>.scxml`. Form (Gherkin
+  comments start with `#`, the only legal placement per the reference — start
+  of a new line):
   ```
   # fingerprints:
+  #   01-event-storming.md@sha256:<64-hex>
   #   02-glossary.md@sha256:<64-hex>
   #   03-aggregates.md@sha256:<64-hex>
   #   04-erd.dbml@sha256:<64-hex>
@@ -75,13 +80,16 @@ contain.
   - `@policy:<PolicyName>` — scenario exercising a 03 cross-aggregate policy
     (`<PolicyName>` = the 03 `Policy` cell, whitespace→`_`; an internal hyphen is
     preserved verbatim, so an id-style policy name like `POL-1` stays `@policy:POL-1`).
+  - `@authz:<entity>` — negative authorization scenario (B7): a 01 human actor
+    OTHER than the event's bound actor attempts an actor-bound lifecycle event
+    of the 04/05 entity, and the attempt is rejected.
   No other tag namespaces are permitted. (Framework-execution tags like `@wip`
   are out of scope for this catalog and MUST NOT substitute for a source tag.)
   Tag-name character classes (closed): `@invariant:INV-<Agg>-<n>` and
   `@policy:<PolicyName>` admit the hyphen (both source-name forms legally carry one —
   the `INV-…-n` id and a `POL-1`-style policy name); `@transition:<entity>` /
-  `@terminal:<entity>` are snake_case 04/05 stems (`[a-z][a-z0-9_]*`, no hyphen — the
-  filename mapping folds `-`→`_`).
+  `@terminal:<entity>` / `@authz:<entity>` are snake_case 04/05 stems
+  (`[a-z][a-z0-9_]*`, no hyphen — the filename mapping folds `-`→`_`).
 - **Event-phrasing convention (PINNED, ONE form — exact-string-embedded).** A
   `When` step that exercises a lifecycle transition MUST contain the **exact 01
   event string** (the `Event` cell from 04, which is the exact 01 string) as a
@@ -104,7 +112,7 @@ contain.
 ## Theme index
 
 - **A. Structure & file shape** (A1–A8) — directory artifact, per-aggregate file, fingerprints, single Feature, parse-clean, tags, naming. [8]
-- **B. Coverage obligations** (B1–B6) — every invariant, every transition, every terminal, every policy gets ≥1 correctly-tagged scenario; no contradiction of the authority. [6]
+- **B. Coverage obligations** (B1–B7) — every invariant, every transition, every terminal, every policy, every actor-bound event gets ≥1 correctly-tagged scenario; no contradiction of the authority. [7]
 - **C. Gherkin canon** (C1–C9) — declarative style, one-behavior, G/W/T roles, single When, no conjunction steps, Background scope, Scenario Outline, no incidental detail. [9]
 - **D. Language discipline & ubiquitous language** (D1–D5) — 02 Terms/enums verbatim, exact-01-event in When, no forbidden synonyms, no invented vocabulary. [5]
 - **E. DRY & single ownership** (E1–E4) — no restated invariant text, no enum listings, no transition-table dumps, reference upstream by tag/id. [4]
@@ -144,13 +152,13 @@ Rules tagged **[PLAN]** are pure pipeline-contract rules (no classical source).
 
 ### A4 — Fingerprint block present, well-formed, names all consumed upstreams
 - **Detect:** No leading `# fingerprints:` comment block, OR it omits any of
-  `02-glossary.md`, `03-aggregates.md`, `04-erd.dbml`, `04-transitions.md`, OR
-  it omits a `05-statecharts/<entity>.scxml` whose transitions this feature's
-  scenarios consume, OR any hash is not 64 hex chars, OR the block is placed
-  after the `Feature:` line (comments are legal only at the start of a line; a
-  leading block is required).
+  `01-event-storming.md`, `02-glossary.md`, `03-aggregates.md`, `04-erd.dbml`,
+  `04-transitions.md`, OR it omits a `05-statecharts/<entity>.scxml` whose
+  transitions this feature's scenarios consume, OR any hash is not 64 hex
+  chars, OR the block is placed after the `Feature:` line (comments are legal
+  only at the start of a line; a leading block is required).
 - **Fix:** Emit the pinned `# fingerprints:` block before `Feature:`, listing
-  all four base upstreams plus every consumed 05 file; recompute on every
+  all five base upstreams plus every consumed 05 file; recompute on every
   regeneration.
 - **Severity:** ❌
 - **Source:** [PLAN] (fingerprint all consumed upstreams); reference (comments
@@ -171,9 +179,9 @@ Rules tagged **[PLAN]** are pure pipeline-contract rules (no classical source).
 ### A6 — Exactly one source-linking tag per scenario, from the closed grammar
 - **Detect:** A scenario (or Scenario Outline) carries zero source-linking
   tags, more than one, or a tag outside the closed set
-  `@invariant:` / `@transition:` / `@terminal:` / `@policy:`, OR a tag
-  contains whitespace (parser-rejected), OR the tag's referent does not exist
-  upstream (e.g. `@invariant:INV-Order-9` with no INV-Order-9 in 03).
+  `@invariant:` / `@transition:` / `@terminal:` / `@policy:` / `@authz:`, OR a
+  tag contains whitespace (parser-rejected), OR the tag's referent does not
+  exist upstream (e.g. `@invariant:INV-Order-9` with no INV-Order-9 in 03).
 - **Fix:** Give every scenario exactly one tag from the closed grammar whose
   referent resolves to a real 03 invariant / 04|05 entity / 03 policy.
 - **Severity:** ❌
@@ -275,6 +283,26 @@ Rules tagged **[PLAN]** are pure pipeline-contract rules (no classical source).
 - **Severity:** ⚠️
 - **Source:** reference (Scenario Outline / Examples); writing-better-gherkin
   (avoid copy-paste).
+
+### B7 — Every actor-bound event has a negative authorization scenario [PLAN]
+- **Detect:** An authoritative non-creation transition event that 01 binds to a
+  **human** actor (`## Actors` kind `person`/`role`), in a domain where 01
+  defines **at least one other human actor**, has no `@authz:<entity>` scenario
+  whose `When` embeds the exact 01 event string. OR an `@authz` scenario is
+  malformed: its `When` resolves to no authoritative event of the tagged
+  entity, it targets an event that implies no authorization rejection
+  (system/scheduler-bound, unbound, or no other human actor exists — never
+  invent a rejection the domain doesn't imply), it names no 01 human actor
+  other than the bound one as the attempting actor, or its `Then`-block does
+  not assert the attempt is rejected.
+- **Fix:** For each obligated event, add one `@authz:<entity>` scenario: Given
+  the transition's from-state, When a different 01 human actor attempts the
+  exact event, Then the attempt is rejected. Remove `@authz` scenarios for
+  exempt events. The actor names are the verbatim 01 `Actor` strings.
+- **Severity:** ❌
+- **Source:** [PLAN] (01 binds every Domain Event to an Actor; downstream code
+  needs the permission contract spelled out, or the implementer must invent
+  authorization).
 
 ---
 
