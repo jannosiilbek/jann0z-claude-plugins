@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<IFMLModel id="dispatcher" persona="Dispatcher">
+  <ViewContainer id="order_queue" name="Order Queue" home="true">
+    <Event id="open_order" type="select" task="open-order"/>
+  </ViewContainer>

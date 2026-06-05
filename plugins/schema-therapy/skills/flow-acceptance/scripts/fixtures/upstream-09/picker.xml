@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       08-task-models/picker-pick_order.xml sha256:3333333333333333333333333333333333333333333333333333333333333333
+-->
+<IFMLModel id="picker" persona="Picker">
+
+  <Realizes taskModel="picker-pick_order"/>
+
+  <ViewContainer id="pick_queue" name="Pick Queue" home="true">
+    <ViewComponent id="pick_list" type="list" binding="shipment"/>
+    <Event id="open_shipment" type="select" task="open-shipment"/>
+  </ViewContainer>
+
+  <ViewContainer id="shipment_detail" name="Shipment Detail">
+    <ViewComponent id="shipment_view" type="details" binding="shipment"/>
+    <Event id="pick_shipment" type="submit" task="pick">
+      <!-- 01-event: Shipment Picked -->
+    </Event>
+  </ViewContainer>
+
+  <ViewContainer id="shipment_complete" name="Shipment Complete">
+    <ViewComponent id="complete_view" type="details" binding="shipment"/>
+    <Event id="complete_shipment" type="submit" task="complete">
+      <!-- 01-event: Shipment Completed -->
+    </Event>
+  </ViewContainer>
+
+  <NavigationFlow from="open_shipment"     to="shipment_detail"/>
+  <NavigationFlow from="pick_shipment"     to="shipment_complete"/>
+  <NavigationFlow from="complete_shipment" to="pick_queue"/>
+
+</IFMLModel>

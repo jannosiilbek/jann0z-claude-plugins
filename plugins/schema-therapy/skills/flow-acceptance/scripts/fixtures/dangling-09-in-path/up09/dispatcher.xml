@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       08-task-models/dispatcher-fulfil_order.xml sha256:1111111111111111111111111111111111111111111111111111111111111111
+-->
+<IFMLModel id="dispatcher" persona="Dispatcher">
+
+  <Realizes taskModel="dispatcher-fulfil_order"/>
+
+  <ViewContainer id="order_queue" name="Order Queue" home="true">
+    <ViewComponent id="queue_list" type="list" binding="order"/>
+    <Event id="open_order" type="select" task="open-order"/>
+  </ViewContainer>
+
+  <ViewContainer id="order_detail" name="Order Detail">
+    <ViewComponent id="order_view" type="details" binding="order"/>
+    <Event id="start_picking" type="submit" task="start-pick">
+      <!-- 01-event: Picking Started -->
+    </Event>
+  </ViewContainer>
+
+  <ViewContainer id="pick_confirm" name="Pick Confirmation">
+    <ViewComponent id="confirm_view" type="details" binding="order"/>
+    <Event id="dispatch_order" type="submit" task="dispatch">
+      <!-- 01-event: Order Dispatched -->
+    </Event>
+  </ViewContainer>
+
+  <NavigationFlow from="open_order"     to="order_detail"/>
+  <NavigationFlow from="start_picking"  to="ghost_container"/>
+  <NavigationFlow from="dispatch_order" to="order_queue"/>
+
+</IFMLModel>

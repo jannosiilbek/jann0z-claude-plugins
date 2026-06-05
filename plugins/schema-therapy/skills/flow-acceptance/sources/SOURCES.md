@@ -24,15 +24,15 @@ carries no distilled guidance.
 
 | Title | Version / Edition | Publication status | Publication date | Canonical URL | Class | Validation date |
 |---|---|---|---|---|---|---|
-| Gherkin grammar (`gherkin.berp`) | tag `v39.1.0` | Released | 2026-05-06 | https://github.com/cucumber/gherkin/blob/v39.1.0/gherkin.berp | gatherable (shared corpus — copy) | 2026-06-04 |
-| Gherkin dialects/keywords (`gherkin-languages.json`) | tag `v39.1.0` | Released | 2026-05-06 | https://github.com/cucumber/gherkin/blob/v39.1.0/gherkin-languages.json | gatherable (shared corpus — copy) | 2026-06-04 |
+| Gherkin grammar (`gherkin.berp`) | tag `v39.1.0` | Released | 2026-05-06 | https://github.com/cucumber/gherkin/blob/v39.1.0/gherkin.berp | gatherable (shared corpus — NOT copied; sibling coords) | 2026-06-04 |
+| Gherkin dialects/keywords (`gherkin-languages.json`) | tag `v39.1.0` | Released | 2026-05-06 | https://github.com/cucumber/gherkin/blob/v39.1.0/gherkin-languages.json | gatherable (shared corpus — NOT copied; sibling coords) | 2026-06-04 |
 | `@cucumber/gherkin` reference parser (npm) | **39.1.0** | Released | 2026-05-06 (npm publish 14:49:50Z UTC) | https://www.npmjs.com/package/@cucumber/gherkin | executable | 2026-06-04 |
-| testdata/good corpus (46 `.feature`) | tag `v39.1.0` | Released | 2026-05-06 | https://github.com/cucumber/gherkin/tree/v39.1.0/testdata/good | gatherable / executable (shared corpus — copy) | 2026-06-04 |
-| testdata/bad corpus (11 `.feature` + 11 `.errors.ndjson`) | tag `v39.1.0` | Released | 2026-05-06 | https://github.com/cucumber/gherkin/tree/v39.1.0/testdata/bad | gatherable / executable (shared corpus — copy) | 2026-06-04 |
-| Gherkin Reference (cucumber.io docs) | `cucumber/website` `main` @ `0fcab8b` (pushed 2026-06-03) | Live, maintained | Continuously updated | https://cucumber.io/docs/gherkin/reference/ — src https://github.com/cucumber/website/blob/main/docs/gherkin/reference.md | gatherable (shared corpus — copy) | 2026-06-04 |
-| Writing better Gherkin (cucumber.io docs) | `cucumber/website` `main` | Live, maintained | Continuously updated | https://cucumber.io/docs/bdd/better-gherkin/ — src https://github.com/cucumber/website/blob/main/docs/bdd/better-gherkin.md | gatherable (shared corpus — copy) | 2026-06-04 |
-| Cucumber Anti-patterns (cucumber.io docs) | `cucumber/website` `main` | Live, maintained | Continuously updated | https://cucumber.io/docs/guides/anti-patterns/ — src https://github.com/cucumber/website/blob/main/docs/guides/anti-patterns.mdx | gatherable (shared corpus — copy) | 2026-06-04 |
-| Gherkin Step Organization (cucumber.io docs) | `cucumber/website` `main` | Live, maintained | Continuously updated | https://cucumber.io/docs/gherkin/step-organization/ — src https://github.com/cucumber/website/blob/main/docs/gherkin/step-organization.mdx | gatherable (shared corpus — copy) | 2026-06-04 |
+| testdata/good corpus (46 `.feature`) | tag `v39.1.0` | Released | 2026-05-06 | https://github.com/cucumber/gherkin/tree/v39.1.0/testdata/good | gatherable / executable (shared corpus — NOT copied; sibling coords) | 2026-06-04 |
+| testdata/bad corpus (11 `.feature` + 11 `.errors.ndjson`) | tag `v39.1.0` | Released | 2026-05-06 | https://github.com/cucumber/gherkin/tree/v39.1.0/testdata/bad | gatherable / executable (**COPIED** → `testdata/bad/`) | 2026-06-04 |
+| Gherkin Reference (cucumber.io docs) | `cucumber/website` `main` @ `0fcab8b` (pushed 2026-06-03) | Live, maintained | Continuously updated | https://cucumber.io/docs/gherkin/reference/ — src https://github.com/cucumber/website/blob/main/docs/gherkin/reference.md | gatherable (shared corpus — NOT copied; sibling coords) | 2026-06-04 |
+| Writing better Gherkin (cucumber.io docs) | `cucumber/website` `main` | Live, maintained | Continuously updated | https://cucumber.io/docs/bdd/better-gherkin/ — src https://github.com/cucumber/website/blob/main/docs/bdd/better-gherkin.md | gatherable (shared corpus — NOT copied; sibling coords) | 2026-06-04 |
+| Cucumber Anti-patterns (cucumber.io docs) | `cucumber/website` `main` | Live, maintained | Continuously updated | https://cucumber.io/docs/guides/anti-patterns/ — src https://github.com/cucumber/website/blob/main/docs/guides/anti-patterns.mdx | gatherable (shared corpus — NOT copied; sibling coords) | 2026-06-04 |
+| Gherkin Step Organization (cucumber.io docs) | `cucumber/website` `main` | Live, maintained | Continuously updated | https://cucumber.io/docs/gherkin/step-organization/ — src https://github.com/cucumber/website/blob/main/docs/gherkin/step-organization.mdx | gatherable (shared corpus — NOT copied; sibling coords) | 2026-06-04 |
 | **Cucumber anti-patterns (part #1)** — blog | `cucumber/website` `main` @ `0fcab8b` | Live, maintained | 2016-07-01 (Theo England) | https://cucumber.io/blog/bdd/cucumber-antipatterns-part-one/ — src https://github.com/cucumber/website/blob/main/blog/2016-07-01-cucumber-antipatterns-part-one.md | gatherable | 2026-06-04 |
 | **Cucumber anti-patterns (part #2) — "Testing through the UI"** — blog | `cucumber/website` `main` @ `0fcab8b` | Live, maintained | 2016-08-31 (Theo England) | https://cucumber.io/blog/bdd/cucumber-anti-patterns-part-two/ — src https://github.com/cucumber/website/blob/main/blog/2016-08-31-cucumber-anti-patterns-part-two.md | gatherable | 2026-06-04 |
 | **Page Object** — Martin Fowler bliki | bliki (undated revisions) | Live | 2013-09-10 | https://martinfowler.com/bliki/PageObject.html | gatherable (notes) | 2026-06-04 |
@@ -45,7 +45,7 @@ carries no distilled guidance.
 
 ---
 
-## Shared corpus — COPY (never reference) from the sibling `gherkin` skill
+## Shared corpus — what was COPIED vs. left at sibling coordinates
 
 Per the build directive's narrow exception, the sibling skill `gherkin` was **listed only** (filenames)
 at `../../gherkin/sources/`. Its gathered Gherkin corpus fully covers this skill's *formalism* needs
@@ -53,22 +53,39 @@ at `../../gherkin/sources/`. Its gathered Gherkin corpus fully covers this skill
 **independently re-validated** by this research (npm `latest` = 39.1.0 confirmed today; GitHub tag
 `v39.1.0` confirmed newest; `cucumber/website` `main` HEAD = `0fcab8b`, pushed 2026-06-03).
 
-**Build-step instruction:** the flow-acceptance build will **COPY** (not symlink, not reference) the
-following from `../../gherkin/sources/` into this skill's own `sources/` tree, so the skill stays fully
-self-contained per the pipeline's single-ownership / self-containment rule:
+**What this harness actually consumes — and what was COPY'd (honest record).** The earlier build
+directive contemplated copying the *full* shared Gherkin corpus (grammar, dialects, four docs,
+`testdata/good` + `testdata/bad`, LICENSE). In practice this harness only consumes ONE slice of that
+corpus as a runtime oracle — the **parse-negative error-shape oracle** (`scripts/selftest.mjs` §6
+asserts our parse throws match the `testdata/bad` `.errors.ndjson` shapes). So the COPY was kept
+minimal and precise rather than wholesale:
 
-- `gherkin-grammar/gherkin.berp`, `gherkin-grammar/gherkin-languages.json`
-- `gherkin-docs/gherkin-reference.md`, `gherkin-docs/writing-better-gherkin.md`,
-  `gherkin-docs/cucumber-anti-patterns.mdx`, `gherkin-docs/gherkin-step-organization.mdx`
-- `testdata/good/` (46 `.feature`) and `testdata/bad/` (11 `.feature` + 11 `.errors.ndjson`)
-- the MIT `LICENSE` covering grammar + corpora.
+**COPY'd into this skill's `sources/testdata/` (on disk, self-contained):**
+- `testdata/bad/` — 11 `.feature` + 11 matching `.errors.ndjson` (the parse-negative error-shape
+  oracle). This is the **only** corpus slice the harness reads at runtime; `selftest.mjs` parses three
+  of them (`not_gherkin`, `whitespace_in_tags`, `invalid_language`) and asserts our parser's thrown
+  message matches the oracle `.errors.ndjson`.
+- `testdata/LICENSE` — the MIT `LICENSE` from `cucumber/gherkin@v39.1.0` (canonical text shipped with
+  `@cucumber/gherkin`), copied for license hygiene over the copied `testdata/bad` corpus.
+
+**NOT copied — left at the independently-validated sibling coordinates** (this harness never reads them
+at runtime, so vendoring them would be dead weight; their upstream coordinates are recorded above and
+in the source table, and the sibling `gherkin` skill holds validated copies at `../../gherkin/sources/`):
+- `gherkin-grammar/gherkin.berp`, `gherkin-grammar/gherkin-languages.json` — grammar + dialects
+  (sibling: `../../gherkin/sources/gherkin-grammar/`).
+- `gherkin-docs/gherkin-reference.md`, `writing-better-gherkin.md`, `cucumber-anti-patterns.mdx`,
+  `gherkin-step-organization.mdx` — semantics + style docs (sibling: `../../gherkin/sources/gherkin-docs/`).
+- `testdata/good/` (46 `.feature`) — the parse-positive corpus; this harness validates positives by
+  parsing its OWN `.feature` fixtures under `scripts/fixtures/`, not the upstream good corpus.
 
 The `@cucumber/gherkin@39.1.0` parser stays **executable / not vendored**; install at the pinned
-version when a runnable oracle is needed (`npm i @cucumber/gherkin@39.1.0`).
+version when a runnable oracle is needed (`npm i @cucumber/gherkin@39.1.0`). Its bundled grammar +
+dialects are what the running parser uses, so the un-copied `.berp`/`-languages.json` rows are
+satisfied transitively by the pinned parser at runtime.
 
-> Until that copy happens, the grammar/semantics/style rows above are satisfied by the sibling's
-> validated files. This SOURCES.md records their upstream coordinates so the copy is reproducible and
-> independently verifiable.
+> The grammar/semantics/style rows in the source table are satisfied by the sibling's validated files
+> (coordinates recorded above) plus the pinned parser; this SOURCES.md records the upstream coordinates
+> so any future full copy stays reproducible and independently verifiable.
 
 ---
 

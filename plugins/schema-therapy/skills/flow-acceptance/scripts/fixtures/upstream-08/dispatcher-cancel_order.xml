@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       specs/06-gherkin/order.feature  sha256:1111111111111111111111111111111111111111111111111111111111111111
+       specs/07-personas.md            sha256:2222222222222222222222222222222222222222222222222222222222222222
+-->
+<TaskModel id="dispatcher-cancel_order" persona="Dispatcher" job="cancel_order">
+  <Budget klm="3"/>
+  <Task id="cancel-order" category="abstract" operator="enabling">
+    <Task id="cancel" category="interaction"
+          scenario-tags="@transition:order_cancelled" klm="MBB"/>
+  </Task>
+</TaskModel>

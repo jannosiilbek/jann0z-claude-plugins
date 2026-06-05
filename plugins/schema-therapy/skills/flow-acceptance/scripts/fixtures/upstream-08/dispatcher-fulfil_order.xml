@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       specs/06-gherkin/order.feature  sha256:1111111111111111111111111111111111111111111111111111111111111111
+       specs/07-personas.md            sha256:2222222222222222222222222222222222222222222222222222222222222222
+-->
+<TaskModel id="dispatcher-fulfil_order" persona="Dispatcher" job="fulfil_order">
+  <Budget klm="6"/>
+  <Task id="fulfil-order" category="abstract" operator="enabling">
+    <Task id="start-pick" category="interaction"
+          scenario-tags="@transition:order" klm="MBB"/>
+    <Task id="dispatch" category="interaction"
+          scenario-tags="@terminal:order" klm="MBB"/>
+  </Task>
+</TaskModel>
