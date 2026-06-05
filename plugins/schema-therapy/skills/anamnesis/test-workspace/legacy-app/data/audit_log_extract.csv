@@ -1,0 +1,7 @@
+transition,actor,count,period
+placed->pending,system,37891,2019-2025
+pending->paid,customer,35642,2019-2025
+paid->shipped,warehouse,33418,2019-2025
+pending->cancelled,customer,2109,2019-2025
+paid->cancelled,support,1092,2019-2025
+shipped->pending,support,137,2019-2025

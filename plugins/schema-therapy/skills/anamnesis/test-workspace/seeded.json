@@ -1,0 +1,46 @@
+{
+  "accidents": [
+    {
+      "id": "ACC-1",
+      "match": "ARCHIVED",
+      "rationale": "Enum token; appears in any false claim asserting the status is active; must be absent from domain.md"
+    },
+    {
+      "id": "ACC-2",
+      "match": "rounding",
+      "rationale": "Any accident claim about the refund bug must name rounding as the defect; absent from a correct domain.md"
+    },
+    {
+      "id": "ACC-3",
+      "match": "posted billing document",
+      "rationale": "The false claim mined from the entity name alone; the confirmed value claim uses 'quotation' instead and never uses this phrase"
+    },
+    {
+      "id": "ACC-4",
+      "match": "sleep",
+      "rationale": "The workaround is a literal sleep call; any accident claim about it names sleep; must not appear in domain.md"
+    }
+  ],
+  "values": [
+    {
+      "id": "VAL-1",
+      "match": "cannot be cancelled",
+      "rationale": "Natural phrasing of the shipped-order invariant; must appear in the confirmed claim statement and render in domain.md"
+    },
+    {
+      "id": "VAL-2",
+      "match": "manual support action",
+      "rationale": "The support reset is a human-initiated operation; confirmed claim statement will name it as such and must render"
+    },
+    {
+      "id": "VAL-3",
+      "match": "parcel",
+      "rationale": "The UI vocabulary word; a confirmed term claim carries this token and it must appear in domain.md"
+    },
+    {
+      "id": "VAL-4",
+      "match": "placed",
+      "rationale": "The lifecycle's first event; a confirmed lifecycle claim names the placed→pending→paid→shipped chain and must render"
+    }
+  ]
+}

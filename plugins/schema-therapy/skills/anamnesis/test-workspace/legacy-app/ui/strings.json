@@ -1,0 +1,30 @@
+{
+  "order": {
+    "status": {
+      "pending":   "Awaiting payment",
+      "paid":      "Payment received",
+      "shipped":   "Parcel dispatched",
+      "cancelled": "Order cancelled"
+    },
+    "actions": {
+      "cancel":    "Cancel order",
+      "track":     "Track your parcel",
+      "reorder":   "Reorder"
+    },
+    "messages": {
+      "shipped_confirmation": "Your parcel is on its way! You will receive a tracking number by email.",
+      "shipped_delayed":      "Your parcel has been delayed. Our support team will be in touch.",
+      "cancelled_notice":     "Your order has been cancelled. If a parcel was dispatched in error, please contact support."
+    }
+  },
+  "quote": {
+    "title":       "Your quote",
+    "valid_until": "This quote is valid until {date}.",
+    "accept":      "Accept quote",
+    "expire":      "Quote expired"
+  },
+  "support": {
+    "reset_confirm": "Reset this order to Pending? The parcel must not have left the warehouse.",
+    "reset_success": "Order reset to Pending."
+  }
+}
