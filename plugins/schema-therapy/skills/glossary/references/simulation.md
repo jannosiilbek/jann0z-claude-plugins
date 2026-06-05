@@ -29,6 +29,23 @@ event-storming harness pins): `## Domain Events` table `Event | Actor | Trigger 
 lists of event names. The upstream is the **authority** for event/actor/aggregate names;
 02 references them and never renames them (catalog F-theme).
 
+## Index
+
+Open the section the verdict points at; an agent debugging a `malformed`/`broken-test`/`upstream-defect` result can locate the right section from this table alone.
+
+| § | Title | What you find |
+|---|-------|---------------|
+| §0 | Oracle summary | status taxonomy + `upstream-defect` case + unparseable-01 ⇒ `broken-test` |
+| §1 | Tooling record | runtime, entry points (`--upstream` 01), parser/reuse rationale |
+| §2 | Lint checks | structural `L*` checks over 02 + `malformed` vs `fail` |
+| §3 | Closed fixture / scenario format | derived graph, shipped fixture pairs, DRY-mechanizable subset |
+| §4 | Closed assertion grammar | resolution / exact-value / negative / agent-judged check vocabulary |
+| §5 | Coverage floor & reconciliation | intake/edge counts, X5 reconciliation, positive+negative mapping |
+| §6 | Agent-judged checks | semantic `AJ*` checks + closed verdict schemas |
+| §7 | Output contract | stdout JSON shape, exit codes, `upstream-defect` finding class |
+| §8 | Determinism | no clock/randomness; byte-identical re-runs |
+| §9 | Upstream-defect routing | sound vs self-inconsistent vs unparseable 01 (the three upstream outcomes) |
+
 ## 0 — Oracle summary (doctrine §2)
 
 - **No engine, no executable corpus.** A ubiquitous-language glossary is a definitional

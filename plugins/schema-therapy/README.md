@@ -73,6 +73,17 @@ A complete worked example lives in [test-workspace/](test-workspace/) —
 the conference-ticketing intent + domain and their full green `specs/` tree
 (00–10).
 
+## Requirements
+
+- **Node.js ≥ 18** — every skill ships an executable verification harness
+  (`scripts/harness.mjs`) that is the artifact's sole pass/fail authority.
+- **Network on first run (some skills)** — the erd, statecharts, gherkin, and
+  flow-acceptance harnesses self-install their pinned npm dependencies
+  (`@dbml/core` + PGlite, SCION, `@cucumber/gherkin`) into the skill's
+  `scripts/node_modules` on first use (`npm ci`). Offline with deps absent, a
+  harness refuses to certify (`broken-test`) rather than degrade — it never
+  silently passes.
+
 ## Installation
 
 From this marketplace:

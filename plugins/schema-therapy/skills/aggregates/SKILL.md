@@ -1,6 +1,13 @@
 ---
 name: aggregates
-description: Step 3 of the schema-therapy modelling pipeline. Use this to turn the validated specs/01-event-storming.md AND specs/02-glossary.md into specs/03-aggregates.md — the aggregate roots, within-boundary invariants, transactional boundaries, and cross-aggregate consistency policies (transactional vs eventual). Trigger ONLY inside the schema-therapy pipeline: "run schema-therapy step 3", "produce 03-aggregates.md", "build the schema-therapy aggregates from 01+02", "do the aggregates step of the modelling pipeline". Consumes 01-event-storming.md AND 02-glossary.md; downstream schema-therapy skills (04 erd / 06 gherkin) consume this artifact. NOT a general DDD / aggregate-design / boundary-consulting tool — adjacent plugins own that ground; this skill owns only the schema-therapy 03 artifact at this one pipeline step.
+description: >-
+  Step 3 of the schema-therapy modelling pipeline — produces
+  specs/03-aggregates.md (aggregate roots, within-boundary invariants,
+  transactional boundaries, cross-aggregate consistency policies). Trigger ONLY
+  inside the schema-therapy pipeline: "run schema-therapy step 3", "produce
+  03-aggregates.md", "build the schema-therapy aggregates from 01+02", "do the
+  aggregates step of the modelling pipeline". NOT a general DDD / aggregate-design
+  / boundary-consulting tool — owns only this pipeline artifact.
 ---
 
 # aggregates
@@ -22,9 +29,8 @@ trigger is scoped to this one pipeline step.
 Two binding contracts live beside this file. **Load each only at the stage that
 needs it** (progressive disclosure):
 
-- `references/validation-rules.md` — the closed rule catalog S1–S9 / A1–A8 /
-  I1–I6 / X1–X7 / L1–L6 / D1–D5 (41 rules, the review vocabulary). Load at
-  **Draft** and **Professor**.
+- `references/validation-rules.md` — the closed rule catalog (41 rules — see the
+  catalog's theme index, the review vocabulary). Load at **Draft** and **Professor**.
 - `references/simulation.md` — the executable harness contract. You do not need
   it to run the harness; load it only to interpret a `malformed` / `broken-test`
   / `upstream-defect` result.

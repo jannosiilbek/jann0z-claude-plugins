@@ -34,10 +34,12 @@ Source classes:
 ## Gathered files (this directory)
 
 - [`w3c-task-models-note-2014.html`](./w3c-task-models-note-2014.html) — the W3C Note, full HTML. **The canonical machine-readable task-model format**: UML meta-model + XML Schema + operator descriptions.
-- [`w3c-ctt-paterno-santoro-spano.pdf`](./w3c-ctt-paterno-santoro-spano.pdf) — Paternò/Santoro/Spano CTT spec PDF (companion to the 2012 W3C submission); operator catalogue + notation.
-- [`paterno-2003-concurtasktrees-engineered-notation.pdf`](./paterno-2003-concurtasktrees-engineered-notation.pdf) — Paternò's engineered-notation chapter; the fullest open statement of CTT operator semantics & precedence by the canonical author.
-- [`kieras-using-klm-estimate-execution-times.pdf`](./kieras-using-klm-estimate-execution-times.pdf) — Kieras course text; **the open, authoritative KLM operator table** with concrete second values (verbatim below).
-- [`card-moran-newell-1980-klm-cacm.pdf`](./card-moran-newell-1980-klm-cacm.pdf) — the original 1980 CACM KLM paper (CMU open scan); the primary KLM source.
+- [`w3c-ctt-paterno-santoro-spano.txt`](./w3c-ctt-paterno-santoro-spano.txt) — Paternò/Santoro/Spano CTT spec (companion to the 2012 W3C submission); operator catalogue + notation.
+- [`paterno-2003-concurtasktrees-engineered-notation.txt`](./paterno-2003-concurtasktrees-engineered-notation.txt) — Paternò's engineered-notation chapter; the fullest open statement of CTT operator semantics & precedence by the canonical author.
+- [`kieras-using-klm-estimate-execution-times.txt`](./kieras-using-klm-estimate-execution-times.txt) — Kieras course text; **the open, authoritative KLM operator table** with concrete second values (verbatim below).
+- [`card-moran-newell-1980-klm-cacm.txt`](./card-moran-newell-1980-klm-cacm.txt) — the original 1980 CACM KLM paper (CMU open scan); the primary KLM source.
+
+PDF originals replaced by plain-text extractions for plugin shipping; canonical URLs above remain the authoritative format.
 
 ### KLM operator table (verbatim from the Kieras course text — the harness's KLM arithmetic basis)
 

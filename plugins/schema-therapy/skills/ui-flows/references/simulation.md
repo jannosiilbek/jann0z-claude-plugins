@@ -68,6 +68,23 @@ persona prose block, or an 08 task-tree structure beyond the seams it must resol
 only the **IFML structure derived via the pinned dialect** (containers with frozen ids, components +
 04-resolved bindings, events + KLM costs + exact-01 annotations, navigation flows).
 
+## Index
+
+Open the section the verdict points at; an agent debugging a `malformed`/`broken-test`/`upstream-defect` result can locate the right section from this table alone.
+
+| § | Title | What you find |
+|---|-------|---------------|
+| §0 | Probe reference | why no scriptable IFML validator exists → vendored hand-rolled reader |
+| §1 | Tooling record | reader + flow-walk oracle choice, entry points (incl. optional `--upstream-05`) |
+| §2 | Mechanical (no-walk) checks | structural Theme-A/B/D/E shape checks + `malformed` vs `fail` |
+| §3 | Closed fixture / scenario format | derived graph, **flow-walk oracle** (§3.3), fixtures, manifest |
+| §4 | Closed assertion grammar | flow-walk / resolution / exact-value / negative (incl. N-05ABSENT) / agent-judged |
+| §5 | Coverage floor & reconciliation | intake/edge/walk counts, reconciliation, positive+negative mapping |
+| §6 | Agent-judged checks | Theme-F heuristic residue; closed verdict schemas |
+| §7 | Output contract | stdout JSON shape, exit codes, `upstream-defect` routing |
+| §8 | Determinism | no walker-minted value asserted; byte-identical re-runs |
+| §9 | Upstream-defect routing + single-ownership | how an 02/04/05/07/08 defect is reported; ownership notes |
+
 ## 0 — Probe reference (no scriptable IFML validator exists → vendored hand-rolled IFML-XMI-subset reader)
 
 `sources/PROBE-transcript.md` + `sources/SOURCES.md` → **"Probe"** record the empirical search for a

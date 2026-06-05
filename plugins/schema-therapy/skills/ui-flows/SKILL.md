@@ -1,18 +1,18 @@
 ---
 name: ui-flows
 description: >-
-  Schema-therapy step 9. Turns the domain model + personas + task models into per-persona
-  IFML screen-flow models. Consumes specs/02-glossary.md, specs/04-erd.dbml + specs/04-transitions.md,
-  specs/05-statecharts/ (when emitted), specs/07-personas.md, and specs/08-task-models/; OWNS
-  specs/09-ui-flows/<persona>.xml — screens, navigation, and data bindings measured against 08's
-  KLM budgets. Use when authoring or reviewing 09 ui-flows in a schema-therapy pipeline run.
-  Downstream skill 10 walks 09's screens by exact container id (frozen contract). NOT general
-  UI/UX or free-form IFML authoring — a closed, lint-gated pipeline step.
+  Step 9 of the schema-therapy modelling pipeline — produces
+  specs/09-ui-flows/<persona>.xml, one per-persona IFML screen-flow model (screens,
+  navigation, data bindings measured against 08's KLM budgets). Trigger ONLY inside
+  the schema-therapy pipeline: "run schema-therapy step 9", "produce 09-ui-flows",
+  "build the schema-therapy ui-flows from 07 and 08", "do the ui-flows step of the
+  modelling pipeline". NOT a general UI/UX or free-form IFML authoring tool — owns
+  only this pipeline artifact.
 ---
 
 # ui-flows (09)
 
-Skill #9 of the 11-skill schema-therapy pipeline. The **09 artifact is a directory** —
+Step 9 of the **schema-therapy** modelling pipeline. The **09 artifact is a directory** —
 `specs/09-ui-flows/<snake(persona)>.xml`, **one IFML model per 07 persona** (a bijection with
 the 07 `### <PersonaName>` blocks). It OWNS: screens (`ViewContainer`s with pinned ids), view
 components + 04 data bindings, navigation flows, and KLM-costed events with exact 01-event

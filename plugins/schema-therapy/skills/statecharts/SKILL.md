@@ -1,6 +1,14 @@
 ---
 name: statecharts
-description: Step 5 of the schema-therapy modelling pipeline — a CONDITIONAL artifact. Use this to promote each gate-passing lifecycle entity from its specs/04-transitions.md table into an executable SCXML state machine at specs/05-statecharts/<entity>.scxml, declaring in-document that it supersedes that 04 table (04 is NEVER edited). Trigger ONLY inside the schema-therapy pipeline: "run schema-therapy step 5", "produce 05-statecharts", "build the statecharts from 04", "do the statechart step of the modelling pipeline". Consumes specs/01–04 (event names, enums, aggregates, transition tables); downstream 06 consumes 05 where an entity was promoted, else the 04 table. When NO entity passes the gate, emit NOTHING and record the gate decision. NOT a general statechart / XState / SCXML-authoring tool — adjacent ground is owned elsewhere; this skill owns only the schema-therapy 05 artifact at this one pipeline step.
+description: >-
+  Step 5 of the schema-therapy modelling pipeline (a CONDITIONAL artifact) —
+  produces specs/05-statecharts/<entity>.scxml, promoting each gate-passing
+  lifecycle entity into an executable SCXML state machine (emit NOTHING and
+  record the gate decision when no entity passes). Trigger ONLY inside the
+  schema-therapy pipeline: "run schema-therapy step 5", "produce 05-statecharts",
+  "build the statecharts from 04", "do the statechart step of the modelling
+  pipeline". NOT a general statechart / XState / SCXML-authoring tool — owns only
+  this pipeline artifact.
 ---
 
 # statecharts
@@ -32,8 +40,8 @@ nothing** when no entity passes.
 Two binding contracts live beside this file. **Load each only at the stage that
 needs it** (progressive disclosure):
 
-- `references/validation-rules.md` — the closed rule catalog A1–A8 / B1–B5 / C1–C6 /
-  D1–D9 / E1–E4 (32 rules, the review vocabulary). Load at **Draft** and **Professor**.
+- `references/validation-rules.md` — the closed rule catalog (32 rules — see the
+  catalog's theme index, the review vocabulary). Load at **Draft** and **Professor**.
 - `references/simulation.md` — the executable harness contract (the SCION engine
   oracle + mechanical reader). Load it only to interpret a `malformed` /
   `broken-test` / `upstream-defect` result.

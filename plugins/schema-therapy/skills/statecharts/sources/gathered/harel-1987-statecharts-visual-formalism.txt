@@ -1,0 +1,9 @@
+image-scan PDF; text not extractable; consult canonical URL
+
+Source: David Harel, "Statecharts: A Visual Formalism for Complex Systems,"
+Science of Computer Programming 8 (1987) 231-274.
+
+The bundled PDF original was a scanned-image document with no embedded text
+layer, so no machine-readable text could be extracted for plugin shipping.
+For the authoritative content, consult the canonical URL recorded in this
+skill's sources/SOURCES.md provenance table.

@@ -63,6 +63,23 @@ fingerprint block; the closed step grammar: location `Given … is on the "<scre
 interaction `When` (01-event verbatim if domain-affecting else quoted Event id), navigation `Then … is
 taken to the "<screen id>" screen`, outcome `Then the outcome of "<06 tag>" holds`).
 
+## Index
+
+Open the section the verdict points at; an agent debugging a `malformed`/`broken-test`/`upstream-defect` result can locate the right section from this table alone.
+
+| § | Title | What you find |
+|---|-------|---------------|
+| §0 | Probe / oracle provenance | `@cucumber/gherkin` parse+compile oracle + copied sibling corpus |
+| §1 | Tooling record | gherkin parser pin, entry points (`--upstream-06/-08/-09`), self-install/offline mode |
+| §2 | Mechanical (over-AST) checks | structural `M*` checks over the AST + `malformed` vs `fail` |
+| §3 | Closed fixture / scenario format | derived graph, **walk-replay oracle** (§3.3), fixtures, manifest |
+| §4 | Closed assertion grammar | engine + walk-replay / resolution / exact-value / negative / agent-judged |
+| §5 | Coverage floor & TRUE ❌ reconciliation | intake/edge counts, per-❌ negative floor, positive+negative mapping |
+| §6 | Agent-judged checks | Theme-D canon residue; closed verdict schemas |
+| §7 | Output contract | stdout JSON shape, exit codes, `upstream-defect` routing |
+| §8 | Determinism | ids never asserted; no replay-minted value; byte-identical re-runs |
+| §9 | Upstream-defect routing + single-ownership | how an 06/08/09 defect is reported; ownership notes |
+
 ## 0 — Probe / oracle provenance (`@cucumber/gherkin` v39.1.0 parse+compile oracle; copied sibling corpus)
 
 The pinned oracle is **`@cucumber/gherkin` v39.1.0** (SOURCES.md: npm `latest`, published

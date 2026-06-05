@@ -14,7 +14,7 @@ container ids are 10's walk vocabulary and are therefore frozen contract.
 
 **Authorities (via [SOURCES.md](../sources/SOURCES.md)):**
 - **[IFML]** — OMG *Interaction Flow Modeling Language* 1.0, `formal/15-02-05`
-  ([`ifml-1.0-formal-15-02-05.pdf`](../sources/ifml-1.0-formal-15-02-05.pdf)). Normative for the
+  ([`ifml-1.0-formal-15-02-05.txt`](../sources/ifml-1.0-formal-15-02-05.txt)). Normative for the
   language: concept vocabulary, semantics, notation.
 - **[MM]** — OMG IFML 1.0 Metamodel XMI, `ptc/14-03-16`, ns `20140301`
   ([`IFML-Metamodel.xmi`](../sources/IFML-Metamodel.xmi)). **Normative for the machine shape**:

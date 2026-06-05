@@ -1,6 +1,13 @@
 ---
 name: glossary
-description: Step 2 of the schema-therapy modelling pipeline. Use this to turn the validated specs/01-event-storming.md into specs/02-glossary.md — the ubiquitous-language Term list (one canonical word per domain concept, carried verbatim from 01) plus the lifecycle-derived Enums (one <AggregateName>Status per 01 skeleton). Trigger ONLY inside the schema-therapy pipeline: "run schema-therapy step 2", "produce 02-glossary.md", "build the schema-therapy glossary from 01-event-storming.md", "do the glossary step of the modelling pipeline". Consumes 01-event-storming.md ONLY; downstream schema-therapy skills (03 aggregates / 04 erd / 06 gherkin) consume this artifact. NOT a general glossary / ubiquitous-language / DDD-terminology authoring tool — adjacent plugins own that ground; this skill owns only the schema-therapy 02 artifact at this one pipeline step.
+description: >-
+  Step 2 of the schema-therapy modelling pipeline — produces specs/02-glossary.md
+  (the ubiquitous-language Term list plus the lifecycle-derived Enums). Trigger
+  ONLY inside the schema-therapy pipeline: "run schema-therapy step 2", "produce
+  02-glossary.md", "build the schema-therapy glossary from 01-event-storming.md",
+  "do the glossary step of the modelling pipeline". NOT a general glossary /
+  ubiquitous-language / DDD-terminology authoring tool — owns only this pipeline
+  artifact.
 ---
 
 # glossary

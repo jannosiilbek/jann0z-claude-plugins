@@ -1,6 +1,14 @@
 ---
 name: gherkin
-description: Step 6 of the schema-therapy modelling pipeline — the domain-behavior layer. Use this to turn the modelled domain into executable BDD behavior at specs/06-gherkin/<aggregate>.feature, one .feature file per 03 aggregate, each scenario tagged to its upstream obligation (invariant / transition / terminal / policy / authz). Trigger ONLY inside the schema-therapy pipeline: "run schema-therapy step 6", "produce 06-gherkin", "write the gherkin/feature files from the model", "do the gherkin step of the modelling pipeline". Consumes specs/01-event-storming.md (actor bindings), specs/02-glossary.md, specs/03-aggregates.md, specs/04-erd.dbml + specs/04-transitions.md, and specs/05-statecharts/*.scxml WHEN emitted (the lifecycle authority for promoted entities; else 04). 06 never edits upstream; downstream 08 task-models and 10 flow-acceptance bind to its scenario tags by exact string. NOT a general Gherkin / BDD / Cucumber-authoring tool — that ground is owned elsewhere; this skill owns only the schema-therapy 06 artifact at this one pipeline step.
+description: >-
+  Step 6 of the schema-therapy modelling pipeline (the domain-behavior layer) —
+  produces specs/06-gherkin/<aggregate>.feature, one .feature per 03 aggregate,
+  each scenario tagged to its upstream obligation (invariant / transition /
+  terminal / policy / authz). Trigger ONLY inside the schema-therapy pipeline:
+  "run schema-therapy step 6", "produce 06-gherkin", "write the gherkin/feature
+  files from the model", "do the gherkin step of the modelling pipeline". NOT a
+  general Gherkin / BDD / Cucumber-authoring tool — owns only this pipeline
+  artifact.
 ---
 
 # gherkin
@@ -42,8 +50,8 @@ records the choice in its `authority` block.
 Two binding contracts live beside this file. **Load each only at the stage that needs
 it** (progressive disclosure):
 
-- `references/validation-rules.md` — the closed rule catalog A1–A8 / B1–B7 / C1–C9 /
-  D1–D5 / E1–E4 (33 rules, the review vocabulary). Load at **Draft** and **Professor**.
+- `references/validation-rules.md` — the closed rule catalog (33 rules — see the
+  catalog's theme index, the review vocabulary). Load at **Draft** and **Professor**.
 - `references/simulation.md` — the executable harness contract (the `@cucumber/gherkin`
   parse+compile oracle + mechanical reader). Load it only to interpret a `malformed` /
   `broken-test` / `upstream-defect` result.

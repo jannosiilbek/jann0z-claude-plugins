@@ -38,10 +38,12 @@ Classes:
 ## Gathered files (relative links)
 
 Classic papers:
-- [Codd 1970 — A Relational Model of Data](./codd-1970-relational-model.pdf) — full 11-page scan (seas.upenn.edu mirror of the CACM paper).
-- [Chen 1976 — The Entity-Relationship Model](./chen-1976-entity-relationship-model.pdf) — full reprint scan (Internet Archive `entityrelationshx00chen`).
-- [Chen 1976 — condensed 5-page version](./chen-1976-lsu-condensed-5page.pdf) — author-hosted (csc.lsu.edu) condensed edition; secondary.
+- [Codd 1970 — A Relational Model of Data](./codd-1970-relational-model.txt) — full 11-page scan (seas.upenn.edu mirror of the CACM paper).
+- [Chen 1976 — The Entity-Relationship Model](./chen-1976-entity-relationship-model.txt) — full reprint scan (Internet Archive `entityrelationshx00chen`).
+- [Chen 1976 — condensed 5-page version](./chen-1976-lsu-condensed-5page.txt) — author-hosted (csc.lsu.edu) condensed edition; secondary.
 - [Kent 1983 — Five Normal Forms](./kent-1983-five-normal-forms.html) — complete full text, author's own copy (`bkent.net`) bearing the ACM 1996 permission-to-copy notice.
+
+PDF originals replaced by plain-text extractions for plugin shipping; canonical URLs above remain the authoritative format.
 
 DBML language reference (Holistics, Apache-2.0):
 - [docs.md](./dbml-docs/docs.md) — primary DBML syntax reference.

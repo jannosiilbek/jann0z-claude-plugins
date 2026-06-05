@@ -40,6 +40,24 @@ The two upstream parses use the **pinned 01/02 formats** (copied, never imported
 
 03 references both and never renames either (catalog L-theme).
 
+## Index
+
+Open the section the verdict points at; an agent debugging a `malformed`/`broken-test`/`upstream-defect` result can locate the right section from this table alone.
+
+| § | Title | What you find |
+|---|-------|---------------|
+| §0 | Oracle summary | status taxonomy + `upstream-defect` case + unparseable-01/02 ⇒ `broken-test` |
+| §1 | Tooling record | runtime, entry points (`--upstream-01/-02`), closed lexicons, reuse rationale |
+| §2 | Lint checks | structural `L*` checks over 03 + `malformed` vs `fail` |
+| §3 | Closed fixture / scenario format | derived graph, shipped fixture triples, X7/X4/I3 mechanical design |
+| §4 | Closed assertion grammar | resolution / exact-value / negative / agent-judged check vocabulary |
+| §5 | Coverage floor & reconciliation | intake/edge counts, X5 reconciliation, positive+negative mapping |
+| §6 | Agent-judged checks | semantic `AJ*` checks + closed verdict schemas |
+| §7 | Output contract | stdout JSON shape, exit codes, `upstream-defect`+`upstream` routing |
+| §8 | Determinism | no clock/randomness; byte-identical re-runs |
+| §9 | Upstream-defect routing | five 01/02 upstream conditions (defect vs broken-test) |
+| Appendix | Sanctioned implementation deviations | three pinned implementer decisions |
+
 ## 0 — Oracle summary (doctrine §2)
 
 - **No engine, no executable corpus.** An aggregate-boundary model is a tactical-design

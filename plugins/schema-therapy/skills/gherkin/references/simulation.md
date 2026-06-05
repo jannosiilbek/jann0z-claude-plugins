@@ -72,6 +72,23 @@ E-theme). 06 owns only the **Gherkin structure derived via the pinned convention
 name = snake_case 03 aggregate; `Feature:` name = exact 03 aggregate string; one source tag
 per scenario from the closed grammar; the exact-01-event embedded in the `When`).
 
+## Index
+
+Open the section the verdict points at; an agent debugging a `malformed`/`broken-test`/`upstream-defect` result can locate the right section from this table alone.
+
+| § | Title | What you find |
+|---|-------|---------------|
+| §0 | Probe transcript | `@cucumber/gherkin` parse+compile oracle verification |
+| §1 | Tooling record | gherkin parser pin, optional `--upstream-05`, self-install/offline mode |
+| §2 | Mechanical (over-AST) checks | structural `M*` checks over the AST + `malformed` vs `fail` |
+| §3 | Closed fixture / scenario format | derived graph, **parse+compile oracle** (§3.3), fixtures, manifest |
+| §4 | Closed assertion grammar | engine `W-*` / resolution / exact-value / negative (incl. N-05ABSENT) / agent-judged |
+| §5 | Coverage floor & reconciliation | intake/edge/engine counts, reconciliation, positive+negative mapping |
+| §6 | Agent-judged checks | declarative quality + violating-action + And-conjunction; closed verdict schemas |
+| §7 | Output contract | stdout JSON shape, exit codes, `upstream-defect` routing |
+| §8 | Determinism | no parser-minted value asserted; byte-identical re-runs |
+| §9 | Upstream-defect routing | 02/03/04/05 conditions (defect vs broken-test) |
+
 ## 0 — Probe transcript (`@cucumber/gherkin` v39.1.0 parse+compile oracle — empirical verification on current Node)
 
 The pinned oracle (SOURCES.md: `@cucumber/gherkin` **39.1.0**, the format's own reference

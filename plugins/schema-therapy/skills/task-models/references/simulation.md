@@ -64,6 +64,23 @@ description; it owns only the **CTT task tree structure** (categories, operators
 strings, the per-job budget) derived under the pinned dialect (catalog "pinned XML
 dialect" block).
 
+## Index
+
+Open the section the verdict points at; an agent debugging a `malformed`/`broken-test`/`upstream-defect` result can locate the right section from this table alone.
+
+| § | Title | What you find |
+|---|-------|---------------|
+| §0 | Probe reference | why no external CTT engine exists → vendored Rec-faithful walker |
+| §1 | Tooling record | walker oracle choice, entry points (`--upstream-06/-07`), zero-dependency design |
+| §2 | Mechanical (no-walker) checks | structural `M*` shape checks + `malformed` vs `fail` |
+| §3 | Closed fixture / scenario format | derived graph, **walker oracle** (§3.3), fixtures, manifest |
+| §4 | Closed assertion grammar | walker / resolution / exact-value / negative / agent-judged vocabulary |
+| §5 | Coverage floor & reconciliation | intake/edge/walk counts, reconciliation, positive+negative mapping |
+| §6 | Agent-judged checks | sequencing / decomposition / W-semantics; closed verdict schemas |
+| §7 | Output contract | stdout JSON shape, exit codes, `upstream-defect` routing |
+| §8 | Determinism | no walker-minted value asserted; byte-identical re-runs |
+| §9 | Upstream-defect routing + single-ownership | how a 06/07 defect is reported; ownership notes |
+
 ## 0 — Probe reference (no external CTT engine exists → vendored Rec-faithful walker)
 
 `sources/SOURCES.md` → **"Probe"** records the empirical search for a runnable, scriptable

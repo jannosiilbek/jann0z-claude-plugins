@@ -74,6 +74,23 @@ or a 04 row beyond the required transitions (catalog E-theme). 05 owns only the 
 structure derived via the pinned mapping** (state ids = 02 enum values; `event` =
 pinned transform of the 01 string; transitions = 04 rows; refinements annotated).
 
+## Index
+
+Open the section the verdict points at; an agent debugging a `malformed`/`broken-test`/`upstream-defect` result can locate the right section from this table alone.
+
+| § | Title | What you find |
+|---|-------|---------------|
+| §0 | Probe transcript | SCION execution-oracle verification + two dormancy gotchas |
+| §1 | Tooling record | SCION + `@dbml/core` pins, hand-rolled SCXML reader, self-install/offline mode |
+| §2 | Mechanical (no-engine) checks | structural `M*` checks + `malformed` vs `fail` + gate arithmetic (M8–M10) |
+| §3 | Closed fixture / scenario format | derived graph, **engine walks** (§3.3), fixtures, **not-emitted design** (§3.6) |
+| §4 | Closed assertion grammar | engine walk `W-*` / resolution / exact-value / negative / agent-judged vocabulary |
+| §5 | Coverage floor & reconciliation | intake/edge/walk counts, X-RECON reconciliation, not-emitted pass |
+| §6 | Agent-judged checks | gate B4 + Harel quality + guard-set coverage; closed verdict schemas |
+| §7 | Output contract | stdout JSON shape, exit codes, `gate`/`upstream-defect` records |
+| §8 | Determinism | no engine-minted value asserted; byte-identical re-runs |
+| §9 | Upstream-defect routing | 01/02/03/04 conditions (defect vs broken-test) |
+
 ## 0 — Probe transcript (SCION execution oracle — empirical verification on current Node)
 
 The pinned oracle (SOURCES.md authority #2: `@scion-scxml/core@2.6.24` +

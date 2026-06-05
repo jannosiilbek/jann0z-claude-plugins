@@ -54,6 +54,23 @@ The two upstream parses use the **pinned 02/03 formats** (copied, never imported
 04 references both and **never restates** a 02 definition, a 03 invariant text, or a 03 policy
 (catalog E-theme). 04 owns only the **schema vocabulary derived via the pinned mapping**.
 
+## Index
+
+Open the section the verdict points at; an agent debugging a `malformed`/`broken-test`/`upstream-defect` result can locate the right section from this table alone.
+
+| § | Title | What you find |
+|---|-------|---------------|
+| §0 | Oracle summary | engine pipeline (parse/DDL/execute) + status taxonomy + missing-engine ⇒ `broken-test` |
+| §1 | Tooling record | `@dbml/core` + PGlite pins, self-install/offline mode, reuse rationale |
+| §2 | Lint / parse checks | structural `L*` checks + `malformed` (parse) vs `fail` |
+| §3 | Closed fixture / scenario format | derived graph, **engine scenarios** (§3.3), shipped fixtures, manifest |
+| §4 | Closed assertion grammar | engine `E-*` / resolution / exact-value / negative / agent-judged vocabulary |
+| §5 | Coverage floor & reconciliation | intake/edge/engine counts, X6 reconciliation, positive+negative mapping |
+| §6 | Agent-judged checks | 2NF/3NF residue + cascade; closed verdict schemas |
+| §7 | Output contract | stdout JSON shape, exit codes, `upstream-defect` routing |
+| §8 | Determinism | no engine-minted value asserted; byte-identical re-runs |
+| §9 | Upstream-defect routing | five 02/03 conditions (defect vs broken-test) |
+
 ## 0 — Oracle summary (doctrine §2)
 
 - **A real engine exists — and it is the oracle.** Unlike 01–03, the DBML artifact is a
