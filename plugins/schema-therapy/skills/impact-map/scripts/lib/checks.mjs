@@ -95,6 +95,10 @@ export function deriveGraph(doc) {
     goalParagraphCount,
     goalBulletCount,
     goalSection: goalSec,
+    // Raw fingerprint comment block (read-only; surfaced so the amendment-mode
+    // diff can flag fingerprint churn separately from content changes). Never
+    // recomputed (§1/§8) — only compared string-wise against a baseline's block.
+    fingerprintBlock: doc.fingerprintBlock || '',
   };
 }
 
@@ -505,6 +509,165 @@ export function checkX4_singleGoal(g) {
     severity: 'error',
     status: ok ? 'pass' : 'fail',
     detail: ok ? '' : `goal is not a single statement (paragraphs=${g.goalParagraphCount}, bullets=${g.goalBulletCount})`,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Amendment-mode diff (simulation.md §"Amendment-mode diff", flag-conditional).
+// Element-level diff keyed by NAME per table, against a previously-generated
+// artifact graph (the baseline). Content changes (added/removed/changed) are
+// separated from fingerprint churn (EXPECTED on any amendment) so the diff
+// never counts a fingerprint bump as a content change. Output ordering is
+// pinned (tables in PINNED order, rows sorted by name) for byte-determinism.
+//
+// `cells` carries the row's full content per table:
+//   actors       → { actor, description }
+//   impacts      → { impact, actor }
+//   deliverables → { deliverable, impact }
+// The NAME key per table is the first column (actor / impact / deliverable).
+// ---------------------------------------------------------------------------
+
+// Pinned table order + per-table name field. Single source of truth for the
+// diff walk so ordering and keying never drift.
+const DIFF_TABLES = [
+  { table: 'actors', nameField: 'actor', cellFields: ['actor', 'description'] },
+  { table: 'impacts', nameField: 'impact', cellFields: ['impact', 'actor'] },
+  { table: 'deliverables', nameField: 'deliverable', cellFields: ['deliverable', 'impact'] },
+];
+
+function cellsOf(row, cellFields) {
+  const o = {};
+  for (const f of cellFields) o[f] = norm(row[f]);
+  return o;
+}
+
+function cellsEqual(a, b, cellFields) {
+  return cellFields.every((f) => norm(a[f]) === norm(b[f]));
+}
+
+// Compute the element-level diff between an artifact graph and a baseline graph.
+// Both args are the output of deriveGraph(). Returns the `baseline` summary block
+// (stable ordering). Pure + deterministic: no clock, no randomness, no IO.
+export function computeBaselineDiff(artifactGraph, baselineGraph) {
+  const added = [];
+  const removed = [];
+  const changed = [];
+
+  for (const { table, nameField, cellFields } of DIFF_TABLES) {
+    const artRows = artifactGraph[table];
+    const baseRows = baselineGraph[table];
+    // Key by name (case/whitespace-insensitive, matching cross-table resolution
+    // identity used elsewhere). First occurrence wins (duplicate names are an
+    // X2/X3 concern, not the diff's).
+    const artByKey = new Map();
+    for (const r of artRows) if (!artByKey.has(key(r[nameField]))) artByKey.set(key(r[nameField]), r);
+    const baseByKey = new Map();
+    for (const r of baseRows) if (!baseByKey.has(key(r[nameField]))) baseByKey.set(key(r[nameField]), r);
+
+    // added: present in artifact, absent in baseline.
+    for (const r of artRows) {
+      if (!baseByKey.has(key(r[nameField]))) {
+        added.push({ table, name: norm(r[nameField]), cells: cellsOf(r, cellFields) });
+      }
+    }
+    // removed: present in baseline, absent in artifact.
+    for (const r of baseRows) {
+      if (!artByKey.has(key(r[nameField]))) {
+        removed.push({ table, name: norm(r[nameField]), cells: cellsOf(r, cellFields) });
+      }
+    }
+    // changed: same name, different cell content.
+    for (const r of artRows) {
+      const b = baseByKey.get(key(r[nameField]));
+      if (b && !cellsEqual(r, b, cellFields)) {
+        changed.push({
+          table,
+          name: norm(r[nameField]),
+          before: cellsOf(b, cellFields),
+          after: cellsOf(r, cellFields),
+        });
+      }
+    }
+  }
+
+  // Stable ordering: tables already walked in pinned order; sort each set by
+  // (table-pinned-order, name) so output is byte-identical across runs.
+  const tableRank = (t) => DIFF_TABLES.findIndex((d) => d.table === t);
+  const byTableThenName = (a, b) =>
+    tableRank(a.table) - tableRank(b.table) || a.name.localeCompare(b.name, 'en');
+  added.sort(byTableThenName);
+  removed.sort(byTableThenName);
+  changed.sort(byTableThenName);
+
+  return {
+    added,
+    removed,
+    changed,
+    goalChanged: norm(artifactGraph.goal) !== norm(baselineGraph.goal),
+    fingerprintChanged: norm(artifactGraph.fingerprintBlock) !== norm(baselineGraph.fingerprintBlock),
+  };
+}
+
+// XD1 (exactValue, [PLAN]-amend): flag-conditional reconciliation of the diff.
+// Asserts the diff was computed and reconciles — each side's per-table element
+// counts match its own parse, and added/removed/changed are DISJOINT by
+// (table,name). XD1 does NOT judge whether the diff is justified (delta
+// traceability is the professor's job); a diff with entries still passes
+// mechanically. Returns { id, rule, status, detail }.
+export function checkXD1_amendReconcile(diff, artifactGraph, baselineGraph) {
+  const problems = [];
+
+  if (!diff) {
+    return {
+      id: 'XD1',
+      rule: '[PLAN]-amend',
+      status: 'broken',
+      detail: 'amend mode invoked but no baseline diff was computed',
+    };
+  }
+
+  // Per-table count reconciliation: for each table, every artifact row is
+  // accounted for exactly once as added OR changed OR unchanged-present; every
+  // baseline row as removed OR changed OR unchanged-present. We verify the
+  // arithmetic: |art| = added + changed + (matched-unchanged);
+  //             |base| = removed + changed + (matched-unchanged).
+  for (const { table, nameField } of DIFF_TABLES) {
+    const artKeys = new Set(artifactGraph[table].map((r) => key(r[nameField])));
+    const baseKeys = new Set(baselineGraph[table].map((r) => key(r[nameField])));
+    const addedT = diff.added.filter((e) => e.table === table).length;
+    const removedT = diff.removed.filter((e) => e.table === table).length;
+    const changedT = diff.changed.filter((e) => e.table === table).length;
+    // matched = names present in both (by key).
+    let matched = 0;
+    for (const k of artKeys) if (baseKeys.has(k)) matched++;
+    if (addedT !== artKeys.size - matched) {
+      problems.push(`${table}: added ${addedT} != |artifact|-matched ${artKeys.size - matched}`);
+    }
+    if (removedT !== baseKeys.size - matched) {
+      problems.push(`${table}: removed ${removedT} != |baseline|-matched ${baseKeys.size - matched}`);
+    }
+    if (changedT > matched) {
+      problems.push(`${table}: changed ${changedT} exceeds matched ${matched}`);
+    }
+  }
+
+  // Disjointness by (table,name): no element appears in more than one of
+  // added/removed/changed.
+  const seen = new Map();
+  const mark = (bucket, e) => {
+    const k = `${e.table} ${key(e.name)}`;
+    if (seen.has(k)) problems.push(`(${e.table},${e.name}) appears in both ${seen.get(k)} and ${bucket}`);
+    else seen.set(k, bucket);
+  };
+  for (const e of diff.added) mark('added', e);
+  for (const e of diff.removed) mark('removed', e);
+  for (const e of diff.changed) mark('changed', e);
+
+  return {
+    id: 'XD1',
+    rule: '[PLAN]-amend',
+    status: problems.length === 0 ? 'pass' : 'broken',
+    detail: problems.length === 0 ? '' : `diff reconciliation failed: ${problems.join('; ')}`,
   };
 }
 

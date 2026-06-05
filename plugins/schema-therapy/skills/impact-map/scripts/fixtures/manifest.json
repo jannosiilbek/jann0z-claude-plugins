@@ -19,6 +19,9 @@
     { "file": "dup-impact.md", "status": "fail", "failingCheck": "X3", "args": [] },
     { "file": "broken-chain.md", "status": "fail", "failingCheck": "N5", "args": [] },
     { "file": "wrong-reason-trap.md", "status": "fail", "failingCheck": "N1", "trap": true, "trapDetailMustContain": "Advertisers", "trapDetailMustNotContain": "measur", "args": [] },
-    { "file": "vacuous.md", "status": "broken-test", "failingCheck": null, "vacuous": true, "args": ["--no-checks"] }
+    { "file": "vacuous.md", "status": "broken-test", "failingCheck": null, "vacuous": true, "args": ["--no-checks"] },
+    { "file": "valid.md", "status": "pass", "failingCheck": null, "args": ["--baseline", "baseline-prev.md"], "amend": { "baseline": "baseline-prev.md", "added": [{ "table": "deliverables", "name": "Self-serve mobile campaign builder" }], "removed": [], "changed": [], "goalChanged": false, "fingerprintChanged": false } },
+    { "file": "amended-leak.md", "status": "pass", "failingCheck": null, "args": ["--baseline", "valid.md"], "amend": { "baseline": "valid.md", "added": [{ "table": "impacts", "name": "Advertisers renew their contracts at higher rates" }, { "table": "deliverables", "name": "Quarterly performance briefing" }], "removed": [], "changed": [], "goalChanged": false, "fingerprintChanged": false } },
+    { "file": "valid.md", "status": "broken-test", "failingCheck": null, "amendBroken": "malformed-baseline.md", "args": ["--baseline", "malformed-baseline.md"] }
   ]
 }

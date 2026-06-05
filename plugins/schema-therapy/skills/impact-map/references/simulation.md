@@ -192,6 +192,7 @@ the new check MUST cite a catalog rule. The harness emits each check's `id`, `cl
 | X3 | Distinct impact-name count equals Impacts row count; distinct deliverable-name count equals Deliverables row count. | G2 |
 | X4 | Exactly one Goal statement exists (`goal` is a single non-empty string; the parser yielded one paragraph, not a list). | A6 |
 | X5 | The executed-check total equals the sum of class counters and equals the reconciliation target (§5); mismatch ⇒ `broken-test`. | §5 |
+| XD1 | **Flag-conditional** (runs ONLY when `--baseline <previous-00>` is given — see §"Amendment-mode diff"). Asserts the baseline element-level diff was computed and reconciles: each side's per-table element counts match its own parse (`added = |artifact|−matched`, `removed = |baseline|−matched`, `changed ≤ matched`), and `added`/`removed`/`changed` are **disjoint** by `(table, name)`. XD1 does **not** judge whether the diff is *justified* — delta traceability (whether each added/removed/changed element earns its place) is the **professor's** job, not the harness's; a diff WITH entries is still `pass` mechanically when all other checks pass. Walks **zero edges** (so `edgesExpected` is unchanged) but counts as one executed `exactValue` check when run. | `[PLAN]-amend` |
 
 ### 4.3 Reason-qualified-negative checks (`N` — an illegal input is rejected for the *stated* reason)
 
@@ -254,6 +255,18 @@ PASS requires reconciled === true && status === "pass"
 
 If `executedChecks === 0` ⇒ `broken-test` (no vacuous green). If `edgesWalked !==
 edgesExpected` ⇒ a check was silently dropped ⇒ `broken-test`.
+
+**XD1 is flag-conditional and excluded from the always-run reconciliation
+arithmetic.** XD1 (§4.2) runs only under `--baseline`. When it runs it
+participates in `executedChecks` (it is counted as one `exactValue` check, so the
+`exactValue` counter and `total` each rise by exactly 1) but it walks **zero
+resolution/stability edges** — therefore `edgesExpected` (the edge arithmetic
+above) is **unchanged** by amendment mode. The clean separation: the *edge*
+reconciliation (`edgesWalked === edgesExpected`) is the always-run invariant and
+never depends on whether `--baseline` was supplied; XD1 only adds to the *check
+count*, which the `executedChecks > 0` guard already tolerates. With no
+`--baseline` flag, XD1 is absent entirely and the summary is byte-identical to
+the pre-amendment behavior.
 
 **Positive AND negative per claimed behavior.** Every behavior/constraint the artifact
 claims is proven by **≥1 positive** (a passing check over `valid.md` / the target) **AND
@@ -338,10 +351,29 @@ position.
   ],
   "findings": [
     { "id": "L10", "rule": "G1", "severity": "warn", "detail": "vague token 'streamline' in deliverable 'Streamline checkout'" }
-  ]
+  ],
+  "baseline": {
+    "added":   [ { "table": "deliverables", "name": "Self-serve mobile campaign builder", "cells": { "deliverable": "Self-serve mobile campaign builder", "impact": "Advertisers buy larger mobile campaigns" } } ],
+    "removed": [],
+    "changed": [],
+    "goalChanged": false,
+    "fingerprintChanged": false
+  }
 }
 ```
 
+- **`baseline` block (amendment mode only).** Present **iff** `--baseline
+  <previous-00>` was supplied AND the comparison has authority (both artifact and
+  baseline parse against the pinned A-theme shape). It carries the element-level
+  diff keyed by name per table (§"Amendment-mode diff"):
+  - `added[]` — `{ table: "actors"|"impacts"|"deliverables", name, cells }`: rows present in the artifact, absent in the baseline.
+  - `removed[]` — same shape: rows present in the baseline, absent in the artifact.
+  - `changed[]` — `{ table, name, before, after }`: same name, different cell content.
+  - `goalChanged` (boolean) — the single Goal statement text differs.
+  - `fingerprintChanged` (boolean) — the fingerprint comment block differs; listed **separately** so an expected fingerprint bump on any amendment never counts as a content change.
+  Ordering is pinned: tables in the §1 pinned order (actors → impacts →
+  deliverables), rows sorted by name. With no `--baseline` flag the key is
+  **absent entirely** (byte-identical to the pre-amendment summary).
 - **stderr** — human-readable diagnostics only (parse errors, per-check failure traces,
   the wrong-reason trap explanation). Never the machine summary.
 - **Exit codes:** `0` ⇔ `status === "pass"`. Non-zero for `fail`, `malformed`,
@@ -367,6 +399,55 @@ position.
   reconciliation arithmetic (§5) and their verdicts are recorded, not invented into counts
   — so the **pass/fail mechanical verdict remains byte-deterministic** regardless of agent
   output.
+
+## 8.1 — Amendment-mode diff (`--baseline`)
+
+Amendment mode supports the skill's forthcoming **Amend** flow — the leak-proof
+element diff. Invocation: `node scripts/harness.mjs <00-artifact> --baseline
+<previous-00>`. The baseline (a previously-generated `00-impact-map.md`) is parsed
+with the **same reader** and derived into the same scenario graph (§3.1), then
+the harness computes an **element-level diff keyed by name per table**:
+
+- **`added`** — rows present in the artifact, absent in the baseline (entries
+  `{ table, name, cells }`).
+- **`removed`** — rows present in the baseline, absent in the artifact (same shape).
+- **`changed`** — same name, different cell content (`{ table, name, before, after }`).
+- **`goalChanged`** — boolean; the single Goal statement text differs.
+- **`fingerprintChanged`** — boolean; the fingerprint comment block differs.
+  This is **EXPECTED churn** on any amendment, so it is reported **separately** and
+  **never counts as a content change** — a fingerprint bump alone leaves
+  `added`/`removed`/`changed` empty.
+
+The name key per table is the first column (actor / impact / deliverable),
+matched case/whitespace-insensitively (the same identity used for cross-table
+resolution); `cells` carries the row's full content (`{actor,description}` /
+`{impact,actor}` / `{deliverable,impact}`). The diff is emitted as the `baseline`
+block in the JSON summary (§7) with **pinned ordering** — tables in §1 order, rows
+sorted by name — so it is byte-identical given an identical artifact+baseline pair.
+
+**Mechanical, not justificatory.** The diff and its reconciliation check **XD1**
+(§4.2) prove the diff is *internally consistent* (counts reconcile, the three sets
+are disjoint). They do **not** judge whether each delta is *warranted* — that
+**delta-traceability** judgment (does this added impact earn its place against the
+intent?) is the **professor's** responsibility. Consequently a diff that surfaces
+an unrequested-but-well-formed addition (an impact + deliverable with correct
+chains) is still mechanically `pass`: the addition is **VISIBLE** in the `baseline`
+block (the leak cannot hide), but mechanically judging it out of scope is beyond
+the harness's authority. The shipped `amended-leak.md` fixture demonstrates exactly
+this — it passes every mechanical check yet its `baseline.added` lists the two
+unrequested content entries verbatim.
+
+**Failure modes (broken-test, exit 3).** A baseline that is
+missing/unreadable/unparseable, or that does not anchor against the pinned A-theme
+shape (a malformed prior generation), yields `broken-test` with a clear stderr
+line — **the comparison has no authority**, so no `baseline` block is emitted and
+XD1 does not run.
+
+**Determinism.** Amendment mode injects no clock/randomness; the fingerprint block
+is read and string-compared (never recomputed, §8). A re-run over an identical
+artifact+baseline pair is byte-identical output. With no `--baseline` flag, there
+is no `baseline` block, XD1 is not run, and all existing behavior is byte-identical
+(a regression guard the selftest asserts).
 
 ## 9 — No upstream-defect class (free-text input)
 

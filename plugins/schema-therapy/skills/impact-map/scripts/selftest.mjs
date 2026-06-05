@@ -63,8 +63,17 @@ function runHarnessAbs(absPath, args = []) {
   }
   return { stdout, code, json };
 }
+// Resolve a `--baseline <file>` arg's bare fixture name to an absolute path so
+// the harness (which resolves baseline paths relative to its OWN cwd) reads the
+// shipped fixture regardless of where the selftest runs from.
+function resolveBaselineArgs(args = []) {
+  const out = args.slice();
+  const i = out.indexOf('--baseline');
+  if (i !== -1 && out[i + 1] !== undefined) out[i + 1] = join(FIXTURES, out[i + 1]);
+  return out;
+}
 function runHarness(file, args = []) {
-  return runHarnessAbs(join(FIXTURES, file), args);
+  return runHarnessAbs(join(FIXTURES, file), resolveBaselineArgs(args));
 }
 
 const EXIT = { pass: 0, fail: 1, malformed: 2, 'broken-test': 3 };
@@ -249,6 +258,98 @@ process.stderr.write('PART 6 — coverage floor: all 17 ❌ rules have a positiv
   // future drop is observable as a missing positive).
   ok(valid.checks.some((c) => c.id === 'N3'),
     'coverage: N3 (G3 stability) is present in valid.md run — a dropped check would be detected here');
+}
+
+// ===========================================================================
+// PART 7 — Amendment-mode diff: exactness on both pairs (exact added/removed/
+// changed sets), malformed baseline ⇒ exit 3, no-flag regression (valid.md has
+// NO `baseline` key & is byte-identical to pre-feature behavior), byte-identical
+// double-run WITH --baseline, and XD1 in executedChecks ONLY when the flag is
+// present (counter honesty). Diff exactness demonstrates the leak is VISIBLE
+// mechanically even though judging its justification is the professor's job.
+// ===========================================================================
+process.stderr.write('PART 7 — amendment-mode diff exactness, malformed baseline, no-flag regression, XD1 counter honesty\n');
+{
+  // Normalize a list of {table,name} entries to a sorted, comparable signature.
+  const sig = (entries) =>
+    entries
+      .map((e) => `${e.table}::${e.name}`)
+      .sort()
+      .join(' | ');
+
+  // -- Exactness on every amend fixture in the manifest. --
+  const amendFixtures = MANIFEST.fixtures.filter((f) => f.amend);
+  ok(amendFixtures.length === 2, `manifest declares 2 amend-diff fixtures (got ${amendFixtures.length})`);
+  for (const fx of amendFixtures) {
+    const { json, code } = runHarness(fx.file, fx.args);
+    ok(json && json.status === 'pass', `[amend ${fx.file}] mechanically PASS (got ${json && json.status})`);
+    ok(code === 0, `[amend ${fx.file}] exit 0`);
+    ok(json && 'baseline' in json, `[amend ${fx.file}] emits a baseline block`);
+    const b = json.baseline;
+    ok(b && sig(b.added) === sig(fx.amend.added),
+      `[amend ${fx.file}] added set EXACT: got [${sig(b.added)}] want [${sig(fx.amend.added)}]`);
+    ok(b && sig(b.removed) === sig(fx.amend.removed),
+      `[amend ${fx.file}] removed set EXACT: got [${sig(b.removed)}] want [${sig(fx.amend.removed)}]`);
+    ok(b && sig(b.changed) === sig(fx.amend.changed),
+      `[amend ${fx.file}] changed set EXACT: got [${sig(b.changed)}] want [${sig(fx.amend.changed)}]`);
+    ok(b && b.goalChanged === fx.amend.goalChanged,
+      `[amend ${fx.file}] goalChanged === ${fx.amend.goalChanged} (got ${b && b.goalChanged})`);
+    ok(b && b.fingerprintChanged === fx.amend.fingerprintChanged,
+      `[amend ${fx.file}] fingerprintChanged === ${fx.amend.fingerprintChanged} (got ${b && b.fingerprintChanged})`);
+    // XD1 ran and passed mechanically (a diff WITH entries still passes — the
+    // professor judges justification, the harness only reconciles).
+    const xd1 = json.checks.find((c) => c.id === 'XD1');
+    ok(xd1 && xd1.status === 'pass', `[amend ${fx.file}] XD1 present and pass (mechanical reconcile)`);
+    ok(xd1 && xd1.class === 'exactValue' && xd1.rule === '[PLAN]-amend',
+      `[amend ${fx.file}] XD1 is exactValue/[PLAN]-amend`);
+  }
+
+  // The leak fixture's diff has EXACTLY 2 content entries (added) and ZERO
+  // removed/changed — the unrequested impact+deliverable are mechanically VISIBLE.
+  {
+    const leak = MANIFEST.fixtures.find((f) => f.file === 'amended-leak.md' && f.amend);
+    const { json } = runHarness(leak.file, leak.args);
+    const contentEntries = json.baseline.added.length + json.baseline.removed.length + json.baseline.changed.length;
+    ok(contentEntries === 2, `amended-leak.md diff shows exactly 2 content entries (got ${contentEntries}) — leak is mechanically visible`);
+  }
+
+  // -- Malformed baseline ⇒ broken-test exit 3 (comparison has no authority). --
+  {
+    const broken = MANIFEST.fixtures.find((f) => f.amendBroken);
+    ok(!!broken, 'manifest declares a malformed-baseline broken-test fixture');
+    const { json, code } = runHarness(broken.file, broken.args);
+    ok(json && json.status === 'broken-test', `malformed baseline ⇒ broken-test (got ${json && json.status})`);
+    ok(code === 3, `malformed baseline exits 3 (got ${code})`);
+    ok(json && !('baseline' in json), 'malformed baseline emits NO baseline block (no authority)');
+
+    // Missing baseline file ⇒ broken-test exit 3 too.
+    const miss = runHarnessAbs(join(FIXTURES, 'valid.md'), ['--baseline', join(FIXTURES, 'no-such-baseline.md')]);
+    ok(miss.json && miss.json.status === 'broken-test', 'missing baseline file ⇒ broken-test');
+    ok(miss.code === 3, 'missing baseline file exits 3');
+  }
+
+  // -- No-flag regression: valid.md has NO baseline key, XD1 absent, exactValue=5. --
+  {
+    const noFlag = runHarness('valid.md').json;
+    ok(!('baseline' in noFlag), 'no --baseline ⇒ summary has NO baseline key (regression: existing shape preserved)');
+    ok(!noFlag.checks.some((c) => c.id === 'XD1'), 'no --baseline ⇒ XD1 not run (flag-conditional)');
+    ok(noFlag.counts.checks.exactValue === 5, `no --baseline ⇒ exactValue count === 5 (got ${noFlag.counts.checks.exactValue})`);
+
+    // WITH the flag, XD1 IS executed and counted (counter honesty: +1 exactValue).
+    const withFlag = runHarness('valid.md', ['--baseline', 'baseline-prev.md']).json;
+    ok(withFlag.checks.some((c) => c.id === 'XD1'), 'WITH --baseline ⇒ XD1 runs (flag-conditional)');
+    ok(withFlag.counts.checks.exactValue === 6,
+      `WITH --baseline ⇒ exactValue count === 6 (got ${withFlag.counts.checks.exactValue}) — XD1 counted exactly once`);
+    ok(withFlag.counts.checks.total === noFlag.counts.checks.total + 1,
+      'WITH --baseline ⇒ total checks is exactly +1 over no-flag (XD1 counter honesty)');
+  }
+
+  // -- Byte-identical double-run WITH --baseline (no cross-run state leak). --
+  {
+    const a = runHarness('valid.md', ['--baseline', 'baseline-prev.md']).stdout;
+    const b = runHarness('valid.md', ['--baseline', 'baseline-prev.md']).stdout;
+    ok(a === b, 'valid.md --baseline run twice ⇒ byte-identical stdout (determinism under amend mode)');
+  }
 }
 
 // ===========================================================================
