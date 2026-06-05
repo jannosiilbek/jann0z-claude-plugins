@@ -1,11 +1,11 @@
 {
-  "description": "Adversarial selftest manifest for the suite-drift oracle (doctrine §3). Each entry: specsDir (relative to fixtures/), the overall status the oracle MUST report, and `requireFinding` = the {id?, class, reason} that MUST appear among the failing/malformed findings FOR THE STATED REASON (the check-class owner). `requireDetailContains`/`requireDetailNotContains` enforce the wrong-reason trap (the failing finding's detail must name the real defect, not a co-present one). `domain` is the path passed via --domain (relative to fixtures/). `args` are extra CLI args. Mutating an UPSTREAM artifact legitimately cascades staleness onto downstream artifacts — the selftest asserts the PRIMARY finding is present, not that it is the only one.",
-  "good": { "specsDir": "good/specs", "domain": "good/domain.md", "status": "pass" },
+  "description": "Adversarial selftest manifest for the suite-drift oracle (doctrine §3), now spanning the FULL 0-10 artifact suite. Each entry: specsDir (relative to fixtures/), the overall status the oracle MUST report, and `requireFinding` = the {id?, class, reason} that MUST appear among the failing/malformed findings FOR THE STATED REASON (the check-class owner). `requireDetailContains`/`requireDetailNotContains` enforce the wrong-reason trap (the failing finding's detail must name the real defect, not a co-present one). `domain`/`intent` are the paths passed via --domain/--intent (relative to fixtures/). Mutating an UPSTREAM artifact legitimately cascades staleness onto downstream artifacts — the selftest asserts the PRIMARY finding is present, not that it is the only one.",
+  "good": { "specsDir": "good/specs", "domain": "good/domain.md", "intent": "good/product-intent.md", "status": "pass" },
   "fixtures": [
     {
       "name": "dangling-resolution",
       "specsDir": "neg/dangling-resolution/specs",
-      "domain": "good/domain.md",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
       "status": "fail",
       "requireFinding": { "id": "R-02-enum-derivation", "class": "resolution", "reason": "dangling-derivation" },
       "requireDetailContains": "Order Settled"
@@ -13,7 +13,7 @@
     {
       "name": "restated-shape",
       "specsDir": "neg/restated-shape/specs",
-      "domain": "good/domain.md",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
       "status": "fail",
       "requireFinding": { "id": "DRY-01-shape", "class": "dry", "reason": "restated-shape" },
       "requireDetailContains": "Actors table shape"
@@ -21,7 +21,7 @@
     {
       "name": "stale-fingerprint",
       "specsDir": "neg/stale-fingerprint/specs",
-      "domain": "good/domain.md",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
       "status": "fail",
       "requireFinding": { "id": "S-03-aggregates.md", "class": "staleness", "reason": "stale" },
       "requireDetailContains": "STALE"
@@ -29,28 +29,28 @@
     {
       "name": "missing-fingerprint",
       "specsDir": "neg/missing-fingerprint/specs",
-      "domain": "good/domain.md",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
       "status": "malformed",
       "requireFinding": { "id": "S-03-aggregates.md", "class": "staleness", "reason": "missing-fingerprint" }
     },
     {
       "name": "malformed-fingerprint",
       "specsDir": "neg/malformed-fingerprint/specs",
-      "domain": "good/domain.md",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
       "status": "malformed",
       "requireFinding": { "id": "S-03-aggregates.md", "class": "staleness", "reason": "malformed-fingerprint" }
     },
     {
       "name": "unparseable-artifact",
       "specsDir": "neg/unparseable-artifact/specs",
-      "domain": "good/domain.md",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
       "status": "malformed",
       "requireFinding": { "id": "M-parse", "class": "malformed", "reason": "unparseable-artifact" }
     },
     {
       "name": "wrong-reason-trap",
       "specsDir": "neg/wrong-reason-trap/specs",
-      "domain": "good/domain.md",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
       "status": "fail",
       "requireFinding": { "id": "R-06-tag", "class": "resolution", "reason": "dangling-tag" },
       "requireDetailContains": "INV-Order-9",
@@ -60,7 +60,7 @@
     {
       "name": "missing-05-supersedes-target",
       "specsDir": "neg/missing-05-supersedes-target/specs",
-      "domain": "good/domain.md",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
       "status": "fail",
       "requireFinding": { "id": "R-05-supersedes", "class": "resolution", "reason": "dangling-supersedes" },
       "requireDetailContains": "ghost"
@@ -68,7 +68,7 @@
     {
       "name": "tag-ghost-entity",
       "specsDir": "neg/tag-ghost-entity/specs",
-      "domain": "good/domain.md",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
       "status": "fail",
       "requireFinding": { "id": "R-06-tag", "class": "resolution", "reason": "dangling-tag" },
       "requireDetailContains": "ghost"
@@ -76,15 +76,141 @@
     {
       "name": "when-no-event",
       "specsDir": "neg/when-no-event/specs",
-      "domain": "good/domain.md",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
       "status": "fail",
       "requireFinding": { "id": "R-06-when-event", "class": "resolution", "reason": "dangling-when-event" },
       "requireDetailContains": "no authoritative event string"
     },
     {
+      "name": "ghost-business-actor",
+      "specsDir": "neg/ghost-business-actor/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "fail",
+      "requireFinding": { "id": "R-01-actor-from-00", "class": "resolution", "reason": "dangling-business-actor" },
+      "requireDetailContains": "Manager"
+    },
+    {
+      "name": "uncovered-deliverable",
+      "specsDir": "neg/uncovered-deliverable/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "fail",
+      "requireFinding": { "id": "R-01-deliverable", "class": "resolution", "reason": "deliverable-coverage" },
+      "requireDetailContains": "Loyalty rewards"
+    },
+    {
+      "name": "ghost-impact-token",
+      "specsDir": "neg/ghost-impact-token/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "fail",
+      "requireFinding": { "id": "R-07-goal-impact", "class": "resolution", "reason": "dangling-impact-token" },
+      "requireDetailContains": "unicorn"
+    },
+    {
+      "name": "ghost-scenario-tag",
+      "specsDir": "neg/ghost-scenario-tag/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "fail",
+      "requireFinding": { "id": "R-08-tag-vocab", "class": "resolution", "reason": "dangling-scenario-tag" },
+      "requireDetailContains": "INV-Order-99"
+    },
+    {
+      "name": "broken-bijection-08",
+      "specsDir": "neg/broken-bijection-08/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "fail",
+      "requireFinding": { "id": "R-08-persona-job-biject", "class": "resolution", "reason": "persona-job-bijection" },
+      "requireDetailContains": "ghost_job"
+    },
+    {
+      "name": "ghost-event-task",
+      "specsDir": "neg/ghost-event-task/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "fail",
+      "requireFinding": { "id": "R-09-event-task", "class": "resolution", "reason": "dangling-event-task" },
+      "requireDetailContains": "ghost-leaf"
+    },
+    {
+      "name": "bad-authority-event",
+      "specsDir": "neg/bad-authority-event/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "fail",
+      "requireFinding": { "id": "R-09-event-authority", "class": "resolution", "reason": "dangling-event-authority" },
+      "requireDetailContains": "Order Teleported"
+    },
+    {
+      "name": "ghost-screen",
+      "specsDir": "neg/ghost-screen/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "fail",
+      "requireFinding": { "id": "R-10-screen-ref", "class": "resolution", "reason": "dangling-screen-ref" },
+      "requireDetailContains": "ghost_screen"
+    },
+    {
+      "name": "ghost-outcome-tag",
+      "specsDir": "neg/ghost-outcome-tag/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "fail",
+      "requireFinding": { "id": "R-10-outcome-tag", "class": "resolution", "reason": "dangling-outcome-tag" },
+      "requireDetailContains": "@transition:ghost"
+    },
+    {
+      "name": "stale-00-fingerprint",
+      "specsDir": "neg/stale-00-fingerprint/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "fail",
+      "requireFinding": { "id": "S-00-impact-map.md", "class": "staleness", "reason": "stale" },
+      "requireDetailContains": "product-intent.md"
+    },
+    {
+      "name": "stale-07-fingerprint",
+      "specsDir": "neg/stale-07-fingerprint/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "fail",
+      "requireFinding": { "id": "S-07-personas.md", "class": "staleness", "reason": "stale" },
+      "requireDetailContains": "00-impact-map.md"
+    },
+    {
+      "name": "stale-08-fingerprint",
+      "specsDir": "neg/stale-08-fingerprint/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "fail",
+      "requireFinding": { "id": "S-08-task-models_customer-pay_order.xml", "class": "staleness", "reason": "stale" },
+      "requireDetailContains": "07-personas.md"
+    },
+    {
+      "name": "stale-09-fingerprint",
+      "specsDir": "neg/stale-09-fingerprint/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "fail",
+      "requireFinding": { "id": "S-09-ui-flows_customer.xml", "class": "staleness", "reason": "stale" },
+      "requireDetailContains": "04-erd.dbml"
+    },
+    {
+      "name": "stale-10-fingerprint",
+      "specsDir": "neg/stale-10-fingerprint/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "fail",
+      "requireFinding": { "id": "S-10-flow-acceptance_customer-place_order.feature", "class": "staleness", "reason": "stale" },
+      "requireDetailContains": "09-ui-flows/customer.xml"
+    },
+    {
+      "name": "malformed-08-xml",
+      "specsDir": "neg/malformed-08-xml/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "malformed",
+      "requireFinding": { "id": "M-parse", "class": "malformed", "reason": "unparseable-artifact" }
+    },
+    {
+      "name": "malformed-09-xml",
+      "specsDir": "neg/malformed-09-xml/specs",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
+      "status": "malformed",
+      "requireFinding": { "id": "M-parse", "class": "malformed", "reason": "unparseable-artifact" }
+    },
+    {
       "name": "vacuous-empty-specs",
       "specsDir": "neg/vacuous/specs",
-      "domain": "good/domain.md",
+      "domain": "good/domain.md", "intent": "good/product-intent.md",
       "status": "broken-test",
       "requireFinding": null
     }

@@ -1,5 +1,5 @@
 <!-- fingerprints:
-01-event-storming.md@sha256:0015ffe02125551f5a973cab90ddbde02344c05cb62a05bdec7086e063617273
+01-event-storming.md@sha256:31aceed43ab3137e1ec2ebcfb25ff325c221284385ec2d8f462d5e74ba8bf226
 02-glossary.md@sha256:NOT-HEX-AT-ALL
 -->
 

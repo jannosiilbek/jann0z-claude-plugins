@@ -15,6 +15,7 @@ Every rule cites its authority via `sources/SOURCES.md`. Sources referenced belo
 | E | Lifecycle skeletons | E1–E7 |
 | F | Cause-effect grammar | F1–F4 |
 | G | Naming & ubiquitous language | G1–G5 |
+| H | Scope gate (00 seam) | H1–H5 |
 
 ---
 
@@ -28,17 +29,17 @@ This theme pins the required sections and table shapes. It doubles as the format
 - **Severity:** ❌
 - **Source:** [PLAN] (artifact 01 owns domain events, actors, hotspots, per-aggregate lifecycle skeletons); element set per [S1] Glossary.
 
-### A2 — Upstream fingerprint block
-- **Detect:** `## Upstream Fingerprint` is absent, or does not record the free-text domain description's identity (a source label/title and a content hash or capture date) used to detect upstream drift.
-- **Fix:** Add a fingerprint block naming the domain-description source and a stable identifier (hash or date) it was derived from.
+### A2 — Upstream fingerprint block (dual entry)
+- **Detect:** `## Upstream Fingerprint` is absent, or does not record BOTH upstream identities used to detect drift: (1) the impact map `00-impact-map.md@sha256:<hex>`, AND (2) the domain-description source (a source label/title and a content hash or capture date). Missing either entry fires this rule.
+- **Fix:** Add a fingerprint block naming both upstreams: the `00-impact-map.md@sha256:<hex>` digest AND the domain-description source with its stable identifier (hash or date) it was derived from.
 - **Severity:** ❌
-- **Source:** [PLAN] (pipeline drift-detection contract).
+- **Source:** [PLAN] (pipeline drift-detection contract; 01's input is now "00, plus the domain description" — both upstreams are fingerprinted).
 
 ### A3 — Domain Events table shape
-- **Detect:** The `## Domain Events` section does not contain a table with exactly these columns, in order: `Event | Actor | Trigger | Notes`. (`Trigger` records the command/action or upstream event that causes it; `Notes` is free.)
-- **Fix:** Reformat the Domain Events table to the four-column shape above.
+- **Detect:** The `## Domain Events` section does not contain a table with exactly these columns, in order: `Event | Actor | Trigger | Notes | Deliverable`. (`Trigger` records the command/action or upstream event that causes it; `Notes` is free; `Deliverable` names the exact 00 deliverable string this event realizes, or the `—` sentinel — an EMPTY `Deliverable` cell is an unfilled cell, NOT the sentinel, and is rejected.)
+- **Fix:** Reformat the Domain Events table to the five-column shape above; fill every `Deliverable` cell with a 00 deliverable string or the explicit `—` sentinel (never leave it blank).
 - **Severity:** ❌
-- **Source:** [S1] Glossary (Domain Event, Actor/Agent); [S2] grammar (Command→Event).
+- **Source:** [S1] Glossary (Domain Event, Actor/Agent); [S2] grammar (Command→Event); [PLAN] Scope gate (every 00 deliverable is realized by ≥1 lifecycle event — the `Deliverable` column carries that realization claim).
 
 ### A4 — Actors table shape
 - **Detect:** The `## Actors` section does not contain a table with exactly these columns, in order: `Actor | Kind | Responsibility`. (`Kind` ∈ {person, role, department, system, automated-process}.)
@@ -283,3 +284,41 @@ These rules apply the ReadModel → Command → Event → Policy chain where the
 - **Fix:** Choose the canonical term; record the rejected synonym, or raise a Hotspot if the team disagrees.
 - **Severity:** ⚠️
 - **Source:** [S1] Glossary (HotSpot captures "inconsistencies (in language)"); [PLAN] (forbidden-synonym tracking seeds artifact 02).
+
+---
+
+## H — Scope gate (00 seam)
+
+This theme encodes the seam to the upstream **`impact-map` (00)** artifact. Per [PLAN] Scope gate: *"`impact-map` (00) owns the business goal, the business actors, the impacts, and the deliverables. 01's human and organizational actors carry 00's business-actor names verbatim; purely internal actors (systems) are 01-owned. Every 00 deliverable is realized by ≥1 lifecycle event in 01, and every 01 aggregate serves ≥1 impact — a 01 element serving no deliverable is scope creep, a deliverable no event realizes is an unmodelled promise; both are findings, never notes."*
+
+00's pinned format (the four name sets 00 owns, copied here for self-containment): `## Goal` (one statement) → `## Business Actors` table `Actor | Description` → `## Impacts` table `Impact | Business Actor (exact string)` → `## Deliverables` table `Deliverable | Impact (exact string)`. The exact strings in 00's `Business Actors`, `Impacts`, and `Deliverables` columns are the authoritative name sets this theme resolves 01 against. 00's `Deliverable → Impact` mapping is the transitive bridge by which an aggregate "serves an impact": an aggregate serves an impact iff ≥1 of its events realizes a 00 deliverable, which 00 maps to an impact.
+
+### H1 — Human/organizational actors resolve to a 00 Business Actor (S2(a))
+- **Detect:** An `Actors` row with `Kind ∈ {person, role, department}` has an `Actor` name that does not exact-string-match (case- and whitespace-sensitive) a 00 `Business Actors` entry. (`Kind ∈ {system, automated-process}` are purely internal, 01-owned, and exempt.)
+- **Fix:** Rename the human/organizational actor to carry the 00 business-actor name verbatim, or — if it is genuinely a system — set its `Kind` to `system`/`automated-process`. If 00 is missing the actor, that is a 00 defect, not a 01 fix.
+- **Severity:** ❌
+- **Source:** [PLAN] Scope gate ("01's human and organizational actors carry 00's business-actor names verbatim; purely internal actors (systems) are 01-owned"); 00 owns the Business Actors name set.
+
+### H2 — Deliverable cells resolve to a 00 Deliverable (S2(b))
+- **Detect:** A Domain Events `Deliverable` cell holds a value other than `—` that does not exact-string-match a 00 `Deliverables` entry.
+- **Fix:** Correct the cell to the exact 00 deliverable string it realizes, or set it to `—` if the event realizes no 00 deliverable. If the intended deliverable is absent from 00, that is a 00 defect.
+- **Severity:** ❌
+- **Source:** [PLAN] Scope gate ("each event names the 00 deliverable it realizes, or `—`"); 00 owns the Deliverables name set.
+
+### H3 — Every 00 deliverable is realized by ≥1 event (coverage)
+- **Detect:** A 00 `Deliverables` entry appears in NO Domain Events `Deliverable` cell (it is realized by no event). This is an **unmodelled promise**.
+- **Fix:** Add (or annotate) the lifecycle event(s) that realize the deliverable, naming the exact 00 string in the `Deliverable` column. A deliverable no event realizes is never silenced into a Note.
+- **Severity:** ❌
+- **Source:** [PLAN] Scope gate ("Every 00 deliverable is realized by ≥1 lifecycle event in 01… a deliverable no event realizes is an unmodelled promise… a finding, never a note").
+
+### H4 — Every aggregate serves ≥1 impact (aggregate-serves)
+- **Detect:** An aggregate (`### <Aggregate>` subsection) has NO skeleton event whose Domain-Events `Deliverable` cell is a non-`—` value resolving to a 00 deliverable. Because 00 maps every deliverable to an impact, such an aggregate serves no impact — it is **scope creep** (a whole-aggregate orphan). NOTE: a single event with `Deliverable = —` is legitimate domain mechanics and is NOT a finding; only an entire aggregate serving nothing is.
+- **Fix:** Either give the aggregate ≥1 event that realizes a 00 deliverable (revealing the impact it serves), or remove the aggregate as out-of-scope. A whole orphan aggregate is never explained away in a Note.
+- **Severity:** ❌
+- **Source:** [PLAN] Scope gate ("every 01 aggregate serves ≥1 impact — a 01 element serving no deliverable is scope creep… a finding, never a note"); transitive through 00's Deliverable→Impact mapping.
+
+### H5 — Pervasive `—` deliverable cells (scope-creep smell)
+- **Detect:** A large fraction of events carry `Deliverable = —` (most events realize no 00 deliverable) while H3/H4 still pass. Each `—` event is individually legitimate, but a pervasive cloud of them is an advisory smell that 01 may be modelling beyond 00's promised scope.
+- **Fix:** Review whether the `—` events are genuine supporting domain mechanics or unscoped expansion; if the latter, trim or raise the gap upstream to 00. No mechanical block — advisory only.
+- **Severity:** ℹ️ (⚠️ if the `—` share is overwhelming and at least one aggregate is borderline orphaned)
+- **Source:** [PLAN] Scope gate (scope-creep direction — "a 01 element serving no deliverable"; the honest reading is that a single `—` event is not a finding while the per-aggregate H4 check is the mechanical arm).

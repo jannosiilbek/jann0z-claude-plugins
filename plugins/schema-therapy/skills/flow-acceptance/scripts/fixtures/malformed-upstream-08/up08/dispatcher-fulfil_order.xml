@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TaskModel id="dispatcher-fulfil_order" persona="Dispatcher" job="fulfil_order">
+  <Budget klm="6"/>
+  <Task id="fulfil-order" category="abstract" operator="enabling">
+    <Task id="start-pick" category="interaction" scenario-tags="@transition:order" klm="MBB">
+  </Task>
+</TaskModel>

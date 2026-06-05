@@ -1,0 +1,36 @@
+// 04-erd.dbml — mini fixture (the table+status slice 09 consumes). Status enum types are in
+// the REAL emitted snake_case `<name>_status` convention (matches test-workspace 04-erd.dbml:
+// `event_status`, `order_status`, …), so the fixture mirrors the real lifecycle contract.
+
+Enum order_status {
+  placed
+  picking
+  shipped
+  delivered
+  cancelled
+}
+
+Enum coupon_status {
+  active
+  redeemed
+}
+
+Table order {
+  id integer [pk]
+  customer_id integer
+  status order_status
+  placed_at timestamp
+}
+
+Table coupon {
+  id integer [pk]
+  code varchar
+  status coupon_status
+}
+
+Table line_item {
+  id integer [pk]
+  order_id integer
+  sku varchar
+  qty integer
+}

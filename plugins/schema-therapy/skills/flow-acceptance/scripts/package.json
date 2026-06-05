@@ -1,0 +1,15 @@
+{
+  "name": "flow-acceptance-harness",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Executable simulation oracle for schema-therapy artifact 10 (specs/10-flow-acceptance/<persona>-<job>.feature). Pins @cucumber/gherkin (the format's own reference parser + pickle compiler — the parse-and-instantiate engine oracle) and its @cucumber/messages peer, per references/simulation.md §1. The 06/08/09 readers are hand-rolled, zero-dependency (copied PATTERNs), so the Gherkin parser is the only installed dep.",
+  "scripts": {
+    "harness": "node harness.mjs",
+    "selftest": "node selftest.mjs"
+  },
+  "dependencies": {
+    "@cucumber/gherkin": "39.1.0",
+    "@cucumber/messages": "32.3.1"
+  }
+}

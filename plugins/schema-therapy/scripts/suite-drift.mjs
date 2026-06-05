@@ -39,10 +39,11 @@ function abs(p, base) {
 }
 
 function parseArgs(argv) {
-  const args = { specsDir: null, domain: null, skills: null, _noChecks: false };
+  const args = { specsDir: null, domain: null, intent: null, skills: null, _noChecks: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--domain') args.domain = argv[++i];
+    else if (a === '--intent') args.intent = argv[++i];
     else if (a === '--skills') args.skills = argv[++i];
     else if (a === '--no-checks') args._noChecks = true; // adversarial vacuous-green guard hook
     else if (!a.startsWith('--') && args.specsDir === null) args.specsDir = a;
@@ -90,7 +91,7 @@ function main() {
   const args = parseArgs(process.argv.slice(2));
 
   if (!args.specsDir) {
-    process.stderr.write('usage: node scripts/suite-drift.mjs <specs-dir> [--domain <path>] [--skills <dir>]\n');
+    process.stderr.write('usage: node scripts/suite-drift.mjs <specs-dir> [--domain <path>] [--intent <path>] [--skills <dir>]\n');
     const s = baseSummary(null);
     emit(s, 'broken-test');
   }
@@ -98,6 +99,7 @@ function main() {
   const cwd = process.cwd();
   const specsDir = abs(args.specsDir, cwd);
   const domainPath = args.domain ? abs(args.domain, cwd) : null;
+  const intentPath = args.intent ? abs(args.intent, cwd) : null;
   const skillsDir = args.skills ? abs(args.skills, cwd) : resolve(__dirname, '..', 'skills');
 
   const summary = baseSummary(specsDir);
@@ -124,9 +126,12 @@ function main() {
   // ----- discover artifacts -----
   const art = discoverArtifacts(specsDir);
   const seen = [];
-  for (const k of ['01', '02', '03', '04dbml', '04trans']) if (art[k]) seen.push(art[k].path.split(/[\\/]/).pop());
+  for (const k of ['00', '01', '02', '03', '04dbml', '04trans', '07']) if (art[k]) seen.push(art[k].path.split(/[\\/]/).pop());
   for (const f of art['05'] || []) seen.push(`05-statecharts/${f.path.split(/[\\/]/).pop()}`);
   for (const f of art['06'] || []) seen.push(`06-gherkin/${f.path.split(/[\\/]/).pop()}`);
+  for (const f of art['08'] || []) seen.push(`08-task-models/${f.path.split(/[\\/]/).pop()}`);
+  for (const f of art['09'] || []) seen.push(`09-ui-flows/${f.path.split(/[\\/]/).pop()}`);
+  for (const f of art['10'] || []) seen.push(`10-flow-acceptance/${f.path.split(/[\\/]/).pop()}`);
   summary.artifactsSeen = seen;
 
   // VACUOUS-GREEN GUARD: an empty specs dir (no artifacts) => broken-test (zero
@@ -156,7 +161,7 @@ function main() {
   try {
     resolution = resolutionChecks(model, art);
     dry = dryChecks(model, art);
-    stale = stalenessChecks(art, specsDir, domainPath);
+    stale = stalenessChecks(art, specsDir, domainPath, intentPath);
   } catch (e) {
     process.stderr.write(`BROKEN-TEST (check execution threw): ${e.stack}\n`);
     emit(summary, 'broken-test');

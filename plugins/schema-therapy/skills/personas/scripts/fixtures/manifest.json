@@ -1,0 +1,37 @@
+{
+  "description": "Expected (status, failingCheck, upstream-route) tuples for each shipped fixture triple, per simulation.md §3.2. `up00`/`up01` are the upstream files passed via --upstream-00/--upstream-01. `failingCheck` is the check ID that MUST appear among the harness's failing/malformed checks (or findings) for the stated reason (the defect's owner-rule check); `null` = a clean pass / a status with no single owner check. `args` are extra harness CLI args. The wrong-reason guard is enforced via `trapDetailMustContain`/`trapDetailMustNotContain`. `nearMissPass:true` marks the deliberate departure: a near-miss trigger PASSES with a ⚠️ D3 finding recorded. `upstreamDefect:true` marks the triple whose finding must carry class:\"upstream-defect\" routed to 00-impact-map.md.",
+  "fixtures": [
+    { "file": "valid.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "pass", "failingCheck": null, "args": [] },
+
+    { "file": "missing-section.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "malformed", "failingCheck": "L1", "args": [] },
+    { "file": "bad-block-order.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "malformed", "failingCheck": "L4", "args": [] },
+    { "file": "missing-business-actor-line.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "malformed", "failingCheck": "L4", "args": [] },
+    { "file": "bad-jobs-columns.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "malformed", "failingCheck": "L5", "args": [] },
+
+    { "file": "missing-fingerprint-00.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "L2", "args": [] },
+    { "file": "placeholder-fingerprint.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "L2", "args": [] },
+    { "file": "two-actors-one-persona.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "L6", "args": [] },
+    { "file": "ghost-business-actor.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "R1", "args": [] },
+    { "file": "uncovered-business-actor.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "R2", "args": [] },
+    { "file": "goal-without-impact-token.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "L7", "args": [] },
+    { "file": "ghost-impact-token.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "R3", "args": [] },
+    { "file": "persona-no-jobs.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "L8", "args": [] },
+    { "file": "persona-no-goals.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "L8", "args": [] },
+    { "file": "dup-job.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "X3", "args": [] },
+    { "file": "ghost-outcome-event.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "R4", "args": [] },
+    { "file": "feature-goal.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "L9", "args": [] },
+    { "file": "non-pascal-persona.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "pass", "failingCheck": "L10", "warnOnly": true, "args": [] },
+    { "file": "restated-00-table.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "L12", "args": [] },
+    { "file": "restated-01-table.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "L13", "args": [] },
+
+    { "file": "near-miss-trigger.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "pass", "failingCheck": "D3", "nearMissPass": true, "args": [] },
+
+    { "file": "wrong-reason-trap.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "R3", "trap": true, "trapDetailMustContain": "Reduce churn", "trapDetailMustNotContain": "dashboard", "args": [] },
+
+    { "file": "vacuous.md", "up00": "upstream-00.md", "up01": "upstream-01.md", "status": "broken-test", "failingCheck": null, "vacuous": true, "args": ["--no-checks"] },
+
+    { "file": "valid.md", "up00": "broken-upstream-00.md", "up01": "upstream-01.md", "status": "fail", "failingCheck": "R6", "upstreamDefect": true, "upstreamDefectElement": "Coordinator", "upstreamRoute": "00-impact-map.md", "args": [] },
+    { "file": "valid.md", "up00": "malformed-upstream-00.md", "up01": "upstream-01.md", "status": "broken-test", "failingCheck": null, "malformedUpstream": "00", "args": [] },
+    { "file": "valid.md", "up00": "upstream-00.md", "up01": "malformed-upstream-01.md", "status": "broken-test", "failingCheck": null, "malformedUpstream": "01", "args": [] }
+  ]
+}

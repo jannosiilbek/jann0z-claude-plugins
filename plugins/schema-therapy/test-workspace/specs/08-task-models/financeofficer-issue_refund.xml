@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       specs/06-gherkin/refund.feature        sha256:75c6e2e5bb5a46f8072636a328d398b7c426f2d5bf60a72c6b732cd7296f1f49
+       specs/07-personas.md                     sha256:0c557607a179b21eee8d6e3f612a00048e1d32432409f6eff01f12246a4c87e9
+-->
+<TaskModel id="financeofficer-issue_refund"
+           persona="FinanceOfficer" job="issue refund">
+  <Budget klm="4"/>
+  <Task id="issue-refund" category="abstract" operator="enabling">
+    <Task id="authorize-payout" category="interaction"
+          scenario-tags="@invariant:INV-Refund-1"
+          klm="MBB"/>
+    <Task id="complete-payout" category="abstract" operator="enabling">
+      <Task id="process-gateway-payout" category="system"
+            scenario-tags="@transition:refund"
+            klm="W"/>
+      <Task id="record-refund-issued" category="system"
+            scenario-tags="@transition:refund"
+            klm="W"/>
+    </Task>
+  </Task>
+</TaskModel>

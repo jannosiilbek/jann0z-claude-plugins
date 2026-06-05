@@ -1,0 +1,53 @@
+{
+  "_note": "Per-fixture expected (status, failingCheck, upstreamRoute, errorShape). selftest.mjs runs the harness over each and asserts the actual tuple. Negatives fire for their stated reason; parse negatives match the copied testdata/bad error shapes; upstream-defect routes name the right file. Fixtures sharing the mini upstream set use up06/up08/up09 = upstream-06/08/09; self-contained fixtures name their own up06/up08/up09/ten subdirs.",
+  "sharedUpstreams": { "up06": "upstream-06", "up08": "upstream-08", "up09": "upstream-09" },
+  "_systemLeafRegression": "The shared upstream-08/picker-pick_order.xml nominal path carries a SYSTEM-category leaf (reserve-stock) between pick and complete that NO 09 picker Event realizes. valid-10 MUST still pass V-ORDER because the comparison is over the interaction/user nominal leaves only (the verified 09 contract's system-leaf-no-obligation clause, INTERACTION_LEAF_CATEGORIES = {interaction, user}); the excluded leaf is reported as walks[].systemLeavesExcluded. selftest.mjs section 3b asserts this. The out-of-order-walk negative still fails V-ORDER via the dispatcher-fulfil_order reorder, which is independent of the picker system leaf.",
+  "fixtures": [
+    { "dir": "valid-10", "shared": true, "status": "pass", "owner": null },
+
+    { "dir": "missing-feature", "shared": true, "status": "fail", "owner": "R-BIJECT", "rule": "A-a" },
+    { "dir": "extra-feature", "shared": true, "status": "fail", "owner": "R-BIJECT", "rule": "A-a" },
+    { "dir": "neg/bad-filename", "shared": true, "status": "fail", "owner": "R-FILENAME", "rule": "A-b" },
+    { "dir": "neg/wrong-feature-name", "shared": true, "status": "fail", "owner": "W-FEAT", "rule": "A-c" },
+    { "dir": "neg/missing-fingerprint", "shared": true, "status": "fail", "owner": "R-FINGERPRINT", "rule": "A-d" },
+    { "dir": "neg/placeholder-fingerprint", "shared": true, "status": "fail", "owner": "R-FINGERPRINT", "rule": "A-d" },
+    { "dir": "neg/missing-task-model-tag", "shared": true, "status": "fail", "owner": "R-FEATTAG", "rule": "A-e" },
+    { "dir": "neg/ghost-task-model-tag", "shared": true, "status": "fail", "owner": "R-FEATTAG", "rule": "A-e" },
+
+    { "dir": "neg/parse-not-gherkin", "shared": true, "status": "malformed", "owner": "W-PARSE", "rule": "A-f", "errorShape": "(1:1): expected: #EOF, #Language, #TagLine, #FeatureLine, #Comment, #Empty, got 'not gherkin'" },
+    { "dir": "neg/parse-whitespace-tag", "shared": true, "status": "malformed", "owner": "W-PARSE", "rule": "A-f", "errorShape": "A tag may not contain whitespace" },
+    { "dir": "neg/parse-bad-language", "shared": true, "status": "malformed", "owner": "W-PARSE", "rule": "A-f", "errorShape": "Language not supported: no-such" },
+    { "dir": "neg/zero-pickles", "shared": true, "status": "fail", "owner": "W-INST", "rule": "A-f" },
+
+    { "dir": "neg/ghost-screen-id", "shared": true, "status": "fail", "owner": "V-LOC", "rule": "B-a" },
+    { "dir": "neg/walk-not-from-home", "shared": true, "status": "fail", "owner": "V-START", "rule": "B-b" },
+    { "dir": "neg/broken-nav-edge", "shared": true, "status": "fail", "owner": "V-NAV", "rule": "B-c" },
+    { "dir": "neg/out-of-order-walk", "shared": true, "status": "fail", "owner": "V-ORDER", "rule": "B-d" },
+    { "dir": "neg/when-form-violation", "shared": true, "status": "fail", "owner": "V-EVENT", "rule": "B-e" },
+
+    { "dir": "neg/prose-then", "shared": true, "status": "fail", "owner": "R-THENSHAPE", "rule": "C-c" },
+    { "dir": "neg/uncovered-leaf-tag", "shared": true, "status": "fail", "owner": "V-COVER", "rule": "C-b" },
+    { "dir": "neg/ghost-outcome-tag", "shared": true, "status": "fail", "owner": "V-TAG", "rule": "C-a" },
+
+    { "dir": "neg/copied-06-body", "shared": true, "status": "fail", "owner": "R-NO06BODY", "rule": "E-d" },
+    { "dir": "neg/single-when-violation", "shared": true, "status": "fail", "owner": "M-ONEWHEN", "rule": "D-b" },
+    { "dir": "neg/bad-persona-pronoun", "shared": true, "status": "fail", "owner": "R-PERSONA", "rule": "E-a" },
+
+    { "dir": "neg/wrong-reason-trap", "shared": true, "status": "fail", "owner": "V-LOC", "rule": "B-a", "notOwner": "V-TAG", "wrongReason": true },
+
+    { "dir": "vacuous-harness", "shared": true, "status": "broken-test", "owner": null, "extraArgs": ["--no-checks"] },
+    { "dir": "no-engine", "shared": true, "status": "broken-test", "owner": null, "extraArgs": ["--force-missing-deps", "/tmp/flow-acceptance-no-such-modules"] },
+
+    { "dir": "dangling-09-in-path/ten", "up06": "dangling-09-in-path/up06", "up08": "dangling-09-in-path/up08", "up09": "dangling-09-in-path/up09", "status": "fail", "owner": "V-NAV", "rule": "B-c", "upstreamRoute": "09-ui-flows/dispatcher.xml" },
+    { "dir": "stuck-08-walker/ten", "up06": "stuck-08-walker/up06", "up08": "stuck-08-walker/up08", "up09": "stuck-08-walker/up09", "status": "fail", "owner": "V-ORDER", "rule": "B-d", "upstreamRoute": "08-task-models/dispatcher-fulfil_order.xml" },
+
+    { "dir": "malformed-upstream-06/ten", "up06": "malformed-upstream-06/up06", "up08": "malformed-upstream-06/up08", "up09": "malformed-upstream-06/up09", "status": "broken-test", "owner": null },
+    { "dir": "malformed-upstream-08/ten", "up06": "malformed-upstream-08/up06", "up08": "malformed-upstream-08/up08", "up09": "malformed-upstream-08/up09", "status": "broken-test", "owner": null },
+    { "dir": "malformed-upstream-09/ten", "up06": "malformed-upstream-09/up06", "up08": "malformed-upstream-09/up08", "up09": "malformed-upstream-09/up09", "status": "broken-test", "owner": null }
+  ],
+  "coverage": {
+    "_note": "Every ❌ catalog rule must have a positive (valid-10 passes its owner) AND a dedicated on-disk negative. distinctRuleCount asserts the count of distinct ❌ rules covered.",
+    "errorRules": ["A-a", "A-b", "A-c", "A-d", "A-e", "A-f", "A-g", "B-a", "B-b", "B-c", "B-d", "B-e", "C-a", "C-b", "C-c", "D-b", "E-a", "E-d"],
+    "distinctRuleCount": 18
+  }
+}

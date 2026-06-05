@@ -23,7 +23,7 @@ node scripts/harness.mjs <02-artifact> --upstream <01-artifact>
 ```
 
 The upstream parse uses the *pinned 01 format* (it is the same A-theme shape the
-event-storming harness pins): `## Domain Events` table `Event | Actor | Trigger | Notes`;
+event-storming harness pins): `## Domain Events` table `Event | Actor | Trigger | Notes | Deliverable`;
 `## Actors` table `Actor | Kind | Responsibility`; `## Hotspots` table
 `Hotspot | Question | Blocks`; `## Lifecycle Skeletons` with `### <AggregateName>` numbered
 lists of event names. The upstream is the **authority** for event/actor/aggregate names;
@@ -122,7 +122,7 @@ yields `fail`; ⚠️/ℹ️ lints are warn-only findings.
 | L13 | No `Definition` cell carries a tech-leak token from the closed blocklist `{table, column, foreign key, API, endpoint, JSON, service class, null}` (whole-word, case-insensitive). | C3 | `fail` |
 | L14 | No `Term` / `Definition` carries a vague-filler token from the closed blocklist `{data, info, item, thing, manager, process, handle}` or a bare `status`. | C4 | `fail` |
 | L15 | No `Definition` defers instead of defining (`see X`, `same as Y`, `as above`). | C7 | warn-only (⚠️) |
-| L16 | No Domain-Events-shaped table (`Event \| Actor \| Trigger \| Notes` header) appears anywhere inside 02 (a restated 01 event table). | E1 (E1-mech) | `fail` |
+| L16 | No Domain-Events-shaped table (`Event \| Actor \| Trigger \| Notes \| Deliverable` header) appears anywhere inside 02 (a restated 01 event table). | E1 (E1-mech) | `fail` |
 | L17 | No Hotspots-shaped table (`Hotspot \| Question \| Blocks` header) appears anywhere inside 02 (a restated 01 hotspot block). | E4 (E4-mech) | `fail` |
 | L18 | No `Definition` contains ≥N (default 2) consecutive verbatim 01 event names from a single skeleton, in skeleton order (a restated lifecycle). | E2 (E2-mech) | `fail` |
 
@@ -205,7 +205,7 @@ clock/random/engine values.
 | `forbidden-synonym-unresolved.md` | `upstream-01.md` | a Forbidden-synonyms row whose `Canonical term` is not in `## Terms` | F5 (resolution) | `fail` |
 | `vague-term.md` | `upstream-01.md` | a Term/Definition using `status` bare / `data` | L14 | `fail` |
 | `definition-restates-lifecycle.md` | `upstream-01.md` | a Definition containing ≥N consecutive verbatim 01 event names (`Order Placed Order Paid Order Expired`) | L18 / E2-mech (DRY) | `fail` |
-| `restated-event-table.md` | `upstream-01.md` | a pasted Domain-Events-shaped table (`Event\|Actor\|Trigger\|Notes`) inside 02 | L16 / E1-mech | `fail` |
+| `restated-event-table.md` | `upstream-01.md` | a pasted Domain-Events-shaped table (`Event\|Actor\|Trigger\|Notes\|Deliverable`) inside 02 | L16 / E1-mech | `fail` |
 | `restated-hotspot-block.md` | `upstream-01.md` | a pasted Hotspots-shaped table (`Hotspot\|Question\|Blocks`) inside 02 | L17 / E4-mech | `fail` |
 | `forbidden-cols-bad.md` | `upstream-01.md` | Forbidden-synonyms header reordered to `Canonical term \| Forbidden term \| …` | L4 (A4) | `malformed` |
 | `term-multi-name.md` | `upstream-01.md` | a `Term` cell carrying two candidate names (`Customer / Buyer`) | L6 (A5) | `fail` |
@@ -238,7 +238,7 @@ order" → `E2-mech`, a deterministic string-window check **implemented as lint 
 proven by `definition-restates-lifecycle.md`. The **semantic** subset ("first placed, then
 paid…" paraphrased without verbatim event strings) is left to agent-judged `AJ2`. E1
 (restated event *table*) and E4 (restated hotspot block) are mechanical: a
-Domain-Events-shaped (`Event|Actor|Trigger|Notes`) or Hotspots-shaped
+Domain-Events-shaped (`Event|Actor|Trigger|Notes|Deliverable`) or Hotspots-shaped
 (`Hotspot|Question|Blocks`) table appearing anywhere inside 02 →
 `E1-mech` (**lint `L16`**) / `E4-mech` (**lint `L17`**), proven by
 `restated-event-table.md` / `restated-hotspot-block.md`.

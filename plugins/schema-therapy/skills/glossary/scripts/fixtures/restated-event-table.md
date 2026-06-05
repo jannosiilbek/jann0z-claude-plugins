@@ -45,7 +45,7 @@ This glossary is scoped to the single bounded context: Box Office Ticketing.
 
 For convenience, the source events are reproduced here:
 
-| Event | Actor | Trigger | Notes |
-|-------|-------|---------|-------|
-| Order Placed | Customer | Place Order command | pivotal |
-| Order Paid | Payment Gateway | Order Placed | pivotal |
+| Event | Actor | Trigger | Notes | Deliverable |
+|-------|-------|---------|-------|-------------|
+| Order Placed | Customer | Place Order command | pivotal | — |
+| Order Paid | Payment Gateway | Order Placed | pivotal | — |

@@ -12,25 +12,31 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
-import { readFingerprints } from './model.mjs';
+import { readFingerprints, readProseFingerprints } from './model.mjs';
 
 function hashBytes(buf) {
   return createHash('sha256').update(buf).digest('hex');
 }
 
-// Resolve a fingerprint entry NAME to an on-disk path. Names are bare basenames
-// like '01-event-storming.md', '04-erd.dbml', or the domain file.
-function resolveInput(name, specsDir, domainPath) {
+// Resolve a fingerprint entry NAME to an on-disk path. Names are specs-relative
+// (e.g. '01-event-storming.md', '04-erd.dbml', '06-gherkin/order.feature') OR an
+// EXTERNAL free-text input: the domain file (verified via --domain) or the
+// product-intent file (verified via --intent). External inputs live outside specs/
+// and are marked so the caller can skip honestly when the flag is absent.
+function resolveInput(name, specsDir, domainPath, intentPath) {
   // domain file
-  if (domainPath && (name === 'domain.md' || name === pathBase(domainPath))) {
-    return { path: domainPath, isDomain: true };
-  }
   if (/^domain\b/i.test(name) || name.endsWith('domain.md')) {
-    return { path: domainPath || null, isDomain: true };
+    return { path: domainPath || null, external: 'domain' };
   }
+  // product-intent file
+  if (/^product-intent\b/i.test(name) || name.endsWith('product-intent.md')) {
+    return { path: intentPath || null, external: 'intent' };
+  }
+  if (domainPath && name === pathBase(domainPath)) return { path: domainPath, external: 'domain' };
+  if (intentPath && name === pathBase(intentPath)) return { path: intentPath, external: 'intent' };
   // specs-rooted artifact
   const p = join(specsDir, name);
-  return { path: p, isDomain: false };
+  return { path: p, external: null };
 }
 
 function pathBase(p) {
@@ -38,22 +44,26 @@ function pathBase(p) {
 }
 
 // art: discoverArtifacts() output. Returns findings + malformed flag.
-export function stalenessChecks(art, specsDir, domainPath) {
+export function stalenessChecks(art, specsDir, domainPath, intentPath) {
   const out = [];
   const malformedFindings = [];
 
   const F = (id, status, detail, files, extra = {}) =>
-    out.push({ id, class: 'staleness', status, reason: status === 'fail' ? 'stale' : (status === 'skipped' ? 'domain-not-provided' : null), severity: status === 'fail' ? 'error' : null, detail: detail || null, files: files || [], ...extra });
+    out.push({ id, class: 'staleness', status, reason: status === 'fail' ? 'stale' : (status === 'skipped' ? 'external-input-not-provided' : null), severity: status === 'fail' ? 'error' : null, detail: detail || null, files: files || [], ...extra });
 
   // each downstream artifact (with a fingerprint block) gets ONE check that
-  // walks every referenced input.
+  // walks every referenced input. `prose` marks the 07 dialect (no <!-- --> block).
   const targets = [];
-  for (const k of ['01', '02', '03', '04dbml', '04trans']) if (art[k]) targets.push({ key: k, path: art[k].path, ext: art[k].ext, text: art[k].text, label: pathBase(art[k].path) });
+  for (const k of ['00', '01', '02', '03', '04dbml', '04trans']) if (art[k]) targets.push({ key: k, path: art[k].path, ext: art[k].ext, text: art[k].text, label: pathBase(art[k].path) });
   for (const f of (art['05'] || [])) targets.push({ key: '05', path: f.path, ext: '.scxml', text: f.text, label: `05-statecharts/${pathBase(f.path)}` });
   for (const f of (art['06'] || [])) targets.push({ key: '06', path: f.path, ext: '.feature', text: f.text, label: `06-gherkin/${pathBase(f.path)}` });
+  if (art['07']) targets.push({ key: '07', path: art['07'].path, ext: '.md', text: art['07'].text, label: pathBase(art['07'].path), prose: true });
+  for (const f of (art['08'] || [])) targets.push({ key: '08', path: f.path, ext: '.xml', text: f.text, label: `08-task-models/${pathBase(f.path)}` });
+  for (const f of (art['09'] || [])) targets.push({ key: '09', path: f.path, ext: '.xml', text: f.text, label: `09-ui-flows/${pathBase(f.path)}` });
+  for (const f of (art['10'] || [])) targets.push({ key: '10', path: f.path, ext: '.feature', text: f.text, label: `10-flow-acceptance/${pathBase(f.path)}` });
 
   for (const t of targets) {
-    const fp = readFingerprints(t.text, t.ext);
+    const fp = t.prose ? readProseFingerprints(t.text) : readFingerprints(t.text, t.ext);
     const id = `S-${t.label.replace(/[^A-Za-z0-9_.-]/g, '_')}`;
 
     // malformed fingerprint line shape => malformed (the whole suite)
@@ -70,10 +80,11 @@ export function stalenessChecks(art, specsDir, domainPath) {
 
     const subs = [];
     for (const e of fp.entries) {
-      const res = resolveInput(e.name, specsDir, domainPath);
-      if (res.isDomain) {
-        if (!domainPath) {
-          subs.push({ name: e.name, status: 'skipped', detail: `domain fingerprint shape OK; not verified (no --domain): ${e.name}@sha256:${e.hash.slice(0, 12)}…` });
+      const res = resolveInput(e.name, specsDir, domainPath, intentPath);
+      if (res.external) {
+        const flag = res.external === 'domain' ? '--domain' : '--intent';
+        if (!res.path) {
+          subs.push({ name: e.name, status: 'skipped', detail: `${res.external} fingerprint shape OK; not verified (no ${flag}): ${e.name}@sha256:${e.hash.slice(0, 12)}…` });
           continue;
         }
       }
@@ -96,10 +107,17 @@ export function stalenessChecks(art, specsDir, domainPath) {
     if (anyFail) {
       F(id, 'fail', subs.filter((s) => s.status === 'fail').map((s) => s.detail).join(' ; '), [t.label], { edges: subs.length });
     } else if (skipped.length && verified.length === 0) {
-      // every referenced input was domain-only and skipped (the 01 case)
+      // every referenced input was an external free-text input that was skipped
+      // (the 00-needs-intent / 01-needs-domain head cases)
       F(id, 'skipped', skipped.map((s) => s.detail).filter(Boolean).join(' ; '), [t.label], { edges: subs.length });
     } else {
-      F(id, 'pass', skipped.length ? skipped.map((s) => s.detail).join(' ; ') : null, [t.label], { edges: subs.length });
+      // the verified inputs PASS this check; but if any external input was skipped
+      // it must NEVER be silent — surface it as its own `skipped` finding so the
+      // skip is visible in the JSON, while the verified inputs still pass.
+      F(id, 'pass', null, [t.label], { edges: verified.length });
+      if (skipped.length) {
+        F(`${id}__ext`, 'skipped', skipped.map((s) => s.detail).join(' ; '), [t.label], { edges: skipped.length });
+      }
     }
   }
 

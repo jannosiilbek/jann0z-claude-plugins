@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       02-glossary.md          sha256:5f13227739cd2a3444b73a7c531d1d4de611054b81ba40bda62c1e6966ed4fca
+       04-erd.dbml             sha256:3e8dfce8ca142390d7b5efcc820ef5bf4dcb1605be000834df1178d830cde622
+       04-transitions.md       sha256:b3953d456bbc9d5d5615d1110ac5fd2d052826a33a444fae2250ea1b78ee2759
+       05-statecharts/ticket.scxml sha256:04261089844499a10976ad65b7c44cf5fb1d4a645f73f8ed7db4ea831427fb1a
+       07-personas.md          sha256:0c557607a179b21eee8d6e3f612a00048e1d32432409f6eff01f12246a4c87e9
+       08-task-models/customer-place_order.xml sha256:37eb9a1cd98c28707c085f8d287b0378e02d8ff631aee3a162161eb5041bb576
+       08-task-models/customer-buy_ticket.xml sha256:da02f76e64e8fe885555d49d5f911cffdd1830f1d002bbd1338a912886310b23
+       08-task-models/customer-cancel_ticket.xml sha256:2d6fbfa239c14478563d877779a53c6a5872c3b94d8a7ecd320f53bb14cbf640
+       08-task-models/customer-join_waitlist.xml sha256:f859a1e01858982e83e8af7c8f08e8fdd3804e6f1be9f0b6cc0fbd699b026c64
+-->
+<IFMLModel id="customer" persona="Customer">
+
+  <Realizes taskModel="customer-place_order"/>
+  <Realizes taskModel="customer-buy_ticket"/>
+  <Realizes taskModel="customer-cancel_ticket"/>
+  <Realizes taskModel="customer-join_waitlist"/>
+
+  <ViewContainer id="customer_home" name="My Tickets" home="true">
+    <ViewComponent id="ticket_list" type="list" binding="ticket"/>
+    <ViewComponent id="order_list" type="list" binding="order"/>
+    <Event id="start_order" type="navigate"/>
+    <Event id="open_payment" type="navigate"/>
+    <Event id="start_cancel" type="navigate"/>
+    <Event id="open_waitlist" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="order_compose" name="New Order">
+    <ViewComponent id="order_form" type="form" binding="order"/>
+    <Event id="pick_tickets" type="select" task="select-tickets" klm="MPBB"/>
+    <Event id="place_order" type="submit" task="submit-order" klm="MBB">
+      <!-- 01-event: Order Placed -->
+    </Event>
+    <Event id="back_from_order" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="order_payment" name="Pay Order">
+    <ViewComponent id="payment_view" type="details" binding="order"/>
+    <Event id="pay_order" type="submit" task="pay-order" klm="MH2K">
+      <!-- 01-event: Order Paid -->
+    </Event>
+    <Event id="back_from_payment" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="ticket_cancel" name="Cancel Ticket">
+    <ViewComponent id="ticket_view" type="details" binding="ticket"/>
+    <Event id="pick_ticket" type="select" task="select-ticket" klm="MPBB"/>
+    <Event id="confirm_cancel" type="submit" task="confirm-cancel" klm="MBB">
+      <!-- 01-event: Ticket Cancelled -->
+    </Event>
+    <Event id="back_from_cancel" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="waitlist_join" name="Join Waitlist">
+    <ViewComponent id="waitlist_form" type="form" binding="waitlist_offer"/>
+    <Event id="join_waitlist" type="submit" task="request-join" klm="MPBB">
+      <!-- 01-event: Waitlist Joined -->
+    </Event>
+    <Event id="back_from_waitlist" type="navigate"/>
+  </ViewContainer>
+
+  <NavigationFlow from="start_order"        to="order_compose"/>
+  <NavigationFlow from="open_payment"       to="order_payment"/>
+  <NavigationFlow from="start_cancel"       to="ticket_cancel"/>
+  <NavigationFlow from="open_waitlist"      to="waitlist_join"/>
+  <NavigationFlow from="back_from_order"    to="customer_home"/>
+  <NavigationFlow from="back_from_payment"  to="customer_home"/>
+  <NavigationFlow from="back_from_cancel"   to="customer_home"/>
+  <NavigationFlow from="back_from_waitlist" to="customer_home"/>
+
+</IFMLModel>

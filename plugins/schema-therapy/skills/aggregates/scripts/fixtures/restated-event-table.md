@@ -12,9 +12,9 @@
 
 A pasted recap:
 
-| Event | Actor | Trigger | Notes |
-|-------|-------|---------|-------|
-| Order Placed | Customer | cmd | pivotal |
+| Event | Actor | Trigger | Notes | Deliverable |
+|-------|-------|---------|-------|-------------|
+| Order Placed | Customer | cmd | pivotal | — |
 
 
 ### Order

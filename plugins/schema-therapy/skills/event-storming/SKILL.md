@@ -1,6 +1,6 @@
 ---
 name: event-storming
-description: Entry skill (step 1) of the schema-therapy modelling pipeline. Use this to START the schema-therapy pipeline / "event storm" a free-text domain description into the validated artifact specs/01-event-storming.md — the domain events, actors, hotspots, and per-aggregate lifecycle skeletons that the downstream schema-therapy skills (glossary → aggregates → erd → statecharts → gherkin) consume. Trigger when the user says "run the schema-therapy pipeline", "start the modelling pipeline", "event storm this domain", "produce 01-event-storming.md", or hands a domain write-up to model. NOT a general BDD/Gherkin, glossary, or ERD authoring tool — adjacent plugins own that ground; this skill owns only the EventStorming big-picture artifact at the head of the chain.
+description: Step 1 of the schema-therapy modelling pipeline. Use this to "event storm" the upstream impact map (specs/00-impact-map.md) plus a free-text domain description into the validated artifact specs/01-event-storming.md — the domain events, actors, hotspots, and per-aggregate lifecycle skeletons that the downstream schema-therapy skills (glossary → aggregates → erd → statecharts → gherkin) consume. Trigger when the user says "run the schema-therapy pipeline", "start the modelling pipeline", "event storm this domain", "produce 01-event-storming.md", or hands a domain write-up (and its impact map) to model. NOT a general BDD/Gherkin, glossary, or ERD authoring tool — adjacent plugins own that ground; this skill owns only the EventStorming big-picture artifact at the head of the chain.
 ---
 
 # event-storming
@@ -25,19 +25,27 @@ only when the professor demands a passage.
 
 ## a. Mechanical intake table
 
-The upstream input is the **free-text domain description**. Map it mechanically
-into this artifact's elements — do not invent, do not drop:
+Two upstreams feed this artifact: the **impact map** (`specs/00-impact-map.md`,
+which owns the goal, business actors, impacts, and deliverables) and the
+**free-text domain description**. Map each mechanically into this artifact's
+elements — do not invent, do not drop:
 
-| Upstream element (domain description) | This artifact's element | Section |
-|---------------------------------------|-------------------------|---------|
-| A thing that *happened* in the domain | a **Domain Event** row (past tense) | `## Domain Events` |
-| A person / role / department / system that *acts* | an **Actor** row | `## Actors` |
-| An open question / conflict / unknown / "decide later" | a **Hotspot** row | `## Hotspots` |
-| A per-thing ordered sequence of events (its life) | a **Lifecycle Skeleton** entry | `## Lifecycle Skeletons` |
+| Upstream element | This artifact's element | Section |
+|------------------|-------------------------|---------|
+| **00** Business Actor (exact string) | the **name of every human/organizational Actor** (`person`/`role`/`department`), verbatim | `## Actors` |
+| **00** Deliverable (exact string) | the **Deliverable cell** of every event that realizes it (or `—`) | `## Domain Events` |
+| Domain desc.: a thing that *happened* | a **Domain Event** row (past tense) | `## Domain Events` |
+| Domain desc.: a person/role/dept/**system** that *acts* | an **Actor** row (systems are **01-owned**, not from 00) | `## Actors` |
+| Domain desc.: an open question / conflict / "decide later" | a **Hotspot** row | `## Hotspots` |
+| Domain desc.: a per-thing ordered sequence of events | a **Lifecycle Skeleton** entry | `## Lifecycle Skeletons` |
 
-This table doubles as the **artifact contract**: the downstream skill's drift
-check verifies it *in reverse* — every artifact element must trace back to the
-domain description, and every major domain behavior must appear here.
+Human and organizational actors **carry 00's business-actor names verbatim**;
+purely internal actors (`system`/`automated-process`) are 01-owned and exempt.
+Every 00 deliverable must be realized by ≥1 lifecycle event, and every aggregate
+must serve ≥1 impact (transitively, through a deliverable). This table doubles
+as the **artifact contract**: the downstream drift check verifies it *in
+reverse* — every artifact element traces back to 00 or the domain description,
+and every 00 promise appears here.
 
 ## b. Artifact contract
 
@@ -47,22 +55,26 @@ domain description, and every major domain behavior must appear here.
   **A-theme** (`references/validation-rules.md` A1–A8). The five required level-2
   sections, in order: `## Upstream Fingerprint`, `## Domain Events`,
   `## Actors`, `## Hotspots`, `## Lifecycle Skeletons`. Table columns are fixed:
-  Domain Events `Event | Actor | Trigger | Notes`; Actors `Actor | Kind |
-  Responsibility`; Hotspots `Hotspot | Question | Blocks`. Lifecycle Skeletons
-  hold one `### <AggregateName>` subsection per aggregate, each a numbered list.
-- **Upstream fingerprint block:** the file opens with an HTML comment recording
-  the identity of the consumed domain-description file, so downstream drift can
-  be detected:
+  Domain Events `Event | Actor | Trigger | Notes | Deliverable` (5 columns — the
+  `Deliverable` cell names the exact 00 deliverable the event realizes, or `—`);
+  Actors `Actor | Kind | Responsibility`; Hotspots `Hotspot | Question | Blocks`.
+  Lifecycle Skeletons hold one `### <AggregateName>` subsection per aggregate,
+  each a numbered list.
+- **Dual upstream fingerprint:** the file records **both** upstream identities
+  (so downstream drift against either can be detected) — the impact map's digest
+  `00-impact-map.md@sha256:<hex>` **and** the domain-description source with a
+  content hash or capture date:
 
   ```
   <!-- fingerprints:
-  <input-filename>@sha256:<64-lowercase-hex>
+  00-impact-map.md@sha256:<hex>
+  <domain-filename>@sha256:<64-lowercase-hex>
   -->
   ```
 
-  Compute the hash over the **exact bytes** of the consumed file:
-  `shasum -a 256 <input-filename>` (or node `crypto.createHash('sha256')`).
-  Record the same identity inside the `## Upstream Fingerprint` section body.
+  Compute each hash over the **exact bytes** of the consumed file:
+  `shasum -a 256 <filename>` (or node `crypto.createHash('sha256')`). Record
+  **both** identities inside the `## Upstream Fingerprint` section body.
 - **Determinism:** naming, structure, and section order are **identical across
   runs** over identical input. See `scripts/fixtures/valid.md` for the canonical
   shape.
@@ -93,15 +105,17 @@ the **full text** of `references/validation-rules.md` and the `sources/` path.
 
 ### 3. Lint
 
-Run the harness:
+Run the harness, passing the impact map as the seam authority:
 
 ```
-node scripts/harness.mjs specs/01-event-storming.md
+node scripts/harness.mjs specs/01-event-storming.md --upstream-00 specs/00-impact-map.md
 ```
 
-The lint checks (L1–L13) live inside the harness. **There is no upstream-owned
-name table to resolve against** — this skill's input is free text, so there is
-no cross-artifact name reconciliation step here (that begins downstream).
+The lint checks (L1–L15) live inside the harness. `--upstream-00` is
+**required** — the harness parses 00 to resolve the H-theme seam (human actors
+→ 00 Business Actors, Deliverable cells → 00 Deliverables, deliverable coverage,
+aggregate-serves). An absent flag is a usage error (exit 3); an unparseable 00
+is `broken-test` (the seam has no authority).
 
 ### 4. Simulation
 
@@ -110,10 +124,10 @@ The **same harness run** covers the simulation checks (resolution / exact-value
 
 | status | Meaning | Action |
 |--------|---------|--------|
-| `malformed` (exit 2) | required heading/table shape absent | **fix the artifact** to the A-theme shape |
-| `broken-test` (exit 3) | a check threw, reconciliation failed, or zero checks parsed | **fix the check, not the artifact** (report — the harness is wrong) |
+| `malformed` (exit 2) | required heading/table shape absent (incl. 5-column events, dual fingerprint) | **fix the artifact** to the A-theme shape |
+| `broken-test` (exit 3) | a check threw, reconciliation failed, zero checks parsed, **or the 00 impact map is unparseable** | **fix the check / fix 00's shape, not the 01 artifact** (the seam is broken, not 01) |
 | `fail` (exit 1) | parsed but a ❌ check failed | **fix the artifact** per the matching catalog rule |
-| upstream-defect | artifact *cannot* pass because the domain input is wrong/contradictory | **STOP** — report the defect against the upstream input; never patch around it |
+| `fail` + finding `class: upstream-defect` (locus `00-impact-map.md`) | 00 is self-inconsistent (an Impacts/Deliverables row names a ghost actor/impact), so the seam cannot be trusted | **STOP** — report the defect **against `00-impact-map.md`** (never the 01); never patch around it in 01 |
 
 Bounded at **5 iterations** for this loop. A clean re-run over identical inputs
 is not an iteration.
@@ -151,9 +165,9 @@ present** — the police are an extra guard, not a dependency.
 
 ## Harness reference
 
-- `node scripts/harness.mjs <artifact.md>` → JSON summary on **stdout**,
-  diagnostics on **stderr**. Exit `0` pass / `1` fail / `2` malformed / `3`
-  broken-test.
+- `node scripts/harness.mjs <artifact.md> --upstream-00 <00-impact-map.md>` →
+  JSON summary on **stdout**, diagnostics on **stderr**. Exit `0` pass / `1`
+  fail / `2` malformed / `3` broken-test. `--upstream-00` is required.
 - `node scripts/selftest.mjs` → adversarial regression suite proving the oracle
   catches false-greens. Exit 0 only when every assertion passes. Run it after
   any change to `scripts/`.

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       specs/06-gherkin/ticket.feature        sha256:3fcf82c1527f843f5c0018422c8263b4709029184db2513c8b235561c13c3099
+       specs/07-personas.md                     sha256:0c557607a179b21eee8d6e3f612a00048e1d32432409f6eff01f12246a4c87e9
+-->
+<TaskModel id="gateagent-admit_ticket"
+           persona="GateAgent" job="admit ticket">
+  <Budget klm="4"/>
+  <Task id="admit-ticket" category="abstract" operator="enabling">
+    <Task id="scan-qr-code" category="interaction"
+          scenario-tags="@invariant:INV-Ticket-2"
+          klm="MP"/>
+    <Task id="process-admission" category="abstract" operator="enabling">
+      <Task id="validate-admission" category="system"
+            scenario-tags="@invariant:INV-Ticket-3"
+            klm="W"/>
+      <Task id="record-admitted" category="system"
+            scenario-tags="@transition:ticket"
+            klm="W"/>
+    </Task>
+  </Task>
+</TaskModel>

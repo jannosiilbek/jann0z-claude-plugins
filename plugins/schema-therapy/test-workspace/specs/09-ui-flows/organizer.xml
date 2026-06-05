@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       02-glossary.md          sha256:5f13227739cd2a3444b73a7c531d1d4de611054b81ba40bda62c1e6966ed4fca
+       04-erd.dbml             sha256:3e8dfce8ca142390d7b5efcc820ef5bf4dcb1605be000834df1178d830cde622
+       04-transitions.md       sha256:b3953d456bbc9d5d5615d1110ac5fd2d052826a33a444fae2250ea1b78ee2759
+       05-statecharts/event.scxml sha256:63e1a110e20cf1b45d8241ec7b5a2057cd68a0b452db061d581832808a1be8b6
+       07-personas.md          sha256:0c557607a179b21eee8d6e3f612a00048e1d32432409f6eff01f12246a4c87e9
+       08-task-models/organizer-open_event.xml sha256:d328f56016c28e51c210d0d72f5c09dea8868a7b08e8c55973e2591adfdd660d
+       08-task-models/organizer-schedule_event.xml sha256:a4e00f617aa2e62478bb597d53c583c4bdb4fb77d00497000ec88569470c917f
+       08-task-models/organizer-register_venue.xml sha256:6ea0a3385d205c803ee735fdb24276343bc05f2226b539de8a6d995ba0eafd00
+       08-task-models/organizer-define_seating.xml sha256:25abc9ddcccec7081b8956cca6f5d55df89984b60f6ab05654fccf5f8bd1912a
+-->
+<IFMLModel id="organizer" persona="Organizer">
+
+  <Realizes taskModel="organizer-open_event"/>
+  <Realizes taskModel="organizer-schedule_event"/>
+  <Realizes taskModel="organizer-register_venue"/>
+  <Realizes taskModel="organizer-define_seating"/>
+
+  <ViewContainer id="organizer_dashboard" name="Organizer Dashboard" home="true">
+    <ViewComponent id="event_list" type="list" binding="event"/>
+    <ViewComponent id="venue_list" type="list" binding="venue"/>
+    <Event id="new_event" type="navigate"/>
+    <Event id="open_schedule" type="navigate"/>
+    <Event id="new_venue" type="navigate"/>
+    <Event id="open_seating" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="event_create" name="New Event">
+    <ViewComponent id="event_form" type="form" binding="event"/>
+    <Event id="create_event" type="submit" task="enter-event-details" klm="MH3K">
+      <!-- 01-event: Event Created -->
+    </Event>
+    <Event id="back_from_create" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="event_schedule" name="Schedule Event">
+    <ViewComponent id="schedule_form" type="form" binding="event"/>
+    <Event id="set_dates" type="select" task="assign-event-dates" klm="MPBB"/>
+    <Event id="confirm_schedule" type="submit" task="confirm-schedule" klm="MBB">
+      <!-- 01-event: Event Scheduled -->
+    </Event>
+    <Event id="back_from_schedule" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="venue_create" name="Register Venue">
+    <ViewComponent id="venue_form" type="form" binding="venue"/>
+    <Event id="register_venue" type="submit" task="enter-venue-details" klm="MH3K">
+      <!-- 01-event: Venue Registered -->
+    </Event>
+    <Event id="back_from_venue" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="seating_layout" name="Define Seating">
+    <ViewComponent id="seating_form" type="form" binding="venue"/>
+    <Event id="set_capacity" type="select" task="enter-section-capacity" klm="MH2K"/>
+    <Event id="confirm_seating" type="submit" task="confirm-section" klm="MBB">
+      <!-- 01-event: Seating Section Defined -->
+    </Event>
+    <Event id="back_from_seating" type="navigate"/>
+  </ViewContainer>
+
+  <NavigationFlow from="new_event"          to="event_create"/>
+  <NavigationFlow from="open_schedule"      to="event_schedule"/>
+  <NavigationFlow from="new_venue"          to="venue_create"/>
+  <NavigationFlow from="open_seating"       to="seating_layout"/>
+  <NavigationFlow from="back_from_create"   to="organizer_dashboard"/>
+  <NavigationFlow from="back_from_schedule" to="organizer_dashboard"/>
+  <NavigationFlow from="back_from_venue"    to="organizer_dashboard"/>
+  <NavigationFlow from="back_from_seating"  to="organizer_dashboard"/>
+
+</IFMLModel>

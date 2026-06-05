@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       02-glossary.md          sha256:7b1e000000000000000000000000000000000000000000000000000000000000
+       04-erd.dbml             sha256:a3c0000000000000000000000000000000000000000000000000000000000000
+       04-transitions.md       sha256:9f22000000000000000000000000000000000000000000000000000000000000
+       05-statecharts/order.scxml sha256:c14d000000000000000000000000000000000000000000000000000000000000
+       07-personas.md          sha256:5e8a000000000000000000000000000000000000000000000000000000000000
+       08-task-models/dispatcher-fulfil_order.xml sha256:11ab000000000000000000000000000000000000000000000000000000000000
+       08-task-models/dispatcher-cancel_order.xml sha256:22cd000000000000000000000000000000000000000000000000000000000000
+-->
+<IFMLModel id="dispatcher" persona="Dispatcher">
+
+  <Realizes taskModel="dispatcher-fulfil_order"/>
+  <Realizes taskModel="dispatcher-cancel_order"/>
+
+  <ViewContainer id="order_queue" name="Order Queue" home="true">
+    <ViewComponent id="queue_list" type="list" binding="order"/>
+    <Event id="open_order" type="select" task="select-order" klm="MPBB"/>
+    <Event id="open_order_c" type="select" task="select-order-c" klm="MPBB"/>
+  </ViewContainer>
+
+  <ViewContainer id="order_detail" name="Order Detail">
+    <ViewComponent id="order_view" type="details" binding="order"/>
+    <Event id="start_picking" type="submit" task="start-picking" klm="MBB">
+      <!-- 01-event: start picking -->
+    </Event>
+    <Event id="cancel_order" type="submit" task="cancel-order" klm="MBB">
+      <!-- 01-event: cancel order -->
+    </Event>
+    <Event id="back_to_queue" type="navigate"/>
+  </ViewContainer>
+
+  <NavigationFlow from="open_order"    to="order_detail"/>
+  <NavigationFlow from="open_order_c"  to="order_detail"/>
+  <NavigationFlow from="back_to_queue" to="order_queue"/>
+
+</IFMLModel>

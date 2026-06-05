@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       specs/06-gherkin/waitlist_offer.feature        sha256:30edef7d2de6705d03290804243c222f09316a43eed36ca99b5e34899b8f0323
+       specs/07-personas.md                     sha256:0c557607a179b21eee8d6e3f612a00048e1d32432409f6eff01f12246a4c87e9
+-->
+<TaskModel id="customer-join_waitlist"
+           persona="Customer" job="join waitlist">
+  <Budget klm="4"/>
+  <Task id="join-waitlist" category="abstract" operator="enabling">
+    <Task id="request-join" category="interaction"
+          scenario-tags="@invariant:INV-WaitlistOffer-2"
+          klm="MPBB"/>
+    <Task id="record-waitlist-joined" category="system"
+          scenario-tags="@transition:waitlist_offer"
+          klm="W"/>
+  </Task>
+</TaskModel>

@@ -12,8 +12,8 @@
 
 import { createHash } from 'node:crypto';
 import {
-  parse01, parse02, parse03, parse04dbml, parse04transitions,
-  parse05scxml, parse06feature,
+  parse00, parse01, parse02, parse03, parse04dbml, parse04transitions,
+  parse05scxml, parse06feature, parse07, parse08, parse09, parse10,
 } from './model.mjs';
 
 export const SEV = { error: 'error', warn: 'warn', info: 'info' };
@@ -31,6 +31,7 @@ export function sha256(text) {
 // genuinely unreadable pinned shape (=> malformed).
 export function buildModel(art) {
   const m = {};
+  if (art['00']) m.m00 = parse00(art['00'].text);
   if (art['01']) m.m01 = parse01(art['01'].text);
   if (art['02']) m.m02 = parse02(art['02'].text);
   if (art['03']) m.m03 = parse03(art['03'].text);
@@ -38,6 +39,10 @@ export function buildModel(art) {
   if (art['04trans']) m.m04t = parse04transitions(art['04trans'].text);
   m.m05 = (art['05'] || []).map((f) => ({ stem: f.stem, path: f.path, ...parse05scxml(f.text) }));
   m.m06 = (art['06'] || []).map((f) => ({ stem: f.stem, path: f.path, ...parse06feature(f.text) }));
+  if (art['07']) m.m07 = parse07(art['07'].text);
+  m.m08 = (art['08'] || []).map((f) => ({ stem: f.stem, path: f.path, ...parse08(f.text) }));
+  m.m09 = (art['09'] || []).map((f) => ({ stem: f.stem, path: f.path, ...parse09(f.text) }));
+  m.m10 = (art['10'] || []).map((f) => ({ stem: f.stem, path: f.path, ...parse10(f.text) }));
   return m;
 }
 
@@ -272,7 +277,288 @@ export function resolutionChecks(m, art) {
       badWhen.length ? badWhen.join('; ') : null, ['06-gherkin/', '01-event-storming.md'], 'dangling-when-event', eWhen);
   }
 
+  // ---------------------------------------------------------------------------
+  // 01 -> 00 families
+  // ---------------------------------------------------------------------------
+
+  // ---- R-01-actor-from-00: every 01 human/org actor ∈ 00 Business Actors ----
+  if (m.m01 && m.m00) {
+    const ba = new Set(m.m00.businessActors);
+    let edges = 0; const bad = [];
+    for (const a of m.m01.actors) {
+      const kind = m.m01.actorKinds.get(a) || '';
+      // systems / automated processes are 01-owned and exempt
+      if (kind === 'system' || kind === 'automated-process') continue;
+      edges++;
+      if (!ba.has(a)) bad.push(`01 actor '${a}' (${kind}) not a 00 Business Actor`);
+    }
+    F('R-01-actor-from-00', bad.length ? 'fail' : 'pass',
+      bad.length ? bad.join('; ') : null, ['01-event-storming.md', '00-impact-map.md'], 'dangling-business-actor', edges);
+  }
+
+  // ---- R-01-deliverable: 01 event Deliverable cells ∈ 00 Deliverables ----
+  // + every 00 deliverable realized by ≥1 event; + every aggregate serves ≥1 event
+  if (m.m01 && m.m00) {
+    const deliv = new Set(m.m00.deliverables);
+    let edges = 0; const bad = [];
+    const realized = new Set();
+    for (const [ev, cell] of m.m01.eventDeliverable) {
+      if (!cell || cell === '—' || cell === '-') continue;
+      edges++;
+      if (!deliv.has(cell)) bad.push(`01 event '${ev}' Deliverable '${cell}' not a 00 Deliverable`);
+      else realized.add(cell);
+    }
+    // coverage: every 00 deliverable realized by ≥1 event
+    for (const d of m.m00.deliverables) {
+      edges++;
+      if (!realized.has(d)) bad.push(`00 deliverable '${d}' realized by no 01 event`);
+    }
+    F('R-01-deliverable', bad.length ? 'fail' : 'pass',
+      bad.length ? bad.join('; ') : null, ['01-event-storming.md', '00-impact-map.md'], 'deliverable-coverage', edges);
+
+    // every aggregate serves ≥1 event (skeleton non-empty)
+    let eAgg = 0; const badAgg = [];
+    for (const a of m.m01.aggregates) {
+      eAgg++;
+      const steps = m.m01.skeletonSteps.get(a) || [];
+      if (steps.length === 0) badAgg.push(`01 aggregate '${a}' serves no event`);
+    }
+    F('R-01-aggregate-serves', badAgg.length ? 'fail' : 'pass',
+      badAgg.length ? badAgg.join('; ') : null, ['01-event-storming.md'], 'empty-aggregate', eAgg);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 07 personas families
+  // ---------------------------------------------------------------------------
+  if (m.m07) {
+    // ---- R-07-persona-actor: persona Business actor ∈ 00 actors (both ways) ----
+    if (m.m00) {
+      const ba = new Set(m.m00.businessActors);
+      let edges = 0; const bad = [];
+      const covered = new Set();
+      for (const p of m.m07.personas) {
+        edges++;
+        if (!ba.has(p.businessActor)) bad.push(`07 persona '${p.name}' Business actor '${p.businessActor}' not a 00 Business Actor`);
+        else covered.add(p.businessActor);
+      }
+      for (const a of m.m00.businessActors) { edges++; if (!covered.has(a)) bad.push(`00 Business Actor '${a}' has no 07 persona`); }
+      F('R-07-persona-actor', bad.length ? 'fail' : 'pass',
+        bad.length ? bad.join('; ') : null, ['07-personas.md', '00-impact-map.md'], 'persona-actor-coverage', edges);
+    }
+
+    // ---- R-07-goal-impact: goal [impact: …] tokens ∈ 00 Impacts ----
+    if (m.m00) {
+      const impacts = new Set(m.m00.impacts);
+      let edges = 0; const bad = [];
+      for (const p of m.m07.personas) for (const im of p.goalImpacts) {
+        edges++;
+        if (!impacts.has(im)) bad.push(`07 persona '${p.name}' goal [impact: ${im}] not a 00 Impact`);
+      }
+      F('R-07-goal-impact', bad.length ? 'fail' : 'pass',
+        bad.length ? bad.join('; ') : null, ['07-personas.md', '00-impact-map.md'], 'dangling-impact-token', edges);
+    }
+
+    // ---- R-07-job-outcome: job Outcome cells ∈ 01 events ----
+    if (m.m01) {
+      const events = new Set(m.m01.events);
+      let edges = 0; const bad = [];
+      for (const p of m.m07.personas) for (const j of p.jobs) {
+        if (!j.outcome) continue;
+        edges++;
+        if (!events.has(j.outcome)) bad.push(`07 persona '${p.name}' job '${j.job}' Outcome '${j.outcome}' not a 01 event`);
+      }
+      F('R-07-job-outcome', bad.length ? 'fail' : 'pass',
+        bad.length ? bad.join('; ') : null, ['07-personas.md', '01-event-storming.md'], 'dangling-job-outcome', edges);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 08 task-models families
+  // ---------------------------------------------------------------------------
+  if (m.m08.length) {
+    // ---- R-08-persona-job-biject: 08 files ↔ 07 persona-jobs (bijection) ----
+    if (m.m07) {
+      const expected = new Set(); // stem -> {persona, job}
+      const expMeta = new Map();
+      for (const p of m.m07.personas) for (const j of p.jobs) {
+        const stem = `${snakeSlug(p.name)}-${snakeSlug(j.job)}`;
+        expected.add(stem); expMeta.set(stem, { persona: p.name, job: j.job });
+      }
+      const present = new Set(m.m08.map((x) => x.stem));
+      let edges = 0; const bad = [];
+      for (const x of m.m08) {
+        edges++;
+        if (!expected.has(x.stem)) bad.push(`08 file '${x.stem}.xml' has no matching 07 persona-job`);
+        else {
+          const meta = expMeta.get(x.stem);
+          if (x.persona !== meta.persona) bad.push(`08 '${x.stem}.xml' persona='${x.persona}' != 07 '${meta.persona}'`);
+          if (x.job !== meta.job) bad.push(`08 '${x.stem}.xml' job='${x.job}' != 07 '${meta.job}'`);
+        }
+      }
+      for (const stem of expected) { edges++; if (!present.has(stem)) bad.push(`07 persona-job '${stem}' has no 08 file`); }
+      F('R-08-persona-job-biject', bad.length ? 'fail' : 'pass',
+        bad.length ? bad.join('; ') : null, ['08-task-models/', '07-personas.md'], 'persona-job-bijection', edges);
+    }
+
+    // ---- R-08-tag-vocab: 08 leaf scenario-tags ∈ 06 tag vocabulary ----
+    if (m.m06.length) {
+      const vocab = sixTagVocabulary(m.m06);
+      let edges = 0; const bad = [];
+      for (const x of m.m08) for (const lf of x.leaves) for (const tag of lf.tags) {
+        edges++;
+        if (!vocab.has(tag)) bad.push(`08 '${x.stem}.xml' leaf '${lf.id}' scenario-tag '${tag}' not in 06 tag vocabulary`);
+      }
+      F('R-08-tag-vocab', bad.length ? 'fail' : 'pass',
+        bad.length ? bad.join('; ') : null, ['08-task-models/', '06-gherkin/'], 'dangling-scenario-tag', edges);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 09 ui-flows families
+  // ---------------------------------------------------------------------------
+  if (m.m09.length) {
+    // ---- R-09-persona-biject: 09 files ↔ 07 personas (one per persona) ----
+    if (m.m07) {
+      const expected = new Set(m.m07.personas.map((p) => snakeSlug(p.name)));
+      const present = new Set(m.m09.map((x) => x.stem));
+      let edges = 0; const bad = [];
+      for (const x of m.m09) { edges++; if (!expected.has(x.stem)) bad.push(`09 file '${x.stem}.xml' has no matching 07 persona`); }
+      for (const e of expected) { edges++; if (!present.has(e)) bad.push(`07 persona '${e}' has no 09 file`); }
+      F('R-09-persona-biject', bad.length ? 'fail' : 'pass',
+        bad.length ? bad.join('; ') : null, ['09-ui-flows/', '07-personas.md'], 'persona-bijection', edges);
+    }
+
+    // ---- R-09-event-task: 09 Event task= ∈ 08 leaf ids (of a realized model) ----
+    {
+      const leafById = new Map(); // 08 stem -> Set(leaf id)
+      for (const x of m.m08) leafById.set(x.stem, new Set(x.leaves.map((l) => l.id)));
+      let edges = 0; const bad = [];
+      for (const x of m.m09) {
+        const realizedLeaves = new Set();
+        for (const tmId of x.realizes) for (const id of (leafById.get(tmId) || [])) realizedLeaves.add(id);
+        for (const ev of x.events) {
+          if (!ev.task) continue;
+          edges++;
+          if (!realizedLeaves.has(ev.task)) bad.push(`09 '${x.stem}.xml' Event '${ev.id}' task='${ev.task}' not a leaf of any realized 08 model`);
+        }
+      }
+      F('R-09-event-task', bad.length ? 'fail' : 'pass',
+        bad.length ? bad.join('; ') : null, ['09-ui-flows/', '08-task-models/'], 'dangling-event-task', edges);
+    }
+
+    // ---- R-09-binding: 09 ViewComponent binding ∈ 04 tables ----
+    if (m.m04) {
+      const tables = new Set(m.m04.tableNames);
+      let edges = 0; const bad = [];
+      for (const x of m.m09) for (const b of x.bindings) {
+        edges++;
+        if (!tables.has(b)) bad.push(`09 '${x.stem}.xml' binding='${b}' not a 04 table`);
+      }
+      F('R-09-binding', bad.length ? 'fail' : 'pass',
+        bad.length ? bad.join('; ') : null, ['09-ui-flows/', '04-erd.dbml'], 'dangling-binding', edges);
+    }
+
+    // ---- R-09-event-authority: 09 01-event annot ∈ entity authority ----
+    // authority = 05 statechart transition set if entity promoted, else 04 row.
+    {
+      // build per-entity authoritative 01-event sets.
+      const promoted = new Set(m.m05.map((s) => s.stem)); // entity stems with a 05 file
+      const authByEntity = new Map(); // entity -> Set(01-event strings)
+      for (const s of m.m05) {
+        const set = new Set();
+        if (s.initialEvent) set.add(s.initialEvent); // ∅-row authority (initial entry)
+        for (const tr of s.transitions) if (tr.annot) set.add(tr.annot);
+        authByEntity.set(s.stem, set);
+      }
+      if (m.m04t) for (const [ent, rows] of m.m04t.entities) {
+        if (promoted.has(ent)) continue; // promoted entities use 05 authority
+        const set = authByEntity.get(ent) || new Set();
+        for (const r of rows) if (r.event) set.add(r.event);
+        authByEntity.set(ent, set);
+      }
+      // a 09 Event's binding container determines its entity; we approximate the
+      // entity from the ViewComponent binding adjacent to the Event is not
+      // tracked per-container, so we accept the 01-event if it is in ANY entity's
+      // authority across the suite (a ghost 01-event resolves nowhere => fail).
+      const allAuth = new Set();
+      for (const set of authByEntity.values()) for (const e of set) allAuth.add(e);
+      let edges = 0; const bad = [];
+      for (const x of m.m09) for (const ev of x.events) {
+        if (!ev.event01) continue;
+        edges++;
+        if (!allAuth.has(ev.event01)) bad.push(`09 '${x.stem}.xml' Event '${ev.id}' 01-event '${ev.event01}' not in any entity's authority (05-if-promoted-else-04)`);
+      }
+      F('R-09-event-authority', bad.length ? 'fail' : 'pass',
+        bad.length ? bad.join('; ') : null, ['09-ui-flows/', '05-statecharts/'], 'dangling-event-authority', edges);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 10 flow-acceptance families
+  // ---------------------------------------------------------------------------
+  if (m.m10.length) {
+    // ---- R-10-model-biject: 10 files ↔ 08 models (bijection) ----
+    {
+      const expected = new Set(m.m08.map((x) => x.stem));
+      const present = new Set(m.m10.map((x) => x.stem));
+      let edges = 0; const bad = [];
+      for (const x of m.m10) {
+        edges++;
+        if (!expected.has(x.stem)) bad.push(`10 file '${x.stem}.feature' has no matching 08 model`);
+        if (x.taskModel !== x.stem) bad.push(`10 '${x.stem}.feature' @task-model:${x.taskModel} != filename stem`);
+      }
+      for (const e of expected) { edges++; if (!present.has(e)) bad.push(`08 model '${e}' has no 10 feature`); }
+      F('R-10-model-biject', bad.length ? 'fail' : 'pass',
+        bad.length ? bad.join('; ') : null, ['10-flow-acceptance/', '08-task-models/'], 'model-bijection', edges);
+    }
+
+    // ---- R-10-screen-ref: 10 screen refs ∈ 09 container ids (of the persona) ----
+    {
+      // map 08 stem -> persona -> 09 container ids
+      const containersByPersona = new Map(); // 09 stem -> Set(container ids)
+      for (const x of m.m09) containersByPersona.set(x.stem, new Set(x.containers.map((c) => c.id)));
+      // 10 stem is <persona>-<job>; the persona slug is the 09 stem prefix
+      const personaOf = (stem) => stem.split('-')[0];
+      let edges = 0; const bad = [];
+      for (const x of m.m10) {
+        const ids = containersByPersona.get(personaOf(x.stem)) || new Set();
+        for (const ref of x.screenRefs) {
+          edges++;
+          if (!ids.has(ref)) bad.push(`10 '${x.stem}.feature' screen '${ref}' not a 09 container id for persona '${personaOf(x.stem)}'`);
+        }
+      }
+      F('R-10-screen-ref', bad.length ? 'fail' : 'pass',
+        bad.length ? bad.join('; ') : null, ['10-flow-acceptance/', '09-ui-flows/'], 'dangling-screen-ref', edges);
+    }
+
+    // ---- R-10-outcome-tag: 10 outcome tags ∈ 06 tag vocabulary ----
+    if (m.m06.length) {
+      const vocab = sixTagVocabulary(m.m06);
+      let edges = 0; const bad = [];
+      for (const x of m.m10) for (const tag of x.outcomeTags) {
+        edges++;
+        if (!vocab.has(tag)) bad.push(`10 '${x.stem}.feature' outcome tag '${tag}' not in 06 tag vocabulary`);
+      }
+      F('R-10-outcome-tag', bad.length ? 'fail' : 'pass',
+        bad.length ? bad.join('; ') : null, ['10-flow-acceptance/', '06-gherkin/'], 'dangling-outcome-tag', edges);
+    }
+  }
+
   return out;
+}
+
+// the 06 closed tag vocabulary = every tag actually present on a 06 scenario,
+// re-prefixed with '@'. 08 scenario-tags and 10 outcome tags resolve into it.
+function sixTagVocabulary(m06) {
+  const vocab = new Set();
+  for (const ft of m06) for (const sc of ft.scenarios) if (sc.tag) vocab.add(`@${sc.tag}`);
+  return vocab;
+}
+
+// snake slug matching the 07/08/09 filename convention:
+// lowercase, whitespace and non-[a-z0-9_] -> '_'.
+function snakeSlug(s) {
+  return s.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '_');
 }
 
 // =============================================================================
@@ -372,6 +658,41 @@ export function dryChecks(m, art) {
     let edges = windows.length ? 1 : 0; const bad = [];
     for (const w of windows) if (dwins.has(w)) { bad.push(`03-aggregates.md restates a >=${DRY_TOKEN_WINDOW}-token window of a 02 definition`); break; }
     F('DRY-def-verbatim', bad.length ? 'fail' : 'pass', bad.length ? bad.join('; ') : null, ['02-glossary.md'], edges);
+  }
+
+  // ---- DRY-00-shape: 00 Business-Actors / Impacts / Deliverables shapes in 01+ ----
+  // The 00-owned table shapes restated downstream of 00. (01 owns its own Actors
+  // table whose header differs — Actor|Kind|Responsibility — so it does not collide
+  // with 00's Actor|Description shape.)
+  {
+    const targets = [];
+    if (art['01']) targets.push(['01-event-storming.md', art['01'].text]);
+    if (art['07']) targets.push(['07-personas.md', art['07'].text]);
+    let edges = 0; const bad = [];
+    for (const [name, text] of targets) {
+      edges++;
+      if (hasTableShape(text, ['impact', 'business actor'])) bad.push(`${name} restates a 00 Impacts table shape`);
+      if (hasTableShape(text, ['deliverable', 'impact'])) bad.push(`${name} restates a 00 Deliverables table shape`);
+      if (hasTableShape(text, ['actor', 'description'])) bad.push(`${name} restates a 00 Business-Actors table shape`);
+    }
+    F('DRY-00-shape', bad.length ? 'fail' : 'pass', bad.length ? bad.join('; ') : null, ['00-impact-map.md'], edges);
+  }
+
+  // ---- DRY-07-shape: 07 persona-block shapes restated downstream (08/09/10) ----
+  // 07 owns the persona Jobs-to-be-done (Job|Trigger|Outcome) table and the
+  // `**Business actor:**` block. A downstream doc restating that table shape is a
+  // restated-shape finding. 08/09/10 are XML/feature, so a Markdown jobs-table
+  // there would be an obvious paste.
+  {
+    let edges = 0; const bad = [];
+    const scanText = (label, text) => {
+      edges++;
+      if (hasTableShape(text, ['job', 'trigger', 'outcome'])) bad.push(`${label} restates a 07 Jobs-to-be-done table shape`);
+    };
+    for (const x of (art['08'] || [])) scanText(`08/${x.stem}.xml`, x.text);
+    for (const x of (art['09'] || [])) scanText(`09/${x.stem}.xml`, x.text);
+    for (const x of (art['10'] || [])) scanText(`10/${x.stem}.feature`, x.text);
+    F('DRY-07-shape', bad.length ? 'fail' : 'pass', bad.length ? bad.join('; ') : null, ['07-personas.md'], edges);
   }
 
   return out;

@@ -43,7 +43,7 @@ const FORBIDDEN_COLUMNS = ['Forbidden term', 'Canonical term', 'Reason'];
 
 // Pinned 01 upstream shapes (the same A-theme shape event-storming pins).
 const REQUIRED_H2_01 = ['Domain Events', 'Actors', 'Hotspots', 'Lifecycle Skeletons'];
-const EVENTS_COLUMNS_01 = ['Event', 'Actor', 'Trigger', 'Notes'];
+const EVENTS_COLUMNS_01 = ['Event', 'Actor', 'Trigger', 'Notes', 'Deliverable'];
 const ACTORS_COLUMNS_01 = ['Actor', 'Kind', 'Responsibility'];
 const HOTSPOTS_COLUMNS_01 = ['Hotspot', 'Question', 'Blocks'];
 
@@ -520,7 +520,7 @@ function allTables02(doc02) {
 }
 
 // L16 / E1-mech (simulation.md §3.2). A Domain-Events-shaped table
-// (`Event | Actor | Trigger | Notes` header) appearing ANYWHERE inside 02 is a
+// (`Event | Actor | Trigger | Notes | Deliverable` header) appearing ANYWHERE inside 02 is a
 // restated 01 event table (DRY violation; 01 owns event names). The Enums
 // values table and Terms/Forbidden tables have different headers, so a legal 02
 // never trips this; only a pasted 01 Domain-Events table does.

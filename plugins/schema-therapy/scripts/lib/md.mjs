@@ -94,10 +94,34 @@ export function readOrderedListsByHeading(text) {
   return out;
 }
 
+// Normalize a fingerprint entry NAME to a bare specs-relative path. The 08 task
+// models prefix their entries with `specs/` (e.g. `specs/06-gherkin/x.feature`);
+// every other dialect names the input relative to specs/. We strip a leading
+// `specs/` so resolveInput can root every name uniformly under the specs dir.
+export function normFingerprintName(name) {
+  return name.replace(/^specs\//, '');
+}
+
+// Parse a single fingerprint BODY line into { name, hash } or null. Two pinned
+// dialects are accepted (the suite emits both):
+//   A. `<name>@sha256:<hex>`              (00-06, 10)
+//   B. `<name>  <ws>  sha256:<hex>`       (08, 09 — whitespace-separated, no `@`)
+// A 64-hex hash is required in both. Returns { name, hash } or null on no-match.
+function parseFingerprintEntry(body) {
+  // dialect A: name@sha256:hex
+  let m = /^(\S+)@sha256:([0-9a-fA-F]{64})$/.exec(body);
+  if (m) return { name: normFingerprintName(m[1]), hash: m[2].toLowerCase() };
+  // dialect B: name <ws> sha256:hex   (trailing parenthetical prose tolerated)
+  m = /^(\S+)\s+sha256:([0-9a-fA-F]{64})\b/.exec(body);
+  if (m) return { name: normFingerprintName(m[1]), hash: m[2].toLowerCase() };
+  return null;
+}
+
 // The fingerprint block. Each artifact dialect comments its lines differently:
 //   .md / .scxml : an HTML comment block `<!-- fingerprints: ... -->`
 //   .dbml        : `// fingerprints:` then `// <name>@sha256:<hex>` lines
 //   .feature     : `# fingerprints:` then `#   <name>@sha256:<hex>` lines
+// The .scxml/.xml 08-09 dialect uses whitespace-separated `<name> sha256:<hex>`.
 // Returns { present:boolean, entries:[{name, hash, raw}], malformed:[raw,...] }.
 // `malformed` collects fingerprint-looking lines whose shape is broken.
 export function readFingerprints(text, ext) {
@@ -106,11 +130,16 @@ export function readFingerprints(text, ext) {
   const malformed = [];
   let present = false;
 
-  const ENTRY = /^([^@\s]+)@sha256:([0-9a-fA-F]+)\s*$/;
   // a line that clearly *intends* to be a fingerprint entry but is broken
-  const LOOKS = /@sha256:/;
+  const LOOKS = /@sha256:|sha256:/;
+  const accept = (body) => {
+    const e = parseFingerprintEntry(body);
+    if (e) { entries.push({ ...e, raw: body }); return true; }
+    if (LOOKS.test(body)) { malformed.push(body); return true; }
+    return false;
+  };
 
-  if (ext === '.md' || ext === '.scxml') {
+  if (ext === '.md' || ext === '.scxml' || ext === '.xml') {
     // find the first `<!-- fingerprints:` ... `-->` block
     let start = -1;
     for (let i = 0; i < lines.length; i++) {
@@ -128,14 +157,7 @@ export function readFingerprints(text, ext) {
           .replace(/<!--\s*fingerprints\s*:/, '')
           .replace(/-->/, '')
           .trim();
-        if (body) {
-          if (ENTRY.test(body)) {
-            const m = ENTRY.exec(body);
-            entries.push({ name: m[1], hash: m[2].toLowerCase(), raw: body });
-          } else if (LOOKS.test(body)) {
-            malformed.push(body);
-          }
-        }
+        if (body) accept(body);
         if (closed) break;
       }
     }
@@ -152,14 +174,7 @@ export function readFingerprints(text, ext) {
         const cm = /^\s*\/\/\s*(.*\S)\s*$/.exec(t);
         if (!cm) break; // first non-comment line ends the block
         const body = cm[1].trim();
-        if (ENTRY.test(body)) {
-          const m = ENTRY.exec(body);
-          entries.push({ name: m[1], hash: m[2].toLowerCase(), raw: body });
-        } else if (LOOKS.test(body)) {
-          malformed.push(body);
-        } else {
-          break; // a comment that isn't a fingerprint entry ends the block
-        }
+        if (!accept(body)) break; // a comment that isn't a fingerprint entry ends the block
       }
     }
   } else if (ext === '.feature') {
@@ -175,18 +190,40 @@ export function readFingerprints(text, ext) {
         const cm = /^\s*#\s*(.*\S)\s*$/.exec(t);
         if (!cm) break;
         const body = cm[1].trim();
-        if (ENTRY.test(body)) {
-          const m = ENTRY.exec(body);
-          entries.push({ name: m[1], hash: m[2].toLowerCase(), raw: body });
-        } else if (LOOKS.test(body)) {
-          malformed.push(body);
-        } else {
-          break;
-        }
+        if (!accept(body)) break;
       }
     }
   }
 
+  return { present, entries, malformed };
+}
+
+// 07-personas.md carries NO `<!-- fingerprints: -->` comment block; instead it
+// opens with a `## Upstream Fingerprints` section whose bullet lines are
+// `- <name>@sha256:<hex>`. This reads that prose dialect into the same shape as
+// readFingerprints so staleness can treat 07 uniformly.
+export function readProseFingerprints(text) {
+  const lines = text.split(/\r?\n/);
+  const entries = [];
+  const malformed = [];
+  let present = false;
+  let inSection = false;
+  for (let i = 0; i < lines.length; i++) {
+    const h = /^##\s+(.*\S)\s*$/.exec(lines[i]);
+    if (h) {
+      inSection = /upstream fingerprint/i.test(h[1]);
+      if (inSection) present = true;
+      else if (present) break; // section ended
+      continue;
+    }
+    if (!inSection) continue;
+    const bm = /^\s*[-*]\s+(.*\S)\s*$/.exec(lines[i]);
+    if (!bm) continue;
+    const body = bm[1].trim();
+    const m = /^(\S+)@sha256:([0-9a-fA-F]{64})\b/.exec(body);
+    if (m) entries.push({ name: normFingerprintName(m[1]), hash: m[2].toLowerCase(), raw: body });
+    else if (/@sha256:|sha256:/.test(body)) malformed.push(body);
+  }
   return { present, entries, malformed };
 }
 

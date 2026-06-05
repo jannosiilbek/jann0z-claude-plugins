@@ -1,0 +1,193 @@
+{
+    "name": "ifmldi",
+    "uri": "http://www.omg.org/spec/IFML/20130218/IFML-DI",
+    "prefix": "ifmldi",
+    "associations": [],
+    "types": [
+        {
+            "name": "IFMLConnection",
+            "superClass": [
+                "IFMLDiagramElement",
+                "di:Edge"
+            ],
+            "isAbstract": false,
+            "description": "An IFMLConnection represents a depiction of a connection between two (source and target) IFMLDiagramElements. It specializes di::dd::Edge. IFMLConnections do not contain labels. All IFMLConnections are owned directly by an IFMLDiagram. The way-points of IFMLConnections are always relative to that diagrams’s origin point and must be positive coordinates.",
+            "properties": [
+                {
+                    "name": "targetElement",
+                    "description": "",
+                    "type": "IFMLDiagramElement",
+                    "redefines": "di:Edge#target",
+                    "isReference": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "sourceElement",
+                    "description": "",
+                    "type": "IFMLDiagramElement",
+                    "redefines": "di:Edge#source",
+                    "isReference": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "IFMLCompartment",
+            "superClass": [
+                "di:Shape"
+            ],
+            "isAbstract": false,
+            "description": "An IFMLCompartment is a section within an IFMLDiagramElement. An IFMLCompartment organizes the items in an IFMLDiagramElement so that it is easy to differentiate between them. IFMLCompartments may contain IFMLNodes or IFMLLabels.",
+            "properties": [
+                {
+                    "name": "",
+                    "description": "",
+                    "type": "IFMLLabel",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "ownedNodes",
+                    "description": "",
+                    "type": "IFMLNode",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "IFMLLabel",
+            "superClass": [
+                "IFMLDiagramElement",
+                "di:Shape"
+            ],
+            "isAbstract": false,
+            "description": "An IFMLLabel is a label that depicts textual information about an IFMLElement. An IFMLLabel is always contained (but not always rendered) in an IFMLNode directly or through an IFMLCompartment. In IFML, labels are not found in Connections. IFMLLabels may derive the textual information to be depicted from a referenced IFML model element that contains the property with the label text.",
+            "properties": [
+                {
+                    "name": "kind",
+                    "description": "Determines to what kind of level corresponds the current IFMLParameter e.g. label of a Parameter, a ViewContainer, an Action etc..",
+                    "type": "LabelKind",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "IFMLStyle",
+            "superClass": [
+                "di:Style"
+            ],
+            "isAbstract": false,
+            "description": "IFMLStyle represents the appearance options for IFMLDiagramElements. One or more elements may reference the same IFMLStyle element, which must be owned by an IFMLDiagramElement.",
+            "properties": [
+                {
+                    "name": "fontName",
+                    "description": "Name of the font used by the styled IFMLDiagramElement",
+                    "type": "String",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "fontSize",
+                    "description": "Size of the font used by the styled IFMLDiagramElement",
+                    "type": "Real",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "fillColor",
+                    "description": "Background color of the figure.",
+                    "type": "Color",
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "IFMLNode",
+            "superClass": [
+                "IFMLDiagramElement",
+                "di:Shape"
+            ],
+            "isAbstract": false,
+            "description": "IFMLNode represents figures with bounds that are laid out relative to the origin of the diagram. Note that the bounds’ x and y coordinates are the position of the upper left corner of the node (relative to the upper left corner of the diagram). IFMLNodes may contain compartments and other figures and may be connected by IFMLConnections.",
+            "properties": [
+                {
+                    "name": "ownedCompartments",
+                    "description": "",
+                    "type": "IFMLCompartment",
+                    "isMany": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "ownedLabel",
+                    "description": "",
+                    "type": "IFMLLabel",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "ownedNodes",
+                    "description": "",
+                    "type": "IFMLNode",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "IFMLDiagramElement",
+            "superClass": [
+                "di:DiagramElement"
+            ],
+            "isAbstract": false,
+            "description": "IFMLDiagramElement extends the DiagramElement and is the super type of all elements in diagrams, including diagrams themselves. When contained in a diagram, diagram elements are laid out relative to the diagram’s origin. An IFMLDiagramElement can be useful on its own (i.e. purely notational) or more commonly used as a depiction of another IFML element from an IFML model. A IFMLDiagramElement can own other diagram elements in a graph-like hierarchy. IFMLDiagramElements can own and/or share IFMLStyle elements. Shared IFMLStyle elements are owned by other IFMLDiagramElements..",
+            "properties": [
+                {
+                    "name": "modelElement",
+                    "description": "Model element of the referenced IFML model.",
+                    "type": "BaseElement",
+                    "redefines": "di:DiagramElement#modelElement",
+                    "isAttr": true,
+                    "isReference": true,
+                    "nothingtosee": true
+                },
+                {
+                    "name": "localStyle",
+                    "description": "",
+                    "type": "IFMLStyle",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "sharedStyle",
+                    "description": "",
+                    "type": "IFMLStyle",
+                    "nothingtosee": true
+                },
+                {
+                    "name": "ownedElement",
+                    "description": "",
+                    "type": "IFMLDiagramElement",
+                    "redefines": "di:DiagramElement#ownedElement",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        },
+        {
+            "name": "IFMLDiagram",
+            "superClass": [
+                "IFMLNode",
+                "di:Diagram"
+            ],
+            "isAbstract": false,
+            "description": "IFMLDiagram represents a depiction of all or part of an IFML model. It specializes DI::Diagram and IFMLNode, since a diagram may be seen as a node as is the case of ViewPoint and Module.",
+            "properties": [
+                {
+                    "name": "diagramElements",
+                    "description": "",
+                    "type": "IFMLDiagramElement",
+                    "isMany": true,
+                    "nothingtosee": true
+                }
+            ]
+        }
+    ],
+    "enumerations": []
+}

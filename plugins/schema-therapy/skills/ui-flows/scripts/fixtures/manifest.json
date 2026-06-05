@@ -1,0 +1,77 @@
+{
+  "description": "Expected (status, owner, route, run-mode, authority) tuples for each shipped ui-flows (09) fixture per simulation.md §3.4/§3.5/§3.6. `dir` is the 09 directory passed positionally. The upstreams default to the shared mini set (up02/up04dbml/up04tr/up07/up08); a fixture may OVERRIDE one to a malformed variant. `run` is `with05` (pass --upstream-05 upstream-05) or `no05` (omit it). `owner` is the check ID that MUST appear among the harness's failing/malformed rejections for the stated reason. `route` (when present) is the upstream file an upstream-defect finding must name. `authority` (when present) is asserted against summary.authority. `trap:true` marks the wrong-reason trap whose OWNER must be W-COST (isolated over the co-present M-BIND). `vacuous:true`, `brokenTest:true`, `upstreamDefect:true` mark the special run-modes. Every negative carries EXACTLY ONE injected defect (a fixture failing for any other reason is itself broken-test). The mini upstream-04.dbml uses the REAL emitted snake_case `<name>_status` enum convention (`order_status`/`coupon_status`), so the Theme-D lifecycle authority (M-ANNOT/R-AUTH) is exercised against the convention 04 actually ships; the KLM budgets in upstream-08 are denominated in the 08-owned operator-TOKEN unit (BB=1 token), matching the 08 walker. selftest PART 5b proves the snake_case lifecycle detection (authority block non-empty + ghost-01-event fires R-AUTH against it).",
+  "defaults": {
+    "up02": "upstream-02.md",
+    "up04dbml": "upstream-04.dbml",
+    "up04tr": "upstream-04-transitions.md",
+    "up07": "upstream-07.md",
+    "up08": "upstream-08",
+    "up05": "upstream-05"
+  },
+  "fixtures": [
+    { "dir": "valid-09", "run": "with05", "status": "pass", "owner": null, "authority": { "order": "05-scxml", "coupon": "04-table" } },
+    { "dir": "valid-09-no05", "run": "no05", "status": "pass", "owner": null, "authority": { "order": "04-table", "coupon": "04-table" } },
+    { "dir": "creation-event", "run": "with05", "status": "pass", "owner": null, "authority": { "order": "05-scxml", "coupon": "04-table" } },
+
+    { "dir": "malformed-xml", "run": "with05", "status": "malformed", "owner": "M-DECL", "rule": "A-a" },
+    { "dir": "missing-fingerprint", "run": "with05", "status": "fail", "owner": "M-FP", "rule": "A-b" },
+    { "dir": "missing-realizes", "run": "with05", "status": "fail", "owner": "M-REALIZES", "rule": "A-d" },
+    { "dir": "bad-component-type", "run": "with05", "status": "fail", "owner": "M-CTYPE", "rule": "A-g" },
+    { "dir": "bad-event-type", "run": "with05", "status": "fail", "owner": "M-ETYPE", "rule": "A-h" },
+    { "dir": "bad-klm-token", "run": "with05", "status": "fail", "owner": "M-KLM", "rule": "C-b" },
+    { "dir": "dup-home", "run": "with05", "status": "fail", "owner": "M-HOME", "rule": "A-l" },
+    { "dir": "no-home", "run": "with05", "status": "fail", "owner": "M-HOME", "rule": "A-l" },
+    { "dir": "ghost-binding", "run": "with05", "status": "fail", "owner": "M-BIND", "rule": "A-i" },
+    { "dir": "ghost-task-ref", "run": "with05", "status": "fail", "owner": "M-TASKREF", "rule": "B-c" },
+    { "dir": "dangling-navflow", "run": "with05", "status": "fail", "owner": "M-NAVEND", "rule": "A-j" },
+    { "dir": "unrealized-leaf", "run": "with05", "status": "fail", "owner": "X-COV-LEAF", "rule": "B-a" },
+    { "dir": "over-budget", "run": "with05", "status": "fail", "owner": "W-COST", "rule": "C-a", "bothValues": true },
+    { "dir": "ghost-01-event", "run": "with05", "status": "fail", "owner": "R-AUTH", "rule": "D-a" },
+    { "dir": "wrong-authority-event", "run": "with05", "status": "fail", "owner": "R-AUTH", "rule": "D-b" },
+    { "dir": "realizes-other-persona", "run": "with05", "status": "fail", "owner": "R-REALIZE", "rule": "A-e" },
+    { "dir": "missing-persona-model", "run": "with05", "status": "fail", "owner": "M-BIJ", "rule": "A-c" },
+    { "dir": "extra-model", "run": "with05", "status": "fail", "owner": "M-BIJ", "rule": "A-c" },
+    { "dir": "forbidden-synonym-id", "run": "with05", "status": "fail", "owner": "M-FORBID", "rule": "E-b" },
+    { "dir": "non-snake-id", "run": "with05", "status": "fail", "owner": "M-SNAKE", "rule": "E-a" },
+    { "dir": "05-claimed-but-absent", "run": "no05", "status": "fail", "owner": "N-05ABSENT", "rule": "D-a" },
+
+    { "dir": "wrong-reason-trap", "run": "with05", "status": "fail", "owner": "W-COST", "trap": true, "trapOwner": "W-COST", "trapNotOwner": "M-BIND" },
+
+    { "dir": "vacuous", "run": "with05", "status": "broken-test", "owner": null, "vacuous": true, "args": ["--no-checks"] },
+
+    { "dir": "valid-09", "run": "with05", "status": "fail", "owner": "X-COST-INT", "upstreamDefect": true, "route": "08-task-models/dispatcher-fulfil_order.xml", "up08": "upstream-08-broken" },
+
+    { "dir": "valid-09", "run": "with05", "status": "broken-test", "owner": null, "brokenTest": true, "up07": "upstream-07-malformed.md" },
+    { "dir": "valid-09", "run": "with05", "status": "broken-test", "owner": null, "brokenTest": true, "up04dbml": "upstream-04-malformed.dbml" },
+    { "dir": "valid-09", "run": "with05", "status": "broken-test", "owner": null, "brokenTest": true, "up02": "upstream-02-malformed.md" },
+    { "dir": "valid-09", "run": "with05", "status": "broken-test", "owner": null, "brokenTest": true, "up08": "upstream-08-malformed" },
+    { "dir": "valid-09", "run": "with05", "status": "broken-test", "owner": null, "brokenTest": true, "up05": "upstream-05-malformed" }
+  ],
+  "coverage": {
+    "description": "The §5 positive+negative floor: every ❌-mechanizable behavior has BOTH a positive (over valid-09/valid-09-no05) AND a dedicated negative fixture. Asserted by selftest as a distinct-rule count over the 22 ❌ rules.",
+    "rules": [
+      { "rule": "A-a", "owner": "M-DECL", "neg": "malformed-xml" },
+      { "rule": "A-b", "owner": "M-FP", "neg": "missing-fingerprint" },
+      { "rule": "A-c", "owner": "M-BIJ", "neg": "missing-persona-model" },
+      { "rule": "A-d", "owner": "M-REALIZES", "neg": "missing-realizes" },
+      { "rule": "A-e", "owner": "R-REALIZE", "neg": "realizes-other-persona" },
+      { "rule": "A-f", "owner": "M-CID", "neg": "non-snake-id" },
+      { "rule": "A-g", "owner": "M-CTYPE", "neg": "bad-component-type" },
+      { "rule": "A-h", "owner": "M-ETYPE", "neg": "bad-event-type" },
+      { "rule": "A-i", "owner": "M-BIND", "neg": "ghost-binding" },
+      { "rule": "A-j", "owner": "M-NAVEND", "neg": "dangling-navflow" },
+      { "rule": "A-k", "owner": "R-AUTH", "neg": "ghost-01-event" },
+      { "rule": "A-l", "owner": "M-HOME", "neg": "dup-home" },
+      { "rule": "B-a", "owner": "X-COV-LEAF", "neg": "unrealized-leaf" },
+      { "rule": "B-c", "owner": "M-TASKREF", "neg": "ghost-task-ref" },
+      { "rule": "B-d", "owner": "W-REALIZE", "neg": "unrealized-leaf" },
+      { "rule": "C-a", "owner": "W-COST", "neg": "over-budget" },
+      { "rule": "C-b", "owner": "M-KLM", "neg": "bad-klm-token" },
+      { "rule": "D-a", "owner": "R-AUTH", "neg": "ghost-01-event" },
+      { "rule": "D-b", "owner": "R-AUTH", "neg": "wrong-authority-event" },
+      { "rule": "E-a", "owner": "M-SNAKE", "neg": "non-snake-id" },
+      { "rule": "E-b", "owner": "M-FORBID", "neg": "forbidden-synonym-id" },
+      { "rule": "E-d", "owner": "M-BIND", "neg": "ghost-binding" }
+    ]
+  }
+}

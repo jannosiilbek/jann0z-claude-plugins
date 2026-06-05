@@ -1,8 +1,8 @@
 # fingerprints:
-#   02-glossary.md@sha256:2ed23f79e00dafff18f4c87584a8821b1609eb533b3692747e65c6932b788fc9
-#   03-aggregates.md@sha256:0de902e4bf885e26f33fcee898d17287fb11c6770c3ce53867e30da5d79f8352
-#   04-erd.dbml@sha256:4020b3126b6bc7cc63b9dc48c6f9d642075eb4ddf6d2da882af11f8419d5b344
-#   04-transitions.md@sha256:9adacca86e78d02104fc7ef2f8bc4fd1145f244f259ecba7ba696832e4a433d9
+#   02-glossary.md@sha256:db52ea9cbf8ccbee0004da7ef25d88ac6d56b8f066b7a117a35fdf23c143bf8c
+#   03-aggregates.md@sha256:3038ab45feee67bc0738f447d3b2da059bf6a731c6127d4f0417e5dab519f2cb
+#   04-erd.dbml@sha256:046d99720e2bf7d62b6402f4b55f6cc1ea9f6b6f7e1a8deeea9e0e875251fcff
+#   04-transitions.md@sha256:3a85ee85f4893a836892614bb810161d2a82ee7202c8fab1ae7672e0289d8535
 Feature: Order
 
   @transition:ghost

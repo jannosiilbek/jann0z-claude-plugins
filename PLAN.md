@@ -2,23 +2,34 @@
 
 ## Why
 
-Schema Therapy turns a domain description into a chain of validated modelling artifacts: discovery → language → boundaries → data → lifecycle → behavior. Each skill owns exactly one artifact, consumes only the artifacts upstream of it, and never restates their content (DRY). No artifact is emitted before passing the run-time pipeline (Step 2) under the Verification doctrine. The same single-ownership rule governs this document: every requirement has exactly one owning section; all other mentions are pointers.
+Schema Therapy turns a product intent and a domain description into a chain of validated modelling artifacts: scope → discovery → language → boundaries → data → lifecycle → behavior → personas → tasks → surfaces → acceptance. Each skill owns exactly one artifact, consumes only the artifacts upstream of it, and never restates their content (DRY). No artifact is emitted before passing the run-time pipeline (Step 2) under the Verification doctrine. The same single-ownership rule governs this document: every requirement has exactly one owning section; all other mentions are pointers.
 
 All skills live in `plugins/schema-therapy/skills/<skill-name>/`.
-All artifacts are emitted to a flat `specs/` root: single-file artifacts as `specs/NN-{artifact-name}.{ext}`, multi-file artifacts (05, 06) as a directory `specs/NN-{artifact-name}/`.
+All artifacts are emitted to a flat `specs/` root: single-file artifacts as `specs/NN-{artifact-name}.{ext}`, the paired two-file artifact (04) as `specs/04-erd.dbml` + `specs/04-transitions.md`, multi-file artifacts (05, 06, 08, 09, 10) as a directory `specs/NN-{artifact-name}/`.
 
 ## Skills
 
 | # | Skill | Artifact | Input | Position |
 |---|-------|----------|-------|----------|
-| 1 | `event-storming` | `specs/01-event-storming.md` (events, actors, hotspots, per-aggregate lifecycle skeletons) | domain description | always |
+| 0 | `impact-map` | `specs/00-impact-map.md` (business goal, business actors, impacts, deliverables) | product intent | always |
+| 1 | `event-storming` | `specs/01-event-storming.md` (events, actors, hotspots, per-aggregate lifecycle skeletons) | 00, plus the domain description | always |
 | 2 | `glossary` | `specs/02-glossary.md` (one-concept-one-word terms, owned enums derived from lifecycle skeletons) | 01 | always |
 | 3 | `aggregates` | `specs/03-aggregates.md` (aggregate roots, invariants, transactional boundaries) | 01–02 | always |
-| 4 | `erd` | `specs/04-erd.dbml` | 02–03 | always |
+| 4 | `erd` | `specs/04-erd.dbml` + `specs/04-transitions.md` (data model; one transition table per lifecycle entity — emitted together as one artifact) | 02–03 | always |
 | 5 | `statecharts` | `specs/05-statecharts/<entity>.scxml` (one machine per document) | 01–04 | conditional per entity — see the statechart gate |
 | 6 | `gherkin` | `specs/06-gherkin/*.feature` | 02–04, plus 05 when emitted | always |
+| 7 | `personas` | `specs/07-personas.md` (goal-directed personas, jobs-to-be-done) | 00–01 | always |
+| 8 | `task-models` | `specs/08-task-models/<persona>-<job>.xml` (one task model per persona-job, with its efficiency budget) | 06–07 | always |
+| 9 | `ui-flows` | `specs/09-ui-flows/<persona>.xml` (one IFML model per persona: screens, navigation, domain bindings) | 02, 04, 07–08, plus 05 when emitted | always |
+| 10 | `flow-acceptance` | `specs/10-flow-acceptance/*.feature` (one feature per task model: the realized flow walked screen-by-screen, outcomes bound to 06 by tag) | 06, 08–09 | always |
 
 **Statechart gate** — `erd` (04) owns a transition table for every entity with a lifecycle. `statecharts` promotes each entity that passes the gate — >4 states, guards, transition actions, or concurrency — into its own SCXML document, declaring inside the 05 document that it supersedes the entity's 04 table; 04 is never edited. When no entity passes the gate, 05 is not emitted and downstream skills consume the 04 transition tables.
+
+**Scope gate** — `impact-map` (00) owns the business goal, the business actors, the impacts, and the deliverables. 01's human and organizational actors carry 00's business-actor names verbatim; purely internal actors (systems) are 01-owned. Every 00 deliverable is realized by ≥1 lifecycle event in 01, and every 01 aggregate serves ≥1 impact — a 01 element serving no deliverable is scope creep, a deliverable no event realizes is an unmodelled promise; both are findings, never notes.
+
+**Flow-efficiency floor** — `task-models` (08) owns, alongside each task model, a per-job efficiency budget (KLM operator count). `ui-flows` (09) realizes each task model as screens and navigation and is measured against that budget: a 09 flow exceeding its 08 budget fails simulation. 09 never edits 08 — renegotiating a budget is an 08 regeneration. Every 08 task step references the 06 scenario(s) it sequences by tag; 09's domain bindings resolve to 04 entities and its lifecycle-dependent screens to the entity's authority (05 when promoted, else the 04 transition table).
+
+**Acceptance closure** — `flow-acceptance` (10) owns exactly one feature per 08 task model: a scenario chain that walks the 09 flow screen by screen and binds each step's outcome to the 06 scenario it realizes by tag — domain assertions live in 06 and are never restated. 10 closes the chain into an executable contract against an implementation: 06 validates the domain layer, 10 validates the built product end to end; a 10 step naming a screen absent from 09, a 06 tag that resolves nowhere, or an 08 task model with no 10 feature is a finding.
 
 ## Verification doctrine
 
@@ -76,16 +87,21 @@ Per-skill seeds (starting points for the research step, not exhaustive lists):
 
 | Skill | Specification seeds | Executable-material seeds |
 |-------|--------------------|---------------------------|
+| `impact-map` | Adzic, *Impact Mapping* (2012, canonical); impactmapping.org reference material; Adzic's published impact-mapping articles and workshop guides | — |
 | `event-storming` | Brandolini, *Introducing EventStorming* (canonical, perpetual draft); eventstorming.com reference material; ddd-crew EventStorming resources | — |
 | `glossary` | Evans, *Domain-Driven Design* (Ubiquitous Language chapters, cite-only); Evans, *DDD Reference* (free PDF, gatherable); Fowler, UbiquitousLanguage + BoundedContext bliki | — |
 | `aggregates` | Evans, *DDD* (tactical design, cite-only); Evans, *DDD Reference*; Vernon, *Effective Aggregate Design* parts I–III (dddcommunity.org / kalele.io PDFs) | — |
 | `erd` | Chen, *The Entity-Relationship Model* (1976); Codd 1970 + Codd 1971 (2NF/3NF); Boyce–Codd 1974 (BCNF); Fagin 1977 (4NF); Kent 1983, *A Simple Guide to Five Normal Forms*; DBML language spec (dbml.dbdiagram.io) | `@dbml/core` parser; PGlite (Postgres) as execution engine |
 | `statecharts` | Harel, *Statecharts: A Visual Formalism* (1987); W3C SCXML Recommendation; statecharts.dev glossary; XState docs (implementation target only) | W3C SCXML IRP test suite; SCION interpreter |
 | `gherkin` | Official Gherkin reference (cucumber.io); Gherkin grammar from `cucumber/gherkin` repo; cucumber.io *Writing Better Gherkin* | `cucumber/gherkin` reference parsers + `testdata/good` / `testdata/bad` corpora |
+| `personas` | Cooper et al., *About Face* (4th ed., goal-directed personas — canonical); Cooper's goal-directed design essays; Nielsen Norman Group persona methodology articles | — |
+| `task-models` | Paternò, ConcurTaskTrees papers (1997–) and *Model-Based Design and Evaluation of Interactive Applications* (1999); W3C MBUI Task Models (Working Group Note, 2014); Card–Moran–Newell, *The Psychology of Human-Computer Interaction* (1983) + the 1980 CACM Keystroke-Level Model paper | CTTE (ConcurTaskTrees Environment) or any maintained CTT simulator; open KLM calculator implementations |
+| `ui-flows` | OMG IFML 1.0 specification (formal/2015-02-05); Brambilla & Fraternali, *Interaction Flow Modeling Language* (2014); Nielsen's 10 usability heuristics + Nielsen Norman Group task-flow canon (professor-gate sources) | IFML metamodel + Eclipse IFML editor tooling; XMI/OCL validators |
+| `flow-acceptance` | Official Gherkin reference + grammar (shared formalism with 06); cucumber.io acceptance-testing guidance; browser-automation step canon (WebDriver/Playwright docs — implementation target only) | `cucumber/gherkin` reference parsers + corpora (shared with 06) |
 
 ### Step 2 — Create the skill with `skill-creator`
 
-Use `skill-creator` to build each skill. Build-time work happens once, inside `skill-creator`; the run-time pipeline is encoded in the created `SKILL.md` and executes on every invocation. Each skill's description must scope triggering to this pipeline — `glossary`, `erd`, and `gherkin` share territory with the napkin plugin.
+Use `skill-creator` to build each skill. Build-time work happens once, inside `skill-creator`; the run-time pipeline is encoded in the created `SKILL.md` and executes on every invocation. Each skill's description must scope triggering to this pipeline — every formalism here (impact maps, glossaries, ERDs, statecharts, Gherkin, personas, task models, UI flows) has general-purpose territory outside it that other tools may own.
 
 #### Build-time (once)
 
@@ -129,12 +145,12 @@ The suite-wide enforcement arm of doctrine §7 — a **double assurance** layer:
 
 **Upstream fingerprints** — every emitted artifact carries a fingerprint block listing `<upstream-artifact>@sha256:<content-hash>` for each input it consumed. Content hashes, never timestamps — re-emitting over identical inputs stays byte-identical (doctrine §6). The script recomputes each hash; a mismatch is a `stale` finding against the downstream artifact.
 
-**Powers** — report, then remediate: emit a fixed-format alignment report (per finding: check class, artifacts involved, owning skill), route each finding per doctrine §4, then drive re-runs — invoke the owning skill of each stale or defective artifact in pipeline order (1→6), re-running the police after each regeneration until the suite is green, bounded per doctrine §5. `upstream-defect` findings STOP per doctrine §4 — the police never patches around an upstream defect.
+**Powers** — report, then remediate: emit a fixed-format alignment report (per finding: check class, artifacts involved, owning skill), route each finding per doctrine §4, then drive re-runs — invoke the owning skill of each stale or defective artifact in pipeline order (0→10), re-running the police after each regeneration until the suite is green, bounded per doctrine §5. `upstream-defect` findings STOP per doctrine §4 — the police never patches around an upstream defect.
 
 **Triggers** — (1) hand-off from every skill's run-time step 6; (2) on demand ("check spec alignment", "is the suite aligned"). The hand-off is an *invocation* of a plugin-level component, not a file dependency — a skill's own pipeline must go green without the police present (Skill anatomy's self-containment rule holds).
 
 ## Execution order
 
-1. **Phase 0 — sources**: run Step 1 for all six skills, each in its own separate research context. No skill creation starts until every source set passes Step 1.
-2. **Phase 1 — skills**: create the six skills in pipeline order (1→6) — each skill's drift check needs its upstream artifact contract defined first. A skill counts as created only when (a) its harness selftest passes, and (b) it converges end-to-end on the shared sample domain within the doctrine §5 bound.
-3. **Phase 2 — suite check**: create the drift police (Creation, Plugin-level drift police), then run its first end-to-end audit — single ownership of every concept across all six artifact contracts; consistent `specs/` naming; each skill tested end-to-end on the shared sample domain: **conference ticketing** (orders, tickets, events, venues, refunds — rich lifecycles for 05, an M:N for 04, multi-aggregate transactions for 03).
+1. **Phase 0 — sources**: run Step 1 for all eleven skills, each in its own separate research context. No skill creation starts until every source set passes Step 1.
+2. **Phase 1 — skills**: create the eleven skills in pipeline order (0→10) — each skill's drift check needs its upstream artifact contract defined first. A skill counts as created only when (a) its harness selftest passes, and (b) it converges end-to-end on the shared sample domain within the doctrine §5 bound.
+3. **Phase 2 — suite check**: create the drift police (Creation, Plugin-level drift police), then run its first end-to-end audit — single ownership of every concept across all eleven artifact contracts; consistent `specs/` naming; each skill tested end-to-end on the shared sample domain: **conference ticketing** (orders, tickets, events, venues, refunds — rich lifecycles for 05, an M:N for 04, multi-aggregate transactions for 03, and distinct buyer/operator parties with multi-step jobs for 07–10).

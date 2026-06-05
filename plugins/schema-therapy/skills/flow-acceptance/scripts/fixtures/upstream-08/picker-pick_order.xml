@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       specs/06-gherkin/shipment.feature  sha256:3333333333333333333333333333333333333333333333333333333333333333
+       specs/07-personas.md               sha256:2222222222222222222222222222222222222222222222222222222222222222
+-->
+<TaskModel id="picker-pick_order" persona="Picker" job="pick_order">
+  <Budget klm="6"/>
+  <Task id="pick-order" category="abstract" operator="enabling">
+    <Task id="pick" category="interaction"
+          scenario-tags="@transition:shipment" klm="MBB"/>
+    <Task id="reserve-stock" category="system"/>
+    <Task id="complete" category="interaction"
+          scenario-tags="@terminal:shipment" klm="MBB"/>
+  </Task>
+</TaskModel>

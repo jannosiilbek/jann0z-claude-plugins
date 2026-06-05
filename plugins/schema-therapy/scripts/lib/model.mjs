@@ -17,29 +17,82 @@ import {
   ParseError,
 } from './md.mjs';
 
+// ---- 00 impact-map ----------------------------------------------------------
+// Pinned shape: ## Goal (prose), ## Business Actors (Actor|Description),
+// ## Impacts (Impact|Business Actor), ## Deliverables (Deliverable|Impact).
+export function parse00(text) {
+  const tables = readTables(text);
+  const businessActors = [];
+  const impacts = [];
+  const impactActor = new Map(); // impact -> business actor (exact string)
+  const deliverables = [];
+  const deliverableImpact = new Map(); // deliverable -> impact (exact string)
+  let goal = null;
+
+  // goal: the first non-empty prose line under `## Goal`
+  const lines = text.split(/\r?\n/);
+  let inGoal = false;
+  for (const line of lines) {
+    const h2 = /^##\s+(.*\S)\s*$/.exec(line);
+    if (h2) { inGoal = /^goal$/i.test(h2[1].trim()); continue; }
+    if (inGoal && line.trim() && !line.includes('|')) { goal = line.trim(); inGoal = false; }
+  }
+
+  for (const t of tables) {
+    const lc = t.columns.map((c) => c.toLowerCase());
+    if (lc[0] === 'actor' && lc.some((c) => c.includes('description'))) {
+      const ai = colIndex(t.columns, 'actor');
+      for (const r of t.rows) if (r[ai]) businessActors.push(r[ai]);
+    } else if (lc[0] === 'impact') {
+      const ii = colIndex(t.columns, 'impact');
+      const ba = colIndex(t.columns, 'business actor');
+      for (const r of t.rows) {
+        if (r[ii]) { impacts.push(r[ii]); if (ba >= 0) impactActor.set(r[ii], (r[ba] || '').trim()); }
+      }
+    } else if (lc[0] === 'deliverable') {
+      const di = colIndex(t.columns, 'deliverable');
+      const ii = colIndex(t.columns, 'impact');
+      for (const r of t.rows) {
+        if (r[di]) { deliverables.push(r[di]); if (ii >= 0) deliverableImpact.set(r[di], (r[ii] || '').trim()); }
+      }
+    }
+  }
+
+  if (businessActors.length === 0 || impacts.length === 0 || deliverables.length === 0)
+    throw new ParseError('00: missing Business Actors, Impacts, or Deliverables table');
+
+  return { goal, businessActors, impacts, impactActor, deliverables, deliverableImpact };
+}
+
 // ---- 01 event-storming ------------------------------------------------------
 export function parse01(text) {
   const tables = readTables(text);
   const events = [];
   const actors = [];
+  const actorKinds = new Map(); // actor -> kind
   const hotspots = [];
   const aggregates = []; // skeleton headings under ## Lifecycle Skeletons
   const eventTriggers = new Map(); // event -> trigger string
+  const eventDeliverable = new Map(); // event -> Deliverable cell (or '—')
+  const eventAggregate = new Map(); // event -> aggregate (from skeleton membership)
 
   for (const t of tables) {
     const lc = t.columns.map((c) => c.toLowerCase());
     if (lc[0] === 'event' && lc.includes('actor')) {
       const ei = colIndex(t.columns, 'event');
       const ti = colIndex(t.columns, 'trigger');
+      const di = colIndex(t.columns, 'deliverable');
       for (const r of t.rows) {
         if (r[ei]) {
           events.push(r[ei]);
           if (ti >= 0) eventTriggers.set(r[ei], r[ti] || '');
+          if (di >= 0) eventDeliverable.set(r[ei], (r[di] || '').trim());
         }
       }
     } else if (lc[0] === 'actor' && lc.includes('kind')) {
       const ai = colIndex(t.columns, 'actor');
-      for (const r of t.rows) if (r[ai]) actors.push(r[ai]);
+      const ki = colIndex(t.columns, 'kind');
+      for (const r of t.rows) if (r[ai]) { actors.push(r[ai]); if (ki >= 0) actorKinds.set(r[ai], (r[ki] || '').trim().toLowerCase()); }
     } else if (lc[0] === 'hotspot') {
       const hi = colIndex(t.columns, 'hotspot');
       for (const r of t.rows) if (r[hi]) hotspots.push(r[hi]);
@@ -68,13 +121,19 @@ export function parse01(text) {
       continue;
     }
     const li = /^\s*\d+\.\s+(.*\S)\s*$/.exec(line);
-    if (li && current) skeletonSteps.get(current).push(li[1].trim());
+    if (li && current) {
+      skeletonSteps.get(current).push(li[1].trim());
+      if (!eventAggregate.has(li[1].trim())) eventAggregate.set(li[1].trim(), current);
+    }
   }
 
   if (events.length === 0 || actors.length === 0)
     throw new ParseError('01: missing Domain Events or Actors table');
 
-  return { events, actors, hotspots, aggregates, skeletonSteps, eventTriggers };
+  return {
+    events, actors, actorKinds, hotspots, aggregates, skeletonSteps,
+    eventTriggers, eventDeliverable, eventAggregate,
+  };
 }
 
 // ---- 02 glossary ------------------------------------------------------------
@@ -357,7 +416,11 @@ export function parse05scxml(text) {
   const finalRe = /<final\s+id="([^"]+)"/g;
   while ((m = finalRe.exec(text))) finalIds.push(m[1]);
 
-  // transitions with their immediately preceding 01-event annotation
+  // transitions with their immediately preceding 01-event annotation. A pending
+  // annotation that lands on a <state> instead (the initial entry) is captured as
+  // initialEvent — the ∅-row authority event (e.g. `Event Created` for the
+  // `initial="created"` state), which IS part of the entity's authority set.
+  let initialEvent = null;
   const lines = text.split(/\r?\n/);
   let pendingAnnot = null;
   for (const line of lines) {
@@ -370,13 +433,19 @@ export function parse05scxml(text) {
     if (tm) {
       transitions.push({ event: tm[1], target: tm[2], annot: pendingAnnot });
       pendingAnnot = null;
+      continue;
+    }
+    const sm = /<state\s+id="([^"]+)"/.exec(line);
+    if (sm && pendingAnnot) {
+      if (initial && sm[1] === initial && initialEvent === null) initialEvent = pendingAnnot;
+      pendingAnnot = null;
     }
   }
 
   if (stateIds.length === 0 && finalIds.length === 0)
     throw new ParseError('05: no states parsed from scxml');
 
-  return { stateIds, finalIds, transitions, initial, supersedes };
+  return { stateIds, finalIds, transitions, initial, initialEvent, supersedes };
 }
 
 // ---- 06 feature -------------------------------------------------------------
@@ -411,20 +480,231 @@ export function parse06feature(text) {
   return { feature, scenarios };
 }
 
+// ---- 07 personas ------------------------------------------------------------
+// Pinned shape: ### <PersonaName> blocks, each with a `**Business actor:**` line,
+// `**Goals:**` bullets carrying `[impact: <exact 00 Impact>]` tokens, and a
+// `**Jobs-to-be-done:**` Job|Trigger|Outcome table.
+export function parse07(text) {
+  const lines = text.split(/\r?\n/);
+  const personas = []; // { name, businessActor, goalImpacts:[...], jobs:[{job,trigger,outcome}] }
+  let inPersonas = false;
+  let cur = null;
+  for (let i = 0; i < lines.length; i++) {
+    const h2 = /^##\s+(.*\S)\s*$/.exec(lines[i]);
+    if (h2) { inPersonas = /^personas$/i.test(h2[1].trim()); cur = null; continue; }
+    if (!inPersonas) continue;
+    const h3 = /^###\s+(.*\S)\s*$/.exec(lines[i]);
+    if (h3) {
+      cur = { name: h3[1].trim(), businessActor: null, goalImpacts: [], jobs: [] };
+      personas.push(cur);
+      continue;
+    }
+    if (!cur) continue;
+    const ba = /\*\*Business actor:\*\*\s*(.*\S)\s*$/.exec(lines[i]);
+    if (ba) { cur.businessActor = ba[1].trim(); continue; }
+    // goal impact tokens: [impact: <exact>]
+    const im = /\[impact:\s*([^\]]+?)\s*\]/g;
+    let mm;
+    while ((mm = im.exec(lines[i]))) cur.goalImpacts.push(mm[1].trim());
+  }
+
+  // jobs tables: a Job|Trigger|Outcome table whose nearest ### heading is a persona
+  const tables = readTables(text);
+  const byName = new Map(personas.map((p) => [p.name, p]));
+  for (const t of tables) {
+    const lc = t.columns.map((c) => c.toLowerCase());
+    if (lc[0] === 'job' && lc.includes('trigger') && lc.includes('outcome') && t.heading && byName.has(t.heading)) {
+      const ji = colIndex(t.columns, 'job');
+      const ti = colIndex(t.columns, 'trigger');
+      const oi = colIndex(t.columns, 'outcome');
+      const p = byName.get(t.heading);
+      for (const r of t.rows) {
+        if (r[ji]) p.jobs.push({ job: r[ji].trim(), trigger: (r[ti] || '').trim(), outcome: (r[oi] || '').trim() });
+      }
+    }
+  }
+
+  if (personas.length === 0) throw new ParseError('07: no persona blocks parsed');
+  if (personas.some((p) => !p.businessActor))
+    throw new ParseError('07: a persona block is missing its **Business actor:** line');
+  return { personas };
+}
+
+// ---- 08 task-models (.xml) --------------------------------------------------
+// Constrained reader: TaskModel persona/job/id attrs, Budget klm, leaf Task ids +
+// scenario-tags (closed grammar), and nominal-path leaf ORDER (document order).
+export function parse08(text) {
+  const mTm = /<TaskModel\b([\s\S]*?)>/.exec(text);
+  if (!mTm) throw new ParseError('08: no <TaskModel> element');
+  const persona = attr(mTm[1], 'persona');
+  const job = attr(mTm[1], 'job');
+  const id = attr(mTm[1], 'id');
+  if (!persona || !job || !id) throw new ParseError('08: <TaskModel> missing persona/job/id attr');
+
+  let budget = null;
+  const mB = /<Budget\b[^>]*\bklm="([^"]*)"/.exec(text);
+  if (mB) budget = mB[1];
+
+  // leaves: <Task ...> elements with NO nested child Task (self-closing or empty).
+  // We read every Task element in document order, capturing id, category,
+  // scenario-tags, klm, and whether it nests children.
+  const tasks = []; // {id, category, tags:[...], klm, hasChild}
+  const taskRe = /<Task\b([^>]*?)(\/?)>/g;
+  let tm;
+  // track nesting by a simple stack of "open until matching </Task>" — but the
+  // pinned shape self-closes leaves and uses explicit </Task> for abstracts.
+  // Simpler: a Task is a leaf iff it is self-closed (`/>`).
+  while ((tm = taskRe.exec(text))) {
+    const a = tm[1];
+    const selfClosed = tm[2] === '/';
+    const tid = attr(a, 'id');
+    if (!tid) continue;
+    const cat = (attr(a, 'category') || '').toLowerCase();
+    const tagsRaw = attr(a, 'scenario-tags') || '';
+    const tags = tagsRaw.split(/\s+/).map((s) => s.trim()).filter(Boolean);
+    const klm = attr(a, 'klm') || '';
+    tasks.push({ id: tid, category: cat, tags, klm, leaf: selfClosed });
+  }
+  const leaves = tasks.filter((t) => t.leaf);
+
+  return { id, persona, job, budget, tasks, leaves };
+}
+
+// ---- 09 ui-flows (.xml) -----------------------------------------------------
+// Constrained reader: IFMLModel id/persona, Realizes taskModel ids, ViewContainer
+// ids (+home), ViewComponent bindings, Event ids/type/task=/klm + 01-event annot,
+// NavigationFlow from/to edges.
+export function parse09(text) {
+  const mM = /<IFMLModel\b([^>]*)>/.exec(text);
+  if (!mM) throw new ParseError('09: no <IFMLModel> element');
+  const id = attr(mM[1], 'id');
+  const persona = attr(mM[1], 'persona');
+  if (!persona) throw new ParseError('09: <IFMLModel> missing persona attr');
+
+  const realizes = [];
+  const reRe = /<Realizes\b[^>]*\btaskModel="([^"]*)"/g;
+  let m;
+  while ((m = reRe.exec(text))) realizes.push(m[1]);
+
+  const containers = []; // {id, home}
+  const cRe = /<ViewContainer\b([^>]*?)>/g;
+  while ((m = cRe.exec(text))) {
+    const cid = attr(m[1], 'id');
+    if (cid) containers.push({ id: cid, home: /\bhome="true"/.test(m[1]) });
+  }
+
+  const bindings = []; // ViewComponent binding values
+  const vcRe = /<ViewComponent\b([^>]*?)>/g;
+  while ((m = vcRe.exec(text))) {
+    const b = attr(m[1], 'binding');
+    if (b) bindings.push(b);
+  }
+
+  // Events: capture id, type, task, klm, and a trailing <!-- 01-event: ... --> if
+  // the Event is a container element (not self-closed). We scan Event blocks.
+  const events = []; // {id, type, task, klm, event01}
+  const evRe = /<Event\b([^>]*?)(\/?)>/g;
+  const lines = text.split(/\r?\n/);
+  // build a flat scan that, for a non-self-closed Event, looks ahead for 01-event
+  let idx = 0;
+  while ((m = evRe.exec(text))) {
+    const a = m[1];
+    const selfClosed = m[2] === '/';
+    const eid = attr(a, 'id');
+    const etype = attr(a, 'type') || '';
+    const task = attr(a, 'task') || '';
+    const klm = attr(a, 'klm') || '';
+    let event01 = null;
+    if (!selfClosed) {
+      // look ahead from this match end to the closing </Event> for an 01-event
+      const tail = text.slice(m.index, text.indexOf('</Event>', m.index) + 1);
+      const am = /<!--\s*01-event\s*:\s*(.+?)\s*-->/.exec(tail);
+      if (am) event01 = am[1].trim();
+    }
+    if (eid) events.push({ id: eid, type: etype, task, klm, event01 });
+  }
+
+  const navs = []; // {from, to}
+  const nRe = /<NavigationFlow\b([^>]*?)\/?>/g;
+  while ((m = nRe.exec(text))) {
+    const from = attr(m[1], 'from');
+    const to = attr(m[1], 'to');
+    if (from && to) navs.push({ from, to });
+  }
+
+  if (containers.length === 0) throw new ParseError('09: no ViewContainer elements');
+  return { id, persona, realizes, containers, bindings, events, navs };
+}
+
+// ---- 10 flow-acceptance (.feature) ------------------------------------------
+// Pinned shape: feature `@task-model:<stem>` tag, screen-id Given/Then steps,
+// `01-event` When steps, `outcome of "<tag>"` Then steps.
+export function parse10(text) {
+  const lines = text.split(/\r?\n/);
+  let feature = null;
+  let taskModel = null;
+  const screenRefs = []; // container ids referenced in Given/Then "<id>" screen
+  const outcomeTags = []; // 06 tags referenced via `outcome of "<tag>"`
+  const eventRefs = []; // quoted Event ids via `the "<id>" event`
+  const event01Refs = []; // exact 01-event strings embedded in When steps
+  for (const line of lines) {
+    const tmTag = /^\s*@task-model:(\S+)\s*$/.exec(line);
+    if (tmTag) { taskModel = tmTag[1]; continue; }
+    const fm = /^\s*Feature:\s*(.*\S)\s*$/.exec(line);
+    if (fm) { feature = fm[1].trim(); continue; }
+    // screen references: `on the "<id>" screen` / `taken to the "<id>" screen`
+    const sc = /\b(?:on the|taken to the)\s+"([^"]+)"\s+screen/.exec(line);
+    if (sc) screenRefs.push(sc[1]);
+    // outcome bindings
+    const oc = /outcome of\s+"([^"]+)"/.exec(line);
+    if (oc) outcomeTags.push(oc[1]);
+    // non-domain event id reference: `triggers the "<id>" event`
+    const ev = /triggers the\s+"([^"]+)"\s+event/.exec(line);
+    if (ev) eventRefs.push(ev[1]);
+    // domain When carrying an exact 01-event string: `…: "<01-event>"`
+    const wm = /^\s*(?:When|And|But)\b.*:\s*"([^"]+)"\s*$/.exec(line);
+    if (wm) event01Refs.push(wm[1]);
+  }
+  if (feature === null) throw new ParseError('10: no Feature: line');
+  if (!taskModel) throw new ParseError('10: no @task-model: feature tag');
+  return { feature, taskModel, screenRefs, outcomeTags, eventRefs, event01Refs };
+}
+
+// extract an attr value from a raw element-attribute string
+function attr(raw, name) {
+  const m = new RegExp(`\\b${name}="([^"]*)"`).exec(raw);
+  return m ? m[1] : null;
+}
+
 // ---- artifact discovery + fingerprint reading ------------------------------
 export function discoverArtifacts(specsDir) {
   const out = {}; // logical name -> { path, ext, text }
   const want = {
+    '00': '00-impact-map.md',
     '01': '01-event-storming.md',
     '02': '02-glossary.md',
     '03': '03-aggregates.md',
     '04dbml': '04-erd.dbml',
     '04trans': '04-transitions.md',
+    '07': '07-personas.md',
   };
   for (const [k, fname] of Object.entries(want)) {
     const p = join(specsDir, fname);
     if (existsSync(p)) out[k] = { path: p, ext: extname(p), text: readFileSync(p, 'utf8') };
   }
+  // directory artifacts: 08, 09, 10
+  const dir = (name, ext, key) => {
+    const d = join(specsDir, name);
+    out[key] = [];
+    if (existsSync(d) && statSync(d).isDirectory()) {
+      for (const f of readdirSync(d).sort()) {
+        if (f.endsWith(ext)) {
+          const p = join(d, f);
+          out[key].push({ path: p, ext, text: readFileSync(p, 'utf8'), stem: basename(f, ext) });
+        }
+      }
+    }
+  };
   // 05 dir
   const d05 = join(specsDir, '05-statecharts');
   out['05'] = [];
@@ -447,7 +727,11 @@ export function discoverArtifacts(specsDir) {
       }
     }
   }
+  dir('08-task-models', '.xml', '08');
+  dir('09-ui-flows', '.xml', '09');
+  dir('10-flow-acceptance', '.feature', '10');
   return out;
 }
 
 export { readFingerprints };
+export { readProseFingerprints } from './md.mjs';
