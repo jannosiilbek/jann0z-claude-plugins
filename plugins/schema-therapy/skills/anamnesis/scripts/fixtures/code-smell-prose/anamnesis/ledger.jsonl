@@ -1,0 +1,1 @@
+{"id":"CLM-0001","concept":"order","kind":"rule","statement":"An order total is validated in OrderService.java before checkout","evidence":[{"class":"code","source":"validator","capability":"repo"},{"class":"doc","source":"checkout spec","capability":"handbook"}],"status":"confirmed","round":1}

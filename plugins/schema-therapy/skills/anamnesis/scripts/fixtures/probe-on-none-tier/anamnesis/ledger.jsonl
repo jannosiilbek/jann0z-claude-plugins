@@ -1,0 +1,1 @@
+{"id":"CLM-0001","concept":"order","kind":"state","statement":"An order awaiting payment is pending","evidence":[{"class":"data","source":"pending rows","capability":"warehouse"},{"class":"probe","source":"crm shows customer","capability":"crm-prod"}],"status":"confirmed","round":1}

@@ -1,0 +1,1 @@
+{"id":"CLM-0001","concept":"order","kind":"state","statement":"An order can be parked in a dead legacy value","evidence":[{"class":"data","source":"enum has dead value zero rows","capability":"warehouse"}],"status":"accident","round":1}

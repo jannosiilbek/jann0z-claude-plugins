@@ -1,0 +1,1 @@
+{"id":"CLM-0001","concept":"order","kind":"transition","statement":"An order may be reversed within a window","evidence":[{"class":"code","source":"reversal path","capability":"repo"}],"status":"deferred","round":1}

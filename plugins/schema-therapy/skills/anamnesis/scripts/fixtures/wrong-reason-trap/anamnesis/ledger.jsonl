@@ -1,0 +1,2 @@
+{"id":"CLM-0001","concept":"order","kind":"term","statement":"An order is a purchase request","evidence":[{"class":"code","source":"model","capability":"repo"},{"class":"code","source":"model again","capability":"repo"}],"status":"confirmed","round":1}
+{"id":"CLM-0002","concept":"legacy_hold","kind":"state","statement":"An item may be parked in a dead legacy hold value","evidence":[{"class":"data","source":"dead enum zero rows","capability":"warehouse"}],"status":"accident","round":1,"verdict":{"by":"human","round":2,"reason":"dead enum from a removed feature"}}

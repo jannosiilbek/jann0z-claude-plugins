@@ -1,0 +1,2 @@
+{"id":"CLM-0001","concept":"order","kind":"term","statement":"An order is a purchase request","evidence":[{"class":"code","source":"model","capability":"repo"},{"class":"doc","source":"glossary","capability":"handbook"}],"status":"confirmed","round":1}
+{"id":"CLM-0002","concept":"event_listing","kind":"term","statement":"An event listing advertises a show","evidence":[{"class":"code","source":"listing model","capability":"repo"},{"class":"doc","source":"catalog glossary","capability":"handbook"}],"status":"confirmed","round":1}

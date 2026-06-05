@@ -1,0 +1,3 @@
+{"id":"CLM-0001","concept":"order","kind":"term","statement":"An order is a purchase request","evidence":[{"class":"code","source":"model","capability":"repo"},{"class":"doc","source":"glossary","capability":"handbook"}],"status":"confirmed","round":1}
+{"id":"CLM-0002","concept":"payment","kind":"rule","statement":"A payment is captured at placement","evidence":[{"class":"code","source":"flag","capability":"repo"}],"status":"unconfirmed","round":1,"conflictsWith":["CLM-0003"]}
+{"id":"CLM-0003","concept":"payment","kind":"rule","statement":"A payment is captured at fulfillment","evidence":[{"class":"doc","source":"wiki","capability":"handbook"}],"status":"unconfirmed","round":1,"conflictsWith":["CLM-0002"]}

@@ -1,0 +1,1 @@
+{"id":"CLM-0001","concept":"order","kind":"term","statement":"An order is a purchase request","evidence":[{"class":"code","source":"model","capability":"repo"},{"class":"doc","source":"glossary","capability":"handbook"}],"status":"confirmed","round":1,"verdict":{"by":"robot","round":2,"reason":"auto"}}

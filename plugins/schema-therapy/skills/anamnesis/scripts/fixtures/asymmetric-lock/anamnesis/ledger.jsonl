@@ -1,0 +1,2 @@
+{"id":"CLM-0001","concept":"payment","kind":"rule","statement":"A payment is captured at placement","evidence":[{"class":"code","source":"flag","capability":"repo"}],"status":"unconfirmed","round":1,"conflictsWith":["CLM-0002"]}
+{"id":"CLM-0002","concept":"payment","kind":"rule","statement":"A payment is captured at fulfillment","evidence":[{"class":"doc","source":"wiki","capability":"handbook"}],"status":"unconfirmed","round":1}
