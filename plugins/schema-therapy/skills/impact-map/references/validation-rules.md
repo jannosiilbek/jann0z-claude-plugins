@@ -288,7 +288,7 @@ This theme governs the **Amend** path (iterating an existing `specs/00-impact-ma
 - **Source:** [PLAN] (SKILL.md step 5 semantic-drift contract — every artifact element is faithful to the intent, no invented elements; the amend path inherits this faithfulness gate).
 
 ### H2 — Minimal diff
-- **Detect:** The harness `--baseline` diff carries a content entry (an `added`/`removed`/`changed` row, or `goalChanged`) that the scope delta does not demand; untouched rows are not byte-identical to the baseline (fingerprint churn is exempt — `fingerprintChanged` is expected on any amendment).
+- **Detect:** The harness `--baseline` diff carries a content entry (an `added`/`removed`/`changed` row, or `goalChanged`) that the scope delta does not demand; untouched rows are not byte-identical to the baseline (fingerprint churn is exempt — `fingerprintChanged` is expected on any amendment; the digest is re-pinned, while any captured-date annotation in the fingerprint body stays stable — the date is not demanded by the delta).
 - **Fix:** Revert the unrequested change; re-derive touching only what the delta demands, leaving every other row byte-identical to the baseline.
 - **Severity:** ❌
 - **Source:** [PLAN] (amend contract: a delta re-derives only what it touches; the `baseline` diff is the mechanical witness, XD1 §4.2).

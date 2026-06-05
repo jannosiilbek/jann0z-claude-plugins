@@ -42,6 +42,18 @@ Step by step instead: say "run the schema-therapy pipeline on product-intent.md
 and domain.md" to start (step 0), then "run schema-therapy step 1" … "step 10".
 Audit any time with "is the suite aligned".
 
+Iterate on the scope conversationally:
+
+```
+/schema-therapy:scope
+```
+
+Discuss freely; each confirmed change crosses into an isolated amendment as a
+distilled scope delta (the conversation never leaks into the artifact), gets
+diff-reviewed in a separate context, and the impact map stays lint-green
+throughout. Downstream staleness is batched — the cascade is offered once,
+when the scope settles.
+
 A complete worked example lives in [test-workspace/](test-workspace/) —
 the conference-ticketing intent + domain and their full green `specs/` tree
 (00–10).
