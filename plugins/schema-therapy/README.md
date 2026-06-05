@@ -29,7 +29,20 @@ independent double-assurance layer.
 
 ## Usage
 
-One-shot, from a product intent + a domain description (files or prose):
+**Start here** — from a blank idea, no documents needed:
+
+```
+/schema-therapy:scope
+```
+
+Gather mode interviews you (Why → Who → How → What) into a first validated
+impact map, then the same session keeps iterating it: discuss freely, and each
+confirmed change crosses into an isolated amendment as a distilled scope delta
+(the conversation never leaks into the artifact), gets diff-reviewed in a
+separate context, and the map stays lint-green throughout. Downstream
+staleness is batched — the cascade is offered once, when the scope settles.
+
+Already have the inputs written? Run the batch path:
 
 ```
 /schema-therapy:pipeline product-intent.md domain.md
@@ -41,18 +54,6 @@ This drives all eleven steps in order and finishes with the drift-police audit
 Step by step instead: say "run the schema-therapy pipeline on product-intent.md
 and domain.md" to start (step 0), then "run schema-therapy step 1" … "step 10".
 Audit any time with "is the suite aligned".
-
-Iterate on the scope conversationally:
-
-```
-/schema-therapy:scope
-```
-
-Discuss freely; each confirmed change crosses into an isolated amendment as a
-distilled scope delta (the conversation never leaks into the artifact), gets
-diff-reviewed in a separate context, and the impact map stays lint-green
-throughout. Downstream staleness is batched — the cascade is offered once,
-when the scope settles.
 
 A complete worked example lives in [test-workspace/](test-workspace/) —
 the conference-ticketing intent + domain and their full green `specs/` tree

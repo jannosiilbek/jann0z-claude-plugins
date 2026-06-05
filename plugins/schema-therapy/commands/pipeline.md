@@ -20,7 +20,9 @@ never restate or shortcut it here.
   so the 00 fingerprint has stable bytes.
 - **The domain description** (how the domain works): a file path (preferred) or
   inline prose; inline prose goes to `domain.md` for the same reason.
-- **Either missing**: ask for it before doing anything.
+- **Either missing**: ask for it before doing anything. No written intent at
+  all yet? Start with `/schema-therapy:scope` (Gather mode interviews the
+  scope out of a blank idea) and return here when it settles.
 
 Resolve the project's flat `specs/` root (create it if absent). All artifacts
 land there: `00-impact-map.md`, `01-event-storming.md`, `02-glossary.md`,

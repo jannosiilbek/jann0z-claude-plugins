@@ -41,7 +41,7 @@ actors/impacts).
 |-----------------------------------|-------------------------|---------|
 | The stated business objective (Why) | the **single Goal** statement | `## Goal` |
 | A named party who can produce / obstruct / consume the outcome | a **Business Actor** row | `## Business Actors` |
-| A desired change in what an actor *does* | an **Impact** row (behaviour change) | `## Impacts` |
+| A desired change in what an actor *does* | an **Impact** row (behaviour change; the Impact cell is a self-contained subject+verb statement — "Super-fans return more often", never a bare verb fragment relying on the actor column for its subject) | `## Impacts` |
 | A promised capability / option to support an impact | a **Deliverable** row | `## Deliverables` |
 
 This table doubles as the **artifact contract**: the downstream drift check
