@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- fingerprints:
+       02-glossary.md          sha256:db52ea9cbf8ccbee0004da7ef25d88ac6d56b8f066b7a117a35fdf23c143bf8c
+       04-erd.dbml             sha256:046d99720e2bf7d62b6402f4b55f6cc1ea9f6b6f7e1a8deeea9e0e875251fcff
+       04-transitions.md       sha256:3a85ee85f4893a836892614bb810161d2a82ee7202c8fab1ae7672e0289d8535
+       05-statecharts/order.scxml sha256:c28155f62f99cb37ae71a3556deba28cfcff69f854c10292a6163b83935152d7
+       07-personas.md          sha256:c9474535212d01fcb171a9b77a6b9fd168928d8a9f9591d30c39eaec1ccbfc26
+       08-task-models/customer-place_order.xml sha256:75b638d45fe12de946d1337373c154f72e0202fc5f2618a074476d0d1b2afe76
+       08-task-models/customer-pay_order.xml sha256:7e4ae1cc5a6db95bc819c37dee364f2c349cda5fa3726dbd282906fe2a25dd0c
+-->
+<IFMLModel id="customer">
+
+  <Realizes taskModel="customer-place_order"/>
+  <Realizes taskModel="customer-pay_order"/>
+
+  <ViewContainer id="order_compose" name="New Order" home="true">
+    <ViewComponent id="order_form" type="form" binding="order"/>
+    <Event id="pick_tickets" type="select" task="select-tickets" klm="MPBB"/>
+    <Event id="place_order" type="submit" task="submit-order" klm="MBB">
+      <!-- 01-event: Order Placed -->
+    </Event>
+    <Event id="open_payment" type="navigate"/>
+  </ViewContainer>
+
+  <ViewContainer id="order_payment" name="Pay Order">
+    <ViewComponent id="payment_view" type="details" binding="order"/>
+    <Event id="pay_order" type="submit" task="pay-order" klm="MBB">
+      <!-- 01-event: Order Paid -->
+    </Event>
+    <Event id="back_from_payment" type="navigate"/>
+  </ViewContainer>
+
+  <NavigationFlow from="open_payment"      to="order_payment"/>
+  <NavigationFlow from="back_from_payment" to="order_compose"/>
+
+</IFMLModel>

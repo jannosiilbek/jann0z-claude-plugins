@@ -1,6 +1,6 @@
 <!-- fingerprints:
-01-event-storming.md@sha256:0015ffe02125551f5a973cab90ddbde02344c05cb62a05bdec7086e063617273
-02-glossary.md@sha256:2ed23f79e00dafff18f4c87584a8821b1609eb533b3692747e65c6932b788fc9
+01-event-storming.md@sha256:31aceed43ab3137e1ec2ebcfb25ff325c221284385ec2d8f462d5e74ba8bf226
+02-glossary.md@sha256:db52ea9cbf8ccbee0004da7ef25d88ac6d56b8f066b7a117a35fdf23c143bf8c
 -->
 
 ## Aggregates

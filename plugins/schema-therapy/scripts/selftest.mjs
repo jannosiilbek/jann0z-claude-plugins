@@ -45,9 +45,10 @@ function ok(cond, label) {
   }
 }
 
-function run(specsRel, { domain, extra } = {}) {
+function run(specsRel, { domain, intent, extra } = {}) {
   const argv = [SCRIPT, join(FIXTURES, specsRel)];
   if (domain) argv.push('--domain', join(FIXTURES, domain));
+  if (intent) argv.push('--intent', join(FIXTURES, intent));
   if (extra) argv.push(...extra);
   let stdout = '';
   let code = 0;
@@ -68,7 +69,7 @@ function run(specsRel, { domain, extra } = {}) {
 process.stderr.write('PART 1 — good suite passes (non-vacuous)\n');
 {
   const g = MANIFEST.good;
-  const r = run(g.specsDir, { domain: g.domain });
+  const r = run(g.specsDir, { domain: g.domain, intent: g.intent });
   ok(r.json !== null, '[good] emits parseable JSON');
   ok(r.json && r.json.status === 'pass', `[good] status === pass (got ${r.json && r.json.status})`);
   ok(r.code === 0, `[good] exit === 0 (got ${r.code})`);
@@ -83,7 +84,7 @@ process.stderr.write('PART 1 — good suite passes (non-vacuous)\n');
 // ===========================================================================
 process.stderr.write('PART 2 — manifest negatives: status + exit + reason-qualified finding\n');
 for (const fx of MANIFEST.fixtures) {
-  const r = run(fx.specsDir, { domain: fx.domain });
+  const r = run(fx.specsDir, { domain: fx.domain, intent: fx.intent });
   const tag = fx.name;
   ok(r.json !== null, `[${tag}] emits parseable JSON`);
   if (!r.json) continue;
@@ -125,7 +126,7 @@ for (const fx of MANIFEST.fixtures) {
 process.stderr.write('PART 3 — vacuous-green guard\n');
 {
   const g = MANIFEST.good;
-  const r = run(g.specsDir, { domain: g.domain, extra: ['--no-checks'] });
+  const r = run(g.specsDir, { domain: g.domain, intent: g.intent, extra: ['--no-checks'] });
   ok(r.json && r.json.status === 'broken-test', `[--no-checks] status === broken-test (got ${r.json && r.json.status})`);
   ok(r.code === EXIT['broken-test'], `[--no-checks] exit === 3 (got ${r.code})`);
 }
@@ -134,7 +135,7 @@ process.stderr.write('PART 3 — vacuous-green guard\n');
   const empty = join(FIXTURES, 'neg', '_empty', 'specs');
   if (existsSync(empty)) rmSync(empty, { recursive: true, force: true });
   mkdirSync(empty, { recursive: true });
-  const r = run('neg/_empty/specs', { domain: MANIFEST.good.domain });
+  const r = run('neg/_empty/specs', { domain: MANIFEST.good.domain, intent: MANIFEST.good.intent });
   ok(r.json && r.json.status === 'broken-test', `[empty-specs] status === broken-test (got ${r.json && r.json.status})`);
   ok(r.code === 3, `[empty-specs] exit === 3 (got ${r.code})`);
 }
@@ -150,7 +151,7 @@ process.stderr.write('PART 3 — vacuous-green guard\n');
 process.stderr.write('PART 4 — conflated-counter + live-negative guard\n');
 {
   // (a) class-level non-vacuity on the good suite
-  const g = run(MANIFEST.good.specsDir, { domain: MANIFEST.good.domain });
+  const g = run(MANIFEST.good.specsDir, { domain: MANIFEST.good.domain, intent: MANIFEST.good.intent });
   ok(g.json && g.json.counts.checks.resolution > 0, '[guard] resolution class non-empty');
   ok(g.json && g.json.counts.checks.dry > 0, '[guard] dry class non-empty');
   ok(g.json && g.json.counts.checks.staleness > 0, '[guard] staleness class non-empty');
@@ -163,7 +164,7 @@ process.stderr.write('PART 4 — conflated-counter + live-negative guard\n');
   // (b) the negatives are LIVE: a known-bad fixture (dangling-resolution) must
   // be flagged by the resolution class specifically — an always-pass oracle
   // would let it through.
-  const bad = run('neg/dangling-resolution/specs', { domain: MANIFEST.good.domain });
+  const bad = run('neg/dangling-resolution/specs', { domain: MANIFEST.good.domain, intent: MANIFEST.good.intent });
   const flaggedByResolution = bad.json && bad.json.findings.some((f) => f.class === 'resolution' && f.status === 'fail');
   ok(flaggedByResolution, '[guard] resolution negative is LIVE (catches dangling-resolution)');
 }
@@ -173,21 +174,34 @@ process.stderr.write('PART 4 — conflated-counter + live-negative guard\n');
 // ===========================================================================
 process.stderr.write('PART 5 — determinism (byte-identical double-run)\n');
 {
-  const a = run(MANIFEST.good.specsDir, { domain: MANIFEST.good.domain });
-  const b = run(MANIFEST.good.specsDir, { domain: MANIFEST.good.domain });
+  const a = run(MANIFEST.good.specsDir, { domain: MANIFEST.good.domain, intent: MANIFEST.good.intent });
+  const b = run(MANIFEST.good.specsDir, { domain: MANIFEST.good.domain, intent: MANIFEST.good.intent });
   ok(a.stdout === b.stdout, '[determinism] good-suite stdout byte-identical across runs');
 }
 
 // ===========================================================================
-// PART 6 — no-domain skip: 01 domain fingerprint `skipped`, suite still passes.
+// PART 6 — no-domain / no-intent skip: external free-text fingerprints (01's
+// domain, 00's product-intent) are recorded `skipped` (never silently passed),
+// and the suite still passes.
 // ===========================================================================
-process.stderr.write('PART 6 — no-domain skip path\n');
+process.stderr.write('PART 6 — external-input skip paths\n');
 {
-  const r = run(MANIFEST.good.specsDir, {}); // no --domain
+  const r = run(MANIFEST.good.specsDir, { intent: MANIFEST.good.intent }); // no --domain
   ok(r.json && r.json.status === 'pass', `[no-domain] status === pass (got ${r.json && r.json.status})`);
-  const skip = r.json && r.json.findings.find((f) => f.status === 'skipped' && f.class === 'staleness');
+  // 01 pins 00 (verified) AND domain (skipped) — the domain skip is surfaced as a
+  // dedicated `skipped` finding (never folded silently into the pass).
+  const skip = r.json && r.json.findings.find((f) => f.status === 'skipped' && f.id === 'S-01-event-storming.md__ext');
   ok(!!skip, '[no-domain] 01 domain fingerprint recorded as skipped (never silently passed)');
-  ok(skip && skip.reason === 'domain-not-provided', '[no-domain] skip reason is domain-not-provided');
+  ok(skip && skip.reason === 'external-input-not-provided', '[no-domain] skip reason is external-input-not-provided');
+  ok(skip && (skip.detail || '').includes('domain'), '[no-domain] skip detail names the domain input');
+}
+{
+  const r = run(MANIFEST.good.specsDir, { domain: MANIFEST.good.domain }); // no --intent
+  ok(r.json && r.json.status === 'pass', `[no-intent] status === pass (got ${r.json && r.json.status})`);
+  // 00 pins ONLY product-intent (external) — fully skipped.
+  const skip = r.json && r.json.findings.find((f) => f.status === 'skipped' && f.id === 'S-00-impact-map.md');
+  ok(!!skip, '[no-intent] 00 product-intent fingerprint recorded as skipped (never silently passed)');
+  ok(skip && skip.reason === 'external-input-not-provided', '[no-intent] skip reason is external-input-not-provided');
 }
 
 // ===========================================================================

@@ -1,6 +1,6 @@
 <!-- fingerprints:
-02-glossary.md@sha256:2ed23f79e00dafff18f4c87584a8821b1609eb533b3692747e65c6932b788fc9
-03-aggregates.md@sha256:0de902e4bf885e26f33fcee898d17287fb11c6770c3ce53867e30da5d79f8352
+02-glossary.md@sha256:db52ea9cbf8ccbee0004da7ef25d88ac6d56b8f066b7a117a35fdf23c143bf8c
+03-aggregates.md@sha256:3038ab45feee67bc0738f447d3b2da059bf6a731c6127d4f0417e5dab519f2cb
 -->
 
 # Transition Tables
