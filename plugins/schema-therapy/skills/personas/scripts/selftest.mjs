@@ -322,8 +322,12 @@ process.stderr.write('PART 8 — coverage floor (positive AND negative per ❌ b
     if (positiveOk && negFails) covered++;
   }
   ok(covered === COVERAGE.length, `all ${COVERAGE.length} ❌-behaviors have BOTH a positive and a negative (got ${covered})`);
-  ok(valid.coverage.behaviorsWithPosAndNeg === 20,
-    `summary reports behaviorsWithPosAndNeg === 20 (got ${valid.coverage.behaviorsWithPosAndNeg})`);
+  // Coverage honesty: the harness's hardcoded behaviorsWithPosAndNeg literal MUST equal the
+  // number of ❌-rule rows that ship BOTH a positive AND a dedicated negative — i.e. every
+  // COVERAGE row whose negOwner is non-null (the §9 row is positive-only, negOwner=null).
+  const rulesWithPosAndNeg = COVERAGE.filter(([, , , negOwner]) => negOwner !== null).length;
+  ok(valid.coverage.behaviorsWithPosAndNeg === rulesWithPosAndNeg,
+    `summary behaviorsWithPosAndNeg (${valid.coverage.behaviorsWithPosAndNeg}) === COVERAGE rows with a shipped negative (${rulesWithPosAndNeg})`);
 }
 
 // ---------------------------------------------------------------------------

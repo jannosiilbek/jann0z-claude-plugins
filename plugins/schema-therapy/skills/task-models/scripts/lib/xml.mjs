@@ -193,7 +193,8 @@ export function fingerprintEntries(commentText) {
   for (const raw of commentText.split(/\r?\n/)) {
     const line = raw.trim();
     if (!line || /^fingerprints\s*:/.test(line)) continue;
-    const m = /^(\S+)\s+sha256:(\S+)\s*$/.exec(line);
+    // Canonical token shape (plugin-wide): `sha256:` + exactly 64 hex chars.
+    const m = /^(\S+)\s+sha256:([0-9a-fA-F]{64})\s*$/.exec(line);
     if (m) out.push({ file: m[1], hash: m[2], raw: line });
     else out.push({ file: null, hash: null, raw: line, malformed: true });
   }

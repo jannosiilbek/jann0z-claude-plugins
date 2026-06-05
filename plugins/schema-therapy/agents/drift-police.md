@@ -147,11 +147,13 @@ schema-therapy pipeline:
 | Pair | Check |
 |---|---|
 | 00 ↔ 01 | Do deliverable-realizing events carry the deliverable's promise? Do actor responsibilities match the business actor's described role? |
-| 01 ↔ 02 | Glossary terms and definitions faithfully reflect domain model concepts |
+| 01 ↔ 02 | Glossary terms and definitions faithfully reflect the 01 event-storming concepts |
 | 02 ↔ 03 | Aggregate boundaries and invariants are consistent with the glossary |
 | 02/03 ↔ 04 | ERD entities, attributes, and relations match aggregate and glossary semantics |
 | 04 ↔ 05 | Statechart states and transitions map correctly onto ERD entities |
-| all ↔ 06 | Gherkin scenarios use terminology, entities, and state names consistent with the full upstream chain |
+| 03 ↔ 06 | One feature per 03 aggregate; each scenario discharges a real 03 obligation (invariant / policy), not an invented one |
+| 04/05 ↔ 06 | Transition/terminal scenarios judged against the right lifecycle authority per entity (05 scxml if promoted, else the 04 table) — a scenario asserting a `From→To` the authority lacks is drift |
+| 02 ↔ 06 | Step language uses 02 terms and enum states verbatim; no forbidden synonyms |
 | 00/01 ↔ 07 | Do persona goals genuinely express the impacts? Are jobs faithful to events? |
 | 06/07 ↔ 08 | Does a task model's sequence mean the job it names? Do its tags' scenarios actually constitute the job? |
 | 08 ↔ 09 | Do the screens/events realize the task semantics, not just the ids? |
@@ -233,7 +235,7 @@ Apply this routing table to every finding before listing it in the report:
 | `staleness` fail | The downstream artifact is stale. The owning skill of the stale artifact must regenerate it. |
 | `semantic: meaning-drift` | Content fail: the owning skill of the downstream artifact must regenerate it. |
 | `semantic: stale-meaning` | Staleness: the owning skill of the downstream artifact must regenerate it. |
-| upstream-defect | The content fail cannot pass because an upstream artifact is wrong. STOP. Report the defect against the upstream artifact. Do not regenerate the downstream artifact. |
+| upstream-defect (a sub-classification of a content fail, not a status — the §2 taxonomy stays closed) | The content fail cannot pass because an upstream artifact is wrong. STOP. Report the defect against the upstream artifact. Do not regenerate the downstream artifact. |
 
 **Upstream-defect detection rule:** if fixing a downstream artifact would
 require correcting content that is owned (per intake table) by an upstream
@@ -249,8 +251,8 @@ remediation path.
 The schema-therapy skills, in pipeline order:
 
 1. `impact-map` — owns: impact map (00)
-2. `event-storming` — owns: domain model (01); inputs: impact map (00) + the
-   free-text domain description
+2. `event-storming` — owns: event-storming model (01); inputs: impact map (00) +
+   the free-text domain description
 3. `glossary` — owns: glossary (02)
 4. `aggregates` — owns: aggregate definitions (03)
 5. `erd` — owns: ERD artifacts (04)

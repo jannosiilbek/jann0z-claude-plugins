@@ -42,6 +42,8 @@
 
     { "dir": "valid-09", "run": "with05", "status": "fail", "owner": "X-COST-INT", "upstreamDefect": true, "route": "08-task-models/dispatcher-fulfil_order.xml", "up08": "upstream-08-broken" },
 
+    { "dir": "valid-09", "run": "with05", "status": "fail", "owner": "W-REALIZE", "upstreamDefect": true, "route": "08-task-models/dispatcher-fulfil_order.xml", "up08": "upstream-08-stuck" },
+
     { "dir": "valid-09", "run": "with05", "status": "broken-test", "owner": null, "brokenTest": true, "up07": "upstream-07-malformed.md" },
     { "dir": "valid-09", "run": "with05", "status": "broken-test", "owner": null, "brokenTest": true, "up04dbml": "upstream-04-malformed.dbml" },
     { "dir": "valid-09", "run": "with05", "status": "broken-test", "owner": null, "brokenTest": true, "up02": "upstream-02-malformed.md" },

@@ -97,8 +97,8 @@ its report.
 
 End with one table plus the audit verdict:
 
-| Step | Artifact path(s) | Iterations to convergence | Harness |
-|------|------------------|---------------------------|---------|
-| 0–10…| …                | N (or gate: not-emitted, or skipped (fresh)) | pass |
+| Step | Artifact path(s) | Outcome (iterations / gate / skipped) | Harness |
+|------|------------------|---------------------------------------|---------|
+| 0–10…| …                | N iterations (or gate: not-emitted, or skipped (fresh)) | pass |
 
 **Drift police:** ALIGNED (or the verdict + routed findings).

@@ -23,6 +23,9 @@ The closed rule catalog is [`references/validation-rules.md`](references/validat
 (33 rules, themes A–F, **22 ❌**); the executable oracle is
 [`references/simulation.md`](references/simulation.md), shipped as `scripts/harness.mjs`. **Pass
 condition: zero ❌ across Themes A–E.** ⚠️/ℹ️ are professor-lens residue and never block.
+**Load each only at the stage that needs it** (progressive disclosure): the catalog at
+**Draft** and **Professor**; `simulation.md` only to interpret a `malformed`/`broken-test`
+result — you do not need it to run the harness.
 
 This skill runs in an **isolated context**: no other skills, no plugins. Authorities are this
 file + `references/` + `sources/`. The harness is zero-dependency Node ≥18 ESM (the probe proved
@@ -145,8 +148,10 @@ flow_cost(model) =  Σ count(event.klm)        over leaf-mapped Events on the no
 
 6. **Emit + report** — fixed-format report including a **per-model cost-vs-budget +
    screens-vs-limit table** and
-   `Iterations to convergence: N`. Then hand off to **drift-police**:
-   `Use the drift-police skill to verify 09→10 screen-id drift.`
+   `Iterations to convergence: N`. Then hand off to the
+   **`schema-therapy:drift-police` agent** as an invocation (a handoff, not a file
+   dependency) — its suite-wide audit re-verifies the cross-artifact contracts,
+   including the 09→10 screen-id seam.
 
 ## 4 — Running the harness
 

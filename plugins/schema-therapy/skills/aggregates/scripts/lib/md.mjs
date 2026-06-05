@@ -70,9 +70,18 @@ export function parse(text) {
   const firstNonBlank = lines.findIndex((l) => l.trim() !== '');
   if (firstNonBlank !== -1 && lines[firstNonBlank].trim().startsWith('<!--')) {
     const buf = [];
+    let closed = false;
     for (let i = firstNonBlank; i < lines.length; i++) {
       buf.push(lines[i]);
-      if (lines[i].includes('-->')) break;
+      if (lines[i].includes('-->')) {
+        closed = true;
+        break;
+      }
+    }
+    // An opened-but-never-closed fingerprint comment block is a structural break:
+    // surface it as `malformed` (never silently tolerate a partial capture).
+    if (!closed) {
+      throw new ParseError('fingerprint comment block opened (`<!--`) but never closed (`-->`)', 'L2');
     }
     doc.fingerprintBlock = buf.join('\n');
   }

@@ -132,6 +132,13 @@ export function parse(src) {
     finals: [],
     transitions: [],
     basicStateIds: new Set(),
+    // initialEvent01 = the `<!-- 01-event: … -->` annotation on/immediately preceding the
+    // machine's INITIAL state entry (the creation event — mirrors the 04 transition table's
+    // ∅ (creation) row). The 05 authority vocabulary includes this entry event PLUS every
+    // transition 01-event (simulation.md §3.5). Without it a creation event for a PROMOTED
+    // entity would be missing from the authority vocabulary while the identical event for an
+    // unpromoted entity (judged against 04, whose ∅ row carries the creation event) is present.
+    initialEvent01: null,
     allComments: tokens.filter((t) => t.kind === 'comment').map((t) => t.text),
   };
 
@@ -139,6 +146,14 @@ export function parse(src) {
   const walk = (node, parentId) => {
     if (STATE_KINDS.has(node.name)) {
       const id = node.attrs.id != null ? node.attrs.id : null;
+      // Initial-state entry annotation: the comment(s) immediately preceding the state element
+      // whose id == the scxml root's `initial` attribute carry the creation 01-event.
+      if (id != null && model.initialAttr != null && id === model.initialAttr) {
+        for (const c of node.comments || []) {
+          const m = /^\s*01-event:\s*(.+?)\s*$/.exec(c);
+          if (m) model.initialEvent01 = m[1];
+        }
+      }
       const childStates = node.children.filter((c) => c.name === 'state' || c.name === 'parallel' || c.name === 'final');
       let kind;
       if (node.name === 'final') kind = 'final';
@@ -184,10 +199,14 @@ function readTransition(node, sourceId) {
   };
 }
 
-// scxmlGraph(model) → { transitions:[{from, event01, to}], states:[id], terminals:[id], initial }.
+// scxmlGraph(model) → { transitions:[{from, event01, to}], states:[id], terminals:[id],
+//   initial, events:Set }.
 // The lifecycle-authority transition set for a promoted entity (§3.5). `from`/`to` are
 // state ids (= 02 enum values); `event01` is the `<!-- 01-event: … -->` annotation (or
 // the raw event attr if absent). terminals = <final> ids ∪ basic states with no outgoing.
+// events = the authority event vocabulary: every transition 01-event PLUS the initial-entry
+// (creation) annotation — mirrors the 04 table's ∅ row so a promoted entity's creation event
+// is present in the vocabulary exactly where the unpromoted (04-judged) path would have it.
 export function scxmlGraph(model) {
   const transitions = [];
   for (const t of model.transitions) {
@@ -201,10 +220,13 @@ export function scxmlGraph(model) {
   for (const s of model.states) {
     if (s.kind === 'basic' && !froms.has(s.id) && !model.finals.includes(s.id)) terminals.push(s.id);
   }
+  const events = new Set(transitions.map((t) => t.event01).filter(Boolean));
+  if (model.initialEvent01) events.add(model.initialEvent01);
   return {
     transitions,
     states: [...new Set(states)].sort(),
     terminals: [...new Set(terminals)].sort(),
     initial: model.initialAttr,
+    events,
   };
 }

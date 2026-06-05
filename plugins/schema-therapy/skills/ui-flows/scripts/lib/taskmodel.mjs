@@ -9,8 +9,15 @@
 // nominal cost (the broken-ruler precondition for C-a/W-COST → upstream-defect, §9).
 //
 // The CTT XML is read by the hand-rolled xml.mjs PATTERN (copied below, narrowed to the 08
-// TaskModel/Budget/Task dialect). Malformed 08 XML ⇒ a typed ParseError ⇒ the harness routes
-// broken-test (§9, "a realized 08 .xml not well-formed").
+// TaskModel/Budget/Task dialect). Two honesty splits mirror the flow-acceptance (10)
+// taskmodel.mjs so the two skills derive the SAME nominal path from the same 08 tree:
+//   - an UNPARSEABLE 08 (malformed XML) ⇒ throws CttParseError ⇒ the harness routes
+//     broken-test (§9, "a realized 08 .xml not well-formed").
+//   - a PARSEABLE-but-walker-stuck 08 (an internal node whose operator selects an empty
+//     contributing set — e.g. a `choice` with no document-order child, or all candidates
+//     optional) ⇒ parse() returns ok:true but model.stuck names the node ⇒ the harness routes
+//     upstream-defect → the named 08 file (the tree is well-formed but the nominal path it
+//     declares is underivable, so 09 cannot be measured against it).
 
 import { klmInstanceCount } from './lexicon.mjs';
 
@@ -96,7 +103,7 @@ const NOMINAL_CONTRIB = {
 
 // parse(src) → { ok, detail, model }. model = { id, persona, job, budget(raw),
 //   rootTask, tasks[], leaves[], nominalLeaves[] ({id,category}), allLeafIds[],
-//   computedNominalCost, budgetSound }.
+//   computedNominalCost, budgetSound, stuck:{id,reason}|null }.
 export function parse(src) {
   if (typeof src !== 'string') throw new CttParseError('input is not a string');
   const root = buildTree(tokenize(src));
@@ -125,10 +132,16 @@ export function parse(src) {
   const rootTask = taskEls.length ? node(taskEls[0], null) : null;
   const leaves = tasks.filter((t) => t.children.length === 0);
 
-  // nominal-path descent (the copied 08 deterministic rule).
+  // nominal-path descent (the copied 08 deterministic rule), with a stuck detector: an
+  // internal node whose operator selects a contributing kid set that is EMPTY (e.g. a
+  // `choice` with no document-order child, or all candidates optional) ⇒ the nominal path is
+  // underivable ⇒ stuck. KEPT IDENTICAL to the flow-acceptance (10) taskmodel.mjs descend so
+  // the same 08 tree yields the SAME nominal-leaf set in 09 and 10 (the copied PATTERN claim).
   const nominal = [];
   const seen = new Set();
+  let stuck = null;
   const descend = (t) => {
+    if (stuck) return;
     if (t.optional === 'true') return;
     if (seen.has(t)) return;
     seen.add(t);
@@ -137,9 +150,16 @@ export function parse(src) {
     let kids;
     if (contrib === 'first' || contrib === 'left') kids = t.children.slice(0, 1);
     else kids = t.children;
-    for (const c of kids) descend(c);
+    // skip optional kids from the nominal contribution.
+    const nonOpt = kids.filter((c) => c.optional !== 'true');
+    if (t.children.length > 0 && nonOpt.length === 0) {
+      stuck = { id: t.id, reason: `operator '${t.operator || '(none)'}' selects no nominal child (all candidates optional or absent)` };
+      return;
+    }
+    for (const c of nonOpt) descend(c);
   };
   if (rootTask) descend(rootTask);
+  else stuck = { id: '(root)', reason: 'no root <Task> element' };
 
   // re-derive the computed nominal cost (the broken-ruler precondition, §9).
   let computedNominalCost = 0;
@@ -151,7 +171,9 @@ export function parse(src) {
   }
   const budgetRaw = budgetEls.length === 1 && budgetEls[0].attrs.klm != null ? budgetEls[0].attrs.klm : null;
   const declaredBudget = budgetRaw != null && /^\d+$/.test(String(budgetRaw)) ? parseInt(budgetRaw, 10) : null;
-  const budgetSound = costOk && declaredBudget != null && declaredBudget === computedNominalCost;
+  // a stuck walker has no derivable nominal path ⇒ the budget cannot be soundly re-checked
+  // (and the broken-ruler comparison would be meaningless); route stuck on its own seam.
+  const budgetSound = !stuck && costOk && declaredBudget != null && declaredBudget === computedNominalCost;
 
   return {
     ok: true, detail: '',
@@ -161,9 +183,9 @@ export function parse(src) {
       job: root.attrs.job != null ? root.attrs.job : null,
       budgetRaw, declaredBudget,
       rootTask, tasks, leaves,
-      nominalLeaves: nominal.map((t) => ({ id: t.id, category: t.category, klm: t.klm })),
+      nominalLeaves: stuck ? [] : nominal.map((t) => ({ id: t.id, category: t.category, klm: t.klm })),
       allLeafIds: leaves.map((t) => t.id).filter(Boolean),
-      computedNominalCost, costOk, budgetSound,
+      computedNominalCost, costOk, budgetSound, stuck,
     },
   };
 }

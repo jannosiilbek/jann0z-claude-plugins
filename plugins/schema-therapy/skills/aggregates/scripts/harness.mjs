@@ -25,7 +25,7 @@
 //   node scripts/harness.mjs <03> --upstream-01 <01> --upstream-02 <02> [--no-checks]
 
 import { readFileSync } from 'node:fs';
-import { parse } from './lib/md.mjs';
+import { parse, ParseError } from './lib/md.mjs';
 import * as C from './lib/checks.mjs';
 
 const EXIT = { pass: 0, fail: 1, malformed: 2, 'broken-test': 3 };
@@ -113,7 +113,12 @@ function main() {
   // --- parse all three -------------------------------------------------------
   let doc03, doc01, doc02;
   try { doc03 = parse(text03); }
-  catch (e) { process.stderr.write(`BROKEN-TEST (03 parser threw): ${e.stack}\n`); summary.status = 'broken-test'; emit(summary, 'broken-test'); }
+  catch (e) {
+    // A structural break in the 03 artifact under test (e.g. an unclosed
+    // fingerprint comment block) is `malformed`, not a broken test.
+    if (e instanceof ParseError) { process.stderr.write(`MALFORMED (03 parse): ${e.message}\n`); summary.status = 'malformed'; emit(summary, 'malformed'); }
+    process.stderr.write(`BROKEN-TEST (03 parser threw): ${e.stack}\n`); summary.status = 'broken-test'; emit(summary, 'broken-test');
+  }
   try { doc01 = parse(text01); }
   catch (e) { process.stderr.write(`BROKEN-TEST (01 parser threw): ${e.stack}\n`); summary.status = 'broken-test'; emit(summary, 'broken-test'); }
   try { doc02 = parse(text02); }
@@ -300,6 +305,9 @@ function main() {
   summary.counts.edgesWalked = edgesWalked;
   summary.counts.edgesExpected = edgesExpected;
   summary.coverage.elementsTotal = C.elementsTotal(g03);
+  // elementsExercised mirrors elementsTotal BY CONSTRUCTION: with all mechanical
+  // checks run (guarded above), every intake element is touched by ≥1 check, so
+  // the exercised count equals the total. Not an independently-measured value.
   summary.coverage.elementsExercised = C.elementsTotal(g03);
   summary.checks = checkRecords;
   summary.findings = findings;

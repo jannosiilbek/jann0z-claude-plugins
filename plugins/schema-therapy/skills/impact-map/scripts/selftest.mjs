@@ -249,9 +249,11 @@ process.stderr.write('PART 6 — coverage floor: all 17 ❌ rules have a positiv
   }
   ok(covered === COVERAGE.length, `all ${COVERAGE.length} ❌ rules have BOTH a positive and a dedicated negative (got ${covered})`);
 
-  // The summary's claimed behavior-coverage count matches the §5.1 floor.
-  ok(valid.coverage.behaviorsWithPosAndNeg === 17,
-    `summary reports behaviorsWithPosAndNeg === 17 (got ${valid.coverage.behaviorsWithPosAndNeg})`);
+  // The summary's claimed behavior-coverage count must equal the coverage table
+  // length actually walked above — cross-checking the harness literal against
+  // proven coverage rather than against itself (no tautology).
+  ok(valid.coverage.behaviorsWithPosAndNeg === COVERAGE.length,
+    `summary reports behaviorsWithPosAndNeg === ${COVERAGE.length} (got ${valid.coverage.behaviorsWithPosAndNeg})`);
 
   // A dropped check is detected: prove the coverage walk would FAIL if any owner
   // check silently vanished — pick G3/N3 and assert valid.md still runs it (so a

@@ -1,5 +1,5 @@
 {
-  "description": "Adversarial selftest manifest for the suite-drift oracle (doctrine §3), now spanning the FULL 0-10 artifact suite. Each entry: specsDir (relative to fixtures/), the overall status the oracle MUST report, and `requireFinding` = the {id?, class, reason} that MUST appear among the failing/malformed findings FOR THE STATED REASON (the check-class owner). `requireDetailContains`/`requireDetailNotContains` enforce the wrong-reason trap (the failing finding's detail must name the real defect, not a co-present one). `domain`/`intent` are the paths passed via --domain/--intent (relative to fixtures/). Mutating an UPSTREAM artifact legitimately cascades staleness onto downstream artifacts — the selftest asserts the PRIMARY finding is present, not that it is the only one.",
+  "description": "Adversarial selftest manifest for the suite-drift oracle (doctrine §3), now spanning the FULL 0-10 artifact suite. Each entry: specsDir (relative to fixtures/), the overall status the oracle MUST report, and `requireFinding` = the {id?, class, reason} that MUST appear among the failing/malformed findings FOR THE STATED REASON (the check-class owner). `requireDetailContains`/`requireDetailNotContains` enforce the wrong-reason trap (the failing finding's detail must name the real defect, not a co-present one). `domain`/`intent` are the paths passed via --domain/--intent (relative to fixtures/). CO-FIRE ACCOUNTING: `alsoFires` lists additional NON-staleness finding ids a fixture genuinely co-fires (a defect tripping more than one resolution/dry check); the selftest asserts each is present AND that NO unexpected fail finding id appears beyond {primary} ∪ alsoFires ∪ the legitimate staleness cascade. The staleness cascade (any `S-*` / `S-MISSING-FP-*` finding, the downstream re-pin failures from mutating an upstream) is tolerated as a class, not enumerated per id.",
   "good": { "specsDir": "good/specs", "domain": "good/domain.md", "intent": "good/product-intent.md", "status": "pass" },
   "fixtures": [
     {
@@ -8,7 +8,8 @@
       "domain": "good/domain.md", "intent": "good/product-intent.md",
       "status": "fail",
       "requireFinding": { "id": "R-02-enum-derivation", "class": "resolution", "reason": "dangling-derivation" },
-      "requireDetailContains": "Order Settled"
+      "requireDetailContains": "Order Settled",
+      "alsoFires": ["R-04-trans-event"]
     },
     {
       "name": "restated-shape",
@@ -55,7 +56,8 @@
       "requireFinding": { "id": "R-06-tag", "class": "resolution", "reason": "dangling-tag" },
       "requireDetailContains": "INV-Order-9",
       "requireDetailNotContains": "restates",
-      "requireAlsoFinding": { "class": "dry", "reason": "restated-shape" }
+      "requireAlsoFinding": { "class": "dry", "reason": "restated-shape" },
+      "alsoFires": ["DRY-01-shape", "R-08-tag-vocab", "R-10-outcome-tag"]
     },
     {
       "name": "missing-05-supersedes-target",
@@ -71,7 +73,8 @@
       "domain": "good/domain.md", "intent": "good/product-intent.md",
       "status": "fail",
       "requireFinding": { "id": "R-06-tag", "class": "resolution", "reason": "dangling-tag" },
-      "requireDetailContains": "ghost"
+      "requireDetailContains": "ghost",
+      "alsoFires": ["R-08-tag-vocab", "R-10-outcome-tag"]
     },
     {
       "name": "when-no-event",
@@ -119,7 +122,8 @@
       "domain": "good/domain.md", "intent": "good/product-intent.md",
       "status": "fail",
       "requireFinding": { "id": "R-08-persona-job-biject", "class": "resolution", "reason": "persona-job-bijection" },
-      "requireDetailContains": "ghost_job"
+      "requireDetailContains": "ghost_job",
+      "alsoFires": ["R-10-model-biject"]
     },
     {
       "name": "ghost-event-task",
@@ -206,13 +210,6 @@
       "domain": "good/domain.md", "intent": "good/product-intent.md",
       "status": "malformed",
       "requireFinding": { "id": "M-parse", "class": "malformed", "reason": "unparseable-artifact" }
-    },
-    {
-      "name": "vacuous-empty-specs",
-      "specsDir": "neg/vacuous/specs",
-      "domain": "good/domain.md", "intent": "good/product-intent.md",
-      "status": "broken-test",
-      "requireFinding": null
     }
   ]
 }

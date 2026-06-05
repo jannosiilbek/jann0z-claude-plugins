@@ -271,8 +271,8 @@ export function extractFingerprints(text, isDbml) {
   const lines = text.split(/\r?\n/);
   let inBlock = false;
   const grab = (line) => {
-    const m02 = /02-glossary\.md@sha256:([0-9a-fA-Fx<>]+)/.exec(line);
-    const m03 = /03-aggregates\.md@sha256:([0-9a-fA-Fx<>]+)/.exec(line);
+    const m02 = /02-glossary\.md@sha256:([0-9a-fA-F]{64})/.exec(line);
+    const m03 = /03-aggregates\.md@sha256:([0-9a-fA-F]{64})/.exec(line);
     if (m02) out.has02 = m02[1];
     if (m03) out.has03 = m03[1];
   };

@@ -4,12 +4,14 @@
 // tag/operator/KLM/budget seams — single ownership (§9); it re-walks 08 ONLY to obtain the
 // ORDERED nominal-path leaf list + each walked leaf's scenario-tags 10 must realize.
 //
-// Two honesty splits (§9):
+// Two honesty splits (§9) — KEPT IDENTICAL to the ui-flows (09) taskmodel.mjs `descend`
+// (the same copied PATTERN: optional kids filtered from the contributing set + stuck
+// detection), so the same 08 tree yields the SAME ordered nominal-leaf set in 09 and 10:
 //   - an UNPARSEABLE 08 (malformed XML) ⇒ throws CttParseError ⇒ the harness routes
 //     broken-test.
-//   - a PARSEABLE-but-walker-stuck 08 (e.g. a `choice` with no document-order child) ⇒
-//     parse() returns ok:true but walk.stuck names the node ⇒ the harness routes
-//     upstream-defect → the named 08 file.
+//   - a PARSEABLE-but-walker-stuck 08 (e.g. a `choice` with no document-order child, or all
+//     candidates optional) ⇒ parse() returns ok:true but model.stuck names the node ⇒ the
+//     harness routes upstream-defect → the named 08 file.
 
 export class CttParseError extends Error {
   constructor(message) { super(message); this.name = 'CttParseError'; }

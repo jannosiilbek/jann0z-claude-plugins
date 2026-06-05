@@ -109,7 +109,8 @@ When the user signals done ("that's the scope", "settled", "done"):
 2. Remind: **artifacts 01–10 are now stale** (doctrine §7) — the scope moved,
    everything downstream must be re-verified before it can be trusted.
 3. **Offer** the downstream cascade — re-run skills 1→10 in pipeline order on
-   this workspace, then the drift police
+   this workspace (step 5 honors the statechart gate — not-emitted is a valid
+   outcome), then the drift police
    (`node plugins/schema-therapy/scripts/suite-drift.mjs <specs-dir>
    --domain <domain-file> --intent <intent-file>` plus the
    `schema-therapy:drift-police` agent) until ALIGNED. Run it only on an

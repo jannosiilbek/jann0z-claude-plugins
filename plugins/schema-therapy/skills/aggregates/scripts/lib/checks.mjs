@@ -447,9 +447,10 @@ export function lintL2_fingerprints(doc03) {
   let ok = false, detail = '`## Upstream Fingerprints` section absent';
   if (sec) {
     const body = sec.lines.join('\n') + '\n' + (doc03.fingerprintBlock || '');
+    // Plugin-canonical fingerprint token: `sha256:` + exactly 64 hex chars.
     const want = [
-      { label: '01-event-storming.md', re: /01-event-storming\.md@sha256:([0-9a-fA-F]+|<hex>)/ },
-      { label: '02-glossary.md', re: /02-glossary\.md@sha256:([0-9a-fA-F]+|<hex>)/ },
+      { label: '01-event-storming.md', re: /01-event-storming\.md@sha256:([0-9a-fA-F]{64})\b/ },
+      { label: '02-glossary.md', re: /02-glossary\.md@sha256:([0-9a-fA-F]{64})\b/ },
     ];
     const probs = [];
     for (const w of want) {

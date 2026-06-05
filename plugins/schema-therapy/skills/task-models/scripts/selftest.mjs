@@ -314,6 +314,14 @@ process.stderr.write('PART 9 — coverage floor (positive AND negative per ❌ b
     if (positiveOk && negFails) covered++;
   }
   ok(covered === COVERAGE.length, `all ${COVERAGE.length} ❌-behaviors have BOTH a positive and a negative (got ${covered})`);
+
+  // Coverage honesty: the harness's hardcoded behaviorsWithPosAndNeg literal MUST equal the
+  // number of DISTINCT ❌ rules covered with both a positive AND a negative. The COVERAGE
+  // table has 31 rows but covers 30 distinct rules (B5 shares M9/abstract-leaf with B1; E1b is
+  // the second side of E1) — so the literal is reconciled against distinctRules.size, not the
+  // raw row count.
+  ok(valid.coverage.behaviorsWithPosAndNeg === distinctRules.size,
+    `summary behaviorsWithPosAndNeg (${valid.coverage.behaviorsWithPosAndNeg}) === distinct ❌ rules with pos+neg (${distinctRules.size})`);
 }
 
 // ===========================================================================

@@ -41,7 +41,7 @@ const AJ_DEFS = [
   { id: 'AJ4', rule: 'F4', verdict: 'single-job' },
 ];
 
-const N_BEHAVIORS = 30; // simulation.md §5/§closing table (all 30 ❌ rules, pos+neg)
+const N_BEHAVIORS = 30; // = the 30 distinct ❌ rules (simulation.md §5/§closing table), each with pos+neg; asserted against selftest's distinctRules.size in PART 9
 
 function parseArgs(argv) {
   const args = argv.slice(2);
@@ -326,6 +326,10 @@ function main() {
     total: mechanicalRun + walkerRun + resolutionRun + exactValueRun + ajRun,
   };
   summary.coverage.elementsTotal = summary.counts.intake.models + summary.counts.intake.tasks + summary.counts.intake.leaves + summary.counts.intake.tags;
+  // elementsExercised mirrors elementsTotal BY CONSTRUCTION: the mechanical (M*), walker,
+  // resolution (R-*) and exact-value passes each traverse the FULL model tree — every model,
+  // task, leaf and tag is visited by ≥1 executed check on any non-broken run. There is no
+  // partially-exercised element to under-count.
   summary.coverage.elementsExercised = summary.coverage.elementsTotal;
 
   summary.checks = checks;

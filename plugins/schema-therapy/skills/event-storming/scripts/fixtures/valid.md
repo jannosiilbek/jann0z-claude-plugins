@@ -4,7 +4,7 @@ order-fulfillment.md@sha256:1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b
 
 ## Upstream Fingerprint
 
-Derived from impact map `00-impact-map.md`@sha256:00aa11bb22cc33dd and domain description `order-fulfillment.md`@sha256:1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b0d1f3acb9d2e4 (captured 2026-06-04).
+Derived from impact map `00-impact-map.md`@sha256:00aa11bb22cc33dd00aa11bb22cc33dd00aa11bb22cc33dd00aa11bb22cc33dd and domain description `order-fulfillment.md`@sha256:1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b0d1f3acb9d2e4c6a8b0d1f3acb9d2e4 (captured 2026-06-04).
 
 ## Domain Events
 

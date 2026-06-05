@@ -75,25 +75,6 @@ export function readHeadings(text) {
   return out;
 }
 
-// Ordered (numbered) list items grouped under their nearest `###`/`##` heading.
-// Returns Map(headingText -> [itemText,...]).
-export function readOrderedListsByHeading(text) {
-  const lines = text.split(/\r?\n/);
-  const out = new Map();
-  let heading = null;
-  for (let i = 0; i < lines.length; i++) {
-    const hm = /^(#{2,3})\s+(.*\S)\s*$/.exec(lines[i]);
-    if (hm) {
-      heading = hm[2].trim();
-      if (!out.has(heading)) out.set(heading, []);
-      continue;
-    }
-    const li = /^\s*\d+\.\s+(.*\S)\s*$/.exec(lines[i]);
-    if (li && heading !== null) out.get(heading).push(li[1].trim());
-  }
-  return out;
-}
-
 // Normalize a fingerprint entry NAME to a bare specs-relative path. The 08 task
 // models prefix their entries with `specs/` (e.g. `specs/06-gherkin/x.feature`);
 // every other dialect names the input relative to specs/. We strip a leading

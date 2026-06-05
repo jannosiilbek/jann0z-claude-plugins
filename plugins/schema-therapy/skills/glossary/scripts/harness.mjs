@@ -122,6 +122,13 @@ function main() {
   try {
     doc02 = parse(text02);
   } catch (e) {
+    if (e instanceof ParseError) {
+      // A structural break in the 02 artifact under test (e.g. an unclosed
+      // fingerprint comment block) is `malformed`, not a broken test.
+      process.stderr.write(`MALFORMED (02 parse): ${e.message}\n`);
+      summary.status = 'malformed';
+      emit(summary, 'malformed');
+    }
     process.stderr.write(`BROKEN-TEST (02 parser threw): ${e.stack}\n`);
     summary.status = 'broken-test';
     emit(summary, 'broken-test');
@@ -328,6 +335,9 @@ function main() {
   summary.counts.edgesWalked = edgesWalked;
   summary.counts.edgesExpected = edgesExpected;
   summary.coverage.elementsTotal = C.elementsTotal(g);
+  // elementsExercised mirrors elementsTotal BY CONSTRUCTION: with all mechanical
+  // checks run (guarded above), every intake element is touched by ≥1 check, so
+  // the exercised count equals the total. Not an independently-measured value.
   summary.coverage.elementsExercised = C.elementsTotal(g);
   summary.checks = checkRecords;
   summary.findings = findings;

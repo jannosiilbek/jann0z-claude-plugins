@@ -218,6 +218,45 @@ process.stderr.write('PART 7 — authority switch (the 05 beyond-04 refunded edg
 }
 
 // ===========================================================================
+// PART 7b — CREATION-EVENT authority symmetry (the check-asymmetry regression). The 05
+// authority vocabulary = all transition 01-event annotations PLUS the machine's INITIAL-
+// ENTRY annotation (the creation event — mirrors 04's ∅ row). A @transition scenario whose
+// When embeds the creation event ('Order Placed') for the PROMOTED `order` entity must be
+// IN-vocabulary under --upstream-05, exactly as it is for an unpromoted entity judged
+// against 04 (whose ∅ row carries it). Prove: (a) scxmlGraph(order).events carries it;
+// (b) R-EVENT accepts it under BOTH the 05 and 04 authority vocabularies (symmetry);
+// (c) the acceptance is load-bearing — a vocabulary WITHOUT the creation event fails R-EVENT
+// (the fix did not widen the authority to accept off-vocabulary strings).
+// ===========================================================================
+process.stderr.write('PART 7b — creation-event authority symmetry (initial-entry 01-event ∈ 05 vocabulary)\n');
+{
+  const { scxmlGraph, parse: parseScxml } = await import('./lib/scxml.mjs');
+  const C = await import('./lib/checks.mjs');
+  const orderScxml = readFileSync(fx('upstream-05/order.scxml'), 'utf8');
+  const g = scxmlGraph(parseScxml(orderScxml));
+  ok(g.events.has('Order Placed'),
+    "scxmlGraph(order).events includes the initial-entry creation event 'Order Placed' (mirrors 04's ∅ row)");
+
+  // A @transition:order scenario whose When embeds the creation event.
+  const feat = { fileBase: 'order.feature', scenarios: [{
+    sourceTag: '@transition:order', title: 'Placing creates a placed order',
+    whenSteps: [{ text: 'the Order Placed event occurs' }],
+  }] };
+  // 05 (promoted) vocabulary: scxmlGraph.events (incl. the initial-entry creation event).
+  const ctx05 = { entityEvents: new Map([['order', g.events]]) };
+  // 04 (unpromoted) vocabulary: transition events PLUS the ∅-row creation event 'Order Placed'.
+  const ctx04 = { entityEvents: new Map([['order', new Set(['Order Paid', 'Order Cancelled', 'Order Placed'])]]) };
+  ok(C.rEvent(feat, ctx05).status === 'pass',
+    'R-EVENT accepts the creation-event When under the PROMOTED 05 vocabulary');
+  ok(C.rEvent(feat, ctx04).status === 'pass',
+    'R-EVENT accepts the SAME creation-event When under the unpromoted 04 vocabulary (symmetry)');
+  // (c) load-bearing: a vocabulary missing the creation event rejects the same When.
+  const ctxNoCreate = { entityEvents: new Map([['order', new Set(['Order Paid', 'Order Cancelled'])]]) };
+  ok(C.rEvent(feat, ctxNoCreate).status === 'fail',
+    'R-EVENT rejects the creation-event When when the creation event is absent from the vocabulary (load-bearing)');
+}
+
+// ===========================================================================
 // PART 8 — upstream-defect routing (03/04) vs unparseable upstream (broken-test).
 // ===========================================================================
 process.stderr.write('PART 8 — upstream-defect routing (03/04) vs unparseable upstream\n');
@@ -292,13 +331,16 @@ process.stderr.write('PART 11 — determinism / byte-identical double run\n');
 process.stderr.write('PART 12 — coverage floor (positive AND negative per ❌ rule)\n');
 {
   // [catalog rule, positive owner-check, positive fixture-dir, positive runFlag,
-  //  negative fixture-dir, negative owner].
+  //  negative fixture-dir, negative owner, expectStatus?]. expectStatus pins a row whose
+  // negative is LEGITIMATELY a malformed-status case (a parse-check negative) — asserted
+  // explicitly per-row rather than via a blanket `|| malformed` escape (which would let a
+  // fixture malformed for an UNRELATED parse reason satisfy a row owned by another check).
   const COVERAGE = [
     ['A1', 'R-BIJECT', 'valid-06', 'with05', 'illegal/extra-feature-file', 'R-BIJECT'],
     ['A2', 'M2', 'valid-06', 'with05', 'illegal/bad-filename', 'R-BIJECT'],
     ['A3', 'W-FEAT', 'valid-06', 'with05', 'illegal/wrong-feature-name', 'W-FEAT'],
     ['A4', 'R-FINGERPRINT', 'valid-06', 'with05', 'illegal/missing-fingerprint', 'R-FINGERPRINT'],
-    ['A5', 'W-PARSE', 'valid-06', 'with05', 'illegal/not-gherkin', 'W-PARSE'],
+    ['A5', 'W-PARSE', 'valid-06', 'with05', 'illegal/not-gherkin', 'W-PARSE', 'malformed'],
     ['A6', 'R-TAG', 'valid-06', 'with05', 'illegal/bad-tag-namespace', 'R-TAG'],
     ['A6t', 'R-TAGTARGET', 'valid-06', 'with05', 'illegal/tag-target-unresolved', 'R-TAGTARGET'],
     ['B1', 'X-COV-INV', 'valid-06', 'with05', 'illegal/uncovered-invariant', 'X-COV-INV'],
@@ -328,17 +370,31 @@ process.stderr.write('PART 12 — coverage floor (positive AND negative per ❌ 
     return posCache.get(k);
   };
   let covered = 0;
-  for (const [rule, posId, posDir, posFlag, negDir, negOwner] of COVERAGE) {
+  for (const [rule, posId, posDir, posFlag, negDir, negOwner, expectStatus] of COVERAGE) {
     const src = posJson(posDir, posFlag);
     const pos = src && src.checks.find((c) => c.id === posId);
     ok(pos && (pos.status === 'pass'), `[coverage ${rule}] positive ${posId} passes over ${posDir}`);
     const negFx = MANIFEST.fixtures.find((x) => x.dir === negDir);
     const neg = run(negFx).json;
-    const negFires = neg && (failIds(neg).includes(negOwner) || errIds(neg).includes(negOwner) || neg.status === 'malformed');
+    // The owner check itself must reject — no blanket malformed-status escape (a fixture
+    // malformed for an unrelated parse reason must NOT satisfy a row owned by another check).
+    const negFires = neg && (failIds(neg).includes(negOwner) || errIds(neg).includes(negOwner));
     ok(negFires, `[coverage ${rule}] negative (${negDir}) fires its owner ${negOwner}`);
+    // Rows whose negative is legitimately a malformed-status case assert that explicitly.
+    if (expectStatus) ok(neg && neg.status === expectStatus, `[coverage ${rule}] negative (${negDir}) status === ${expectStatus} (parse-check negative)`);
     covered++;
   }
   ok(covered === COVERAGE.length, `all ${COVERAGE.length} ❌ behaviors have BOTH a positive and a negative`);
+
+  // Coverage-honesty: the harness summary's behaviorsWithPosAndNeg literal must equal the
+  // selftest COVERAGE table length (the floor it claims to enforce), and elementsExercised
+  // must be the obligation edges genuinely walked (== elementsTotal on a fully-covered run),
+  // not a vacuous copy.
+  const cv = posJson('valid-06', 'with05');
+  ok(cv && cv.coverage.behaviorsWithPosAndNeg === COVERAGE.length,
+    `summary behaviorsWithPosAndNeg === ${COVERAGE.length} (got ${cv && cv.coverage.behaviorsWithPosAndNeg})`);
+  ok(cv && cv.coverage.elementsExercised === cv.coverage.elementsTotal && cv.coverage.elementsTotal > 0,
+    `valid-06 elementsExercised === elementsTotal > 0 (got ${cv && cv.coverage.elementsExercised}/${cv && cv.coverage.elementsTotal})`);
 }
 
 // ===========================================================================

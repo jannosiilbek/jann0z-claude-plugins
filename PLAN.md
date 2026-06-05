@@ -17,7 +17,7 @@ All artifacts are emitted to a flat `specs/` root: single-file artifacts as `spe
 | 3 | `aggregates` | `specs/03-aggregates.md` (aggregate roots, invariants, transactional boundaries) | 01–02 | always |
 | 4 | `erd` | `specs/04-erd.dbml` + `specs/04-transitions.md` (data model; one transition table per lifecycle entity — emitted together as one artifact) | 02–03 | always |
 | 5 | `statecharts` | `specs/05-statecharts/<entity>.scxml` (one machine per document) | 01–04 | conditional per entity — see the statechart gate |
-| 6 | `gherkin` | `specs/06-gherkin/*.feature` | 02–04, plus 05 when emitted | always |
+| 6 | `gherkin` | `specs/06-gherkin/*.feature` | 01–04, plus 05 when emitted | always |
 | 7 | `personas` | `specs/07-personas.md` (goal-directed personas, jobs-to-be-done) | 00–01 | always |
 | 8 | `task-models` | `specs/08-task-models/<persona>-<job>.xml` (one task model per persona-job, with its efficiency budget) | 06–07 | always |
 | 9 | `ui-flows` | `specs/09-ui-flows/<persona>.xml` (one IFML model per persona: screens, navigation, domain bindings) | 02, 04, 07–08, plus 05 when emitted | always |

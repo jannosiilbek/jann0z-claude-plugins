@@ -244,14 +244,17 @@ export function parse(src) {
 }
 
 // Parse a fingerprint comment body into [{file, hash, raw, malformed?}].
-// Each entry line: `<path> sha256:<token>`. The `fingerprints:` label line is skipped.
+// Each entry line: `<path> sha256:<64-hex>`. The `fingerprints:` label line is skipped.
+// The digest shape is pinned to EXACTLY 64 hex chars (canonical: the plugin-level
+// scripts/lib/md.mjs parseFingerprintEntry) — a non-64/non-hex run no longer slips through as
+// a "valid" entry only to be re-rejected downstream; it is a malformed line at the parse seam.
 export function fingerprintEntries(commentText) {
   if (!commentText) return [];
   const out = [];
   for (const raw of commentText.split(/\r?\n/)) {
     const line = raw.trim();
     if (!line || /^fingerprints\s*:/.test(line)) continue;
-    const m = /^(\S+)\s+sha256:(\S+)\s*$/.exec(line);
+    const m = /^(\S+)\s+sha256:([0-9a-fA-F]{64})\s*$/.exec(line);
     if (m) out.push({ file: m[1], hash: m[2], raw: line });
     else out.push({ file: null, hash: null, raw: line, malformed: true });
   }

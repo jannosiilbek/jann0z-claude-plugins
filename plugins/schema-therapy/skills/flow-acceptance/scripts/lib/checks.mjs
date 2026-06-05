@@ -74,12 +74,15 @@ export function rFingerprint(comments, featureLine, { stem, consumed06, persona0
   if (!hasHeader) {
     return { id: 'R-FINGERPRINT', rule: 'A-d', status: 'fail', detail: `no leading "# fingerprints:" block before Feature (line ${featureLine})` };
   }
-  // collect entry lines: `<file>@sha256:<token>` (the label line is skipped).
+  // collect entry lines: `<file>@sha256:<64-hex>` (the label line is skipped). The digest shape
+  // is pinned to EXACTLY 64 hex chars (canonical: the plugin-level scripts/lib/md.mjs
+  // parseFingerprintEntry) — a non-64/non-hex run (incl. a `<hex>` placeholder) does not match
+  // and is reported as a malformed line at the parse seam.
   const entries = [];
   for (const c of leading) {
     const body = c.text.replace(/^\s*#?\s*/, '');
     if (/^fingerprints\s*:/.test(body)) continue;
-    const m = /^(\S+)@sha256:(\S+)\s*$/.exec(body.trim());
+    const m = /^(\S+)@sha256:([0-9a-fA-F]{64})\s*$/.exec(body.trim());
     if (m) entries.push({ file: m[1], hash: m[2] });
     else if (body.trim() !== '') entries.push({ file: null, hash: null, raw: body.trim(), malformed: true });
   }
@@ -87,9 +90,10 @@ export function rFingerprint(comments, featureLine, { stem, consumed06, persona0
   if (malformed.length) {
     return { id: 'R-FINGERPRINT', rule: 'A-d', status: 'fail', detail: `malformed fingerprint line(s): ${malformed.map((e) => e.raw).join(' | ')}` };
   }
-  const badHash = entries.filter((e) => !/^[0-9a-f]{64}$/.test(e.hash) || /^0{64}$/.test(e.hash));
+  // a well-formed 64-hex run that is the all-zeros placeholder is still rejected.
+  const badHash = entries.filter((e) => /^0{64}$/.test(e.hash));
   if (badHash.length) {
-    return { id: 'R-FINGERPRINT', rule: 'A-d', status: 'fail', detail: `fingerprint digest(s) not 64-hex / placeholder: ${badHash.map((e) => `${e.file}@sha256:${e.hash}`).join(', ')}` };
+    return { id: 'R-FINGERPRINT', rule: 'A-d', status: 'fail', detail: `placeholder fingerprint digest(s) (all-zeros): ${badHash.map((e) => `${e.file}@sha256:${e.hash}`).join(', ')}` };
   }
   // naming: every consumed upstream present.
   const named = new Set(entries.map((e) => e.file));

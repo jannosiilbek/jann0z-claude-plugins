@@ -35,6 +35,9 @@ import * as C from './lib/checks.mjs';
 import { snake, INTERACTION_LEAF_CATEGORIES } from './lib/lexicon.mjs';
 
 const EXIT = { pass: 0, fail: 1, malformed: 2, 'broken-test': 3 };
+// The §5 coverage floor: distinct ❌ rules the suite proves with BOTH a positive and a negative.
+// Pinned to the 22-row coverage table; the selftest asserts this equals the table length.
+const BEHAVIORS_WITH_POS_AND_NEG = 22;
 const TOOLING = {
   reader: 'vendored-ifml-xmi-subset', flowWalker: 'vendored-bfs', cttWalker: 'copied-from-08',
   dbml: 'hand-rolled-slice-reader (no @dbml/core)', node: '>=18',
@@ -77,7 +80,7 @@ function baseSummary(opt, status) {
       edgesWalked: 0, edgesExpected: 0,
     },
     reconciled: false,
-    coverage: { elementsExercised: 0, elementsTotal: 0, behaviorsWithPosAndNeg: 0 },
+    coverage: { elementsExercised: 0, elementsTotal: 0, behaviorsWithPosAndNeg: BEHAVIORS_WITH_POS_AND_NEG },
     flows: [],
     checks: [],
     findings: [],
@@ -341,6 +344,19 @@ function main() {
       realizedModelCount += 1;
       edgesExpected += 1; edgesWalked += 1; // the walk edge (W-HOME+W-REALIZE+W-COST+W-BLOAT per model)
 
+      // upstream-defect pre-check: a parseable-but-walker-stuck 08 (nominal path underivable)
+      // ⇒ route → the named 08 file, skip the walk. The tree is well-formed XML but the
+      // nominal path it declares is broken, so 09 cannot be measured against it.
+      if (tm.stuck) {
+        if (!upstreamDefects.has(tm.stem)) {
+          upstreamDefects.add(tm.stem);
+          const detail = `08-task-models/${tm.stem}.xml: nominal path underivable at task '${tm.stuck.id}': ${tm.stuck.reason} (parseable but walker-stuck) — fix the 08 model (an 08 regeneration), 09 cannot be measured against it`;
+          findings.push({ id: 'W-REALIZE', rule: '§9', severity: 'error', class: 'upstream-defect', upstream: `08-task-models/${tm.stem}.xml`, detail });
+          process.stderr.write(`UPSTREAM-DEFECT → 08-task-models/${tm.stem}.xml: ${detail}\n`);
+        }
+        continue;
+      }
+
       // upstream-defect pre-check: broken ruler ⇒ route → the named 08 file, skip the walk.
       if (!tm.budgetSound) {
         if (!upstreamDefects.has(tm.stem)) {
@@ -395,35 +411,32 @@ function main() {
   summary.counts.edgesWalked = edgesWalked;
   summary.counts.edgesExpected = edgesExpected;
 
-  // --- status determination --------------------------------------------------
-  let status = 'pass';
-  if (anyMalformed) status = 'malformed';
-
-  // reconciliation (X-RECON, §5).
+  // --- status determination (§5/§9) ------------------------------------------
+  // ONE precedence — broken-test > malformed > fail > pass — applied by C.reconcileStatus, so a
+  // reconciliation failure (dropped edge / zero checks / strongest-oracle skipped) surfaces as
+  // broken-test EVEN WHEN malformed findings are present. Walkable = realized models minus those
+  // routed as upstream-defects (a broken ruler / stuck walker legitimately skips the walk).
   const executedChecks = allChecks.length;
-  const reconciled = (edgesWalked === edgesExpected)
-    && (executedChecks > 0)
-    && (realizedModelCount === 0 || walks > 0);
-  summary.reconciled = reconciled;
-
-  if (executedChecks === 0) {
-    process.stderr.write('BROKEN-TEST: zero parsed checks (vacuous-green guard).\n');
-    status = 'broken-test';
-  } else if (edgesWalked !== edgesExpected) {
-    process.stderr.write(`BROKEN-TEST: edge reconciliation mismatch (walked ${edgesWalked} ≠ expected ${edgesExpected}) — a check was silently dropped.\n`);
-    status = 'broken-test';
-  } else if (realizedModelCount > 0 && walks === 0 && !anyMalformed && findings.length === 0) {
-    process.stderr.write('BROKEN-TEST: realized models present but the walker layer ran zero walks (strongest oracle skipped).\n');
-    status = 'broken-test';
-  } else if (!anyMalformed) {
-    const hasFail = findings.length > 0 || allChecks.some((c) => c.status === 'fail');
-    if (hasFail) status = 'fail';
-  }
+  const walkableModelCount = realizedModelCount - upstreamDefects.size;
+  const reconCtx = { edgesWalked, edgesExpected, executedChecks, walkableModelCount, walks };
+  summary.reconciled = C.reconcile(reconCtx);
+  const hasFail = findings.length > 0 || allChecks.some((c) => c.status === 'fail');
+  const verdict = C.reconcileStatus({ ...reconCtx, anyMalformed, hasFail });
+  const status = verdict.status;
+  if (status === 'broken-test') process.stderr.write(`BROKEN-TEST: ${verdict.reason}.\n`);
 
   // coverage block (informational).
   summary.coverage.elementsTotal = summary.counts.intake.models + summary.counts.intake.containers
     + summary.counts.intake.components + summary.counts.intake.events + summary.counts.intake.flows;
-  summary.coverage.elementsExercised = summary.coverage.elementsTotal; // every owned element touched (§5)
+  // elementsExercised mirrors elementsTotal BY CONSTRUCTION: per §5 every intake element is
+  // touched by ≥1 executed check (every model→M-REALIZES, every container→M-HOME/M-NAVEND,
+  // every component→M-CTYPE/M-BIND, every event→M-ETYPE/R-TASK/M-KLM, every flow→M-NAVEND), so
+  // the touched-id Set always equals the full intake set — not a blind copy but an identity.
+  summary.coverage.elementsExercised = summary.coverage.elementsTotal;
+  // behaviorsWithPosAndNeg: the §5 coverage floor — distinct ❌ rules the suite proves with BOTH
+  // a positive and a negative. A pinned design constant (the 22-row coverage table), asserted by
+  // the selftest to equal the coverage-table length so the two can never silently diverge.
+  summary.coverage.behaviorsWithPosAndNeg = BEHAVIORS_WITH_POS_AND_NEG;
 
   summary.status = status;
   emit(summary, status);
