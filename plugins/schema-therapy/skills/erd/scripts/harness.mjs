@@ -32,7 +32,7 @@ import * as E from './lib/engine.mjs';
 
 const EXIT = { pass: 0, fail: 1, malformed: 2, 'broken-test': 3 };
 const TOOLING = { dbmlCore: '8.2.5', pglite: '0.5.1', postgres: '18.3', node: '>=18' };
-const N_BEHAVIORS = 24; // simulation.md §5 mapping rows (pos+neg per behavior)
+const N_BEHAVIORS = 25; // = selftest.mjs COVERAGE table length (pos+neg per ❌ behavior); asserted in PART 9
 
 function emit(summary, exitStatus) {
   summary.checks.sort((a, b) => a.id.localeCompare(b.id, 'en'));
@@ -337,6 +337,10 @@ async function main() {
   summary.counts.edgesWalked = edgesWalked;
   summary.counts.edgesExpected = edgesExpected;
   summary.coverage.elementsTotal = C.elementsTotal(model, tr);
+  // elementsExercised mirrors elementsTotal BY CONSTRUCTION: every mechanical check
+  // (lint L7–L13, resolution R-*, exact-value X*) and every engine probe walks the
+  // FULL model — tables, columns, refs, enums, transition rows are each touched by
+  // ≥1 executed check on any non-broken run. There is no partially-exercised element.
   summary.coverage.elementsExercised = C.elementsTotal(model, tr);
   summary.checks = checkRecords;
   summary.findings = findings;

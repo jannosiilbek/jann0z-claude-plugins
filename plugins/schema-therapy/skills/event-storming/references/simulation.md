@@ -94,7 +94,7 @@ artifact yields `malformed`; a failing ❌ lint over a parseable artifact yields
 | ID | Checks | Catalog rule(s) | Status on fail |
 |----|--------|-----------------|----------------|
 | L1 | All five exact level-2 headings present: `## Upstream Fingerprint`, `## Domain Events`, `## Actors`, `## Hotspots`, `## Lifecycle Skeletons`. | A1 | `malformed` |
-| L2 | `## Upstream Fingerprint` block records BOTH upstream entries: (1) an impact-map digest matching `00-impact-map\.md@sha256:[0-9a-f]{7,}`, AND (2) the domain-description source label/title with a stable identifier (a content hash `[0-9a-f]{7,}` OR an ISO date `\d{4}-\d{2}-\d{2}`). Missing either entry fails. | A2 | `malformed` |
+| L2 | `## Upstream Fingerprint` block records a source label/title (any `@sha256:` token or non-heading text line) AND a stable identifier: the plugin-canonical fingerprint token `sha256:[0-9a-fA-F]{64}` (exactly 64 hex chars) OR an ISO date `\d{4}-\d{2}-\d{2}`. Missing label or identifier fails. | A2 | `malformed` |
 | L3 | `## Domain Events` contains a table with columns exactly `Event | Actor | Trigger | Notes | Deliverable` in order (5 columns). | A3 | `malformed` |
 | L4 | `## Actors` contains a table with columns exactly `Actor | Kind | Responsibility` in order. | A4 | `malformed` |
 | L5 | `## Hotspots` contains a table with columns exactly `Hotspot | Question | Blocks` in order. | A5 | `malformed` |

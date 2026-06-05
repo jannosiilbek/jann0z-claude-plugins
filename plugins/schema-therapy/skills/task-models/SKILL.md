@@ -95,7 +95,7 @@ meta-model — operator pinned as a `parent` attribute):
 - **KLM alphabet** (`klm`, per leaf): `K P B BB H M W` concatenated (`BB` is one token; a
   positive-integer multiplier only before `K`, so `T(n)`=`nK`).
 - **06 tag grammar** (`scenario-tags` tokens): `@invariant:INV-<Name>-<n>` /
-  `@transition:<snake>` / `@terminal:<snake>` / `@policy:<token>`.
+  `@transition:<snake>` / `@terminal:<snake>` / `@policy:<token>` / `@authz:<snake>`.
 
 **Fingerprint block:** a leading `<!-- fingerprints: … -->` comment listing **every
 consumed 06 feature** + `specs/07-personas.md`, each with a real `sha256:` (A2).

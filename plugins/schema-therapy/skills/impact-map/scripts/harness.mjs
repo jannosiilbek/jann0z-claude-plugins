@@ -371,8 +371,11 @@ function main() {
   };
   summary.counts.edgesWalked = edgesWalked;
   summary.counts.edgesExpected = edgesExpected;
-  summary.coverage.elementsExercised = elementsTotal(g);
   summary.coverage.elementsTotal = elementsTotal(g);
+  // elementsExercised mirrors elementsTotal BY CONSTRUCTION: with all mechanical
+  // checks run (guarded above), every intake element is touched by ≥1 check, so
+  // the exercised count equals the total. Not an independently-measured value.
+  summary.coverage.elementsExercised = elementsTotal(g);
   summary.checks = checkRecords;
   summary.findings = findings;
 

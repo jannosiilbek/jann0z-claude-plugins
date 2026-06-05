@@ -183,7 +183,7 @@ shape + cross-artifact resolution the flow-walker does not surface.
 | ID | Checks | Catalog rule(s) | Status on fail |
 |----|--------|-----------------|----------------|
 | M-DECL | **XML declaration.** Each `.xml`'s first line is exactly `<?xml version="1.0" encoding="UTF-8"?>`; the reader accepts the document (a throw is a typed `ParseError`). | A-a | `malformed` |
-| M-FP | **Fingerprint block present & complete.** Leading `<!-- fingerprints: … -->` comment present; carries one `sha256:<hex>` line per consumed input: `02-glossary.md`, `04-erd.dbml`, `04-transitions.md`, **each consumed 05 `.scxml`** (when 05 present), `07-personas.md`, **each consumed 08 file**; no placeholder (`0000…`/`xxxx…`/`<hex>`). | A-b | `fail` |
+| M-FP | **Fingerprint block present & complete.** Leading `<!-- fingerprints: … -->` comment present; carries one `sha256:<64-hex>` line (digest = exactly 64 chars `[0-9a-fA-F]`) per consumed input: `02-glossary.md`, `04-erd.dbml`, `04-transitions.md`, **each consumed 05 `.scxml`** (when 05 present), `07-personas.md`, **each consumed 08 file**; no placeholder (`0000…`/`xxxx…`/`<hex>`). | A-b | `fail` |
 | M-ROOT | **Root is a persona-bound `IFMLModel`.** Root element is `<IFMLModel>`; `id` == `snake(persona)` == the filename stem; `persona` == an exact PascalCase `### <PersonaName>` heading in 07. | A-c | `fail` |
 | M-REALIZES | **≥1 `<Realizes>` and each resolves to an 08 model of THIS persona.** ≥1 `<Realizes taskModel="…"/>`; each `taskModel` stem matches a `specs/08-task-models/<stem>.xml` AND that file's name begins with this model's `snake(persona)-` prefix. | A-d, A-e | `fail` |
 | M-CID | **`ViewContainer` ids unique + snake_case.** No two `<ViewContainer>` share an `id`; every id matches `^[a-z][a-z0-9_]*$`. (These ids are 10's frozen walk vocabulary.) | A-f | `fail` |
@@ -421,6 +421,7 @@ is recorded in `scripts/fixtures/manifest.json`.
 | `wrong-reason-trap.xml` | either | **two** defects — a bloated flow (C-d) AND a ghost binding (A-i) — proves the negative reports **W-BLOAT**, not M-BIND | W-BLOAT isolates over M-BIND | `fail` (reason = W-BLOAT) | C |
 | `vacuous/` | `--no-checks` | structurally valid 09 but harness fed the disabled path | n/a | `broken-test` (zero checks) | — |
 | `budget-broken-08/` | `--upstream-05` | a **realized 08 model whose declared `Budget.klm` ≠ its own recomputed nominal cost** (broken ruler) | upstream pre-check | `fail` (class=`upstream-defect`→the named 08 file) | §9 |
+| `stuck-08/` | `--upstream-05` | a **realized 08 model that parses but whose nominal-path walker gets stuck** (an internal node — e.g. a `choice` whose only child is `optional` — selects an empty contributing set; nominal path underivable) | walker pre-check (W-REALIZE) | `fail` (class=`upstream-defect`→the named 08 file) | §9 |
 | `valid-09/` | `malformed-upstream-07` | 07 drops the `### <PersonaName>` blocks (bijection unanchorable) | n/a | `broken-test` | §9 |
 | `valid-09/` | `malformed-upstream-04` | `04-erd.dbml` not yielding the table+status slice (bindings unanchorable) | n/a | `broken-test` | §9 |
 | `valid-09/` | `malformed-upstream-02` | 02 drops `## Forbidden Synonyms` (scan list unbuildable) | n/a | `broken-test` | §9 |
@@ -494,7 +495,7 @@ catalog rule. The harness emits each check's `id`, `class`, `status`, and `rule`
 | R-BIND | each `ViewComponent binding` ∈ the 04 table set. | A-i, E-d |
 | R-TASK | each Event `task=` ∈ some realized 08 model's leaf-id set. | B-c |
 | R-AUTH | each `submit` Event's `01-event` annotation ∈ its entity's authority (05-if-promoted-else-04); no event validated against a superseded 04 row. | A-k, D-a, D-b |
-| R-FP | the leading fingerprint block names every consumed input (02/04×2/07/each 08/each consumed 05 when present), each a `sha256:` digest. | A-b |
+| R-FP | the leading fingerprint block names every consumed input (02/04×2/07/each 08/each consumed 05 when present), each a `sha256:<64-hex>` digest (exactly 64 chars `[0-9a-fA-F]`). | A-b |
 
 ### 4.3 Exact-value / bijection checks (`X` — exact counts/values against the derived graph)
 
@@ -781,12 +782,17 @@ the fix:
    binding** (a table absent from 04) is a **09** defect (09 named something the upstream doesn't have),
    caught as an ordinary `fail` — not an upstream-defect.
 
-2. **Well-formed but self-inconsistent upstream** (`upstream-defect`). The only case 09 surfaces: a
-   realized 08 parses but its declared budget ≠ its own recomputed nominal cost → routed →
-   `08-task-models/<file>.xml`. The harness runs this **pre-walk 08 self-check before** the 09→08
-   walk; on failure the finding is tagged `class: "upstream-defect"`, `upstream: "<08 file>"`. Status
-   `fail`, exit `1`; the fix routes **upstream to the 08 artifact** (an 08 regeneration, never a 09
-   edit). Proven by `budget-broken-08/`.
+2. **Well-formed but self-inconsistent upstream** (`upstream-defect`). Two cases 09 surfaces, both a
+   realized 08 that parses but is self-broken: (a) its declared budget ≠ its own recomputed nominal
+   cost (broken ruler, finding `X-COST-INT`); (b) its nominal-path walker gets **stuck** — an internal
+   node selects an empty contributing set (e.g. a `choice` whose only child is `optional`), so the
+   nominal path is underivable (finding `W-REALIZE`). Both route → `08-task-models/<file>.xml`. The
+   harness runs these **pre-walk 08 self-checks before** the 09→08 walk; on failure the finding is
+   tagged `class: "upstream-defect"`, `upstream: "<08 file>"`. Status `fail`, exit `1`; the fix routes
+   **upstream to the 08 artifact** (an 08 regeneration, never a 09 edit). The copied CTT walker filters
+   `optional` kids from the contributing set and detects the stuck case **identically to the 10
+   (flow-acceptance) walker**, so the same 08 tree yields the same nominal-leaf set in 09 and 10.
+   Proven by `budget-broken-08/` and `stuck-08/`.
 
 3. **Unparseable 02 / 04 / 05 / 07 / 08** (`broken-test`, not `upstream-defect`). An upstream does not
    parse against its pinned format: 07 drops the `### <PersonaName>` blocks (the bijection cannot be

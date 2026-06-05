@@ -40,7 +40,7 @@ const AJ_DEFS = [
   { id: 'AJ5', rule: 'C2', verdict: 'uses-upstream-vocab' },
 ];
 
-const N_BEHAVIORS = 20; // simulation.md §5 mapping (every ❌ rule, pos+neg)
+const N_BEHAVIORS = 21; // = the 21 ❌ rules in simulation.md §5 (pos+neg each) = selftest COVERAGE rows with a shipped negative; asserted in PART 8
 
 function emit(summary, exitStatus) {
   summary.checks.sort((a, b) => a.id.localeCompare(b.id, 'en'));
@@ -378,8 +378,11 @@ function main() {
   };
   summary.counts.edgesWalked = edgesWalked;
   summary.counts.edgesExpected = edgesExpected;
-  summary.coverage.elementsExercised = C.elementsTotal(g);
   summary.coverage.elementsTotal = C.elementsTotal(g);
+  // elementsExercised mirrors elementsTotal BY CONSTRUCTION: every element (persona,
+  // goal, job) is visited by the per-persona/per-row mechanical checks (L6–L9, X1–X3,
+  // R-*) on any non-broken run — there is no partially-exercised element to under-count.
+  summary.coverage.elementsExercised = C.elementsTotal(g);
   summary.checks = checkRecords;
   summary.findings = findings;
 

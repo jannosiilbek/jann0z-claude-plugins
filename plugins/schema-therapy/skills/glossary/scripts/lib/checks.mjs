@@ -321,7 +321,8 @@ export function lintL7_fingerprint(doc02) {
   let detail = '`## Upstream Fingerprint` section absent';
   if (sec) {
     const body = sec.lines.join('\n') + '\n' + (doc02.fingerprintBlock || '');
-    const m = /01-event-storming\.md@sha256:([0-9a-fA-F]+)/.exec(body);
+    // Plugin-canonical fingerprint token: `sha256:` + exactly 64 hex chars.
+    const m = /01-event-storming\.md@sha256:([0-9a-fA-F]{64})\b/.exec(body);
     if (!m) {
       detail = 'no `01-event-storming.md@sha256:<64-hex>` line found';
     } else {

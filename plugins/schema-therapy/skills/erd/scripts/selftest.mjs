@@ -278,7 +278,7 @@ process.stderr.write('PART 9 — coverage floor (positive AND negative per ❌ r
     ['B2', 'L10', { dbml: 'array-column.dbml' }, 'L10'],
     ['B6', 'R-MN', { dbml: 'missing-junction.dbml' }, 'R-MN'],
     ['B7', 'R-FKTYPE', { dbml: 'fk-type-mismatch.dbml' }, 'R-FKTYPE'],
-    ['B9', 'L7', { dbml: 'forbidden-synonym-id.dbml' }, 'L12'], // pluralized covered by L7 over valid; concrete neg via forbidden (B9 owner L7 always-on)
+    ['B9', 'L7', { dbml: 'pluralized-table.dbml', scenarios: 'pluralized-table-scenarios.json' }, 'L7'], // dedicated negative: a pluralized table identifier ('order_tickets') — L7 fires for B9 (tables must be singular)
     ['A3', 'E-DDL', { dbml: 'bad-type-ddl.dbml' }, 'E-DDL'],
     ['C1', 'R-ROOT', { dbml: 'missing-root-table.dbml' }, 'R-ROOT'],
     ['C4', 'R-REF', { dbml: 'reference-without-fk.dbml' }, 'R-REF'],
@@ -312,6 +312,11 @@ process.stderr.write('PART 9 — coverage floor (positive AND negative per ❌ r
     covered++;
   }
   ok(covered === COVERAGE.length, `all ${COVERAGE.length} ❌ behaviors have BOTH a positive and a negative`);
+
+  // Coverage honesty: the harness's hardcoded behaviorsWithPosAndNeg literal MUST equal
+  // this COVERAGE table's length — the table is the source of truth for the pos+neg floor.
+  ok(valid.coverage.behaviorsWithPosAndNeg === COVERAGE.length,
+    `harness behaviorsWithPosAndNeg (${valid.coverage.behaviorsWithPosAndNeg}) === COVERAGE table length (${COVERAGE.length})`);
 }
 
 // ---------------------------------------------------------------------------

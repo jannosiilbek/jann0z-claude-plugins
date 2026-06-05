@@ -70,7 +70,11 @@ function baseSummary(opt, status) {
       edgesWalked: 0, edgesExpected: 0,
     },
     reconciled: false,
-    coverage: { elementsExercised: 0, elementsTotal: 0, behaviorsWithPosAndNeg: 0 },
+    // `behaviorsWithPosAndNeg` is the count of ❌ catalog behaviors proven by BOTH a
+    // positive and a negative fixture. It is cross-checked against the selftest's PART 10
+    // COVERAGE walk length (selftest asserts literal === table rows), so it cannot drift
+    // free of the actually-proven coverage.
+    coverage: { elementsExercised: 0, elementsTotal: 0, behaviorsWithPosAndNeg: 23 },
     checks: [],
     findings: [],
   };
@@ -360,6 +364,11 @@ async function main() {
     total: mechanicalRun + engineRun + resolutionRun + exactValueRun + ajRun,
   };
   summary.coverage.elementsTotal = summary.counts.intake.machines + summary.counts.intake.states + summary.counts.intake.transitions;
+  // elementsExercised mirrors elementsTotal BY CONSTRUCTION: every intaken machine/state/
+  // transition is walked by ≥1 executed check (M11 over states, M12/M13 + the resolution
+  // checks over transitions, the W-* engine walk over machines) — there is no intake path
+  // that bypasses the checks, so the exercised set always equals the total. Not a free
+  // literal: it is recomputed from intake counts on every run.
   summary.coverage.elementsExercised = summary.coverage.elementsTotal;
 
   const recon = C.checkXRecon(summary.counts.checks.total, edgesWalked, edgesExpected, engineRun, machines.length, gateArithmeticRun);

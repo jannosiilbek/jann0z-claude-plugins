@@ -114,7 +114,9 @@ Run the harness:
 node scripts/harness.mjs specs/00-impact-map.md
 ```
 
-The lint checks (L1–L13) live inside the harness. **There is no upstream-owned name
+The lint checks (L1–L13) live inside the harness (L-ids are harness check ids;
+the lettered ❌/⚠️ rules they enforce live in the catalog — two numbering systems,
+one mapping recorded in `references/simulation.md`). **There is no upstream-owned name
 table to resolve against** — this skill's input is free text, so there is no
 cross-artifact name reconciliation step here (that begins downstream).
 

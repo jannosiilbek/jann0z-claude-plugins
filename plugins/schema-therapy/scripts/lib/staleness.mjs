@@ -43,6 +43,42 @@ function pathBase(p) {
   return p.split(/[\\/]/).pop();
 }
 
+// ENFORCEMENT MIRROR of the pipeline upstream-consumption topology (see PLAN.md).
+// Per artifact, the set of upstreams that MUST appear in its fingerprint block
+// REGARDLESS of artifact-specific wiring (the "always-expected" set). Validating
+// only DECLARED entries is a blind spot: an artifact that simply OMITS an upstream
+// would pass staleness vacuously. We enforce this floor so an omission is caught.
+//
+// Entries are either external tokens ('domain'/'intent' — verified via --domain/
+// --intent, but their PRESENCE in the block is still required) or specs-relative
+// names matched against each declared entry's normalized name.
+//
+// NOT enforced here (artifact-specific, so checked only as declared):
+//   - 05 is a CONDITIONAL artifact (may be absent entirely);
+//   - the per-entity 05 / per-feature 06 / per-model 08 / per-persona 09 entries
+//     that 06/08/09/10 consume vary by artifact.
+const EXPECTED_UPSTREAMS = {
+  '00': ['intent'],
+  '01': ['00-impact-map.md', 'domain'],
+  '02': ['01-event-storming.md'],
+  '03': ['01-event-storming.md', '02-glossary.md'],
+  '04dbml': ['02-glossary.md', '03-aggregates.md'],
+  '04trans': ['02-glossary.md', '03-aggregates.md'],
+  '05': ['01-event-storming.md', '02-glossary.md', '03-aggregates.md', '04-erd.dbml', '04-transitions.md'],
+  '06': ['01-event-storming.md', '02-glossary.md', '03-aggregates.md', '04-erd.dbml', '04-transitions.md'],
+  '07': ['00-impact-map.md', '01-event-storming.md'],
+  '08': ['07-personas.md'],
+  '09': ['02-glossary.md', '04-erd.dbml', '04-transitions.md', '07-personas.md'],
+  '10': [], // every input (consumed 06/08/09) is artifact-specific
+};
+
+// Is a declared fingerprint entry the external `kind` ('domain'|'intent')?
+function entryIsExternal(name, kind) {
+  if (kind === 'domain') return /^domain\b/i.test(name) || name.endsWith('domain.md');
+  if (kind === 'intent') return /^product-intent\b/i.test(name) || name.endsWith('product-intent.md');
+  return false;
+}
+
 // art: discoverArtifacts() output. Returns findings + malformed flag.
 export function stalenessChecks(art, specsDir, domainPath, intentPath) {
   const out = [];
@@ -76,6 +112,23 @@ export function stalenessChecks(art, specsDir, domainPath, intentPath) {
     if (!fp.present || fp.entries.length === 0) {
       malformedFindings.push({ id, class: 'staleness', status: 'fail', severity: 'error', reason: 'missing-fingerprint', detail: `${t.label} carries no fingerprint block`, files: [t.label] });
       continue;
+    }
+
+    // EXPECTED-UPSTREAM ENFORCEMENT: a present block that OMITS an always-expected
+    // upstream is a `staleness` defect (the staleness blind spot). Reason-qualified
+    // per (artifact, missing upstream) so the omission is named, not merely counted.
+    const expected = EXPECTED_UPSTREAMS[t.key] || [];
+    for (const want of expected) {
+      const declared = want === 'domain' || want === 'intent'
+        ? fp.entries.some((e) => entryIsExternal(e.name, want))
+        : fp.entries.some((e) => e.name === want);
+      if (!declared) {
+        F(`S-MISSING-FP-${t.label.replace(/[^A-Za-z0-9_.-]/g, '_')}-${String(want).replace(/[^A-Za-z0-9_.-]/g, '_')}`,
+          'fail',
+          `${t.label} fingerprint block omits always-expected upstream ${want}`,
+          [t.label],
+          { reason: 'missing-expected-fingerprint' });
+      }
     }
 
     const subs = [];

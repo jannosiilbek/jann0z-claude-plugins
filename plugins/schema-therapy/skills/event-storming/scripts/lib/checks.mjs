@@ -221,7 +221,8 @@ export function lintL2_fingerprint(doc) {
   let detail = '`## Upstream Fingerprint` section absent';
   if (sec) {
     const body = sec.lines.join('\n') + '\n' + (doc.fingerprintBlock || '');
-    const hasHash = /[0-9a-f]{7,}/.test(body);
+    // Plugin-canonical fingerprint token: `sha256:` + exactly 64 hex chars.
+    const hasHash = /sha256:[0-9a-fA-F]{64}\b/.test(body);
     const hasDate = /\d{4}-\d{2}-\d{2}/.test(body);
     // A source label/title: any non-empty, non-heading text line OR a sha-style
     // `<name>@sha256:` token.

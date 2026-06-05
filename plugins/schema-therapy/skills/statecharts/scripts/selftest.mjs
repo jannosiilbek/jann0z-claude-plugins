@@ -26,7 +26,7 @@
 // Exit 0 ONLY when every assertion passes. Runtime kept sane (<5 min) by a fresh
 // SCION machine per walk (the §8 freshness contract) — no shared state.
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -37,6 +37,15 @@ const FIXTURES = join(__dirname, 'fixtures');
 const MANIFEST = JSON.parse(readFileSync(join(FIXTURES, 'manifest.json'), 'utf8'));
 const U = MANIFEST.upstreams;
 const EXIT = { pass: 0, fail: 1, malformed: 2, 'broken-test': 3 };
+
+// HERMETIC fixtures — git cannot track an empty directory, so `dir-empty` (the A1/M1
+// negative: a present 05 dir holding no .scxml) must be MATERIALISED at runtime at the
+// exact path argsFor() will pass to the harness (FIXTURES/dir-empty), and torn down on
+// exit so a fresh clone stays clone-proof (no untracked fixture left behind). Mirrors
+// the plugin-level selftest's `_empty` pattern.
+const HERMETIC_EMPTY_DIRS = ['dir-empty'].map((d) => join(FIXTURES, d));
+for (const d of HERMETIC_EMPTY_DIRS) { if (existsSync(d)) rmSync(d, { recursive: true, force: true }); mkdirSync(d, { recursive: true }); }
+function cleanupHermetic() { for (const d of HERMETIC_EMPTY_DIRS) rmSync(d, { recursive: true, force: true }); }
 
 let passed = 0, failed = 0;
 const fails = [];
@@ -118,6 +127,14 @@ process.stderr.write('PART 3 — no vacuous green\n');
 // ===========================================================================
 process.stderr.write('PART 4 — not-emitted: correct absence is a certified pass; wrong absence is M8\n');
 {
+  // intent-check: every `nonexistent:true` fixture's 05 dir must genuinely be absent on
+  // disk (the not-emitted path is meaningless if the dir is accidentally present). This
+  // machine-checks the missing-fixture smell rather than letting it pass silently.
+  for (const nf of MANIFEST.fixtures.filter((x) => x.nonexistent)) {
+    ok(nf.dir.startsWith('NONEXISTENT'), `[${nf.dir}] nonexistent fixture names a NONEXISTENT* dir`);
+    ok(!existsSync(join(FIXTURES, nf.dir)), `[${nf.dir}] nonexistent fixture path is genuinely absent on disk`);
+  }
+
   const correct = MANIFEST.fixtures.find((x) => x.notEmittedCorrect);
   const rc = run(correct);
   ok(rc.json && rc.json.status === 'pass', `not-emitted-correct ⇒ pass (got ${rc.json && rc.json.status})`);
@@ -308,9 +325,17 @@ process.stderr.write('PART 10 — coverage floor (positive AND negative per ❌ 
     covered++;
   }
   ok(covered === COVERAGE.length, `all ${COVERAGE.length} ❌ behaviors have BOTH a positive and a negative`);
+
+  // Coverage honesty: the harness's hardcoded `coverage.behaviorsWithPosAndNeg` literal
+  // must equal this proven COVERAGE walk length, so the reported figure is cross-checked
+  // against actually-proven coverage rather than free-floating.
+  const litSrc = posJson('valid-05');
+  ok(litSrc && litSrc.coverage.behaviorsWithPosAndNeg === COVERAGE.length,
+    `harness coverage.behaviorsWithPosAndNeg (${litSrc && litSrc.coverage.behaviorsWithPosAndNeg}) === proven COVERAGE rows (${COVERAGE.length})`);
 }
 
 // ===========================================================================
 process.stderr.write('\n');
+cleanupHermetic();
 if (failed === 0) { process.stderr.write(`SELFTEST PASS — ${passed} assertions, 0 failures.\n`); process.exit(0); }
 else { process.stderr.write(`SELFTEST FAIL — ${failed} of ${passed + failed} assertions failed:\n`); for (const f of fails) process.stderr.write(`  - ${f}\n`); process.exit(1); }

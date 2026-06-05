@@ -21,7 +21,7 @@
 //
 // Exit 0 ONLY when every assertion passes. Zero external deps.
 
-import { readFileSync, existsSync, rmSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, rmSync, mkdirSync, cpSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -118,6 +118,27 @@ for (const fx of MANIFEST.fixtures) {
     );
     ok(!!also, `[${tag}] co-present finding ${want.class}/${want.reason} fires INDEPENDENTLY`);
   }
+
+  // CO-FIRE ACCOUNTING: every non-staleness fail finding must be ACCOUNTED for —
+  // it is either the primary, a declared alsoFires id, or part of the legitimate
+  // staleness cascade (any S-* finding from re-pinning a mutated upstream). An
+  // UNACCOUNTED resolution/dry co-fire is a regression we want to surface, not
+  // silently tolerate.
+  if (fx.status === 'fail') {
+    const primary = fx.requireFinding && fx.requireFinding.id;
+    const alsoFires = fx.alsoFires || [];
+    for (const id of alsoFires) {
+      ok(r.json.findings.some((f) => f.status === 'fail' && f.id === id),
+        `[${tag}] declared co-fire ${id} present`);
+    }
+    const isCascade = (id) => /^S-/.test(id); // staleness cascade (incl. S-MISSING-FP-*)
+    const unaccounted = r.json.findings
+      .filter((f) => f.status === 'fail')
+      .map((f) => f.id)
+      .filter((id) => id !== primary && !alsoFires.includes(id) && !isCascade(id));
+    ok(unaccounted.length === 0,
+      `[${tag}] no UNACCOUNTED co-fire (unexpected: [${[...new Set(unaccounted)].join(', ')}])`);
+  }
 }
 
 // ===========================================================================
@@ -202,6 +223,49 @@ process.stderr.write('PART 6 — external-input skip paths\n');
   const skip = r.json && r.json.findings.find((f) => f.status === 'skipped' && f.id === 'S-00-impact-map.md');
   ok(!!skip, '[no-intent] 00 product-intent fingerprint recorded as skipped (never silently passed)');
   ok(skip && skip.reason === 'external-input-not-provided', '[no-intent] skip reason is external-input-not-provided');
+}
+
+// ===========================================================================
+// PART 7 — expected-upstream enforcement (staleness blind spot): a present
+// fingerprint block that OMITS an always-expected upstream must FAIL with a
+// reason-qualified S-MISSING-FP finding naming the artifact + the missing
+// upstream — not pass vacuously. Hermetic: copy the good suite, drop one line.
+// ===========================================================================
+process.stderr.write('PART 7 — expected-upstream enforcement (missing-fingerprint blind spot)\n');
+{
+  const g = MANIFEST.good;
+  const tmp = join(FIXTURES, 'neg', '_missing_fp', 'specs');
+  if (existsSync(tmp)) rmSync(tmp, { recursive: true, force: true });
+  mkdirSync(tmp, { recursive: true });
+  cpSync(join(FIXTURES, g.specsDir), tmp, { recursive: true });
+
+  // drop the 02-glossary.md fingerprint line from the 06 feature's block
+  const feat = join(tmp, '06-gherkin', 'order.feature');
+  const before = readFileSync(feat, 'utf8');
+  const after = before.split(/\r?\n/).filter((l) => !/02-glossary\.md@sha256:/.test(l)).join('\n');
+  ok(after !== before, '[missing-fp] mutation removed an 02-glossary fingerprint line');
+  writeFileSync(feat, after);
+
+  const r = run('neg/_missing_fp/specs', { domain: g.domain, intent: g.intent });
+  ok(r.json && r.json.status === 'fail', `[missing-fp] status === fail (got ${r.json && r.json.status})`);
+  ok(r.code === EXIT.fail, `[missing-fp] exit === 1 (got ${r.code})`);
+  const mf = r.json && r.json.findings.find(
+    (f) => f.status === 'fail' && f.class === 'staleness' &&
+      f.reason === 'missing-expected-fingerprint' &&
+      /06-gherkin_order\.feature/.test(f.id) && /02-glossary\.md/.test(f.id),
+  );
+  ok(!!mf, '[missing-fp] S-MISSING-FP finding fires (staleness/missing-expected-fingerprint)');
+  ok(mf && /02-glossary\.md/.test(mf.detail || '') && /06-gherkin\/order\.feature/.test(mf.detail || ''),
+    '[missing-fp] finding reason names the artifact (06 feature) + missing upstream (02-glossary.md)');
+
+  rmSync(join(FIXTURES, 'neg', '_missing_fp'), { recursive: true, force: true });
+}
+
+// PART 7b — the UNTOUCHED good suite still passes under the NEW enforcement.
+{
+  const g = MANIFEST.good;
+  const r = run(g.specsDir, { domain: g.domain, intent: g.intent });
+  ok(r.json && r.json.status === 'pass', `[good-still-green] status === pass under expected-upstream enforcement (got ${r.json && r.json.status})`);
 }
 
 // ===========================================================================

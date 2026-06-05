@@ -47,10 +47,15 @@ export function parse(text) {
   const firstNonBlank = lines.findIndex((l) => l.trim() !== '');
   if (firstNonBlank !== -1 && lines[firstNonBlank].trim().startsWith('<!--')) {
     const buf = [];
+    let closed = false;
     for (let i = firstNonBlank; i < lines.length; i++) {
       buf.push(lines[i]);
-      if (lines[i].includes('-->')) break;
+      if (lines[i].includes('-->')) { closed = true; break; }
     }
+    // An opened-but-never-closed comment block is a structurally-broken pinned shape —
+    // throw (⇒ malformed) rather than silently tolerate it (never-vacuous-green), matching
+    // the sibling skills (impact-map, personas, task-models, ui-flows).
+    if (!closed) throw new ParseError('unclosed leading HTML comment block (<!-- … with no -->)');
     doc.fingerprintBlock = buf.join('\n');
   }
 

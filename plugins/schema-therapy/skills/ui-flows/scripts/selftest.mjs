@@ -111,6 +111,80 @@ for (const fx of MANIFEST.fixtures) {
 }
 
 // ===========================================================================
+// PART 1b — CTT WALKER reconciliation with the 10 (flow-acceptance) walker: an OPTIONAL leaf
+// is EXCLUDED from the nominal path + cost (so 09 and 10 derive the SAME nominal-leaf set);
+// a PARSEABLE-but-stuck 08 (an internal node selecting an empty contributing set) is DETECTED
+// (model.stuck), not silently walked into an underivable leaf list.
+// ===========================================================================
+process.stderr.write('PART 1b — CTT walker: optional leaf excluded from nominal cost; stuck tree detected\n');
+{
+  const Ctt = await import('./lib/taskmodel.mjs');
+
+  // (a) optional leaf excluded from the nominal path + cost. select-order(MPBB=3) + ship(MBB=2)
+  // are on the nominal path; the OPTIONAL start-picking(MBB=2) is NOT — cost 5, not 7.
+  const optionalXml = `<?xml version="1.0" encoding="UTF-8"?>
+<TaskModel id="t" persona="P" job="j">
+  <Budget klm="5"/>
+  <Task id="root" category="abstract" operator="enabling">
+    <Task id="select-order" category="interaction" klm="MPBB"/>
+    <Task id="start-picking" category="interaction" klm="MBB" optional="true"/>
+    <Task id="ship-order" category="interaction" klm="MBB"/>
+  </Task>
+</TaskModel>`;
+  const optr = Ctt.parse(optionalXml);
+  ok(optr.ok && !optr.model.stuck, 'optional-leaf tree parses, not stuck');
+  const nomIds = optr.model.nominalLeaves.map((l) => l.id);
+  ok(!nomIds.includes('start-picking'), `optional leaf 'start-picking' EXCLUDED from nominalLeaves (got [${nomIds.join(', ')}])`);
+  ok(nomIds.length === 2 && nomIds.includes('select-order') && nomIds.includes('ship-order'),
+    'nominal path is exactly the two non-optional leaves');
+  ok(optr.model.computedNominalCost === 5,
+    `computed nominal cost EXCLUDES the optional leaf (got ${optr.model.computedNominalCost}, expected 5 = MPBB+MBB)`);
+  ok(optr.model.budgetSound === true, 'declared Budget.klm=5 == recomputed cost (sound ruler over the optional-filtered path)');
+
+  // (b) a parseable-but-stuck tree: a `choice` whose only child is optional ⇒ empty
+  // contributing set ⇒ model.stuck names the node, nominalLeaves is empty (NOT silently walked).
+  const stuckXml = `<?xml version="1.0" encoding="UTF-8"?>
+<TaskModel id="t" persona="P" job="j">
+  <Budget klm="3"/>
+  <Task id="root" category="abstract" operator="enabling">
+    <Task id="select-order" category="interaction" klm="MPBB"/>
+    <Task id="pick-route" category="abstract" operator="choice">
+      <Task id="start-picking" category="interaction" klm="MBB" optional="true"/>
+    </Task>
+  </Task>
+</TaskModel>`;
+  const str = Ctt.parse(stuckXml);
+  ok(str.ok, 'stuck tree is well-formed XML (parse ok:true) — the broken-ruler/stuck split is honest');
+  ok(str.model.stuck && str.model.stuck.id === 'pick-route',
+    `parseable-but-stuck tree is DETECTED at 'pick-route' (got ${JSON.stringify(str.model.stuck)})`);
+  ok(str.model.nominalLeaves.length === 0,
+    'a stuck tree yields NO nominal leaves (not silently walked into an underivable leaf list)');
+  ok(str.model.budgetSound === false, 'a stuck tree is never budget-sound (no comparable nominal cost)');
+}
+
+// ===========================================================================
+// PART 1c — FINGERPRINT digest shape pinned to exactly 64 hex (canonical md.mjs). A non-64 /
+// non-hex run is a malformed line at the parse seam, not a "valid" entry slipped through.
+// ===========================================================================
+process.stderr.write('PART 1c — fingerprint digest pinned to exactly 64 hex\n');
+{
+  const { fingerprintEntries } = await import('./lib/xml.mjs');
+  const hex64 = 'a'.repeat(64);
+  const good = fingerprintEntries(`fingerprints:\n02-glossary.md sha256:${hex64}`);
+  ok(good.length === 1 && !good[0].malformed && good[0].hash === hex64,
+    'a real 64-hex digest parses as a well-formed entry');
+  const short = fingerprintEntries('fingerprints:\n02-glossary.md sha256:7b1e');
+  ok(short.length === 1 && short[0].malformed === true,
+    'a SHORT (non-64) digest is a malformed line (no longer slips through as a valid entry)');
+  const nonHex = fingerprintEntries(`fingerprints:\n02-glossary.md sha256:${'g'.repeat(64)}`);
+  ok(nonHex.length === 1 && nonHex[0].malformed === true,
+    'a 64-char NON-HEX run is a malformed line');
+  const placeholder = fingerprintEntries('fingerprints:\n02-glossary.md sha256:<hex>');
+  ok(placeholder.length === 1 && placeholder[0].malformed === true,
+    'a `<hex>` placeholder digest is a malformed line');
+}
+
+// ===========================================================================
 // PART 2 — Wrong-reason trap: OWNER is W-COST (walker), NOT M-BIND (both fire).
 // ===========================================================================
 process.stderr.write('PART 2 — wrong-reason trap reports W-BLOAT (not M-BIND)\n');
@@ -173,6 +247,7 @@ process.stderr.write('PART 4 — walker honesty (mutation changes the re-compute
   let s = readFileSync(dispPath, 'utf8');
   const sKlm = s.replace('id="open_order" type="select" task="select-order" klm="MPBB"',
     'id="open_order" type="select" task="select-order" klm="M3KPBB"'); // tokens: M+3K+P+BB = 1+3+1+1 = 6 (was 3)
+  ok(sKlm !== s, 'PART 4(a) klm mutation actually changed the fixture (not a dead no-op .replace)');
   writeFileSync(dispPath, sKlm);
   const mutKlm = run({ dir: 'valid-09', run: 'with05' }, tmp);
   const mutKlmFulfil = mutKlm.json.flows.find((f) => f.taskModel === 'dispatcher-fulfil_order');
@@ -183,13 +258,15 @@ process.stderr.write('PART 4 — walker honesty (mutation changes the re-compute
   // (b) mutate a NavigationFlow (force an extra hop) → cost changes via BB×(hops−1).
   // Re-point start_picking through an intermediate hop: put ship-order on a NEW container
   // reached via a navflow, so the realizing walk needs one more hop.
-  let s2 = readFileSync(dispPath, 'utf8');
+  const s2base = readFileSync(dispPath, 'utf8');
   // Move ship_order into a new ship_screen container reachable from order_detail.
-  s2 = s2.replace(
+  const s2a = s2base.replace(
     '    <Event id="ship_order" type="submit" task="ship-order" klm="MBB">\n      <!-- 01-event: ship order -->\n    </Event>\n',
     '    <Event id="go_ship" type="navigate"/>\n');
-  s2 = s2.replace('  </ViewContainer>\n\n  <NavigationFlow from="open_order"',
+  ok(s2a !== s2base, 'PART 4(b) ship_order→go_ship mutation actually changed the fixture (not a dead no-op .replace)');
+  const s2 = s2a.replace('  </ViewContainer>\n\n  <NavigationFlow from="open_order"',
     '  </ViewContainer>\n\n  <ViewContainer id="ship_screen" name="Ship">\n    <ViewComponent id="ship_view" type="details" binding="order"/>\n    <Event id="ship_order" type="submit" task="ship-order" klm="MBB">\n      <!-- 01-event: ship order -->\n    </Event>\n  </ViewContainer>\n\n  <NavigationFlow from="go_ship" to="ship_screen"/>\n  <NavigationFlow from="open_order"');
+  ok(s2 !== s2a, 'PART 4(b) ship_screen container insertion actually changed the fixture (not a dead no-op .replace)');
   writeFileSync(dispPath, s2);
   const mutNav = run({ dir: 'valid-09', run: 'with05' }, tmp);
   const mutNavFulfil = mutNav.json.flows.find((f) => f.taskModel === 'dispatcher-fulfil_order');
@@ -216,7 +293,9 @@ process.stderr.write('PART 5 — 05-authority switch (event only in the 05 graph
   const dir = join(tmp, 'auth-variant');
   cpSync(join(tmp, 'valid-09-no05'), dir, { recursive: true });
   const dp = join(dir, 'dispatcher.xml');
-  let s = readFileSync(dp, 'utf8').replace('<!-- 01-event: start picking -->', '<!-- 01-event: expedite order -->');
+  const dpOrig = readFileSync(dp, 'utf8');
+  const s = dpOrig.replace('<!-- 01-event: start picking -->', '<!-- 01-event: expedite order -->');
+  ok(s !== dpOrig, 'PART 5 expedite-order injection actually changed the fixture (not a dead no-op .replace)');
   writeFileSync(dp, s);
 
   const withFlag = run({ dir: 'auth-variant', run: 'with05', _dir: tmp }, tmp);
@@ -290,7 +369,10 @@ process.stderr.write('PART 5c — creation-event authority symmetry (initial-ent
   const tmp = mkdtempSync(join(tmpdir(), 'uiflows-create-'));
   cpSync(FIXTURES, tmp, { recursive: true });
   const op = join(tmp, 'upstream-05', 'order.scxml');
-  writeFileSync(op, readFileSync(op, 'utf8').replace('  <!-- 01-event: place order -->\n', ''));
+  const opOrig = readFileSync(op, 'utf8');
+  const opStripped = opOrig.replace('  <!-- 01-event: place order -->\n', '');
+  ok(opStripped !== opOrig, 'PART 5c initial-entry strip actually changed the fixture (not a dead no-op .replace)');
+  writeFileSync(op, opStripped);
   const stripped = run({ dir: 'creation-event', run: 'with05', _dir: tmp }, tmp);
   ok(stripped.json.status === 'fail' && rejectionIds(stripped.json).includes('R-AUTH'),
     'stripping the initial-entry annotation flips creation-event to R-AUTH fail (the fix is load-bearing)');
@@ -353,6 +435,43 @@ process.stderr.write('PART 8 — vacuous guard + counter conflation + reconcilia
 }
 
 // ===========================================================================
+// PART 8b — RECONCILIATION ARITHMETIC unit (failable) + STATUS PRECEDENCE. The extracted
+// C.reconcile / C.reconcileStatus must flip to broken-test on a dropped edge / zero checks /
+// strongest-oracle-skipped — a green happy-path edge count alone cannot prove that. And the
+// ONE precedence (broken-test > malformed > fail > pass) must surface a reconciliation failure
+// as broken-test EVEN WHEN malformed findings are present.
+// ===========================================================================
+process.stderr.write('PART 8b — reconciliation arithmetic (failable) + status precedence\n');
+{
+  const C = await import('./lib/checks.mjs');
+  // reconcile(): happy path true; dropped edge / zero checks / strongest-oracle-skipped false.
+  ok(C.reconcile({ edgesWalked: 25, edgesExpected: 25, executedChecks: 10, walkableModelCount: 2, walks: 2 }) === true,
+    'reconcile() true when edgesWalked === edgesExpected, ≥1 check, walker ran');
+  ok(C.reconcile({ edgesWalked: 24, edgesExpected: 25, executedChecks: 10, walkableModelCount: 2, walks: 2 }) === false,
+    'reconcile() FALSE on a dropped edge (24 ≠ 25)');
+  ok(C.reconcile({ edgesWalked: 0, edgesExpected: 0, executedChecks: 0, walkableModelCount: 0, walks: 0 }) === false,
+    'reconcile() FALSE on zero checks');
+  ok(C.reconcile({ edgesWalked: 12, edgesExpected: 12, executedChecks: 5, walkableModelCount: 1, walks: 0 }) === false,
+    'reconcile() FALSE when a walkable model produced no walk (strongest oracle skipped)');
+
+  // reconcileStatus(): a dropped edge ⇒ broken-test, and it OVERRIDES a co-present malformed.
+  const dropped = C.reconcileStatus({ edgesWalked: 24, edgesExpected: 25, executedChecks: 10, walkableModelCount: 2, walks: 2, anyMalformed: false, hasFail: false });
+  ok(dropped.status === 'broken-test', `reconcileStatus dropped-edge ⇒ broken-test (got ${dropped.status})`);
+  const droppedAndMalformed = C.reconcileStatus({ edgesWalked: 24, edgesExpected: 25, executedChecks: 10, walkableModelCount: 2, walks: 2, anyMalformed: true, hasFail: true });
+  ok(droppedAndMalformed.status === 'broken-test',
+    `reconcileStatus: a reconciliation failure surfaces as broken-test EVEN WHEN malformed (got ${droppedAndMalformed.status}) — broken-test > malformed`);
+  // the precedence ladder itself.
+  ok(C.reconcileStatus({ edgesWalked: 1, edgesExpected: 1, executedChecks: 0, walkableModelCount: 0, walks: 0, anyMalformed: true, hasFail: true }).status === 'broken-test',
+    'reconcileStatus: zero checks ⇒ broken-test over malformed');
+  ok(C.reconcileStatus({ edgesWalked: 1, edgesExpected: 1, executedChecks: 5, walkableModelCount: 0, walks: 0, anyMalformed: true, hasFail: true }).status === 'malformed',
+    'reconcileStatus: malformed > fail when reconciliation holds');
+  ok(C.reconcileStatus({ edgesWalked: 1, edgesExpected: 1, executedChecks: 5, walkableModelCount: 0, walks: 0, anyMalformed: false, hasFail: true }).status === 'fail',
+    'reconcileStatus: fail when no malformed + a content defect');
+  ok(C.reconcileStatus({ edgesWalked: 1, edgesExpected: 1, executedChecks: 5, walkableModelCount: 0, walks: 0, anyMalformed: false, hasFail: false }).status === 'pass',
+    'reconcileStatus: pass when reconciled, no malformed, no fail');
+}
+
+// ===========================================================================
 // PART 9 — Determinism: byte-identical double-run (with AND without 05).
 // ===========================================================================
 process.stderr.write('PART 9 — byte-identical double-run\n');
@@ -374,6 +493,17 @@ process.stderr.write('PART 10 — coverage floor: 22 ❌ rules, pos + neg, disti
   const cov = MANIFEST.coverage.rules;
   const distinctRules = new Set(cov.map((r) => r.rule));
   ok(distinctRules.size === 22, `coverage table covers exactly 22 distinct ❌ rules (got ${distinctRules.size})`);
+
+  // COVERAGE HONESTY: the harness's emitted behaviorsWithPosAndNeg literal must equal the
+  // selftest coverage-table length, so the pinned constant can never silently drift from the
+  // table the suite actually proves pos+neg over.
+  const covPass = run({ dir: 'valid-09', run: 'with05' }).json;
+  ok(covPass.coverage.behaviorsWithPosAndNeg === cov.length,
+    `harness behaviorsWithPosAndNeg (${covPass.coverage.behaviorsWithPosAndNeg}) === coverage-table length (${cov.length})`);
+  // elementsExercised mirrors elementsTotal by construction (every intake element touched by ≥1
+  // executed check, §5) — assert the identity holds and is non-trivial.
+  ok(covPass.coverage.elementsExercised === covPass.coverage.elementsTotal && covPass.coverage.elementsTotal > 0,
+    `elementsExercised === elementsTotal (${covPass.coverage.elementsTotal}, every intake element touched by ≥1 check)`);
 
   // positive: every owner check appears as a PASS over valid-09 (with05) or valid-09-no05.
   const posWith = run({ dir: 'valid-09', run: 'with05' }).json;

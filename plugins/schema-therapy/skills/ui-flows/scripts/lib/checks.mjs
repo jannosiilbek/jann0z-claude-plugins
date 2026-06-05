@@ -318,4 +318,33 @@ export function mBackout(model) {
     : rec('M-BACKOUT', 'mechanical', 'F-b', 'pass')];
 }
 
+// ===========================================================================
+// RECONCILIATION + STATUS PRECEDENCE (§5/§9) — extracted so the arithmetic is unit-testable
+// (a dropped edge / zero checks must flip the run to broken-test, never a silent pass).
+// `reconciled` is true iff: every expected edge was walked, ≥1 check executed, and (when any
+// 08 model is realized) the walker layer ran ≥1 walk. `reconcileStatus` applies ONE precedence
+// — broken-test > malformed > fail > pass — so a reconciliation failure surfaces as
+// broken-test EVEN WHEN malformed findings are present (sibling skills treat a dropped edge as
+// broken-test, not malformed).
+// `walkableModelCount` = realized 08 models MINUS those routed as upstream-defects (a broken
+// ruler / stuck walker legitimately skips the walk). A walkable model that produced no walk is
+// the strongest-oracle-skipped fault.
+export function reconcile({ edgesWalked, edgesExpected, executedChecks, walkableModelCount, walks }) {
+  return (edgesWalked === edgesExpected)
+    && (executedChecks > 0)
+    && (walkableModelCount === 0 || walks > 0);
+}
+
+export function reconcileStatus({ edgesWalked, edgesExpected, executedChecks, walkableModelCount, walks, anyMalformed, hasFail }) {
+  // broken-test (highest): the test instrument itself is untrustworthy.
+  if (executedChecks === 0) return { status: 'broken-test', reason: 'zero parsed checks (vacuous-green guard)' };
+  if (edgesWalked !== edgesExpected) return { status: 'broken-test', reason: `edge reconciliation mismatch (walked ${edgesWalked} ≠ expected ${edgesExpected}) — a check was silently dropped` };
+  if (walkableModelCount > 0 && walks === 0) return { status: 'broken-test', reason: 'realized models present but the walker layer ran zero walks (strongest oracle skipped)' };
+  // then malformed (a .xml not well-formed) — a real but lower-precedence instrument fault.
+  if (anyMalformed) return { status: 'malformed', reason: 'one or more 09 .xml not well-formed' };
+  // then fail (a content defect), then pass.
+  if (hasFail) return { status: 'fail', reason: '' };
+  return { status: 'pass', reason: '' };
+}
+
 export { rec };

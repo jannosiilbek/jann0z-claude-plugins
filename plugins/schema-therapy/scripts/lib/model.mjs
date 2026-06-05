@@ -11,7 +11,6 @@ import { join, extname, basename } from 'node:path';
 import {
   readTables,
   readHeadings,
-  readOrderedListsByHeading,
   readFingerprints,
   colIndex,
   ParseError,

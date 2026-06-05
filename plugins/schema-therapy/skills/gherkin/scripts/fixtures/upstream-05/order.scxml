@@ -2,6 +2,7 @@
 <!-- fingerprints: 04-transitions.md@sha256:deadbeef -->
 <!-- supersedes: 04-transitions.md#Order -->
 <scxml xmlns="http://www.w3.org/2005/07/scxml" version="1.0" datamodel="null" initial="placed">
+  <!-- 01-event: Order Placed -->
   <state id="placed">
     <!-- 01-event: Order Paid -->
     <transition event="order_paid" target="paid"/>

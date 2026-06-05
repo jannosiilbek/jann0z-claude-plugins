@@ -10,8 +10,8 @@
   "fixtures": [
     { "dir": "valid-05", "status": "pass", "failingCheck": null, "gateRecord": "emitted" },
 
-    { "dir": "NONEXISTENT-not-emitted-correct", "up01": "nopass-01.md", "up02": "nopass-02.md", "up04dbml": "nopass-04.dbml", "up04tr": "nopass-04-transitions.md", "status": "pass", "failingCheck": null, "gateRecord": "not-emitted", "notEmittedCorrect": true },
-    { "dir": "NONEXISTENT-not-emitted-wrong", "status": "fail", "failingCheck": "M8", "gateRecord": "not-emitted", "notEmittedWrong": true },
+    { "dir": "NONEXISTENT-not-emitted-correct", "nonexistent": true, "up01": "nopass-01.md", "up02": "nopass-02.md", "up04dbml": "nopass-04.dbml", "up04tr": "nopass-04-transitions.md", "status": "pass", "failingCheck": null, "gateRecord": "not-emitted", "notEmittedCorrect": true },
+    { "dir": "NONEXISTENT-not-emitted-wrong", "nonexistent": true, "status": "fail", "failingCheck": "M8", "gateRecord": "not-emitted", "notEmittedWrong": true },
 
     { "dir": "dir-empty", "status": "fail", "failingCheck": "M1" },
     { "dir": "bad-filename", "status": "fail", "failingCheck": "M2" },

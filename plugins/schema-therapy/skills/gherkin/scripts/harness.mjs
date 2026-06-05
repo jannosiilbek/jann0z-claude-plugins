@@ -79,6 +79,11 @@ function baseSummary(opt, status) {
       edgesWalked: 0, edgesExpected: 0,
     },
     reconciled: false,
+    // behaviorsWithPosAndNeg = the count of ❌-catalog behaviors that have BOTH a positive
+    // (passes over a valid run) AND a negative (a failing fixture) in the selftest coverage
+    // floor (selftest.mjs PART 12 COVERAGE table). elementsExercised = upstream obligation
+    // edges actually walked by the executed X-COV-* checks; elementsTotal = obligations intaken.
+    coverage: { elementsExercised: 0, elementsTotal: 0, behaviorsWithPosAndNeg: 26 },
     checks: [],
     findings: [],
   };
@@ -174,12 +179,19 @@ async function main() {
     const snake = toSnake(ent.entity);
     if (up05Present && promotedSet.has(snake)) {
       const g = scxmlGraphs.get(snake);
-      authorityByEntity.set(snake, { source: '05-scxml', states: g.states, transitions: g.transitions, terminals: g.terminals, initial: g.initial });
+      // creationEvent = the initial-entry 01-event (mirrors the 04 ∅ row). Folded into the
+      // authority event vocabulary so a PROMOTED entity's creation event is present exactly
+      // where the unpromoted (04-judged) path has it (lib/scxml.mjs scxmlGraph events).
+      const creationEvent = [...g.events].find((e) => !g.transitions.some((t) => t.event01 === e)) || null;
+      authorityByEntity.set(snake, { source: '05-scxml', states: g.states, transitions: g.transitions, terminals: g.terminals, initial: g.initial, creationEvent });
       summary.authority[snake] = '05-scxml';
     } else {
       const states = [...new Set(ent.rows.flatMap((r) => [r.from, r.to]).filter((s) => s && s !== '∅'))].sort();
       const transitions = ent.rows.filter((r) => r.from !== '∅').map((r) => ({ from: r.from, event01: r.event01, to: r.to }));
-      authorityByEntity.set(snake, { source: '04-table', states, transitions, terminals: ent.terminals, initial: ent.initial });
+      // creationEvent = the ∅ (creation) row's 01-event — the authority vocabulary includes it.
+      const creationRow = ent.rows.find((r) => r.from === '∅');
+      const creationEvent = creationRow ? creationRow.event01 : null;
+      authorityByEntity.set(snake, { source: '04-table', states, transitions, terminals: ent.terminals, initial: ent.initial, creationEvent });
       summary.authority[snake] = '04-table';
     }
   }
@@ -199,7 +211,12 @@ async function main() {
   for (const ent of transitions04.entities) for (const r of ent.rows) if (r.event01) allEvents.add(r.event01);
   const entityEvents = new Map();
   for (const [snake, auth] of authorityByEntity) {
-    entityEvents.set(snake, new Set(auth.transitions.map((t) => t.event01).filter(Boolean)));
+    // authority event vocabulary = every authoritative transition event PLUS the creation
+    // (initial-entry / ∅) event. Including the creation event keeps the PROMOTED (05) path
+    // symmetric with the unpromoted (04) path, where the ∅ row's event is already present.
+    const evs = new Set(auth.transitions.map((t) => t.event01).filter(Boolean));
+    if (auth.creationEvent) evs.add(auth.creationEvent);
+    entityEvents.set(snake, evs);
   }
   const exemptTokens = new Set();
   for (const v of allEnumValues) exemptTokens.add(v.toLowerCase());
@@ -359,6 +376,11 @@ async function main() {
   };
   const coverageEdgesWalked = (covInv.edges || 0) + (covTrans.edges || 0) + (covTerm.edges || 0) + (covPol.edges || 0) + (covAuthz.edges || 0);
   const coverageEdgesExpected = aggregates03.invariants.length + authTransitions + authTerminals + aggregates03.policies.length + obligations.length;
+  // coverage honesty: elementsExercised counts the obligation edges the X-COV-* checks
+  // actually walked this run (not a copy of the intake total); elementsTotal = obligations
+  // intaken. X-RECON below fails the run if these diverge (a dropped coverage edge).
+  summary.coverage.elementsExercised = coverageEdgesWalked;
+  summary.coverage.elementsTotal = coverageEdgesExpected;
 
   // --- §9 upstream-defect routing --------------------------------------------
   if (!self03.ok) {

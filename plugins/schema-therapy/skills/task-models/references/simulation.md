@@ -146,7 +146,7 @@ surface.
 | ID | Checks | Catalog rule(s) | Status on fail |
 |----|--------|-----------------|----------------|
 | M1 | **Well-formed XML + declaration.** Each `.xml` parses (hand-rolled reader accepts) AND begins with `<?xml version="1.0" encoding="UTF-8"?>` as its first line. A parse throw is a typed `ParseError`. | A1 | `malformed` |
-| M2 | **Fingerprint block present & complete.** Leading `<!-- fingerprints: … -->` comment present; lists every consumed `06` `.feature` file (each referenced by some `scenario-tags` token — §3.1) AND `specs/07-personas.md`; each entry carries a `sha256:` token (hex, not a `0000…`/`xxxx…`/`<hex>` placeholder). | A2 | `fail` |
+| M2 | **Fingerprint block present & complete.** Leading `<!-- fingerprints: … -->` comment present; lists every consumed `06` `.feature` file (each referenced by some `scenario-tags` token — §3.1) AND `specs/07-personas.md`; each entry carries a `sha256:` token (exactly 64 hex chars `[0-9a-fA-F]{64}`, not a `0000…`/`xxxx…`/`<hex>` placeholder). | A2 | `fail` |
 | M3 | **Root `TaskModel` with required attrs.** Root element is `<TaskModel>` carrying `id`, `persona`, `job`. | A3 | `fail` |
 | M4 | **`id` is the canonical slug.** `TaskModel/@id` == `<snake(persona)>-<snake(job)>` == the filename stem. | A4 | `fail` |
 | M5 | **Exactly one `<Budget klm="<int>"/>`** as the first child of `<TaskModel>`; `klm` parses as a non-negative integer. | A5 | `fail` |

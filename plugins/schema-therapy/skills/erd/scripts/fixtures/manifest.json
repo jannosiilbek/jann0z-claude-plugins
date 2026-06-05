@@ -15,6 +15,7 @@
     { "dbml": "array-column.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "L10", "args": [] },
     { "dbml": "missing-junction.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-MN", "args": [] },
     { "dbml": "fk-type-mismatch.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "R-FKTYPE", "args": [] },
+    { "dbml": "pluralized-table.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "scenarios": "pluralized-table-scenarios.json", "status": "fail", "failingCheck": "L7", "args": [] },
     { "dbml": "nullable-fk-undocumented.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "pass", "failingCheck": "L13", "warnOnly": true, "args": [] },
     { "dbml": "ddl-export-fails.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "E-DDL", "args": [] },
     { "dbml": "bad-type-ddl.dbml", "transitions": "valid-transitions.md", "up02": "upstream-02.md", "up03": "upstream-03.md", "status": "fail", "failingCheck": "E-DDL", "args": [] },

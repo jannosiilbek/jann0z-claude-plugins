@@ -24,6 +24,9 @@ realizes **by tag**. 06 validates the domain layer; 10 validates the built produ
 
 The full rule catalog (30 rules, Themes A–E) is `references/validation-rules.md`; the executable
 harness contract is `references/simulation.md`. This file is the authoring procedure.
+**Load each only at the stage that needs it** (progressive disclosure): the catalog at
+**Draft** and **Professor**; `simulation.md` only to interpret a `malformed`/`broken-test`
+result — you do not need it to run the harness.
 
 **Out of scope: sad-path UI.** 10 walks only the **nominal (happy) path** of each 08 task model
 over the 09 screen graph. Domain rejections are already covered by 06's
@@ -140,8 +143,10 @@ leaves. **Domain assertions are never restated** — only the bindings appear.
 
 6. **Emit + report** — fixed-format report including a **per-feature walk table** (persona, home,
    hops, walked-vs-nominal leaves, realizable, tags bound/required) and `Iterations to convergence:
-   N`. Then hand off to **drift-police**:
-   `Use the drift-police skill to verify 06↔10 tag drift and 09→10 screen-id drift.`
+   N`. Then hand off to the **`schema-therapy:drift-police` agent** as an
+   invocation (a handoff, not a file dependency) — its suite-wide audit
+   re-verifies the cross-artifact contracts, including the 06↔10 tag seam and
+   the 09→10 screen-id seam.
 
 ## 4 — Running the harness
 

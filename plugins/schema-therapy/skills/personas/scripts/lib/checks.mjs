@@ -321,7 +321,7 @@ export function lintL2_fingerprints(doc07) {
   // Gather fingerprint lines from the section body (`<file>@sha256:<hash>`).
   const found = [];
   for (const l of sec.lines) {
-    const m = /(\S+)@sha256:([0-9a-zA-Z<>]+)/.exec(l);
+    const m = /(\S+)@sha256:([0-9a-fA-F]{64})/.exec(l);
     if (m) found.push({ file: m[1].trim(), hash: m[2].trim() });
   }
   // A placeholder digest (all zeros, all `x`, or a literal `<hex>`) is NOT a real

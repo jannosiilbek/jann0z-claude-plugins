@@ -114,10 +114,12 @@ const scratch = mkdtempSync(join(tmpdir(), 'flow-acceptance-self-'));
   const up09copy = join(scratch, 'up09-navmut');
   cpSync(join(FIX, 'upstream-09'), up09copy, { recursive: true });
   const f = join(up09copy, 'dispatcher.xml');
-  let xml = readFileSync(f, 'utf8');
+  const xmlOrig = readFileSync(f, 'utf8');
   // break the start_picking → pick_confirm edge by retargeting it to a non-walked container.
-  xml = xml.replace('<NavigationFlow from="start_picking"     to="pick_confirm"/>',
+  const xml = xmlOrig.replace('<NavigationFlow from="start_picking"     to="pick_confirm"/>',
                     '<NavigationFlow from="start_picking"     to="order_queue"/>');
+  if (xml !== xmlOrig) ok('navflow mutation actually changed the fixture (not a dead no-op .replace)');
+  else bad('navflow-mutation-live', 'the .replace was a no-op — fixture reformatted out from under the mutation');
   writeFileSync(f, xml);
   const r = runHarness(join(FIX, 'valid-10'), join(FIX, 'upstream-06'), join(FIX, 'upstream-08'), up09copy);
   if (r.json && r.json.status === 'fail' && failingChecks(r.json).includes('V-NAV')) ok('navflow mutation flips V-NAV');
@@ -129,12 +131,14 @@ const scratch = mkdtempSync(join(tmpdir(), 'flow-acceptance-self-'));
   const tenCopy = join(scratch, 'ten-reorder');
   cpSync(join(FIX, 'valid-10'), tenCopy, { recursive: true });
   const f = join(tenCopy, 'picker-pick_order.feature');
-  let feat = readFileSync(f, 'utf8');
+  const featOrig = readFileSync(f, 'utf8');
   // swap the two domain interactions (pick ↔ complete) — graph desync + leaf reorder.
-  feat = feat
+  const feat = featOrig
     .replace('When the Picker picks the shipment: "Shipment Picked"', 'When the Picker completes the shipment: "Shipment Completed"')
     .replace('When the Picker completes the shipment: "Shipment Completed"\n    Then the outcome of "@terminal:shipment" holds',
              'When the Picker picks the shipment: "Shipment Picked"\n    Then the outcome of "@transition:shipment" holds');
+  if (feat !== featOrig) ok('step-reorder mutation actually changed the fixture (not a dead no-op .replace)');
+  else bad('step-reorder-live', 'the .replace was a no-op — fixture reformatted out from under the mutation');
   writeFileSync(f, feat);
   const r = runHarness(tenCopy, join(FIX, 'upstream-06'), join(FIX, 'upstream-08'), join(FIX, 'upstream-09'));
   if (r.json && r.json.status === 'fail') ok('step reorder flips the walk (fail)');
@@ -181,6 +185,78 @@ log('=== V-ORDER system-leaf symmetric filter (d.4) ===');
 }
 
 // ===========================================================================
+// 3c. CTT walker parity with the 09 (ui-flows) walker: an OPTIONAL leaf is EXCLUDED from the
+//     nominal path; a parseable-but-stuck tree is DETECTED (model.stuck), not silently walked.
+//     (The stuck→upstream-defect harness route is also proven by stuck-08-walker/ in PART 1;
+//     this is the unit-level counterpart, identical to the ui-flows PART 1b assertions.)
+// ===========================================================================
+log('=== CTT walker parity (optional leaf excluded; stuck detected) ===');
+{
+  const Ctt = await import('./lib/taskmodel.mjs');
+  const optionalXml = `<?xml version="1.0" encoding="UTF-8"?>
+<TaskModel id="t" persona="P" job="j">
+  <Task id="root" category="abstract" operator="enabling">
+    <Task id="select-order" category="interaction" scenario-tags="@transition:order"/>
+    <Task id="start-picking" category="interaction" scenario-tags="@transition:order" optional="true"/>
+    <Task id="ship-order" category="interaction" scenario-tags="@terminal:order"/>
+  </Task>
+</TaskModel>`;
+  const optr = Ctt.parse(optionalXml);
+  const nomIds = optr.ok ? optr.model.nominalLeaves.map((l) => l.id) : [];
+  if (optr.ok && !optr.model.stuck && !nomIds.includes('start-picking') && nomIds.length === 2) {
+    ok(`optional leaf excluded from nominal path (got [${nomIds.join(', ')}])`);
+  } else {
+    bad('walker-optional', `expected nominal [select-order, ship-order] with no 'start-picking'; got [${nomIds.join(', ')}] stuck=${JSON.stringify(optr.model && optr.model.stuck)}`);
+  }
+
+  const stuckXml = `<?xml version="1.0" encoding="UTF-8"?>
+<TaskModel id="t" persona="P" job="j">
+  <Task id="root" category="abstract" operator="enabling">
+    <Task id="select-order" category="interaction" scenario-tags="@transition:order"/>
+    <Task id="pick-route" category="abstract" operator="choice">
+      <Task id="start-picking" category="interaction" scenario-tags="@transition:order" optional="true"/>
+    </Task>
+  </Task>
+</TaskModel>`;
+  const str = Ctt.parse(stuckXml);
+  if (str.ok && str.model.stuck && str.model.stuck.id === 'pick-route' && str.model.nominalLeaves.length === 0) {
+    ok(`parseable-but-stuck tree detected at 'pick-route', no nominal leaves emitted`);
+  } else {
+    bad('walker-stuck', `expected stuck at 'pick-route' with empty nominalLeaves; got stuck=${JSON.stringify(str.model && str.model.stuck)} leaves=${str.model && str.model.nominalLeaves.length}`);
+  }
+}
+
+// ===========================================================================
+// 3d. FINGERPRINT digest shape pinned to exactly 64 hex (canonical md.mjs parseFingerprintEntry).
+//     A non-64 / non-hex / `<hex>` run is a malformed line; the all-zeros 64-run is a placeholder.
+//     (The neg/placeholder-fingerprint fixture proves the harness-level fail in PART 1.)
+// ===========================================================================
+log('=== fingerprint digest pinned to exactly 64 hex ===');
+{
+  const C = await import('./lib/checks.mjs');
+  const hex64 = 'a'.repeat(64);
+  const mkComments = (hash) => [
+    { line: 1, text: '# fingerprints:' },
+    { line: 2, text: `#   06-gherkin/order.feature@sha256:${hash}` },
+    { line: 3, text: '#   09-ui-flows/dispatcher.xml@sha256:' + hex64 },
+    { line: 4, text: '#   08-task-models/dispatcher-fulfil_order.xml@sha256:' + hex64 },
+  ];
+  const ctx = { stem: 'dispatcher-fulfil_order', consumed06: ['06-gherkin/order.feature'], persona09File: '09-ui-flows/dispatcher.xml', model08File: '08-task-models/dispatcher-fulfil_order.xml' };
+  const good = C.rFingerprint(mkComments(hex64), 5, ctx);
+  if (good.status === 'pass') ok('a real 64-hex fingerprint block passes R-FINGERPRINT');
+  else bad('fp-good', `expected pass; got ${good.status} (${good.detail})`);
+  const short = C.rFingerprint(mkComments('7b1e'), 5, ctx);
+  if (short.status === 'fail' && /malformed fingerprint line/.test(short.detail)) ok('a SHORT (non-64) digest is a malformed R-FINGERPRINT line');
+  else bad('fp-short', `expected malformed-line fail; got ${short.status} (${short.detail})`);
+  const ph = C.rFingerprint(mkComments('<hex>'), 5, ctx);
+  if (ph.status === 'fail') ok('a `<hex>` placeholder digest fails R-FINGERPRINT');
+  else bad('fp-placeholder', `expected fail; got ${ph.status} (${ph.detail})`);
+  const zeros = C.rFingerprint(mkComments('0'.repeat(64)), 5, ctx);
+  if (zeros.status === 'fail' && /placeholder/.test(zeros.detail)) ok('an all-zeros 64-run is rejected as a placeholder');
+  else bad('fp-zeros', `expected placeholder fail; got ${zeros.status} (${zeros.detail})`);
+}
+
+// ===========================================================================
 // 4. Counter conflation — the valid set's intake + check counts are coherent.
 // ===========================================================================
 log('=== counter conflation ===');
@@ -197,6 +273,32 @@ log('=== counter conflation ===');
     else if (c.intake.features !== 3) bad('counters', `expected 3 features, got ${c.intake.features}`);
     else ok('intake + check counts coherent + reconciled + engine/replay non-empty');
   }
+}
+
+// ===========================================================================
+// 4b. RECONCILIATION ARITHMETIC unit — the extracted checkXRecon flips to fail (broken-test)
+//     on a dropped edge or zero checks. A green happy-path assertion alone cannot prove the
+//     arithmetic catches a silently-dropped check; these negatives do.
+// ===========================================================================
+log('=== reconciliation arithmetic (failable unit) ===');
+{
+  const C = await import('./lib/checks.mjs');
+  // happy path: walked == expected, both layers non-empty ⇒ pass.
+  const good = C.checkXRecon(10, 25, 25, 4, 3, 3);
+  if (good.status === 'pass') ok('checkXRecon passes when edgesWalked === edgesExpected');
+  else bad('recon-pos', `expected pass; got ${good.status} (${good.detail})`);
+  // dropped edge: walked < expected ⇒ fail.
+  const dropped = C.checkXRecon(10, 24, 25, 4, 3, 3);
+  if (dropped.status === 'fail' && /edgesWalked 24 ≠ edgesExpected 25/.test(dropped.detail)) ok('checkXRecon FAILS on a dropped edge (24 ≠ 25)');
+  else bad('recon-drop', `expected fail on dropped edge; got ${dropped.status} (${dropped.detail})`);
+  // zero checks ⇒ fail.
+  const zero = C.checkXRecon(0, 0, 0, 0, 0, 0);
+  if (zero.status === 'fail' && /zero checks/.test(zero.detail)) ok('checkXRecon FAILS on zero checks executed');
+  else bad('recon-zero', `expected fail on zero checks; got ${zero.status} (${zero.detail})`);
+  // a non-empty feature set with an empty replay layer ⇒ fail (a layer silently skipped).
+  const emptyReplay = C.checkXRecon(5, 12, 12, 4, 0, 3);
+  if (emptyReplay.status === 'fail' && /replay layer ran zero/.test(emptyReplay.detail)) ok('checkXRecon FAILS when the replay layer ran zero checks over a non-empty set');
+  else bad('recon-emptyreplay', `expected fail on empty replay layer; got ${emptyReplay.status} (${emptyReplay.detail})`);
 }
 
 // ===========================================================================

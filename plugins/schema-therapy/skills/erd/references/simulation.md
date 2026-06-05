@@ -366,6 +366,7 @@ scenario file seeding one valid order + ticket.
 | `enum-value-missing.dbml` | `02`+`03` | `order_status` drops a 02 value | R-ENUM (C5) | `fail` |
 | `enum-value-reordered.dbml` | `02`+`03` | `order_status` values out of 02 order | R-ENUM (C5) | `fail` |
 | `missing-root-table.dbml` | `02`+`03` | 03 root `Ticket` has no `ticket` table | R-ROOT (C1) | `fail` |
+| `pluralized-table.dbml` | `02`+`03` | the junction table is pluralized (`order_tickets`, not singular `order_ticket`) — the dedicated B9 negative; isolates L7 (matching `pluralized-table-scenarios.json` keeps it the sole failure) | L7 (B9) | `fail` |
 | `table-for-ghost-member.dbml` | `02`+`03` | a table named for a member absent from 03 (no bridge note) — a genuinely-invented entity | R-NAME (C9) | `fail` |
 | `reference-without-fk.dbml` | `02`+`03` | a 03 References row with no corresponding FK | R-REF (C4) | `fail` |
 | `status-untyped.dbml` | `02`+`03` | a lifecycle entity's `status` is `varchar`, not its enum | R-STATUS / **E-ENUM** (C6) | `fail` |
@@ -563,7 +564,7 @@ table):
 | M:N via junction | B6 | R-MN/E-JUNCTION over `valid.*` | `missing-junction.dbml` |
 | FK type matches PK | B7 | R-FKTYPE/E-FK over `valid.*` | `fk-type-mismatch.dbml` |
 | Nullable FK documented | B8 | L13 over `valid.*` | `nullable-fk-undocumented.dbml` |
-| snake_case singular names | B9 | L7/L8 over `valid.*` | (pluralized variant) |
+| snake_case singular names | B9 | L7/L8 over `valid.*` | `pluralized-table.dbml` |
 | Root→table | C1 | R-ROOT over `valid.*` | `missing-root-table.dbml` |
 | Entity-member→table+FK | C2 | R-MEMBER over `valid.*` | (member-no-fk variant) |
 | References→FK | C4 | R-REF over `valid.*` | `reference-without-fk.dbml` |
@@ -790,7 +791,7 @@ owner check → negative fixture):*
 | B2 | L10 | `array-column.dbml` |
 | B6 | R-MN / E-JUNCTION | `missing-junction.dbml` |
 | B7 | R-FKTYPE / E-FK | `fk-type-mismatch.dbml` |
-| B9 | L7 / L8 | (pluralized-name variant) |
+| B9 | L7 / L8 | `pluralized-table.dbml` |
 | C1 | R-ROOT | `missing-root-table.dbml` |
 | C2 | R-MEMBER | (member-no-fk variant) |
 | C4 | R-REF | `reference-without-fk.dbml` |

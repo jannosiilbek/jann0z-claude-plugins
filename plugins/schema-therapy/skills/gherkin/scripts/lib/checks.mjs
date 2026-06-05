@@ -41,7 +41,12 @@ export function deriveFeature(pr, fileBase) {
   const fpLines = [];
   const fp05 = [];
   for (const c of leadingComments) {
-    const m = /^#\s*([\w./-]+)@sha256:([0-9a-fxX<>]+)/.exec(c);
+    // Plugin-canonical fingerprint shape: `<name>@sha256:<64-hex>` (scripts/lib/md.mjs
+    // parseFingerprintEntry). A line that names a file with `@sha256:` but whose digest is
+    // not exactly 64 hex is captured here too (with its raw token) so R-FINGERPRINT reports
+    // the invalid/placeholder digest rather than silently dropping the line.
+    const m = /^#\s*([\w./-]+)@sha256:([0-9a-fA-F]{64})\b/.exec(c)
+      || /^#\s*([\w./-]+)@sha256:(\S*)/.exec(c);
     if (m) {
       fpLines.push({ file: m[1], hex: m[2] });
       if (/^05-statecharts\//.test(m[1])) fp05.push(m[1]);

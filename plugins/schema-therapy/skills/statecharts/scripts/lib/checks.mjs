@@ -154,7 +154,7 @@ export function checkM4_fingerprints(model) {
   const fp = fingerprintComment(model);
   if (!fp) return { id: 'M4', rule: 'A4', status: 'fail', detail: 'no leading <!-- fingerprints: … --> block' };
   const found = new Map();
-  const re = /([0-9a-z._-]+\.(?:md|dbml))@sha256:([0-9a-zA-Zx<>]+)/g;
+  const re = /([0-9a-z._-]+\.(?:md|dbml))@sha256:([0-9a-fA-F]{64})/g;
   let m;
   while ((m = re.exec(fp)) !== null) found.set(m[1], m[2]);
   for (const u of FIVE_UPSTREAMS) {

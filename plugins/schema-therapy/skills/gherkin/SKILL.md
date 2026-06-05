@@ -1,11 +1,11 @@
 ---
 name: gherkin
-description: Step 6 of the schema-therapy modelling pipeline — the FINAL artifact. Use this to turn the modelled domain into executable BDD behavior at specs/06-gherkin/<aggregate>.feature, one .feature file per 03 aggregate, each scenario tagged to its upstream obligation (invariant / transition / terminal / policy / authz). Trigger ONLY inside the schema-therapy pipeline: "run schema-therapy step 6", "produce 06-gherkin", "write the gherkin/feature files from the model", "do the gherkin step of the modelling pipeline". Consumes specs/01-event-storming.md (actor bindings), specs/02-glossary.md, specs/03-aggregates.md, specs/04-erd.dbml + specs/04-transitions.md, and specs/05-statecharts/*.scxml WHEN emitted (the lifecycle authority for promoted entities; else 04). 06 is terminal — nothing consumes it, it never edits upstream. NOT a general Gherkin / BDD / Cucumber-authoring tool — that ground is owned elsewhere; this skill owns only the schema-therapy 06 artifact at this one pipeline step.
+description: Step 6 of the schema-therapy modelling pipeline — the domain-behavior layer. Use this to turn the modelled domain into executable BDD behavior at specs/06-gherkin/<aggregate>.feature, one .feature file per 03 aggregate, each scenario tagged to its upstream obligation (invariant / transition / terminal / policy / authz). Trigger ONLY inside the schema-therapy pipeline: "run schema-therapy step 6", "produce 06-gherkin", "write the gherkin/feature files from the model", "do the gherkin step of the modelling pipeline". Consumes specs/01-event-storming.md (actor bindings), specs/02-glossary.md, specs/03-aggregates.md, specs/04-erd.dbml + specs/04-transitions.md, and specs/05-statecharts/*.scxml WHEN emitted (the lifecycle authority for promoted entities; else 04). 06 never edits upstream; downstream 08 task-models and 10 flow-acceptance bind to its scenario tags by exact string. NOT a general Gherkin / BDD / Cucumber-authoring tool — that ground is owned elsewhere; this skill owns only the schema-therapy 06 artifact at this one pipeline step.
 ---
 
 # gherkin
 
-Step 6 of the **schema-therapy** modelling pipeline, and the pipeline's **final**
+Step 6 of the **schema-therapy** modelling pipeline — the domain-behavior
 artifact. It turns the modelled domain into one executable BDD feature file per 03
 aggregate:
 
@@ -13,10 +13,12 @@ aggregate:
   (`<aggregate>` = `snake_case` of the exact 03 `### <AggregateName>`, e.g.
   `Order` → `order.feature`, `PurchaseOrder` → `purchase_order.feature`).
 
-06 is **terminal**: nothing consumes it, and it **never edits** upstream. Each scenario
-is tagged to exactly one upstream obligation it discharges; the file references upstream
-by exact string and **never restates** a 02 enum definition, a 03 invariant text, or a
-04/05 row beyond exercising the required transition.
+06 **never edits** upstream, and downstream consumes it **by tag only**: **08
+task-models** sequences scenarios by tag and **10 flow-acceptance** binds step outcomes
+to scenario tags — both by **exact string**, so the tag grammar is a published contract.
+Each scenario is tagged to exactly one upstream obligation it discharges; the file
+references upstream by exact string and **never restates** a 02 enum definition, a 03
+invariant text, or a 04/05 row beyond exercising the required transition.
 
 This skill owns only the **Gherkin structure derived via the pinned conventions** — and
 nothing else. It does not define Terms / enums / forbidden synonyms (02), invariants /
@@ -79,11 +81,11 @@ for event `Order Placed`: `When the Order Placed event occurs`. No transform var
 `<PolicyName>` whitespace→`_`). No other namespace; tags carry no whitespace
 (parser-rejected).
 
-**This table doubles as the downstream drift contract — 06 is the FINAL artifact, so
-nothing downstream re-checks it; the harness verifies the table *in reverse*:** every 03
-aggregate resolves to a file, every invariant/authoritative-transition/terminal/policy/
-actor-bound-event obligation to a tagged scenario, every `When` embeds its exact 01 event, every state/Term to its 02
-owner. This is the only safety net 06 has — keep it exact.
+**This table doubles as the downstream drift contract — 08 and 10 bind to the scenario
+tags it pins; the harness verifies the table *in reverse*:** every 03 aggregate resolves
+to a file, every invariant/authoritative-transition/terminal/policy/actor-bound-event
+obligation to a tagged scenario, every `When` embeds its exact 01 event, every
+state/Term to its 02 owner.
 
 ## b. Artifact contract (directory + fingerprints + authority)
 
@@ -155,8 +157,8 @@ Run these in order. The harness is the **sole executable pass/fail authority**.
    **coverage-by-source table** (counts of invariants / transitions / terminals /
    policies / authz obligations, each covered? + the authority each entity was judged against) and
    `Iterations to convergence: N`. Then hand off to **drift-police** as an invocation
-   (the schema-therapy drift agent re-verifies the §a contract across artifacts — the
-   only post-emit guard for this terminal artifact).
+   (the schema-therapy drift agent re-verifies the §a contract across artifacts,
+   including the tag bindings 08 and 10 rely on).
 
 ## Running the harness
 
