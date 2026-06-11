@@ -1,0 +1,59 @@
+{
+  "skill_name": "erd-diagram",
+  "evals": [
+    {
+      "id": 0,
+      "name": "courses-render",
+      "prompt": "/erd-diagram — render the DBML model in this project (input/model.dbml, an online course platform) into a professional HTML ER diagram.",
+      "expected_output": "A single self-contained model.html with an embedded SVG ER diagram (Graphviz), cleanly routed connectors, a professional title, interactive pan/zoom, and all four tables (instructors, courses, students, enrollments).",
+      "tables": ["instructors", "courses", "students", "enrollments"],
+      "files": ["input/model.dbml"],
+      "assertions": [
+        {"text": "An .html diagram file is produced as the deliverable"},
+        {"text": "The page embeds an <svg> ER diagram from a real layout engine (not hand-rolled div/CSS boxes)"},
+        {"text": "Self-contained: no external http(s) <script>/<link> (no CDN dependency)"},
+        {"text": "Every table from the DBML appears in the diagram (instructors, courses, students, enrollments)"},
+        {"text": "A single professional title heads the page (one <h1>)"},
+        {"text": "FK relationship connectors are drawn between tables"},
+        {"text": "Connectors are engine-routed paths (the renderer's native dbdiagram.io-style routing), not hand-drawn div/CSS lines"},
+        {"text": "Interactive pan/zoom controls are present"}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "saas-render",
+      "prompt": "/erd-diagram — render the DBML model in this project (input/model.dbml, a B2B SaaS subscription billing system) into a professional HTML ER diagram.",
+      "expected_output": "A single self-contained model.html with an embedded SVG ER diagram, cleanly routed connectors, a professional title, interactive pan/zoom, and all five tables (organizations, plans, users, subscriptions, invoices) plus the two enums.",
+      "tables": ["organizations", "plans", "users", "subscriptions", "invoices"],
+      "files": ["input/model.dbml"],
+      "assertions": [
+        {"text": "An .html diagram file is produced as the deliverable"},
+        {"text": "The page embeds an <svg> ER diagram from a real layout engine (not hand-rolled div/CSS boxes)"},
+        {"text": "Self-contained: no external http(s) <script>/<link> (no CDN dependency)"},
+        {"text": "Every table from the DBML appears in the diagram (organizations, plans, users, subscriptions, invoices)"},
+        {"text": "A single professional title heads the page (one <h1>)"},
+        {"text": "FK relationship connectors are drawn between tables"},
+        {"text": "Connectors are engine-routed paths (the renderer's native dbdiagram.io-style routing), not hand-drawn div/CSS lines"},
+        {"text": "Interactive pan/zoom controls are present"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "projects-render",
+      "prompt": "/erd-diagram — render the DBML model in this project (input/model.dbml, a project management tool with nested tasks) into a professional HTML ER diagram.",
+      "expected_output": "A single self-contained model.html with an embedded SVG ER diagram, cleanly routed connectors (including the self-referential task→parent edge), a professional title, interactive pan/zoom, and all four tables (teams, users, projects, tasks).",
+      "tables": ["teams", "users", "projects", "tasks"],
+      "files": ["input/model.dbml"],
+      "assertions": [
+        {"text": "An .html diagram file is produced as the deliverable"},
+        {"text": "The page embeds an <svg> ER diagram from a real layout engine (not hand-rolled div/CSS boxes)"},
+        {"text": "Self-contained: no external http(s) <script>/<link> (no CDN dependency)"},
+        {"text": "Every table from the DBML appears in the diagram (teams, users, projects, tasks)"},
+        {"text": "A single professional title heads the page (one <h1>)"},
+        {"text": "FK relationship connectors are drawn between tables (including the self-referential task parent)"},
+        {"text": "Connectors are engine-routed paths (the renderer's native dbdiagram.io-style routing), not hand-drawn div/CSS lines"},
+        {"text": "Interactive pan/zoom controls are present"}
+      ]
+    }
+  ]
+}

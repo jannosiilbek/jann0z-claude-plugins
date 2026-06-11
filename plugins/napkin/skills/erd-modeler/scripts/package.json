@@ -1,0 +1,15 @@
+{
+  "name": "erd-modeler-harness",
+  "version": "1.0.0",
+  "description": "PGlite-backed live-test harness for the erd-modeler skill: loads a generated schema into in-memory Postgres, seeds it, and runs labeled business-use-case queries with assertions.",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node selftest.mjs"
+  },
+  "keywords": ["erd", "dbml", "pglite", "postgres", "testing"],
+  "author": "janno",
+  "license": "MIT",
+  "dependencies": {
+    "@electric-sql/pglite": "^0.4.6"
+  }
+}

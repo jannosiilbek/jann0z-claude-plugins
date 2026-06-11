@@ -1,0 +1,6 @@
+# Gitignored files copied into every new Claude Code worktree (gitignore syntax).
+# Only files that match a pattern here AND are gitignored get copied.
+
+# Local permission allowlist — worktree sessions inherit it, so parallel
+# sessions don't re-prompt for already-approved tools.
+.claude/settings.local.json

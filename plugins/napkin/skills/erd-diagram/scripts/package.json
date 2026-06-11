@@ -1,0 +1,15 @@
+{
+  "name": "erd-diagram-renderer",
+  "version": "1.0.0",
+  "description": "Render a DBML data model into a self-contained, professional HTML ER diagram (WASM Graphviz, no native deps).",
+  "type": "module",
+  "scripts": {
+    "test": "node selftest.mjs"
+  },
+  "keywords": ["erd", "dbml", "diagram", "graphviz", "svg", "html"],
+  "author": "janno",
+  "license": "MIT",
+  "dependencies": {
+    "@softwaretechnik/dbml-renderer": "^1.0.31"
+  }
+}

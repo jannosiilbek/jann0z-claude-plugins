@@ -1,0 +1,85 @@
+{
+  "skill_name": "erd-modeler",
+  "evals": [
+    {
+      "id": 0,
+      "name": "courses-mn-bridge",
+      "prompt": "I'm building a small online course platform. Students can enroll in many courses, each course has one instructor, and I need to track each enrollment's date and whether the student completed the course. Design the data model for me.",
+      "expected_output": "A normalized DBML model with a students↔courses M:N resolved via an enrollments bridge table (carrying enrolled_at + a completion status), TypeID text PKs on every table, instructor as a 1:N FK on courses, plus a validation report and a green PGlite live-test.",
+      "files": [],
+      "assertions": [
+        {"text": "A .dbml model file is produced as the deliverable"},
+        {"text": "The user stated no PK preference, so every table's primary key is a text `id [pk]` TypeID (the recommended default)"},
+        {"text": "Each table records its TypeID prefix in a Note"},
+        {"text": "The students-courses M:N is resolved with a bridge/junction table (not a direct many-to-many)"},
+        {"text": "The bridge table carries the relationship attributes (enrollment date and completion status)"},
+        {"text": "Foreign key columns are typed text and use inline [ref: > ...]"},
+        {"text": "The PGlite live-test harness (run-erd-test.mjs) was actually run and every use-case passed (green)"},
+        {"text": "A validation/best-practices report was produced"}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "saas-billing-enums",
+      "prompt": "Design a database schema for a B2B SaaS subscription billing system. Organizations each have multiple users. An organization holds subscriptions tied to a plan, and each subscription generates invoices. Subscriptions can be active, past_due, or canceled; invoices are open, paid, or void. Model this domain.",
+      "expected_output": "A normalized DBML model with org-scoped multi-tenancy (org FK right after the PK), Enums for subscription_status (active/past_due/canceled) and invoice_status (open/paid/void), TypeID text PKs everywhere, plus a validation report and a green PGlite live-test.",
+      "files": [],
+      "assertions": [
+        {"text": "A .dbml model file is produced as the deliverable"},
+        {"text": "The user stated no PK preference, so every table's primary key is a text `id [pk]` TypeID (the recommended default)"},
+        {"text": "Status fields use DBML Enums rather than free-text or boolean-soup columns"},
+        {"text": "The subscription status enum has exactly the values active, past_due, canceled (spelling preserved)"},
+        {"text": "The invoice status enum has exactly the values open, paid, void (spelling preserved)"},
+        {"text": "Multi-tenant child tables carry an organization FK placed immediately after the PK"},
+        {"text": "The PGlite live-test harness (run-erd-test.mjs) was actually run and every use-case passed (green)"},
+        {"text": "A validation/best-practices report was produced"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "projects-self-ref",
+      "prompt": "Create an ERD for a project management tool. Projects contain tasks, a task can have subtasks (nested arbitrarily deep), each task is assigned to one user, and users belong to teams. I want to be able to delete a project and have its tasks go away, but deleting a user should just unassign their tasks.",
+      "expected_output": "A normalized DBML model with a self-referential nullable parent_task_id on tasks, ON DELETE CASCADE from project→task and ON DELETE SET NULL on task.assigned_user_id, TypeID text PKs everywhere, plus a validation report and a green PGlite live-test that proves both delete behaviors.",
+      "files": [],
+      "assertions": [
+        {"text": "A .dbml model file is produced as the deliverable"},
+        {"text": "The user stated no PK preference, so every table's primary key is a text `id [pk]` TypeID (the recommended default)"},
+        {"text": "The tasks table has a self-referential parent FK that is nullable (so root tasks have no parent)"},
+        {"text": "The project→task FK carries ON DELETE CASCADE and the task→user assignment FK carries ON DELETE SET NULL (recorded as // comments)"},
+        {"text": "The live-test includes use-cases proving both ON DELETE behaviors (cascade delete and set-null)"},
+        {"text": "The PGlite live-test harness (run-erd-test.mjs) was actually run and every use-case passed (green)"},
+        {"text": "A validation/best-practices report was produced"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "uuid-pk-preference",
+      "prompt": "Model a simple blog: authors write posts, posts have comments. Use UUID primary keys — our stack already uses uuids everywhere.",
+      "expected_output": "A normalized DBML model honoring the stated UUID identity strategy: every PK is `id uuid [pk, default: \\`gen_random_uuid()\\`]` and every FK is typed uuid, no TypeID prefixes, plus a validation report and a green PGlite live-test (which supplies explicit uuid literals for asserted rows).",
+      "files": [],
+      "assertions": [
+        {"text": "A .dbml model file is produced as the deliverable"},
+        {"text": "The user asked for UUIDs, so every table's PK is `id uuid [pk]` with a gen_random_uuid() default (NOT a TypeID text id, NOT int/serial)"},
+        {"text": "Foreign key columns are typed uuid to match the referenced uuid PK"},
+        {"text": "No TypeID prefix Notes are added (the prefix Note is a TypeID-only requirement)"},
+        {"text": "The PGlite live-test harness (run-erd-test.mjs) was actually run and every use-case passed (green), with explicit uuid literals used for any asserted ids"},
+        {"text": "A validation/best-practices report was produced"}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "int-pk-preference",
+      "prompt": "Design a schema for a small internal library catalog: books, members, and loans (a member borrows a book). Keep it simple — just use auto-incrementing integer IDs.",
+      "expected_output": "A normalized DBML model honoring the stated auto-increment identity strategy: every PK is `id bigint [pk, increment]` (mapped to GENERATED BY DEFAULT AS IDENTITY / bigserial in the DDL) and every FK is typed bigint, loans resolving the member↔book M:N as a bridge, plus a validation report and a green PGlite live-test that supplies explicit small-integer ids.",
+      "files": [],
+      "assertions": [
+        {"text": "A .dbml model file is produced as the deliverable"},
+        {"text": "The user asked for auto-increment integers, so every table's PK is an integer identity `id bigint [pk, increment]` (NOT a TypeID text id, NOT uuid)"},
+        {"text": "Foreign key columns are typed bigint to match the referenced integer PK"},
+        {"text": "The member-borrows-book relationship is resolved with a loans bridge/junction table"},
+        {"text": "The PGlite live-test harness (run-erd-test.mjs) was actually run and every use-case passed (green), with explicit integer ids used in seed/use-case rows"},
+        {"text": "A validation/best-practices report was produced"}
+      ]
+    }
+  ]
+}

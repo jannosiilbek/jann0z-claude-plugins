@@ -1,0 +1,21 @@
+{
+  "name": "jann0z-claude-plugins",
+  "owner": {
+    "name": "janno",
+    "email": "janno.siilbek@gmail.com"
+  },
+  "metadata": {
+    "description": "Janno's Claude Code plugins.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "napkin",
+      "source": "./plugins/napkin",
+      "license": "MIT",
+      "category": "modelling",
+      "keywords": ["erd", "dbml", "data-model", "domain-model", "database-design", "schema", "normalization", "postgres", "pglite", "diagram", "visualization"],
+      "description": "Design, validate, live-test, and visualize a relational data model. The erd-modeler skill turns a natural-language domain description (or an optional glossary) into a clean, normalized DBML model, audits it against best practices, then proves it works by running it against an in-memory Postgres (PGlite) — generating SQL, seed data, and business-use-case queries and looping with fixes until every use-case passes. The manual /erd-diagram command renders an existing DBML model into a self-contained, interactive HTML ER diagram."
+    }
+  ]
+}

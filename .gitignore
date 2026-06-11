@@ -1,0 +1,28 @@
+node_modules/
+.DS_Store
+*.log
+
+# Local Claude Code settings (machine-specific; never share)
+.claude/settings.local.json
+
+# erd-modeler PGlite harness installs its dependency on first run (design: deps float,
+# not vendored). Ignore the generated lockfile so it is never committed accidentally.
+plugins/napkin/skills/erd-modeler/scripts/package-lock.json
+
+# skill-creator eval run output (generated models, harness results, review.html). Kept on
+# disk for inspection but reproducible from evals/evals.json, so never committed.
+plugins/napkin/skills/erd-modeler-workspace/
+
+# erd-diagram renderer installs its dependency on first run (design: deps float, not vendored).
+# Ignore the generated lockfile so it is never committed accidentally.
+plugins/napkin/skills/erd-diagram/scripts/package-lock.json
+
+# skill-creator eval run output for erd-diagram (generated diagrams, review.html). Reproducible
+# from evals/evals.json, so never committed.
+plugins/napkin/skills/erd-diagram-workspace/
+
+# Claude Code scheduler lock (machine-local; never share)
+.claude/scheduled_tasks.lock
+
+# Claude Code worktrees (created by `claude --worktree` / EnterWorktree; never commit)
+.claude/worktrees/

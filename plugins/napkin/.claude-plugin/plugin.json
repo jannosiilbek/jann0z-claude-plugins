@@ -1,0 +1,11 @@
+{
+  "name": "napkin",
+  "version": "1.1.0",
+  "description": "Design, validate, live-test, and visualize a relational data model. The erd-modeler skill turns a natural-language domain description (or an optional glossary) into a clean, normalized DBML model, audits it against best practices, then proves it works by running it against an in-memory Postgres (PGlite) — generating SQL, seed data, and business-use-case queries and looping with fixes until every use-case passes. The manual /erd-diagram command renders an existing DBML model into a self-contained, interactive HTML ER diagram.",
+  "author": {
+    "name": "janno",
+    "email": "janno.siilbek@gmail.com"
+  },
+  "license": "MIT",
+  "keywords": ["erd", "dbml", "data-model", "domain-model", "database-design", "schema", "normalization", "postgres", "pglite", "diagram", "visualization"]
+}
