@@ -1,0 +1,61 @@
+{
+  "skill_name": "ddd-domain",
+  "evals": [
+    {
+      "id": 0,
+      "name": "greenfield-glossary-and-flows",
+      "prompt": "Build the domain language for our gym member check-in system. The brief is in spec/brief.md: members hold a membership (monthly or annual, can lapse), check in at one of 3 locations via QR code, and front-desk staff look up visit history. Define the terms and the flows.",
+      "expected_output": "spec/glossary.md and spec/flows.md in the canonical grammar: terms with Definition and Maps to: ERD: lines (including the relationship concepts like Membership and Check-in), an Enumerations table, and FL-xxx flows whose steps use the closed Command:/Event:/Policy: kinds with past-tense events.",
+      "files": ["spec/brief.md"],
+      "assertions": [
+        {"text": "spec/glossary.md is created with the <!-- ddd: glossary --> marker, ## Terms with ### <Term> entries, and an ## Enumerations table"},
+        {"text": "Every persisted concept has a `Maps to: ERD: <table>` line with snake_case plural table names — including relationship concepts (e.g. Membership, Check-in), not just the obvious nouns"},
+        {"text": "Pure roles (front-desk staff) get a glossary term without a Maps to line"},
+        {"text": "spec/flows.md is created with FL-xxx headings and numbered steps, each starting with Command:, Event:, or Policy:"},
+        {"text": "Events are past tense; policies use the exact `Whenever <X>, then <Y>` shape"},
+        {"text": "Every flow and step actor is a glossary term"},
+        {"text": "The check-align.mjs gate was run and reported"}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "enum-spelling-fidelity",
+      "prompt": "Define the domain terms for our subscription billing service. Subscriptions are active, past_due, or canceled (exactly those states — they match our payment provider's API). Invoices are open, paid, or void. Organizations have users; an organization holds subscriptions to a plan; subscriptions generate invoices.",
+      "expected_output": "A glossary whose Enumerations table preserves the stated spellings exactly (past_due, canceled — not pastDue, not cancelled), since these values flow verbatim into DBML enums and live-tested SQL.",
+      "files": [],
+      "assertions": [
+        {"text": "The Enumerations table contains subscription_status with exactly the values active, past_due, canceled — spelling preserved verbatim"},
+        {"text": "The Enumerations table contains invoice_status with exactly open, paid, void"},
+        {"text": "No enum value is respelled, renamed, or extended beyond what the user stated"},
+        {"text": "Organization, User, Plan, Subscription, Invoice all appear as glossary terms with Maps to: ERD: lines"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "delta-preserves-user-definition",
+      "prompt": "Add refunds to our billing domain: a refund reverses a paid invoice, issued by a billing admin, and an invoice can be refunded at most once. Update the glossary and flows. (spec/glossary.md and spec/flows.md exist; I rewrote the Definition of Invoice myself last week and want it kept as-is.)",
+      "expected_output": "Delta mode: existing artifacts are read first; the user's Invoice definition is preserved byte-for-byte; a Refund term (with Maps to) and a refund flow with the next free FL- id are appended; changelogs gain one line each; nothing is renumbered or regenerated.",
+      "files": ["spec/glossary.md", "spec/flows.md"],
+      "assertions": [
+        {"text": "The existing artifacts were read before writing"},
+        {"text": "The user-edited Invoice Definition line is preserved verbatim"},
+        {"text": "A Refund term is added with a Maps to: ERD: line, and the new flow takes the next free FL- id without renumbering existing flows"},
+        {"text": "Existing terms and flows are byte-identical except where the refund change genuinely touches them"},
+        {"text": "Each modified artifact gains exactly one appended Changelog line"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "large-domain-contexts-inline",
+      "prompt": "Map out the domain language for our hospital operations platform: patient admissions and bed management, lab test ordering and results, pharmacy prescriptions and dispensing, staff shift scheduling, and billing with insurance claims. Each department has its own staff roles and its own terminology.",
+      "expected_output": "A glossary and flows for a genuinely large multi-context domain: Context: fields appear inline on terms and flows (e.g. Admissions, Lab, Pharmacy, Scheduling, Billing) per the restraint heuristic — but no separate context-map artifact or extra file is created.",
+      "files": [],
+      "assertions": [
+        {"text": "Context: fields appear inline on glossary terms and flows, grouping them into departmental bounded contexts"},
+        {"text": "No separate context-map file or artifact beyond glossary.md and flows.md is created"},
+        {"text": "Terms that mean different things in different contexts are disambiguated rather than merged into one vague term"},
+        {"text": "The glossary and flows otherwise follow the canonical grammar (markers, term fields, closed step kinds)"}
+      ]
+    }
+  ]
+}

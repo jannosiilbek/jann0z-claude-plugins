@@ -1,0 +1,298 @@
+# The spec/ artifact format
+
+This is the **canonical grammar** for every artifact the napkin DDD pipeline reads and
+writes. The pipeline skills (`ddd-brief`, `ddd-domain`, `ddd-usecases`, `erd-modeler`,
+`ddd-plan`) generate these artifacts; the `check-align.mjs` harness in
+`../scripts/` parses them and mechanically proves their cross-references. Grammar and
+parser live in the same skill so they cannot drift apart — if you change one, change the
+other, and the selftest pins both.
+
+Two audiences read these files: **humans**, who edit them by hand between pipeline runs,
+and **the parser**, which needs unambiguous anchors. The grammar is therefore plain,
+diff-friendly Markdown with a small set of strict shapes. Everything outside those shapes
+is free prose the parser ignores and the skills must preserve.
+
+## 1. Cross-cutting rules
+
+### 1.1 Artifact marker
+
+The first line after the H1 title is an HTML comment naming the artifact type:
+
+```markdown
+# Brief — Course Platform
+<!-- ddd: brief -->
+```
+
+Types: `brief`, `glossary`, `flows`, `usecases`, `plan`. The marker — not the filename —
+is how the parser identifies an artifact, so it survives renames and case differences.
+A spec file without a marker is invisible to the alignment check; never remove it.
+
+### 1.2 Identifiers
+
+| Kind | Format | Example | Scope |
+|------|--------|---------|-------|
+| Use case | `UC-` + 3 digits | `UC-001` | global |
+| Flow | `FL-` + 3 digits | `FL-001` | global |
+| Task | `T-` + 3 digits | `T-001` | global |
+| Milestone | `M` + number | `M1` | plan.md |
+| Acceptance criterion | `AC-` + number | `AC-1` | within its UC |
+| Data assertion | `DA-` + number | `DA-1` | within its UC |
+
+IDs are **immutable and never reused**. A new item takes the next free number — even if
+lower numbers have been retired. An item that is no longer wanted is **deprecated, not
+deleted** (set `- Status: deprecated`); this keeps every downstream citation resolvable
+forever. Renumbering breaks the traceability chain and is never worth it.
+
+### 1.3 Headings and fields
+
+Items with IDs use exactly this heading shape (em dash, single spaces):
+
+```markdown
+## UC-001 — Enroll student in course
+```
+
+Machine-read fields are list lines of the form `- Field: value` directly under their
+heading:
+
+```markdown
+- Actor: Student
+- Status: active
+```
+
+Field names are fixed per artifact (sections 2–6). Unknown list lines and any prose are
+ignored by the parser and **must be preserved verbatim** by skills when updating.
+
+### 1.4 Update protocol (every skill, every write)
+
+These artifacts are living documents — the pipeline updates them across many sessions and
+users hand-edit them in between. To keep that safe:
+
+1. **Read the whole existing artifact before writing.** Never write blind.
+2. **Modify only the sections your change touches.** User-added prose, unknown fields,
+   and unrelated sections are preserved byte-for-byte.
+3. **Never regenerate an existing artifact wholesale.** If the model believes a wholesale
+   rewrite is needed, say so and ask — don't do it silently.
+4. `## Clarifications log` (brief) and `## Changelog` (all artifacts) are **append-only**.
+5. Every write appends one Changelog line: `- <YYYY-MM-DD> (<skill-name>): <summary>`.
+6. Retire by deprecation (1.2), never by deletion.
+
+### 1.5 Changelog
+
+Every artifact ends with:
+
+```markdown
+## Changelog
+- 2026-06-11 (ddd-brief): created
+- 2026-06-12 (ddd-brief): added refund scope after clarification
+```
+
+## 2. spec/brief.md
+
+```markdown
+# Brief — <Project name>
+<!-- ddd: brief -->
+
+## Problem statement
+<prose: the problem, who has it, why now>
+
+## Actors
+- **<Actor>** — <one-line description>
+
+## Scope
+
+### In scope
+- <item>
+
+### Out of scope
+- <item>
+
+## Constraints
+- <item: technical, regulatory, budget…>
+
+## Non-functional notes
+- <item: performance, security, compliance…>
+
+## Pipeline sizing
+- Decision: full | lean | delta
+- Stages: ddd-domain: yes|no|delta · ddd-usecases: yes|no|delta · erd-modeler: yes|no|delta · ddd-plan: yes|no|delta
+- Rationale: <one line>
+
+## Clarifications log
+
+| # | Date | Question | Answer |
+|---|------|----------|--------|
+| 1 | 2026-06-11 | <question asked> | <answer given> |
+
+## Changelog
+- 2026-06-11 (ddd-brief): created
+```
+
+The **Pipeline sizing** block is the anti-bloat contract: it pre-declares which
+downstream stages this piece of work warrants, so a bug-fix-sized request never spawns a
+full artifact cascade. `full` = run everything; `lean` = skip stages marked `no`;
+`delta` = downstream skills update existing artifacts incrementally.
+
+## 3. spec/glossary.md
+
+The ubiquitous language. One term per domain concept, exact spellings everywhere.
+This is the same format the erd-modeler skill consumes for structured intake.
+
+```markdown
+# Glossary — <Project name>
+<!-- ddd: glossary -->
+
+## Terms
+
+### <Term>
+- Definition: <what it means in this domain — not a dictionary definition>
+- Maps to: ERD: <table_name>
+- Forbidden synonyms: <a>, <b>
+- Context: <bounded context name>
+
+## Enumerations
+
+| Enumeration | Values | Used by |
+|-------------|--------|---------|
+| enrollment_status | enrolled, completed, dropped | Enrollment |
+
+## Changelog
+- ...
+```
+
+- `### <Term>` — singular, Capitalized domain name. Every actor, flow step subject, and
+  use-case actor in the other artifacts must be one of these terms.
+- `- Maps to: ERD: <table_name>` — **only** for concepts persisted as a table;
+  `table_name` is the DBML table name (snake_case, plural). Concepts that become
+  **bridge tables get their own term** (e.g. *Enrollment* for students↔courses) — the
+  alignment check requires every DBML table to trace back to a glossary term.
+  Pure roles/actors that own no rows (e.g. *Registrar*) simply omit the field.
+- `- Forbidden synonyms:` — optional; trap words that must not appear in other artifacts
+  (e.g. `Client` when the term is *Customer*).
+- `- Context:` — optional; only when the domain is large enough to have bounded contexts.
+- **Enumerations**: values are comma-separated, exact spelling, order significant — they
+  become DBML `Enum`s verbatim (`canceled`, `past_due` — never respell). `Used by` names
+  the glossary term(s) whose table carries the enum.
+
+## 4. spec/flows.md
+
+Event-storming output in linear text: what happens, in what order, caused by whom.
+
+```markdown
+# Flows — <Project name>
+<!-- ddd: flows -->
+
+## FL-001 — <Flow name>
+- Context: <bounded context>
+- Actor: <Glossary term>
+- Steps:
+  1. Command: <Imperative phrase> (Actor: <Glossary term>)
+  2. Event: <Past-tense phrase>
+  3. Policy: Whenever <Event>, then <Command>
+  4. Event: <Past-tense phrase>
+
+## Changelog
+- ...
+```
+
+- Each step starts with one of the closed kinds:
+  - `Command:` — an intent, imperative mood ("Enroll student"). Optionally followed by
+    `(Actor: <Glossary term>)` when the actor differs from the flow's actor.
+  - `Event:` — a fact, past tense ("Student enrolled").
+  - `Policy:` — automation, exactly `Whenever <X>, then <Y>`.
+- `- Context:` is optional (large domains only); `- Actor:` is required and must be a
+  glossary term.
+
+## 5. spec/usecases.md
+
+The bridge from domain language to executable proof. Every active use case here becomes
+a live-tested SQL assertion when erd-modeler runs.
+
+```markdown
+# Use cases — <Project name>
+<!-- ddd: usecases -->
+
+## UC-001 — <Title>
+- Actor: <Glossary term>
+- Trigger: <Command or Event name from flows.md>
+- Status: active
+- Main flow:
+  1. <step>
+  2. <step>
+- Acceptance criteria:
+  - AC-1: WHEN <condition>, THE SYSTEM SHALL <behavior>.
+- Data assertions:
+  - DA-1: <what this proves at the data layer> => expect: rowcount=1
+  - DA-2: <the matching negative proof> => expect: error ~ foreign key
+
+## Changelog
+- ...
+```
+
+- `- Status:` is `active` or `deprecated` (missing = active).
+- **Acceptance criteria** use EARS shapes — pick the one that fits:
+  - `WHEN <trigger>, THE SYSTEM SHALL <behavior>.` (event-driven)
+  - `WHILE <state>, THE SYSTEM SHALL <behavior>.` (state-driven)
+  - `IF <unwanted condition>, THEN THE SYSTEM SHALL <behavior>.` (unwanted behavior)
+  - `THE SYSTEM SHALL <behavior>.` (ubiquitous)
+- **Data assertions** end with `=> expect: <assertion>` where `<assertion>` is drawn
+  **strictly** from erd-modeler's closed assertion grammar — do not invent operators:
+
+  | Assertion | Proves |
+  |-----------|--------|
+  | `error` | the operation is rejected |
+  | `error ~ <reason>` | rejected for a specific reason (`foreign key`, `not null`, `unique`, `check`, `enum`, or a message substring) |
+  | `rowcount=N` | a write affected exactly N rows |
+  | `rows=N` / `rows>=N` | a read returned N / at least N rows |
+  | `value=<v>` | a read returned exactly one cell equal to `<v>` |
+  | `col:<name>=<v>` | a read returned one row whose column `<name>` equals `<v>` |
+
+  In erd-modeler's live test, `UC-001`'s `DA-1` becomes the block label
+  `-- usecase: UC-001/DA-1 <description>` with `-- expect: <assertion>` — a 1:1 mapping,
+  which is what makes the spec executable rather than aspirational. Give every UC at
+  least one positive assertion and, wherever the domain has an integrity rule worth
+  protecting, one negative (`error ~ …`) assertion.
+
+## 6. spec/plan.md
+
+```markdown
+# Plan — <Project name>
+<!-- ddd: plan -->
+
+## M1 — <Milestone name>
+
+### T-001 — <Task title>
+- Implements: UC-001, UC-003
+- Depends on: none
+- Terms: Order, Customer
+- Status: todo
+- Acceptance: the acceptance criteria of UC-001, UC-003 pass
+
+## Changelog
+- ...
+```
+
+- `- Implements:` — comma-separated UC ids; every task cites what it delivers.
+- `- Depends on:` — `none` or comma-separated T-ids; the dependency graph must be acyclic.
+- `- Terms:` — optional glossary anchors for the implementing agent.
+- `- Status:` — `todo` | `in-progress` | `done`. Tasks marked `done` are history:
+  never edit them, add new tasks instead.
+- `- Acceptance:` — points at the cited UCs' criteria. Don't write new acceptance
+  language here; that would create a second source of truth that drifts.
+
+## 7. How the artifacts interlock
+
+```
+brief.md ──actors──▶ glossary.md ──terms──▶ flows.md ──commands──▶ usecases.md
+                          │                                            │
+                          │ Maps to: ERD / Enumerations                │ DA => expect
+                          ▼                                            ▼
+                     data/model.dbml ◀─────live-tested against────data/usecases.sql
+                          ▲                                            ▲
+                          └────────────── plan.md ──Implements: UC-xxx─┘
+```
+
+`check-align.mjs` proves these edges mechanically (see `../scripts/README.md` for the
+full check list AL-01…AL-15): glossary↔DBML table tracing, enum spelling fidelity,
+actor closure, UC→plan coverage, DA grammar validity, UC→usecases.sql labeling,
+ID uniqueness, and dependency acyclicity. Run it after every artifact write; a spec
+that fails the gate is not done.

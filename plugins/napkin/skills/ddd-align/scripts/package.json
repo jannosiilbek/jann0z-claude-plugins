@@ -1,0 +1,10 @@
+{
+  "name": "ddd-align-harness",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Mechanical cross-artifact alignment checker for the napkin DDD spec pipeline, plus its adversarial selftest.",
+  "type": "module",
+  "scripts": {
+    "test": "node selftest.mjs"
+  }
+}

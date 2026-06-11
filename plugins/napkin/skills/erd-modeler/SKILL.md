@@ -1,6 +1,6 @@
 ---
 name: erd-modeler
-description: Use when the user wants to design a data model, create an ERD, model a domain, design a database schema, build a data model from a spec/glossary, or validate an existing DBML/schema for best practices. Turns a natural-language domain description into a clean, normalized DBML model, validates it against best practices, then live-tests it against an in-memory Postgres (PGlite) by generating SQL, seed data, and business-use-case queries — looping with improvements until every use-case passes.
+description: Use when the user wants to design a data model, create an ERD, model a domain, design a database schema, build a data model from a spec/glossary, or validate an existing DBML/schema for best practices. Turns a natural-language domain description into a clean, normalized DBML model, validates it against best practices, then live-tests it against an in-memory Postgres (PGlite) by generating SQL, seed data, and business-use-case queries — looping with improvements until every use-case passes. When a spec/usecases.md exists (napkin DDD pipeline), its data assertions become the live tests.
 ---
 
 # ERD Modeler
@@ -22,6 +22,11 @@ even for a "simple" model.
   glossary's canonical names verbatim (respect Forbidden synonyms). The **Enumerations**
   table becomes DBML `Enum`s with the exact values and spelling (`canceled`, `past_due`) —
   never invent or rename an enum value.
+- **`spec/usecases.md`** (when present) — the active use cases' **data assertions are the
+  business use-case list** for stage 4: each `DA-n: <description> => expect: <assertion>`
+  becomes one live-test block labeled `-- usecase: UC-xxx/DA-n <description>` with the
+  DA's assertion as its `-- expect:`. Use-case main flows and acceptance criteria inform
+  the seed-data scenarios.
 
 **Otherwise** (no glossary), extract from the user's natural-language description:
 - **Entities** — the things rows are stored about.
@@ -131,7 +136,10 @@ Filename is `model.dbml` (use `<domain>.dbml` only when one project holds severa
 
 The live-test SQL files (`schema.sql`, `seed.sql`, `usecases.sql`) are **optional** to
 keep — persist them next to the `.dbml` only when the user wants runnable SQL/seed
-output; otherwise they can stay in the scratch dir. The `.dbml` is the source of truth;
+output; otherwise they can stay in the scratch dir. Exception: when `spec/usecases.md`
+exists, **always persist the final `usecases.sql` to `spec/data/usecases.sql`** — it is
+the traceability record proving every use case's data assertions were live-tested (the
+ddd-align gate audits for it). The `.dbml` is the source of truth;
 everything else is reproducible from it (each FK's ON DELETE policy is carried as a
 trailing `//` comment, since DBML has no native syntax for it — see stage 2).
 
@@ -175,6 +183,10 @@ Severities:
   (must be fixed).
 - `⚠️ warn` — participation, naming, or trap risks (fix or flag clearly).
 - `ℹ️ info` — style suggestions.
+
+When a `spec/` directory exists and the ddd-align skill is installed, run its harness
+after saving and append the one-line result to the report:
+`node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spec/`.
 
 If the loop exhausts its max iterations without full convergence, end with
 `❌ Not converged after N iterations` and report exactly which use-cases still fail, the

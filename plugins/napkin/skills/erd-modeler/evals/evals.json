@@ -80,6 +80,21 @@
         {"text": "The PGlite live-test harness (run-erd-test.mjs) was actually run and every use-case passed (green), with explicit integer ids used in seed/use-case rows"},
         {"text": "A validation/best-practices report was produced"}
       ]
+    },
+    {
+      "id": 5,
+      "name": "spec-pipeline-usecase-intake",
+      "prompt": "Build the data model for this project from its spec (the spec/ directory contains glossary.md with terms mapped to ERD tables and an enumerations table, and usecases.md with UC-001..UC-003 carrying data assertions like `=> expect: rowcount=1` and `=> expect: error ~ foreign key`).",
+      "expected_output": "A DBML model derived from the glossary (tables and enums verbatim), live-tested with one block per use-case data assertion labeled `-- usecase: UC-xxx/DA-n …`, every assertion green, the model saved to spec/data/model.dbml and the final usecases.sql persisted to spec/data/usecases.sql.",
+      "files": ["spec/brief.md", "spec/glossary.md", "spec/flows.md", "spec/usecases.md"],
+      "assertions": [
+        {"text": "Tables and enums come verbatim from the glossary (Maps to: ERD: names, exact enum value spellings)"},
+        {"text": "Every active use case's data assertions appear as live-test blocks labeled `-- usecase: UC-xxx/DA-n <description>` with the DA's assertion as the -- expect:"},
+        {"text": "The PGlite live-test harness (run-erd-test.mjs) was actually run and every use-case passed (green)"},
+        {"text": "The model is saved to spec/data/model.dbml"},
+        {"text": "The final usecases.sql is persisted to spec/data/usecases.sql (the traceability record the ddd-align gate audits)"},
+        {"text": "A validation/best-practices report was produced"}
+      ]
     }
   ]
 }

@@ -1,0 +1,57 @@
+{
+  "skill_name": "ddd-align",
+  "evals": [
+    {
+      "id": 0,
+      "name": "clean-spec-green",
+      "prompt": "Check whether my spec is still consistent — the spec/ directory in this project holds a complete DDD spec (brief, glossary, flows, use cases, plan, plus data/model.dbml and data/usecases.sql for a small course platform, all aligned).",
+      "expected_output": "The check-align.mjs harness is actually run against spec/, reports zero errors, and the fixed-format alignment report ends with the ✅ Aligned footer.",
+      "files": ["spec/brief.md", "spec/glossary.md", "spec/flows.md", "spec/usecases.md", "spec/plan.md", "spec/data/model.dbml", "spec/data/usecases.sql"],
+      "assertions": [
+        {"text": "The check-align.mjs harness was actually executed (not hand-simulated) against the spec directory"},
+        {"text": "The report uses the fixed format with a mechanical-findings section and ends with the ✅ Aligned footer"},
+        {"text": "No artifact file was modified — ddd-align audits, it never edits"}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "renamed-table-drift",
+      "prompt": "Someone on the team hand-edited our data model and I think the spec drifted. Audit the spec/ directory (it has a glossary whose Enrollment term maps to ERD: enrollments, but data/model.dbml now names that table registrations).",
+      "expected_output": "The harness is run and the report surfaces AL-01 (glossary term maps to a missing table) and AL-02 (untraced table registrations), routing the fix to ddd-domain / erd-modeler, with the ❌ Drift detected footer.",
+      "files": ["spec/glossary.md", "spec/flows.md", "spec/usecases.md", "spec/plan.md", "spec/data/model.dbml"],
+      "assertions": [
+        {"text": "The check-align.mjs harness was actually executed"},
+        {"text": "An AL-01 error is reported naming both the glossary term and the missing table"},
+        {"text": "An AL-02 error is reported for the untraced registrations table"},
+        {"text": "Each finding's row routes the fix to an owning skill (Fix via column)"},
+        {"text": "The report ends with the ❌ Drift detected footer (not a false green)"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "ghost-usecase-citation",
+      "prompt": "We deleted a use case from spec/usecases.md last week. Can you verify the rest of the spec is still coherent? (The plan.md still has a task whose Implements: cites the removed UC-003.)",
+      "expected_output": "The harness is run and reports AL-06 (plan task cites a use case that no longer exists), the report recommends deprecation-over-deletion per the spec format, and routes the fix to ddd-plan / ddd-usecases.",
+      "files": ["spec/glossary.md", "spec/flows.md", "spec/usecases.md", "spec/plan.md"],
+      "assertions": [
+        {"text": "The check-align.mjs harness was actually executed"},
+        {"text": "An AL-06 error is reported identifying the plan task and the missing UC-003"},
+        {"text": "The response notes the spec-format rule that items are deprecated (Status: deprecated), never deleted"},
+        {"text": "The report ends with the ❌ Drift detected footer"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "mechanically-green-vacuous-ac",
+      "prompt": "Run a full alignment audit on spec/. (The spec is mechanically consistent, but UC-002's only acceptance criterion reads \"THE SYSTEM SHALL work correctly and handle all cases properly.\")",
+      "expected_output": "The harness is run and passes (zero mechanical errors), but the judged-findings section flags UC-002's acceptance criterion as vacuous — EARS-shaped but content-free — and routes it to ddd-usecases. The judged stage is not skipped just because the harness was green.",
+      "files": ["spec/glossary.md", "spec/flows.md", "spec/usecases.md", "spec/plan.md", "spec/data/model.dbml"],
+      "assertions": [
+        {"text": "The check-align.mjs harness was actually executed and reported zero errors"},
+        {"text": "A judged (non-mechanical) finding flags the vacuous acceptance criterion on UC-002"},
+        {"text": "The judged finding is routed to ddd-usecases as the owning skill"},
+        {"text": "The mechanical findings and judged findings appear as separate sections of the fixed report format"}
+      ]
+    }
+  ]
+}

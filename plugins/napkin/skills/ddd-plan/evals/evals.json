@@ -1,0 +1,46 @@
+{
+  "skill_name": "ddd-plan",
+  "evals": [
+    {
+      "id": 0,
+      "name": "full-plan-from-spec",
+      "prompt": "Create the development plan for our gym check-in system — the spec/ directory has the full pipeline output (brief, glossary, flows, usecases.md with UC-001..UC-005 all active, and a live-tested data/model.dbml).",
+      "expected_output": "spec/plan.md in the canonical grammar: dependency-driven milestones (foundations first), T-xxx tasks each implementing 1-3 UCs, every active UC cited by at least one task, an acyclic Depends on graph, acceptance pointing at the cited UCs' criteria, and a green closing gate with --require usecases,plan.",
+      "files": ["spec/brief.md", "spec/glossary.md", "spec/flows.md", "spec/usecases.md", "spec/data/model.dbml"],
+      "assertions": [
+        {"text": "spec/plan.md is created with the <!-- ddd: plan --> marker, ## Mx — milestone headings and ### T-xxx — task headings"},
+        {"text": "Every active UC (UC-001..UC-005) is cited by at least one task's Implements: line"},
+        {"text": "The Depends on: graph is acyclic and foundations (schema) come before dependent work"},
+        {"text": "Task Acceptance lines point at the cited UCs' criteria — no new acceptance language is invented"},
+        {"text": "The check-align.mjs gate was run with --require usecases,plan and reported green"},
+        {"text": "The report ends with the ✅ Pipeline complete footer"}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "delta-done-tasks-untouched",
+      "prompt": "We added a refund use case (UC-006) to the billing spec — update the plan. (spec/plan.md exists; T-001 and T-002 are Status: done, T-003 is in-progress. The brief sizing is delta.)",
+      "expected_output": "Delta mode: done tasks are preserved byte-for-byte, the refund work arrives as a new task with the next free T- id citing UC-006, no renumbering, one appended changelog line, and the gate stays green.",
+      "files": ["spec/brief.md", "spec/usecases.md", "spec/plan.md"],
+      "assertions": [
+        {"text": "Tasks T-001 and T-002 (Status: done) are byte-identical after the update"},
+        {"text": "The refund task takes the next free T- id and cites UC-006 in Implements:"},
+        {"text": "No existing task is renumbered or rewritten; exactly one Changelog line is appended"},
+        {"text": "The check-align.mjs gate was run and reported"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "orphan-uc-not-dropped",
+      "prompt": "Plan the build for this project from spec/. (usecases.md contains five active UCs; UC-004 'export full audit trail' conflicts with the brief, which lists audit/reporting as out of scope — the spec has drifted.)",
+      "expected_output": "The conflict is surfaced, not buried: UC-004 is either planned anyway with the conflict flagged, or listed in an explicit Unplannable section with the reason and the AL-05 gate error left standing — it is never silently omitted while claiming a complete plan.",
+      "files": ["spec/brief.md", "spec/glossary.md", "spec/usecases.md"],
+      "assertions": [
+        {"text": "UC-004 is not silently dropped — it is either implemented by a task or explicitly listed as unplannable with the scope conflict named"},
+        {"text": "If UC-004 is left unplanned, the report does NOT claim ✅ Pipeline complete with a clean gate — the AL-05 coverage error is shown"},
+        {"text": "The response routes the resolution to the owning skill (deprecate via ddd-usecases or rescope via ddd-brief)"},
+        {"text": "All other active UCs are cited by tasks with an acyclic dependency graph"}
+      ]
+    }
+  ]
+}

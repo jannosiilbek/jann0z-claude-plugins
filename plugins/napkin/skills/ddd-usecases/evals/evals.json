@@ -1,0 +1,59 @@
+{
+  "skill_name": "ddd-usecases",
+  "evals": [
+    {
+      "id": 0,
+      "name": "derive-from-flows",
+      "prompt": "Derive the use cases for our gym check-in system from the spec (spec/glossary.md and spec/flows.md exist: terms Member, Membership, Location, Check-in, Front-desk Staff; flows cover registering a member, recording a check-in with a policy that lapsed memberships are rejected, and looking up visit history).",
+      "expected_output": "spec/usecases.md in the canonical grammar: one UC per flow command (plus the read use case for visit history), actors from the glossary, triggers naming flow commands/events verbatim, EARS acceptance criteria, and data assertions in the closed grammar.",
+      "files": ["spec/brief.md", "spec/glossary.md", "spec/flows.md"],
+      "assertions": [
+        {"text": "spec/usecases.md is created with the <!-- ddd: usecases --> marker and ## UC-xxx — Title headings"},
+        {"text": "Every Command in flows.md yields a use case, and the visit-history read path is a use case too"},
+        {"text": "Every UC Actor is a glossary term and every Trigger names a Command or Event from flows.md verbatim"},
+        {"text": "Every UC has at least one acceptance criterion in an EARS shape (WHEN/WHILE/IF…THEN/THE SYSTEM SHALL)"},
+        {"text": "Every data assertion ends with => expect: using only the closed grammar (error, error ~ <reason>, rowcount=N, rows=N, rows>=N, value=<v>, col:<name>=<v>)"},
+        {"text": "The check-align.mjs gate was run and reported"}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "negative-coverage",
+      "prompt": "Write the use cases for our billing domain (glossary and flows in spec/ cover Organization, User, Plan, Subscription, Invoice with subscription_status active/past_due/canceled). Make sure the spec actually protects our integrity rules: a subscription must belong to an organization and a plan, and an invoice must belong to a subscription.",
+      "expected_output": "Use cases whose data assertions pair positive proofs with negative ones: each integrity rule named by the user gets an error ~ foreign key (or similar) assertion, seeding erd-modeler's coverage floor of at least one write plus one negative test.",
+      "files": ["spec/glossary.md", "spec/flows.md"],
+      "assertions": [
+        {"text": "At least one data assertion per named integrity rule uses error ~ foreign key (or another specific error ~ reason)"},
+        {"text": "Write use cases carry both a positive assertion (rowcount=) and a negative assertion (error ~)"},
+        {"text": "All assertions stay inside the closed grammar — no invented operators"},
+        {"text": "Enum spellings in any criteria/assertions match the glossary exactly (past_due, canceled)"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "delta-stable-ids",
+      "prompt": "Add a use case for refunding a paid invoice to our spec (spec/usecases.md exists with UC-001..UC-004, of which UC-003 is already Status: deprecated). A refund reverses a paid invoice and an invoice can be refunded at most once.",
+      "expected_output": "Delta mode: the new use case takes UC-005 (next free id, counting the deprecated one); existing UCs including the deprecated UC-003 are preserved byte-for-byte; the at-most-once rule appears as an error ~ unique negative assertion; one changelog line is appended.",
+      "files": ["spec/glossary.md", "spec/flows.md", "spec/usecases.md"],
+      "assertions": [
+        {"text": "The new use case takes the next free id (UC-005) — nothing is renumbered"},
+        {"text": "The deprecated UC-003 is preserved, still marked Status: deprecated — not deleted"},
+        {"text": "The at-most-once rule yields a negative data assertion (error ~ unique)"},
+        {"text": "Existing use cases are byte-identical and exactly one Changelog line is appended"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "missing-inputs-routed",
+      "prompt": "Write me testable use cases with acceptance criteria for a peer-to-peer tool-lending app: neighbors list tools, borrow each other's tools, and leave reviews. (No spec/ directory exists in this project yet.)",
+      "expected_output": "The skill notices glossary/flows are missing and either routes to ddd-domain first or derives a minimal glossary+flows pair before the use cases — it never emits use cases whose actors and triggers point at nothing.",
+      "files": [],
+      "assertions": [
+        {"text": "The skill does not emit usecases.md referencing actors/triggers that exist in no glossary or flows artifact"},
+        {"text": "Either ddd-domain is suggested/run first, or minimal glossary.md and flows.md are created alongside usecases.md"},
+        {"text": "If artifacts are created, the lending relationship (Loan) gets its own glossary term with a Maps to: ERD: line"},
+        {"text": "All acceptance criteria are EARS-shaped and all data assertions use the closed grammar"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "skill_name": "ddd-brief",
+  "evals": [
+    {
+      "id": 0,
+      "name": "greenfield-detailed-request",
+      "prompt": "Let's spec this out: I run a small gym chain (3 locations) and want a member check-in system. Members hold a membership (monthly or annual, can lapse), check in at a location via a QR code, and front-desk staff can look up a member's visit history. Out of scope: payments (handled by our existing billing provider) and class scheduling. It must run on Postgres. Roughly 5k members, 100k check-ins a year. Start the spec for me.",
+      "expected_output": "A spec/brief.md following the canonical grammar (ddd: brief marker, problem/actors/scope/constraints/non-functional/sizing/clarifications/changelog), sized full, with at most one clarifying question since the request already covers the checklist, ending with a pointer to ddd-domain.",
+      "files": [],
+      "assertions": [
+        {"text": "spec/brief.md is created with the <!-- ddd: brief --> marker and all skeleton sections (problem statement, actors, scope in/out, constraints, non-functional notes, pipeline sizing, clarifications log, changelog)"},
+        {"text": "At most one clarifying question is asked — the prompt already covers problem, actors, scope, constraints, and volumes, and the skill must not re-ask what was provided"},
+        {"text": "The pipeline sizing block declares Decision: full with a one-line rationale"},
+        {"text": "Out-of-scope items (payments, class scheduling) are recorded under Out of scope, not silently dropped"},
+        {"text": "The check-align.mjs gate was run and its result reported"},
+        {"text": "The report points to ddd-domain as the next pipeline step"}
+      ]
+    },
+    {
+      "id": 1,
+      "name": "brief-from-transcript",
+      "prompt": "I had a kickoff call about an internal tool for tracking conference-room bookings — the transcript is in notes/kickoff-transcript.md. Turn it into a project brief. Don't ask me things that are already in the transcript.",
+      "expected_output": "The transcript is read fully before any question; answers found there are recorded directly (and noted in the clarifications log as answered-from-material); only genuinely uncovered checklist areas produce questions, one at a time, capped at ~5.",
+      "files": ["notes/kickoff-transcript.md"],
+      "assertions": [
+        {"text": "The transcript file was read before any clarifying question was asked"},
+        {"text": "No question re-asks information present in the transcript"},
+        {"text": "spec/brief.md is created with the canonical skeleton and a clarifications log"},
+        {"text": "Checklist areas the transcript leaves open are either asked about (one question at a time) or written as explicit, user-visible assumptions"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "delta-update-preserves-brief",
+      "prompt": "We need to add cancellation emails to the booking system — when a booking is cancelled, the organizer gets notified. Update our spec accordingly (spec/brief.md already exists for this project; note that I hand-tuned the Problem statement wording, leave it alone).",
+      "expected_output": "Delta mode: the existing brief is read first; the Problem statement is preserved byte-for-byte; only Scope (and any genuinely affected section) changes; the clarifications log is appended, not rewritten; one new changelog line is added; pipeline sizing becomes delta.",
+      "files": ["spec/brief.md"],
+      "assertions": [
+        {"text": "The existing spec/brief.md was read before writing"},
+        {"text": "The hand-tuned Problem statement section is preserved verbatim"},
+        {"text": "The Pipeline sizing decision is delta (not full)"},
+        {"text": "The Clarifications log retains all prior rows and the Changelog gains exactly one new appended line"},
+        {"text": "The brief was not regenerated wholesale — untouched sections are byte-identical"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "anti-bloat-bug-fix",
+      "prompt": "Bug: in our course platform, dropping an enrollment currently deletes the row instead of setting status to dropped, so history is lost. Spec the fix. (spec/ already contains a full brief, glossary, use cases and plan for this system.)",
+      "expected_output": "The skill recognizes a bug-fix-sized request: sizing is delta with most stages marked no/delta, no new user stories or invented requirements are manufactured, the brief gains at most a clarifying line, and the report routes to the one artifact that actually changes (the drop use case).",
+      "files": ["spec/brief.md", "spec/glossary.md", "spec/usecases.md", "spec/plan.md"],
+      "assertions": [
+        {"text": "The Pipeline sizing decision is delta — not full — with a rationale naming the bug-fix scope"},
+        {"text": "No new user stories, actor lists, or scope sections are invented for a one-line behavior fix (the documented artifact-bloat failure mode)"},
+        {"text": "The existing brief sections are preserved; at most a clarification/changelog line is added"},
+        {"text": "The report points at the specific downstream artifact that needs the change (the drop-enrollment use case) rather than re-running the whole pipeline"}
+      ]
+    }
+  ]
+}

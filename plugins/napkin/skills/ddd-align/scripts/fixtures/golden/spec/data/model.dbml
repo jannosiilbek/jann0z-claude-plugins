@@ -1,0 +1,40 @@
+// Course Platform — data model
+// Identity strategy: TypeID (type-prefixed text ids)
+
+Enum enrollment_status {
+  enrolled
+  completed
+  dropped
+}
+
+Table students {
+  id text [pk] // TypeID, prefix "stu"
+  full_name text [not null]
+  email text [unique, not null]
+
+  Note: 'TypeID prefix: stu'
+}
+
+Table courses {
+  id text [pk] // TypeID, prefix "crs"
+  title text [not null]
+  capacity int [not null]
+
+  Note: 'TypeID prefix: crs'
+}
+
+Table enrollments {
+  id text [pk] // TypeID, prefix "enr"
+  status enrollment_status [not null]
+  enrolled_at timestamptz [not null]
+  student_id text [not null, ref: > students.id] // ON DELETE CASCADE
+  course_id text [not null, ref: > courses.id] // ON DELETE RESTRICT
+
+  indexes {
+    student_id
+    course_id
+    (student_id, course_id) [unique]
+  }
+
+  Note: 'TypeID prefix: enr'
+}
