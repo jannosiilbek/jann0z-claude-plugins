@@ -9,7 +9,7 @@
       "files": [],
       "assertions": [
         {"text": "spec/brief.md is created with the <!-- ddd: brief --> marker and all skeleton sections (problem statement, actors, scope in/out, constraints, non-functional notes, pipeline sizing, clarifications log, changelog)"},
-        {"text": "At most one clarifying question is asked — the prompt already covers problem, actors, scope, constraints, and volumes, and the skill must not re-ask what was provided"},
+        {"text": "At most one blocking question is asked (questions recorded as stated assumptions count toward this limit only if they alter scope, actors, or data shape) — the prompt already covers problem, actors, scope, constraints, and volumes, and the skill must not re-ask what was provided"},
         {"text": "The pipeline sizing block declares Decision: full with a one-line rationale"},
         {"text": "Out-of-scope items (payments, class scheduling) are recorded under Out of scope, not silently dropped"},
         {"text": "The check-align.mjs gate was run and its result reported"},

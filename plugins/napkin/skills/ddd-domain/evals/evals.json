@@ -41,7 +41,8 @@
         {"text": "The user-edited Invoice Definition line is preserved verbatim"},
         {"text": "A Refund term is added with a Maps to: ERD: line, and the new flow takes the next free FL- id without renumbering existing flows"},
         {"text": "Existing terms and flows are byte-identical except where the refund change genuinely touches them"},
-        {"text": "Each modified artifact gains exactly one appended Changelog line"}
+        {"text": "Each modified artifact gains exactly one appended Changelog line"},
+        {"text": "No non-canonical fields (e.g. Invariants:, Preconditions:, Postconditions:) are introduced — new entries use only the field set defined by the spec grammar (Definition, Maps to, Forbidden synonyms, Context; Command/Event/Policy steps)"}
       ]
     },
     {

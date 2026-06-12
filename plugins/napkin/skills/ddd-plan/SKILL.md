@@ -78,7 +78,8 @@ Alignment gate: ✅ ok
 ✅ Pipeline complete — brief → domain → use cases → live-tested model → plan
 ```
 
-In delta mode, add "Tasks added: …, done tasks untouched: N".
+In delta mode, add "Tasks added: …, done tasks untouched: N". The ✅ footer is the
+**last line** of the report — put notes and caveats above it, never after.
 
 If any active UC genuinely cannot be planned (contradicts the model, blocked on a
 decision), do not drop it silently — list it under an explicit "Unplannable" section in

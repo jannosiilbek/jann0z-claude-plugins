@@ -12,7 +12,7 @@
         {"text": "Every Command in flows.md yields a use case, and the visit-history read path is a use case too"},
         {"text": "Every UC Actor is a glossary term and every Trigger names a Command or Event from flows.md verbatim"},
         {"text": "Every UC has at least one acceptance criterion in an EARS shape (WHEN/WHILE/IF…THEN/THE SYSTEM SHALL)"},
-        {"text": "Every data assertion ends with => expect: using only the closed grammar (error, error ~ <reason>, rowcount=N, rows=N, rows>=N, value=<v>, col:<name>=<v>)"},
+        {"text": "Every active use case has at least one data assertion, and every assertion ends with => expect: using only the closed grammar (error, error ~ <reason>, rowcount=N, rows=N, rows>=N, value=<v>, col:<name>=<v>)"},
         {"text": "The check-align.mjs gate was run and reported"}
       ]
     },
@@ -25,7 +25,7 @@
       "assertions": [
         {"text": "At least one data assertion per named integrity rule uses error ~ foreign key (or another specific error ~ reason)"},
         {"text": "Write use cases carry both a positive assertion (rowcount=) and a negative assertion (error ~)"},
-        {"text": "All assertions stay inside the closed grammar — no invented operators"},
+        {"text": "Every use case carries at least one data assertion and all stay inside the closed grammar — no invented operators, no assertion-free prose-only coverage"},
         {"text": "Enum spellings in any criteria/assertions match the glossary exactly (past_due, canceled)"}
       ]
     },

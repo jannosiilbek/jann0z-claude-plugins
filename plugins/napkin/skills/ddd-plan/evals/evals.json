@@ -13,7 +13,7 @@
         {"text": "The Depends on: graph is acyclic and foundations (schema) come before dependent work"},
         {"text": "Task Acceptance lines point at the cited UCs' criteria — no new acceptance language is invented"},
         {"text": "The check-align.mjs gate was run with --require usecases,plan and reported green"},
-        {"text": "The report ends with the ✅ Pipeline complete footer"}
+        {"text": "The ✅ Pipeline complete footer is the last line of the report (no notes after it)"}
       ]
     },
     {

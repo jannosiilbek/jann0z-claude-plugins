@@ -53,6 +53,10 @@ left — flag, with artifact and location:
   contradict the brief's scope.
 - **Stale changelogs** — artifacts whose content visibly changed without a changelog
   entry (compare against git history when available).
+- **Deletion instead of deprecation** — when a finding traces to an item that was
+  removed outright (a dangling `Implements:` cite, an orphaned flow), say so in terms
+  of the spec-format rule: items are retired with `Status: deprecated`, never deleted,
+  precisely so citations can't dangle. Recommend restoring the item as deprecated.
 
 Judge only what you can point to. This stage adds findings, never overturns the
 harness: a mechanical `error` stays an error.
@@ -80,6 +84,10 @@ Emit the report in this fixed format:
 ```
 
 (or `❌ Drift detected — E errors, W warnings` when the harness exits non-zero.)
+
+The ✅/❌ summary line is the **last line** of the report — routing notes and
+recommendations belong in the Fix via column or above the footer, never after it, so
+the verdict is always where a reader (or a script) expects it.
 
 The **Fix via** column routes each finding to the skill that owns the artifact:
 glossary/flows → `ddd-domain`, use cases → `ddd-usecases`, model/DBML → `erd-modeler`,

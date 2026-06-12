@@ -24,6 +24,11 @@ question.
   domain, and the "Other" escape hatch still exists.
 - **Ask only what changes the spec.** "What color should the UI be" never changes a
   brief. "Can an order exist without a customer" always does.
+- **Question vs. assumption — the structure test.** Reserve questions for decisions
+  that alter scope, actors, or the shape of the data; details that merely tune behavior
+  (which field a QR code encodes, the wording of a rejection message) become stated
+  assumptions, not questions. When several gaps survive that test, ask the single most
+  consequential one first — often its answer settles the others.
 - **~5 question budget.** When it's spent, switch to stated assumptions: write
   "Assumed: X (correct me)" into the relevant brief section. An assumption the user can
   see and veto is worth more than a tenth question they won't read.
