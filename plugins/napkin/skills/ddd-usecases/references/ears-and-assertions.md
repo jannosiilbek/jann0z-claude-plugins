@@ -61,7 +61,9 @@ For every UC that writes data, ask: which integrity rule protects this operation
 That rule deserves a negative DA:
 
 - a foreign key → `error ~ foreign key`
-- a uniqueness rule ("an invoice can be refunded at most once") → `error ~ unique`
+- a uniqueness rule ("an invoice can be refunded at most once") → `error ~ unique` —
+  model at-most-once as a **unique constraint** on the owning table, not as a check
+  constraint or a status guard; uniqueness is what the database actually enforces
 - a mandatory field → `error ~ not null`
 - a closed value set → `error ~ enum` (or `error ~ check`)
 

@@ -92,4 +92,5 @@ Alignment gate: ✅ ok
    against a real in-memory Postgres
 ```
 
-In delta mode, add an "Added / changed / deprecated / preserved" line.
+In delta mode, add an "Added / changed / deprecated / preserved" line. The ➡️ pointer
+is the **last line** of the report — nothing after it.

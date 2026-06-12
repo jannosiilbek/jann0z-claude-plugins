@@ -70,6 +70,10 @@ block, clarifications table, changelog).
   touch only the sections your change affects, preserve user edits verbatim, append (not
   rewrite) the Clarifications log, and add one Changelog line. Never regenerate the file
   wholesale.
+- **The Pipeline sizing block is re-evaluated on every delta update — edit it in the
+  file.** A change to an already-specced system is `delta`; leaving the block at `full`
+  while calling the work a delta in the report is the spec contradicting itself, and the
+  next session will trust the file, not the report.
 
 ### 5. Gate
 
@@ -103,4 +107,5 @@ Alignment gate: ✅ ok (or the harness's error lines)
 ```
 
 In delta mode, replace the section table with a "Sections touched / preserved" table and
-point ➡️ at whichever stages the sizing decision marked as running.
+point ➡️ at whichever stages the sizing decision marked as running. The ➡️ pointer is
+the **last line** of the report — nothing after it.

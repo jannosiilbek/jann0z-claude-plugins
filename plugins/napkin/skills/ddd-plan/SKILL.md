@@ -83,5 +83,7 @@ In delta mode, add "Tasks added: …, done tasks untouched: N". The ✅ footer i
 
 If any active UC genuinely cannot be planned (contradicts the model, blocked on a
 decision), do not drop it silently — list it under an explicit "Unplannable" section in
-the report with the reason, and leave the gate's AL-05 error standing as the visible
-reminder.
+the report with the reason, leave the gate's AL-05 error standing as the visible
+reminder, and **name the owning skill for the resolution** (deprecate the UC via
+`ddd-usecases`, or rescope via `ddd-brief`) — a finding without a route is a finding
+the next session has to re-derive.

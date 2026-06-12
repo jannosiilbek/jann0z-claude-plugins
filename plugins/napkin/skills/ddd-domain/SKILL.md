@@ -111,4 +111,5 @@ Alignment gate: ✅ ok
 ➡️ Next: run ddd-usecases to derive use cases from these flows
 ```
 
-In delta mode, add a "Changed / preserved" line per artifact.
+In delta mode, add a "Changed / preserved" line per artifact. The ➡️ pointer is the
+**last line** of the report — nothing after it.
