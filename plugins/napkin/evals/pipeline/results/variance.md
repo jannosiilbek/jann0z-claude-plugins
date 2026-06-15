@@ -48,7 +48,22 @@ not include generation variance (re-running the pipeline), which the full replic
    (`clarity = round(100·8/(8+count))`: 0q→100, 1q→89, 2q→80, 3q→73, 6q→**57** not 28). The judge
    now only reports the integer count; the harness owns the score. A single harsh draw moves BRI
    far less, and median-of-N removes the rest.
-3. **Re-blessed baseline** — ✅ opus-01 (n=5) and opus-03 (n=5) replicated; opus-03 corrected to
-   **BRI 94 (ship-ready)**, σ 4.1. The other 7 cells remain **n=1 provisional** until a full
-   `--repeat 5` matrix run (the remaining live step — adds generation variance on top of this
-   judge-only measurement).
+3. **Re-blessed baseline** — ✅ opus-03 corrected to **BRI 94 (ship-ready)**, σ 4.1.
+
+## All-cell judge variance (n=5, every cell)
+
+Extended the measurement to all 9 cells (fixed spec, judge re-run 5×). Per-cell BRI σ:
+
+| | 01 | 02 | 03 (delta) |
+|---|---|---|---|
+| Haiku 4.5 | 78 ±1.3 | 83 ±1.7 | 90 ±1.1 |
+| Sonnet 4.6 | 94 ±0.9 | 94 ±0.9 | 92 ±2.3 |
+| Opus 4.8 | 94 ±0 | 94 ±3.3 | 94 ±4.1 |
+
+- **BRI σ ≤ 4.1 everywhere** — small, because clarity is 25% weight and the other four metrics
+  are near-deterministic (σ≈0). The ±5 tolerance + per-cell σ covers measured judge noise.
+- **Clarity σ tracks ambiguity** (max 11.95 on opus-03, 7.4 on sonnet-03 — the deltas — vs 0 on
+  the clean opus-01). So the honest reading of the delta column is **"buildable (~90–94) but the
+  judge is least *certain* about it,"** not "low quality."
+- **Still pending:** GENERATION variance (re-running the pipeline, not just the judge). A full
+  `--repeat 5` matrix is the remaining live step; this measurement is judge-only (a lower bound).

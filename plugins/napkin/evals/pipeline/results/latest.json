@@ -1,9 +1,9 @@
 {
-  "generated": "2026-06-15T19:24:21.885Z",
+  "generated": "2026-06-15T19:32:56.178Z",
   "judge_model": "claude-opus-4-8",
   "provenance": {
     "harness_version": "1.1.0",
-    "git_sha": "3ecb423",
+    "git_sha": "b13123b",
     "skills_hash": "8514f3610da2",
     "judge_rubric_hash": "360ac2b5ff7f"
   },
@@ -31,12 +31,12 @@
       "model_key": "haiku",
       "scenario": "01",
       "bri": {
-        "median": 77,
-        "mean": 77,
-        "stddev": 0,
+        "median": 78,
+        "mean": 78.6,
+        "stddev": 1.34,
         "min": 77,
-        "max": 77,
-        "n": 1
+        "max": 80,
+        "n": 5
       },
       "band": "buildable-with-gaps",
       "align_ok": false,
@@ -44,11 +44,11 @@
       "metrics": {
         "clarity": {
           "median": 67,
-          "mean": 67,
-          "stddev": 0,
+          "mean": 69.4,
+          "stddev": 3.29,
           "min": 67,
-          "max": 67,
-          "n": 1
+          "max": 73,
+          "n": 5
         },
         "alignment": {
           "median": 40,
@@ -56,7 +56,7 @@
           "stddev": 0,
           "min": 40,
           "max": 40,
-          "n": 1
+          "n": 5
         },
         "completeness": {
           "median": 100,
@@ -64,30 +64,30 @@
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "testability": {
-          "median": 95,
-          "mean": 95,
-          "stddev": 0,
+          "median": 98,
+          "mean": 98,
+          "stddev": 1.87,
           "min": 95,
-          "max": 95,
-          "n": 1
+          "max": 100,
+          "n": 5
         },
         "actionability": {
-          "median": 89,
-          "mean": 89,
-          "stddev": 0,
-          "min": 89,
-          "max": 89,
-          "n": 1
+          "median": 90,
+          "mean": 89.4,
+          "stddev": 1.52,
+          "min": 87,
+          "max": 91,
+          "n": 5
         }
       },
       "top_gaps": [
-        "How an inbound feedback submission is routed to a specific organization (end_users has no org link; no submission endpoint/form/token mechanism specified).",
-        "The role-based authorization model: owner/admin/agent are defined but no acceptance criterion enforces who may triage, create releases, or comment.",
-        "Feedback status transition rules: UC-002 AC-4 privileges 'new' but the legal transition graph is otherwise undefined.",
-        "Enforcement home for guard rules (UC-006 AC-2 'no changes once shipped', UC-003 AC-4 'at most one release') — DB trigger vs application layer, and neither is live-tested."
+        "How an end_user is created during submission — UC-001 requires a not-null end_user_id but no flow specifies find-or-create-by-email semantics",
+        "The per-role permission matrix for owner/admin/agent — 'appropriate permissions' is never defined, yet triage (UC-002) and release creation (UC-005) assume role gating",
+        "Organization and member onboarding — entirely absent from flows and use cases despite 'membership and roles' being in scope",
+        "Contradictory data assertions / 4 alignment errors — UC-006 expects shipped in usecases.md but shipping in usecases.sql; UC-003/DA-3 expects a uniqueness error against a single-column design that cannot raise one; plan cites a 'Status' term missing from the glossary"
       ]
     },
     {
@@ -95,24 +95,24 @@
       "model_key": "haiku",
       "scenario": "02",
       "bri": {
-        "median": 80,
-        "mean": 80,
-        "stddev": 0,
+        "median": 83,
+        "mean": 82.6,
+        "stddev": 1.67,
         "min": 80,
-        "max": 80,
-        "n": 1
+        "max": 84,
+        "n": 5
       },
       "band": "buildable-with-gaps",
       "align_ok": true,
       "errors": 0,
       "metrics": {
         "clarity": {
-          "median": 67,
-          "mean": 67,
-          "stddev": 0,
+          "median": 73,
+          "mean": 70.6,
+          "stddev": 3.29,
           "min": 67,
-          "max": 67,
-          "n": 1
+          "max": 73,
+          "n": 5
         },
         "alignment": {
           "median": 60,
@@ -120,7 +120,7 @@
           "stddev": 0,
           "min": 60,
           "max": 60,
-          "n": 1
+          "n": 5
         },
         "completeness": {
           "median": 100,
@@ -128,31 +128,30 @@
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "testability": {
-          "median": 94,
-          "mean": 94,
-          "stddev": 0,
+          "median": 100,
+          "mean": 98.4,
+          "stddev": 2.61,
           "min": 94,
-          "max": 94,
-          "n": 1
+          "max": 100,
+          "n": 5
         },
         "actionability": {
-          "median": 85,
-          "mean": 85,
-          "stddev": 0,
+          "median": 90,
+          "mean": 89,
+          "stddev": 2.24,
           "min": 85,
-          "max": 85,
-          "n": 1
+          "max": 90,
+          "n": 5
         }
       },
       "top_gaps": [
-        "Booking lifecycle rules (accept-only-when-requested, complete-only-when-confirmed, rate-only-when-completed) are stated in ACs but enforced nowhere in the model; the agent must invent CHECK constraints, triggers, or app guards — and the live tests are inconsistent about whether these are DB errors or WHERE-clause no-ops.",
-        "UC-006/DA-2 contradicts its own AC-2: the AC says rating a non-completed booking SHALL be rejected, but the live test inserts that rating and expects success (rowcount=1). The agent gets opposite signals from the same use case.",
-        "stars 1-5 range has no CHECK constraint and no validation home despite being stated in glossary and UC-006.",
-        "Payment.amount has no derivation rule — UC-003 initializes a pending payment but never says how the amount is computed (hourly_rate x time window? fixed?).",
-        "'Provider/customer notified' steps and 'update provider reputation' / rating-propagation NFR have no entity, field, or integration — reputation aggregation and notifications are unhomed."
+        "Provider reputation has no home in the data model despite being an explicit policy (FL-006), a use-case step (UC-006), and a core brief value prop — agent must invent storage and computation.",
+        "Data assertions contradict their acceptance criteria on enforcement — most starkly UC-006 (AC-2: reject rating a non-completed Booking; DA-2: insert succeeds, rowcount=1) — leaving the agent unsure whether the rule exists and whether to enforce it in DB or app code.",
+        "Business-rule constraints the brief/ACs require are missing from the schema: stars 1–5 range (no CHECK), 'rate only completed bookings', and 'cannot accept a declined request'.",
+        "Payment amount derivation is unspecified (seeded as a literal), so the agent must guess hourly_rate × duration or similar."
       ]
     },
     {
@@ -160,24 +159,24 @@
       "model_key": "haiku",
       "scenario": "03",
       "bri": {
-        "median": 89,
-        "mean": 89,
-        "stddev": 0,
+        "median": 90,
+        "mean": 90.4,
+        "stddev": 1.14,
         "min": 89,
-        "max": 89,
-        "n": 1
+        "max": 92,
+        "n": 5
       },
       "band": "ship-ready",
       "align_ok": true,
       "errors": 0,
       "metrics": {
         "clarity": {
-          "median": 62,
-          "mean": 62,
-          "stddev": 0,
+          "median": 67,
+          "mean": 68.4,
+          "stddev": 4.67,
           "min": 62,
-          "max": 62,
-          "n": 1
+          "max": 73,
+          "n": 5
         },
         "alignment": {
           "median": 100,
@@ -185,7 +184,7 @@
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "completeness": {
           "median": 100,
@@ -193,7 +192,7 @@
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "testability": {
           "median": 100,
@@ -201,22 +200,22 @@
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "actionability": {
-          "median": 88,
-          "mean": 88,
-          "stddev": 0,
-          "min": 88,
-          "max": 88,
-          "n": 1
+          "median": 90,
+          "mean": 89.2,
+          "stddev": 1.64,
+          "min": 87,
+          "max": 91,
+          "n": 5
         }
       },
       "top_gaps": [
-        "Capacity enforcement and the enroll-vs-waitlist routing rule are never specified — the agent must guess how 'full' is detected and whether UC-001 rejects when at capacity.",
-        "Offer lifecycle timing: expires_at has no concrete duration and the 'expired' status has no handling/re-offer policy.",
-        "Re-enrollment contradiction: dropped enrollment rows are kept but unique(student_id,course_id) blocks re-enroll via waitlist; usecases.md ('error ~ check') and usecases.sql ('error ~ unique') disagree on UC-005/DA-3.",
-        "Waitlist_entry has no terminal state after a successful accept, and the drop->offer / accept->enroll policies are asserted but only tested as isolated inserts, not as enforced causation."
+        "Capacity enforcement: when is a course 'full', and is direct enrollment rejected at capacity? This drives the entire enroll-vs-waitlist branch yet has no acceptance criterion — despite being the brief's core problem.",
+        "Offer expiry: the duration of expires_at is unstated, and what happens when an offer expires (re-offer to the next waitlisted student?) is undefined — the 'expired' offer status and 'offered' entry status are orphaned by every flow.",
+        "Waitlist entry terminal status: the status enum (pending/offered/declined) has no 'accepted/fulfilled' state, so the entry's fate after UC-005 acceptance is left to the agent to guess.",
+        "Inconsistency: UC-005's already-enrolled rejection is specified as 'error ~ check' in usecases.md but enforced via the unique (student_id, course_id) constraint ('error ~ unique') in usecases.sql."
       ]
     },
     {
@@ -224,24 +223,24 @@
       "model_key": "sonnet",
       "scenario": "01",
       "bri": {
-        "median": 93,
-        "mean": 93,
-        "stddev": 0,
-        "min": 93,
-        "max": 93,
-        "n": 1
+        "median": 94,
+        "mean": 93.4,
+        "stddev": 0.89,
+        "min": 92,
+        "max": 94,
+        "n": 5
       },
       "band": "ship-ready",
       "align_ok": true,
       "errors": 0,
       "metrics": {
         "clarity": {
-          "median": 73,
-          "mean": 73,
-          "stddev": 0,
+          "median": 80,
+          "mean": 77.2,
+          "stddev": 3.83,
           "min": 73,
-          "max": 73,
-          "n": 1
+          "max": 80,
+          "n": 5
         },
         "alignment": {
           "median": 100,
@@ -249,7 +248,7 @@
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "completeness": {
           "median": 100,
@@ -257,30 +256,29 @@
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "testability": {
           "median": 100,
-          "mean": 100,
-          "stddev": 0,
-          "min": 100,
+          "mean": 99.6,
+          "stddev": 0.55,
+          "min": 99,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "actionability": {
-          "median": 95,
-          "mean": 95,
-          "stddev": 0,
-          "min": 95,
+          "median": 94,
+          "mean": 94,
+          "stddev": 1,
+          "min": 93,
           "max": 95,
-          "n": 1
+          "n": 5
         }
       },
       "top_gaps": [
-        "Status-transition legality is undefined: ordered 'new→triaged→planned→shipped→declined' workflow in the brief vs. enum-only validation in UC-008 — agent must guess whether to enforce transition guards.",
-        "Owner-uniqueness ('exactly one owner per org') is asserted in the glossary but enforced nowhere; UC-004 lets admins freely set the owner role.",
-        "Invitee vs. removed member states both collapse to is_active=false with no distinct 'pending'/'invited' field, so UC-002's pending entry and UC-005's soft-delete are indistinguishable.",
-        "end_users has a global-unique email and no organization_id, making end-user identity cross-tenant — intended per UC-006 but its visibility consequences across orgs are unspecified."
+        "Status-transition semantics: enforced lifecycle state machine vs. any-valid-status free set (brief's arrow vs. UC-008 enum-only validation)",
+        "Owner's initial is_active state at org registration (default false vs. UC-001 making the owner the active first member)",
+        "Cross-org and single-owner / removed-member business rules are specified in ACs but not schema-enforced nor covered by data assertions — builder must implement and self-test them"
       ]
     },
     {
@@ -289,11 +287,11 @@
       "scenario": "02",
       "bri": {
         "median": 94,
-        "mean": 94,
-        "stddev": 0,
-        "min": 94,
+        "mean": 93.6,
+        "stddev": 0.89,
+        "min": 92,
         "max": 94,
-        "n": 1
+        "n": 5
       },
       "band": "ship-ready",
       "align_ok": true,
@@ -301,11 +299,11 @@
       "metrics": {
         "clarity": {
           "median": 80,
-          "mean": 80,
-          "stddev": 0,
-          "min": 80,
+          "mean": 78.6,
+          "stddev": 3.13,
+          "min": 73,
           "max": 80,
-          "n": 1
+          "n": 5
         },
         "alignment": {
           "median": 100,
@@ -313,7 +311,7 @@
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "completeness": {
           "median": 100,
@@ -321,7 +319,7 @@
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "testability": {
           "median": 100,
@@ -329,21 +327,23 @@
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "actionability": {
           "median": 94,
           "mean": 94,
-          "stddev": 0,
-          "min": 94,
-          "max": 94,
-          "n": 1
+          "stddev": 0.71,
+          "min": 93,
+          "max": 95,
+          "n": 5
         }
       },
       "top_gaps": [
-        "Pricing rule on acceptance is unspecified — UC-005 'sets the agreed price' and the test hardcodes a value; the agent must guess hourly_rate x hours vs. provider-entered.",
-        "Authorization/ownership is undefined — nothing ties the accepting/declining Provider to the service, the completing Customer to the booking, or the rating's Customer to the booking; the agent must invent who-may-act rules.",
-        "Status-transition and rating-eligibility rules are labeled 'error ~ check' but require triggers (a plain CHECK cannot see the prior status); resolved only because model.dbml Notes explicitly say triggers enforce them."
+        "How is a booking's price determined on acceptance — computed from hourly_rate × window duration, or supplied as an agreed amount? (UC-005 'agreed price' vs. hard-coded DA value)",
+        "Authorization/ownership is entirely unmodeled: who may accept/decline (the service's provider?), complete and rate (the booking's customer?) — no AC enforces it",
+        "Status-transition and rating-eligibility enforcement is described only in DBML Notes; the trigger/CHECK implementation that makes the 'error ~ check' assertions pass must be authored from scratch",
+        "No browse/list/query use case despite 'browse providers / compare rates' being the core problem — only mutations are specified",
+        "UC-008 names a 'Payment Processor' actor while the brief rules out processor integration — what actually drives payment_status, and who is allowed to?"
       ]
     },
     {
@@ -351,24 +351,24 @@
       "model_key": "sonnet",
       "scenario": "03",
       "bri": {
-        "median": 88,
-        "mean": 88,
-        "stddev": 0,
+        "median": 92,
+        "mean": 91.8,
+        "stddev": 2.28,
         "min": 88,
-        "max": 88,
-        "n": 1
+        "max": 94,
+        "n": 5
       },
       "band": "ship-ready",
       "align_ok": true,
       "errors": 0,
       "metrics": {
         "clarity": {
-          "median": 62,
-          "mean": 62,
-          "stddev": 0,
+          "median": 73,
+          "mean": 73.6,
+          "stddev": 7.37,
           "min": 62,
-          "max": 62,
-          "n": 1
+          "max": 80,
+          "n": 5
         },
         "alignment": {
           "median": 100,
@@ -376,7 +376,7 @@
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "completeness": {
           "median": 100,
@@ -384,31 +384,29 @@
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "testability": {
           "median": 100,
-          "mean": 100,
-          "stddev": 0,
-          "min": 100,
+          "mean": 99.6,
+          "stddev": 0.89,
+          "min": 98,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "actionability": {
-          "median": 81,
-          "mean": 81,
-          "stddev": 0,
+          "median": 92,
+          "mean": 89.4,
+          "stddev": 4.77,
           "min": 81,
-          "max": 81,
-          "n": 1
+          "max": 92,
+          "n": 5
         }
       },
       "top_gaps": [
-        "Seat-offer lifecycle is undefined: waitlist_entries has no offered/expires_at state, and UC-005 explicitly leaves 'mark as offered OR create offered-seat record' unresolved",
-        "Offer expiry is promised in scope but has zero specification (no timeout, state, or AC)",
-        "'Course is full' / capacity enforcement is a brief assumption with no UC, AC, or DB constraint — nothing blocks enrolling past capacity or requires fullness before waitlisting",
-        "The drop->offer->accept->enrollment causation is only a flow policy; no AC or data assertion mechanizes it, and 'auto-offer' (scope) contradicts the Registrar-driven manual accept in FL-006/UC-006",
-        "UC-006/DA-2 tests a student foreign-key error instead of the missing-waitlist-entry rejection its AC-2 specifies"
+        "How a 'seat offer' is represented between drop and accept — waitlist_entries has no offered state and there is no offer entity, yet UC-005/UC-006 and FL-005/FL-006 depend on it",
+        "Whether enrollment must be rejected when the course is at capacity — the brief's stated 'double bookings' problem implies it, but no use case enforces it",
+        "FL-001's 'Recount course seats' policy and 'Course seats recounted' event have no use case and no place in the data model (no seat-count column or view)"
       ]
     },
     {
@@ -481,11 +479,11 @@
       "scenario": "02",
       "bri": {
         "median": 94,
-        "mean": 94,
-        "stddev": 0,
-        "min": 94,
-        "max": 94,
-        "n": 1
+        "mean": 94.6,
+        "stddev": 3.29,
+        "min": 91,
+        "max": 100,
+        "n": 5
       },
       "band": "ship-ready",
       "align_ok": true,
@@ -493,11 +491,11 @@
       "metrics": {
         "clarity": {
           "median": 80,
-          "mean": 80,
-          "stddev": 0,
-          "min": 80,
+          "mean": 76.75,
+          "stddev": 6.5,
+          "min": 67,
           "max": 80,
-          "n": 1
+          "n": 4
         },
         "alignment": {
           "median": 100,
@@ -505,7 +503,7 @@
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "completeness": {
           "median": 100,
@@ -513,7 +511,7 @@
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "testability": {
           "median": 100,
@@ -521,21 +519,23 @@
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "actionability": {
-          "median": 95,
-          "mean": 95,
-          "stddev": 0,
-          "min": 95,
-          "max": 95,
-          "n": 1
+          "median": 93,
+          "mean": 94.8,
+          "stddev": 3.03,
+          "min": 93,
+          "max": 100,
+          "n": 5
         }
       },
       "top_gaps": [
-        "Booking lifecycle transition guards live only at the application layer and are never specified -- legal status moves (requested->confirmed/declined, confirmed->completed) and the rate-only-completed-bookings rule must be invented; the schema enforces uniqueness/CHECK/FK but not transition legality.",
-        "Price-at-acceptance rule is left open: A5/UC-005 say it is 'derivable from hourly_rate x window' but 'stored as an explicit amount', so the agent must choose compute-vs-free-entry.",
-        "No transport/auth/API surface is specified -- fine for the stated data-of-record scope, but a full app build would invent it."
+        "Rating-on-completed-only is mandated by the brief as a hard data-layer invariant but the schema never enforces booking status on rating insert — agent must add a trigger/CHECK or knowingly ship a weaker model.",
+        "Booking lifecycle transitions are unguarded: nothing prevents requested→completed or backward moves, though UC-007 assumes 'a confirmed Booking' is what gets completed.",
+        "No authorization model: which actor may accept/decline a booking (must it be the service's provider?) and who may complete it — UPDATEs carry no ownership check.",
+        "Authentication is entirely unspecified for a two-sided marketplace (only email + display_name).",
+        "Price at acceptance: computed from hourly_rate × window or entered by the provider, and is it overridable?"
       ]
     },
     {
