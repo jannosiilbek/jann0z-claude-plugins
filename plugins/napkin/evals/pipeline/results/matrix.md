@@ -3,6 +3,11 @@
 _judge: claude-opus-4-8 (held constant) · skills @ 8514f3610da2 · git aab8080 · n=1 per cell — no variance yet._
 _BRI 0–100. Bands: ≥85 ship-ready · 70–84 buildable-with-gaps · 50–69 underspecified · <50 not-buildable._
 
+> ⚠️ **n=1 run — not yet regression-grade.** Variance measurement (`results/variance.md`) showed
+> the judge is fat-tailed on ambiguous specs: **opus-03's 79 below is a low-tail outlier; 5 judge
+> runs put it at BRI ~93 (ship-ready)**. opus-01 replicated to exactly 93 (σ=0). Other cells are
+> single draws pending a `--repeat 5` re-run — treat the delta column (03) as noisy until replicated.
+
 | Executor \ scenario | 01 (full) | 02 (full) | 03 (delta) |
 |---|---|---|---|
 | **Haiku 4.5** | 73 gaps | 77 gaps | 83 gaps |

@@ -2,7 +2,8 @@
   "config": {
     "bri_tolerance": 5,
     "metric_tolerance": 8,
-    "note": "Regression = drop beyond tolerance. With n>1, a BRI drop must also exceed the cell stddev (noise)."
+    "note": "Regression = drop beyond tolerance. With n>1, a BRI drop must also exceed the cell stddev (noise).",
+    "replication_status": "opus-01 (n=4) and opus-03 (n=5) are replicated; the other 7 cells are still n=1 PROVISIONAL — re-run with `--repeat 5` and re-bless before trusting them as gates. See results/variance.md."
   },
   "blessed": {
     "git_sha": "aab8080",
@@ -108,6 +109,8 @@
       "scenario": "01",
       "bri": 93,
       "bri_stddev": 0,
+      "n": 4,
+      "note": "replicated: 4 judge runs all BRI 93 (clarity 76) — judge is stable on this clean spec",
       "band": "ship-ready",
       "align_ok": true,
       "metrics": {
@@ -136,16 +139,18 @@
     "opus-03": {
       "model_key": "opus",
       "scenario": "03",
-      "bri": 79,
-      "bri_stddev": 0,
-      "band": "buildable-with-gaps",
+      "bri": 93,
+      "bri_stddev": 6,
+      "n": 5,
+      "note": "replicated (5 judge runs): BRI [79,93,93,93,96], clarity [28,76,76,76,88]. The original n=1 sample (BRI 79, clarity 28) was a low-tail OUTLIER — median is BRI 93 / clarity 76. The judge's clarification-question COUNT (1/2/6) is the unstable driver, amplified by clarity = 100 - 12*count. Use median-of-N; fix the formula.",
+      "band": "ship-ready",
       "align_ok": true,
       "metrics": {
-        "clarity": 28,
+        "clarity": 76,
         "alignment": 100,
         "completeness": 100,
         "testability": 100,
-        "actionability": 81
+        "actionability": 89
       }
     }
   }
