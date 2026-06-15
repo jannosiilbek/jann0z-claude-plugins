@@ -1,0 +1,117 @@
+{
+  "skill": "ddd-align",
+  "generated": "2026-06-12",
+  "rows": [
+    {
+      "group": "iteration-3",
+      "model": {
+        "id": "claude-fable-5",
+        "qualifier": "iteration-3, latest",
+        "inferred": true
+      },
+      "evals": [
+        {
+          "id": 0,
+          "name": "clean-spec-green",
+          "with_skill": 1,
+          "without_skill": 0.3333
+        },
+        {
+          "id": 1,
+          "name": "renamed-table-drift",
+          "with_skill": 1,
+          "without_skill": 0
+        },
+        {
+          "id": 2,
+          "name": "ghost-usecase-citation",
+          "with_skill": 1,
+          "without_skill": 0
+        },
+        {
+          "id": 3,
+          "name": "mechanically-green-vacuous-ac",
+          "with_skill": 1,
+          "without_skill": 0.25
+        }
+      ],
+      "overall_with_skill": 1,
+      "overall_without_skill": 0.14582499999999998,
+      "newest_ms": 1781240262097.7102
+    },
+    {
+      "group": "model-haiku",
+      "model": {
+        "id": "claude-haiku-4-5-20251001",
+        "qualifier": "model-haiku",
+        "inferred": false
+      },
+      "evals": [
+        {
+          "id": 0,
+          "name": "clean-spec-green",
+          "with_skill": 0.6667,
+          "without_skill": null
+        },
+        {
+          "id": 1,
+          "name": "renamed-table-drift",
+          "with_skill": 0.8,
+          "without_skill": null
+        },
+        {
+          "id": 2,
+          "name": "ghost-usecase-citation",
+          "with_skill": 0.75,
+          "without_skill": null
+        },
+        {
+          "id": 3,
+          "name": "mechanically-green-vacuous-ac",
+          "with_skill": 1,
+          "without_skill": null
+        }
+      ],
+      "overall_with_skill": 0.804175,
+      "overall_without_skill": null,
+      "newest_ms": 1781241622027.1443
+    },
+    {
+      "group": "model-sonnet",
+      "model": {
+        "id": "claude-sonnet-4-6",
+        "qualifier": "model-sonnet",
+        "inferred": false
+      },
+      "evals": [
+        {
+          "id": 0,
+          "name": "clean-spec-green",
+          "with_skill": 1,
+          "without_skill": null
+        },
+        {
+          "id": 1,
+          "name": "renamed-table-drift",
+          "with_skill": 1,
+          "without_skill": null
+        },
+        {
+          "id": 2,
+          "name": "ghost-usecase-citation",
+          "with_skill": 1,
+          "without_skill": null
+        },
+        {
+          "id": 3,
+          "name": "mechanically-green-vacuous-ac",
+          "with_skill": 1,
+          "without_skill": null
+        }
+      ],
+      "overall_with_skill": 1,
+      "overall_without_skill": null,
+      "newest_ms": 1781241622012.6753
+    }
+  ]
+}

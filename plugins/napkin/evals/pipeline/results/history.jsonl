@@ -1,0 +1,9 @@
+{"ts":"2026-06-15T18-00-39Z","judge":"claude-opus-4-8","model":"claude-opus-4-8","model_key":"opus","scenario":"01","bri":93,"band":"ship-ready","align_ok":true,"errors":0}
+{"ts": "2026-06-15T18-10-33Z", "judge": "claude-opus-4-8", "model": "claude-haiku-4-5-20251001", "model_key": "haiku", "scenario": "03", "bri": 83, "band": "buildable-with-gaps", "align_ok": true, "errors": 0}
+{"ts": "2026-06-15T18-12-46Z", "judge": "claude-opus-4-8", "model": "claude-haiku-4-5-20251001", "model_key": "haiku", "scenario": "02", "bri": 77, "band": "buildable-with-gaps", "align_ok": true, "errors": 0}
+{"ts": "2026-06-15T18-14-14Z", "judge": "claude-opus-4-8", "model": "claude-haiku-4-5-20251001", "model_key": "haiku", "scenario": "01", "bri": 73, "band": "buildable-with-gaps", "align_ok": false, "errors": 4}
+{"ts": "2026-06-15T18-14-57Z", "judge": "claude-opus-4-8", "model": "claude-sonnet-4-6", "model_key": "sonnet", "scenario": "01", "bri": 90, "band": "ship-ready", "align_ok": true, "errors": 0}
+{"ts": "2026-06-15T18-16-02Z", "judge": "claude-opus-4-8", "model": "claude-sonnet-4-6", "model_key": "sonnet", "scenario": "02", "bri": 93, "band": "ship-ready", "align_ok": true, "errors": 0}
+{"ts": "2026-06-15T18-18-18Z", "judge": "claude-opus-4-8", "model": "claude-sonnet-4-6", "model_key": "sonnet", "scenario": "03", "bri": 82, "band": "buildable-with-gaps", "align_ok": true, "errors": 0}
+{"ts": "2026-06-15T18-23-07Z", "judge": "claude-opus-4-8", "model": "claude-opus-4-8", "model_key": "opus", "scenario": "03", "bri": 79, "band": "buildable-with-gaps", "align_ok": true, "errors": 0}
+{"ts": "2026-06-15T18-38-22Z", "judge": "claude-opus-4-8", "model": "claude-opus-4-8", "model_key": "opus", "scenario": "02", "bri": 93, "band": "ship-ready", "align_ok": true, "errors": 0}

@@ -1,0 +1,17 @@
+{
+  "$comment": "Single source of truth for the eval model matrix. Add a model here and it joins the sweep with no code change. `executors` is the matrix run-pipeline.mjs and the unit benchmarks sweep (weakest -> strongest). `judge` is held CONSTANT across the whole matrix so Build-Readiness scores are comparable down a column. `dir_aliases` maps the skill-creator workspace `model-<x>` directory names to real model ids so aggregate-unit.mjs can record the actual model instead of the `<model-name>` placeholder.",
+  "executors": [
+    { "key": "haiku",  "id": "claude-haiku-4-5-20251001", "label": "Haiku 4.5" },
+    { "key": "sonnet", "id": "claude-sonnet-4-6",          "label": "Sonnet 4.6" },
+    { "key": "fable",  "id": "claude-fable-5",             "label": "Fable 5" },
+    { "key": "opus",   "id": "claude-opus-4-8",            "label": "Opus 4.8" }
+  ],
+  "judge": { "key": "opus", "id": "claude-opus-4-8", "label": "Opus 4.8" },
+  "primary_model": { "id": "claude-fable-5", "label": "Fable 5" },
+  "dir_aliases": {
+    "model-haiku":  "claude-haiku-4-5-20251001",
+    "model-sonnet": "claude-sonnet-4-6",
+    "model-opus":   "claude-opus-4-8",
+    "model-fable":  "claude-fable-5"
+  }
+}

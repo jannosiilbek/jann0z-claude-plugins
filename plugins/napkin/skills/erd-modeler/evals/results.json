@@ -1,0 +1,37 @@
+{
+  "skill": "erd-modeler",
+  "generated": "2026-06-08",
+  "rows": [
+    {
+      "group": "iteration-1",
+      "model": {
+        "id": "claude-fable-5",
+        "qualifier": "iteration-1, latest",
+        "inferred": true
+      },
+      "evals": [
+        {
+          "id": 0,
+          "name": "",
+          "with_skill": 1,
+          "without_skill": 0.375
+        },
+        {
+          "id": 1,
+          "name": "",
+          "with_skill": 1,
+          "without_skill": 0.625
+        },
+        {
+          "id": 2,
+          "name": "",
+          "with_skill": 1,
+          "without_skill": 0.5714
+        }
+      ],
+      "overall_with_skill": 1,
+      "overall_without_skill": 0.5238,
+      "newest_ms": 1780923389737.1453
+    }
+  ]
+}
