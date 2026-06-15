@@ -33,31 +33,56 @@ Renders an existing `.dbml` into one self-contained, interactive HTML ER diagram
 
 ## Commands
 
+Per-skill harness selftests — each is the oracle's adversarial suite; **a skill change is not done until its selftest passes**:
+
 ```bash
-# erd-modeler PGlite harness: live-test runner + its adversarial selftest
-cd plugins/napkin/skills/erd-modeler/scripts && npm test    # runs the selftest
-node plugins/napkin/skills/erd-modeler/scripts/selftest.mjs # same, directly
-
-# erd-diagram renderer selftest
-cd plugins/napkin/skills/erd-diagram/scripts && npm test
-
-# ddd-align spec-consistency harness selftest (zero deps)
-cd plugins/napkin/skills/ddd-align/scripts && npm test
-
-# pipeline-eval selftests (grader refuses false-green; regression gate catches degradation)
-cd plugins/napkin/evals/pipeline && npm test
-
-# pipeline-eval FAST smoke gate (deterministic, no model calls): oracle/harness selftests
-# + grade the golden spec clean. Run on every change.
-cd plugins/napkin/evals/pipeline && npm run smoke
+cd plugins/napkin/skills/erd-modeler/scripts && npm test   # PGlite live-test oracle (run-erd-test.mjs)
+cd plugins/napkin/skills/erd-diagram/scripts && npm test   # HTML renderer
+cd plugins/napkin/skills/ddd-align/scripts   && npm test   # spec-consistency oracle (check-align.mjs), zero-dep
 ```
 
-The erd-modeler harness (`run-erd-test.mjs`) is the oracle for the skill's live-test stage; the ddd-align harness (`check-align.mjs`) is the oracle for spec cross-artifact consistency; each skill's `selftest.mjs` is an adversarial suite proving its script refuses false-greens. A skill change is not done until its selftest passes.
+`run-erd-test.mjs` is the oracle for erd-modeler's live-test stage; `check-align.mjs` is the oracle for spec cross-artifact consistency.
 
-## Evals — two tiers (see `plugins/napkin/evals/README.md`)
+## Eval platform — how to run it
 
-- **Unit (per-skill):** `skills/<skill>/evals/evals.json`, run by **skill-creator** (its standard — keep these files where it expects them). `evals/aggregate-unit.mjs` reads the gitignored `*-workspace/` output (incl. `model-*` variants) and writes the committed, model-explicit summary `skills/<skill>/evals/results.{md,json}`.
-- **Pipeline (integration):** `evals/pipeline/` is a **regression guardrail**, not just a benchmark. `run-pipeline.mjs` runs the whole pipeline end-to-end across a model matrix (`models.json`) via `claude -p` with `--repeat n` for replication (mean ± σ); `grade.mjs` scores the produced `spec/` for **build-readiness** (mechanical oracles `check-align.mjs` + `run-erd-test.mjs`, blended with an LLM buildability judge held constant across the matrix) and stamps provenance (harness version, git SHA, skills-hash, rubric-hash); `report.mjs` renders `results/{matrix,latest}.*`; **`check-regression.mjs` diffs latest vs the committed `baseline.json` and exits non-zero on any degradation beyond tolerance + run noise** (`--bless` advances the baseline). `npm run smoke` is the fast deterministic gate (no model calls). Raw runs under `evals/pipeline/runs/` are gitignored; `results/` + `baseline.json` are committed. See `evals/pipeline/README.md`.
+Two tiers (full guide: `plugins/napkin/evals/README.md`). Both keep committed, model-explicit results; raw runs are gitignored.
+
+### Unit tier (per-skill)
+
+`skills/<skill>/evals/evals.json` is run by **skill-creator** (its standard mechanism — the unit *runner* is external to this repo; keep these files where skill-creator expects them). Turn the gitignored `*-workspace/` output (incl. `model-*` variants) into the committed summary:
+
+```bash
+node plugins/napkin/evals/aggregate-unit.mjs --skill ddd-brief   # one skill
+node plugins/napkin/evals/aggregate-unit.mjs --all               # every skill with a workspace
+# -> writes the committed skills/<skill>/evals/results.{md,json} (model × pass-rate, real model ids)
+```
+
+### Pipeline tier (integration) — a regression guardrail
+
+All commands run from `plugins/napkin/evals/pipeline/`.
+
+**Deterministic — no model calls, always safe (use freely, incl. CI):**
+```bash
+npm run smoke                                   # FAST gate (~15s): all oracle/harness selftests + grade golden clean. Run on EVERY change.
+npm test                                        # grader + regression-gate selftests
+node grade.mjs --spec <dir> --no-judge          # mechanical-only score of any spec/ (check-align + live-test re-check)
+node grade.mjs --spec <dir> --judge-file j.json # grade with a pre-computed judge result (no model call)
+node report.mjs [--runs <dir>] [--out-dir <dir>] # (re)render results/{matrix,latest}.* from runs/ — reproducible
+node check-regression.mjs                       # THE GATE: diff results/latest.json vs baseline.json; exit 1 on degradation
+node check-regression.mjs --bless               # set baseline := latest (advance the baseline deliberately)
+```
+
+**Model-driven — these invoke `claude -p`:**
+```bash
+node grade.mjs --spec <dir>                     # full grade: mechanical + ONE read-only judge call (NOT permission-blocked)
+node run-pipeline.mjs --dry-run                 # preview matrix size + cost; no calls
+node run-pipeline.mjs --models opus --scenario 01 --repeat 3   # run cells; --models all / --scenario all for the full matrix
+node run-pipeline.mjs --skip-run                # re-grade existing runs/ without re-running the pipeline
+```
+
+**Running the full live pipeline (important):** `run-pipeline.mjs` drives each stage with `claude -p --permission-mode bypassPermissions`. An interactive Claude Code session's auto-mode classifier **blocks that** (nested unattended agents) unless the user adds a Bash allow-rule for `node *run-pipeline.mjs*`. So in-session you have two correct options: **(a)** the user pre-authorizes that rule and you run the script, or **(b)** drive the pipeline via the **Agent tool — one subagent per stage**, sharing a run dir, each invoking the napkin skill via the Skill tool, then grade with `grade.mjs --judge-file` (or the read-only judge, which is not blocked). Weaker models often won't chain all 5 stages in one agent — stage-drive them (one subagent per skill). The executor matrix + the constant judge model live in `models.json`.
+
+**Scoring:** the headline **Build-Readiness Index** is a weighted blend of clarity / alignment / completeness / testability / actionability; a cell's value is the **median** across `--repeat` runs (robust to judge noise), carried with σ. Clarity is derived in-code from the judge's question count via a diminishing-returns curve (`lib.mjs`), not by the judge. Provenance (git SHA, **skills-hash**, judge-rubric-hash) is stamped on every score, so a moved number is attributable to a skill edit vs a judge/scenario change. Raw runs under `evals/pipeline/runs/` are gitignored; `results/` + `baseline.json` are committed.
 
 ## Layout conventions
 
