@@ -9,6 +9,7 @@ import { mkdtempSync, cpSync, writeFileSync, readFileSync, rmSync, mkdirSync } f
 import { tmpdir } from 'node:os'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { clarityFromQuestions } from './lib.mjs'
 
 const DIR = dirname(fileURLToPath(import.meta.url))
 const GRADE = join(DIR, 'grade.mjs')
@@ -70,17 +71,21 @@ function tmpCopyOfGolden() {
   rmSync(d, { recursive: true, force: true })
 }
 
-// 4. judge path: a VALID canned judge response is incorporated (clarity present, BRI blends it down)
+// 4. judge path: a VALID canned judge response — clarity is DERIVED from the question count
 {
   const fake = JSON.stringify({
-    metrics: { clarity: { score: 40, clarification_questions_needed: 5, note: 'vague' }, testability: { nonvacuous_ac_pct: 100 }, actionability: { score: 100 }, completeness: { note: '' } },
+    metrics: { clarity: { clarification_questions_needed: 5, note: 'vague' }, testability: { nonvacuous_ac_pct: 100 }, actionability: { score: 100 }, completeness: { note: '' } },
     top_gaps: ['x'], rationale: 'ok',
   })
   const r = grade(GOLDEN, { judge: true, env: { GRADE_FAKE_JUDGE: fake } })
-  ok('judge-valid: clarity metric present', r.json?.metrics?.clarity?.score === 40)
+  ok('judge-valid: clarity derived from count via curve', r.json?.metrics?.clarity?.score === clarityFromQuestions(5), `got ${r.json?.metrics?.clarity?.score}, expected ${clarityFromQuestions(5)}`)
   ok('judge-valid: not mechanical_only', r.json?.mechanical_only === false)
-  ok('judge-valid: low clarity drags BRI below 100', (r.json?.build_readiness_index ?? 100) < 100, `bri=${r.json?.build_readiness_index}`)
+  ok('judge-valid: 5 questions drags BRI below 100', (r.json?.build_readiness_index ?? 100) < 100, `bri=${r.json?.build_readiness_index}`)
 }
+// 4b. clarity curve is monotonic + bounded (more questions never raises clarity; 0q = 100)
+ok('clarity curve: 0 questions = 100', clarityFromQuestions(0) === 100)
+ok('clarity curve: monotonic non-increasing', [0,1,2,3,6,12].every((c,i,a) => i === 0 || clarityFromQuestions(c) <= clarityFromQuestions(a[i-1])))
+ok('clarity curve: gentler than old linear at the tail (6q > 28)', clarityFromQuestions(6) > 28)
 
 // 5. judge path: a MALFORMED judge response is rejected → falls back to mechanical-only (no false-green)
 {
@@ -89,11 +94,11 @@ function tmpCopyOfGolden() {
   ok('judge-malformed: no clarity fabricated', r.json?.metrics?.clarity === undefined)
 }
 
-// 6. judge path: judge missing required clarity.score is rejected (shape guard)
+// 6. judge path: judge missing the required question count is rejected (shape guard)
 {
-  const fake = JSON.stringify({ metrics: { clarity: { note: 'no score' } }, top_gaps: [], rationale: '' })
+  const fake = JSON.stringify({ metrics: { clarity: { note: 'no count' } }, top_gaps: [], rationale: '' })
   const r = grade(GOLDEN, { judge: true, env: { GRADE_FAKE_JUDGE: fake } })
-  ok('judge-no-clarity-score: rejected → mechanical-only', r.json?.mechanical_only === true)
+  ok('judge-no-question-count: rejected → mechanical-only', r.json?.mechanical_only === true)
 }
 
 console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'} — ${pass} passed, ${fail} failed`)

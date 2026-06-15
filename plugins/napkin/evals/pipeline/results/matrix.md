@@ -1,32 +1,27 @@
 # Pipeline eval — Build-Readiness matrix
 
-_judge: claude-opus-4-8 (held constant) · skills @ 8514f3610da2 · git aab8080 · n=1 per cell — no variance yet._
+_judge: claude-opus-4-8 (held constant) · skills @ 8514f3610da2 · git 3ecb423 · n=1–5 per cell (replicated cells show median±σ)._
 _BRI 0–100. Bands: ≥85 ship-ready · 70–84 buildable-with-gaps · 50–69 underspecified · <50 not-buildable._
-
-> ⚠️ **n=1 run — not yet regression-grade.** Variance measurement (`results/variance.md`) showed
-> the judge is fat-tailed on ambiguous specs: **opus-03's 79 below is a low-tail outlier; 5 judge
-> runs put it at BRI ~93 (ship-ready)**. opus-01 replicated to exactly 93 (σ=0). Other cells are
-> single draws pending a `--repeat 5` re-run — treat the delta column (03) as noisy until replicated.
 
 | Executor \ scenario | 01 (full) | 02 (full) | 03 (delta) |
 |---|---|---|---|
-| **Haiku 4.5** | 73 gaps | 77 gaps | 83 gaps |
-| **Sonnet 4.6** | 90 ship | 93 ship | 82 gaps |
+| **Haiku 4.5** | 77 gaps | 80 gaps | 89 ship |
+| **Sonnet 4.6** | 93 ship | 94 ship | 88 ship |
 | **Fable 5** | — | — | — |
-| **Opus 4.8** | 93 ship | 93 ship | 79 gaps |
+| **Opus 4.8** | 94±0 ship | 94 ship | 94±4.12 ship |
 
 _Not run: Fable 5._
 
-## Per-metric (mean): clarity / alignment / completeness / testability / actionability
+## Per-metric (median ± σ): clarity / alignment / completeness / testability / actionability
 
 | Cell | BRI | band | clar | algn | cmpl | test | actn | gate |
 |------|----:|------|----:|----:|----:|----:|----:|------|
-| haiku-01 | 73 | buildable-with-gaps | 52 | 40 | 100 | 95 | 89 | ❌ 4err |
-| haiku-02 | 77 | buildable-with-gaps | 52 | 60 | 100 | 94 | 85 | ✅ |
-| haiku-03 | 83 | buildable-with-gaps | 40 | 100 | 100 | 100 | 88 | ✅ |
-| sonnet-01 | 90 | ship-ready | 64 | 100 | 100 | 100 | 95 | ✅ |
-| sonnet-02 | 93 | ship-ready | 76 | 100 | 100 | 100 | 94 | ✅ |
-| sonnet-03 | 82 | buildable-with-gaps | 40 | 100 | 100 | 100 | 81 | ✅ |
-| opus-01 | 93 | ship-ready | 76 | 100 | 100 | 100 | 95 | ✅ |
-| opus-02 | 93 | ship-ready | 76 | 100 | 100 | 100 | 95 | ✅ |
-| opus-03 | 79 | buildable-with-gaps | 28 | 100 | 100 | 100 | 81 | ✅ |
+| haiku-01 | 77 | buildable-with-gaps | 67 | 40 | 100 | 95 | 89 | ❌ 4err |
+| haiku-02 | 80 | buildable-with-gaps | 67 | 60 | 100 | 94 | 85 | ✅ |
+| haiku-03 | 89 | ship-ready | 62 | 100 | 100 | 100 | 88 | ✅ |
+| sonnet-01 | 93 | ship-ready | 73 | 100 | 100 | 100 | 95 | ✅ |
+| sonnet-02 | 94 | ship-ready | 80 | 100 | 100 | 100 | 94 | ✅ |
+| sonnet-03 | 88 | ship-ready | 62 | 100 | 100 | 100 | 81 | ✅ |
+| opus-01 | 94±0 | ship-ready | 80±0 | 100±0 | 100±0 | 100±0 | 95±0.55 | ✅ |
+| opus-02 | 94 | ship-ready | 80 | 100 | 100 | 100 | 95 | ✅ |
+| opus-03 | 94±4.12 | ship-ready | 80±11.95 | 100±0 | 100±0 | 100±0 | 94±6.06 | ✅ |

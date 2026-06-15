@@ -99,7 +99,7 @@ ones are LLM-scored):
 
 | Metric | Wt | Source | The number |
 |--------|----|--------|------------|
-| Clarity | 0.25 | judged | `100 − 12 × clarification_questions_needed` |
+| Clarity | 0.25 | judged | judge reports the blocking-question COUNT; harness derives the score via a diminishing-returns curve `100·8/(8+count)` (0q→100, 2q→80, 6q→57). Robust to ±1-question judge jitter; median-of-N removes the rest. |
 | Alignment | 0.20 | mechanical | `100 − 15·errors − 5·warnings` (check-align AL-01…AL-15) |
 | Completeness | 0.20 | hybrid | mean of UC→task and UC→live-test coverage %, minus orphan/untraced-table penalty |
 | Testability | 0.20 | hybrid | mean of EARS %, data-assertion %, live-test pass rate, and judged non-vacuous-AC % |

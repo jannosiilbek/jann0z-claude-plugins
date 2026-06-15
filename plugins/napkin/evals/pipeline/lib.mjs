@@ -8,7 +8,7 @@ import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
-export const HARNESS_VERSION = '1.0.0'
+export const HARNESS_VERSION = '1.1.0'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 export const PIPELINE_DIR = HERE
@@ -24,12 +24,29 @@ export const round = (x) => Math.round(x)
 
 // --- statistics (for n>1 replication) ---
 export const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null)
+export function median(xs) {
+  const v = xs.filter((x) => typeof x === 'number').sort((a, b) => a - b)
+  if (!v.length) return null
+  const mid = Math.floor(v.length / 2)
+  return v.length % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2
+}
 export function stats(xs) {
   const v = xs.filter((x) => typeof x === 'number')
-  if (!v.length) return { mean: null, stddev: 0, min: null, max: null, n: 0 }
+  if (!v.length) return { median: null, mean: null, stddev: 0, min: null, max: null, n: 0 }
   const m = v.reduce((a, b) => a + b, 0) / v.length
   const variance = v.length > 1 ? v.reduce((a, b) => a + (b - m) ** 2, 0) / (v.length - 1) : 0
-  return { mean: +m.toFixed(2), stddev: +Math.sqrt(variance).toFixed(2), min: Math.min(...v), max: Math.max(...v), n: v.length }
+  // median is the headline central value — robust to the judge's fat tail on ambiguous specs.
+  return { median: +median(v).toFixed(2), mean: +m.toFixed(2), stddev: +Math.sqrt(variance).toFixed(2), min: Math.min(...v), max: Math.max(...v), n: v.length }
+}
+
+// Clarity from the judge's clarification-question count, via a diminishing-returns curve
+// (100·K/(K+count), K=8). This lives in code, not the stochastic judge, so it's tunable and
+// deterministic; the gentle curve means one extra question moves the score far less than the
+// old linear 100−12·count (which made a ±2-question disagreement a ±24-point swing).
+// 0q→100, 1q→89, 2q→80, 3q→73, 4q→67, 6q→57.
+export function clarityFromQuestions(count) {
+  const c = Math.max(0, Number(count) || 0)
+  return Math.round((100 * 8) / (8 + c))
 }
 
 export function loadModels() {

@@ -20,7 +20,7 @@ import { parseArgs } from 'node:util'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, relative } from 'node:path'
-import { WEIGHTS, band, clamp, round, mean, loadModels, provenance } from './lib.mjs'
+import { WEIGHTS, band, clamp, round, mean, loadModels, provenance, clarityFromQuestions } from './lib.mjs'
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
 const NAPKIN = join(SCRIPT_DIR, '..', '..')
@@ -164,8 +164,10 @@ function runJudge(mech) {
   const first = text.indexOf('{'), last = text.lastIndexOf('}')
   if (first < 0 || last < 0) throw new Error('judge returned no JSON object')
   const j = JSON.parse(text.slice(first, last + 1))
-  // shape guard — refuse false-green
-  if (typeof j?.metrics?.clarity?.score !== 'number') throw new Error('judge JSON missing metrics.clarity.score')
+  // shape guard — refuse false-green. The harness owns the clarity score (derived from the
+  // count via the curve in lib.mjs), so the judge MUST report the count.
+  if (typeof j?.metrics?.clarity?.clarification_questions_needed !== 'number')
+    throw new Error('judge JSON missing metrics.clarity.clarification_questions_needed')
   return j
 }
 
@@ -180,7 +182,12 @@ function combine(mech, judge) {
 
   let clarity, bri, usedWeights, top_gaps = [], rationale = ''
   if (judge) {
-    clarity = { score: clamp(judge.metrics.clarity.score), clarification_questions_needed: judge.metrics.clarity.clarification_questions_needed ?? null, note: judge.metrics.clarity.note || '' }
+    // harness derives clarity from the reported question count (deterministic curve), so the
+    // judge's own arithmetic can't introduce noise; keep its self-score as advisory only.
+    const qCount = judge.metrics.clarity.clarification_questions_needed
+    clarity = { score: clarityFromQuestions(qCount), clarification_questions_needed: qCount,
+      judge_raw_score: typeof judge.metrics.clarity.score === 'number' ? judge.metrics.clarity.score : null,
+      note: judge.metrics.clarity.note || '' }
     // blend judged sub-scores into the hybrid metrics
     const nonvac = judge.metrics?.testability?.nonvacuous_ac_pct
     if (typeof nonvac === 'number') { m.testability.nonvacuous_ac_pct = nonvac; m.testability.score = round(mean([mech.scores.testability_mech, nonvac])) }

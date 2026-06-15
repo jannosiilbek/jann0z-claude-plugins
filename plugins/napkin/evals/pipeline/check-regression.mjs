@@ -30,7 +30,8 @@ const LATEST = values.latest || join(HERE, 'results', 'latest.json')
 const METRICS = ['clarity', 'alignment', 'completeness', 'testability', 'actionability']
 
 function load(p, what) { if (!existsSync(p)) { console.error(`[regression] ${what} not found: ${p}`); process.exit(2) } return JSON.parse(readFileSync(p, 'utf8')) }
-const mn = (x) => (x && typeof x === 'object' ? x.mean : x) // accept {mean,..} or a bare number
+// central value: prefer median (robust), then mean, then a bare number
+const mn = (x) => (x && typeof x === 'object' ? (x.median ?? x.mean) : x)
 
 // latest.json (report.mjs shape) -> baseline shape
 function toBaseline(latest) {

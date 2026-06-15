@@ -2,27 +2,27 @@
   "config": {
     "bri_tolerance": 5,
     "metric_tolerance": 8,
-    "note": "Regression = drop beyond tolerance. With n>1, a BRI drop must also exceed the cell stddev (noise).",
-    "replication_status": "opus-01 (n=4) and opus-03 (n=5) are replicated; the other 7 cells are still n=1 PROVISIONAL — re-run with `--repeat 5` and re-bless before trusting them as gates. See results/variance.md."
+    "note": "Regression = drop beyond tolerance. With n>1, a BRI drop must also exceed the cell stddev (noise). Cell bri is the MEDIAN across repeats; clarity is derived from the judge's question count via the diminishing-returns curve in lib.mjs.",
+    "replication_status": "opus-01 and opus-03 are replicated (n=5). The other 7 cells are still n=1 PROVISIONAL — re-run with `--repeat 5` and re-bless before trusting them as hard gates. See results/variance.md."
   },
   "blessed": {
-    "git_sha": "aab8080",
+    "git_sha": "3ecb423",
     "skills_hash": "8514f3610da2",
     "judge_model": "claude-opus-4-8",
-    "judge_rubric_hash": "6cec0d406175",
-    "repeats_per_cell": 1,
-    "generated": "2026-06-15T18:54:41.589Z"
+    "judge_rubric_hash": "360ac2b5ff7f",
+    "repeats_per_cell": 5,
+    "generated": "2026-06-15T19:24:21.885Z"
   },
   "cells": {
     "haiku-01": {
       "model_key": "haiku",
       "scenario": "01",
-      "bri": 73,
+      "bri": 77,
       "bri_stddev": 0,
       "band": "buildable-with-gaps",
       "align_ok": false,
       "metrics": {
-        "clarity": 52,
+        "clarity": 67,
         "alignment": 40,
         "completeness": 100,
         "testability": 95,
@@ -32,12 +32,12 @@
     "haiku-02": {
       "model_key": "haiku",
       "scenario": "02",
-      "bri": 77,
+      "bri": 80,
       "bri_stddev": 0,
       "band": "buildable-with-gaps",
       "align_ok": true,
       "metrics": {
-        "clarity": 52,
+        "clarity": 67,
         "alignment": 60,
         "completeness": 100,
         "testability": 94,
@@ -47,12 +47,12 @@
     "haiku-03": {
       "model_key": "haiku",
       "scenario": "03",
-      "bri": 83,
+      "bri": 89,
       "bri_stddev": 0,
-      "band": "buildable-with-gaps",
+      "band": "ship-ready",
       "align_ok": true,
       "metrics": {
-        "clarity": 40,
+        "clarity": 62,
         "alignment": 100,
         "completeness": 100,
         "testability": 100,
@@ -62,12 +62,12 @@
     "sonnet-01": {
       "model_key": "sonnet",
       "scenario": "01",
-      "bri": 90,
+      "bri": 93,
       "bri_stddev": 0,
       "band": "ship-ready",
       "align_ok": true,
       "metrics": {
-        "clarity": 64,
+        "clarity": 73,
         "alignment": 100,
         "completeness": 100,
         "testability": 100,
@@ -77,12 +77,12 @@
     "sonnet-02": {
       "model_key": "sonnet",
       "scenario": "02",
-      "bri": 93,
+      "bri": 94,
       "bri_stddev": 0,
       "band": "ship-ready",
       "align_ok": true,
       "metrics": {
-        "clarity": 76,
+        "clarity": 80,
         "alignment": 100,
         "completeness": 100,
         "testability": 100,
@@ -92,12 +92,12 @@
     "sonnet-03": {
       "model_key": "sonnet",
       "scenario": "03",
-      "bri": 82,
+      "bri": 88,
       "bri_stddev": 0,
-      "band": "buildable-with-gaps",
+      "band": "ship-ready",
       "align_ok": true,
       "metrics": {
-        "clarity": 40,
+        "clarity": 62,
         "alignment": 100,
         "completeness": 100,
         "testability": 100,
@@ -107,14 +107,12 @@
     "opus-01": {
       "model_key": "opus",
       "scenario": "01",
-      "bri": 93,
+      "bri": 94,
       "bri_stddev": 0,
-      "n": 4,
-      "note": "replicated: 4 judge runs all BRI 93 (clarity 76) — judge is stable on this clean spec",
       "band": "ship-ready",
       "align_ok": true,
       "metrics": {
-        "clarity": 76,
+        "clarity": 80,
         "alignment": 100,
         "completeness": 100,
         "testability": 100,
@@ -124,12 +122,12 @@
     "opus-02": {
       "model_key": "opus",
       "scenario": "02",
-      "bri": 93,
+      "bri": 94,
       "bri_stddev": 0,
       "band": "ship-ready",
       "align_ok": true,
       "metrics": {
-        "clarity": 76,
+        "clarity": 80,
         "alignment": 100,
         "completeness": 100,
         "testability": 100,
@@ -139,18 +137,16 @@
     "opus-03": {
       "model_key": "opus",
       "scenario": "03",
-      "bri": 93,
-      "bri_stddev": 6,
-      "n": 5,
-      "note": "replicated (5 judge runs): BRI [79,93,93,93,96], clarity [28,76,76,76,88]. The original n=1 sample (BRI 79, clarity 28) was a low-tail OUTLIER — median is BRI 93 / clarity 76. The judge's clarification-question COUNT (1/2/6) is the unstable driver, amplified by clarity = 100 - 12*count. Use median-of-N; fix the formula.",
+      "bri": 94,
+      "bri_stddev": 4.12,
       "band": "ship-ready",
       "align_ok": true,
       "metrics": {
-        "clarity": 76,
+        "clarity": 80,
         "alignment": 100,
         "completeness": 100,
         "testability": 100,
-        "actionability": 89
+        "actionability": 94
       }
     }
   }

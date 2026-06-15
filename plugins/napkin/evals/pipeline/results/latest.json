@@ -1,13 +1,13 @@
 {
-  "generated": "2026-06-15T18:54:41.589Z",
+  "generated": "2026-06-15T19:24:21.885Z",
   "judge_model": "claude-opus-4-8",
   "provenance": {
-    "harness_version": "1.0.0",
-    "git_sha": "aab8080",
+    "harness_version": "1.1.0",
+    "git_sha": "3ecb423",
     "skills_hash": "8514f3610da2",
-    "judge_rubric_hash": "6cec0d406175"
+    "judge_rubric_hash": "360ac2b5ff7f"
   },
-  "repeats_per_cell": 1,
+  "repeats_per_cell": 5,
   "scenarios": [
     {
       "id": "01",
@@ -31,10 +31,11 @@
       "model_key": "haiku",
       "scenario": "01",
       "bri": {
-        "mean": 73,
+        "median": 77,
+        "mean": 77,
         "stddev": 0,
-        "min": 73,
-        "max": 73,
+        "min": 77,
+        "max": 77,
         "n": 1
       },
       "band": "buildable-with-gaps",
@@ -42,13 +43,15 @@
       "errors": 4,
       "metrics": {
         "clarity": {
-          "mean": 52,
+          "median": 67,
+          "mean": 67,
           "stddev": 0,
-          "min": 52,
-          "max": 52,
+          "min": 67,
+          "max": 67,
           "n": 1
         },
         "alignment": {
+          "median": 40,
           "mean": 40,
           "stddev": 0,
           "min": 40,
@@ -56,6 +59,7 @@
           "n": 1
         },
         "completeness": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -63,6 +67,7 @@
           "n": 1
         },
         "testability": {
+          "median": 95,
           "mean": 95,
           "stddev": 0,
           "min": 95,
@@ -70,6 +75,7 @@
           "n": 1
         },
         "actionability": {
+          "median": 89,
           "mean": 89,
           "stddev": 0,
           "min": 89,
@@ -89,10 +95,11 @@
       "model_key": "haiku",
       "scenario": "02",
       "bri": {
-        "mean": 77,
+        "median": 80,
+        "mean": 80,
         "stddev": 0,
-        "min": 77,
-        "max": 77,
+        "min": 80,
+        "max": 80,
         "n": 1
       },
       "band": "buildable-with-gaps",
@@ -100,13 +107,15 @@
       "errors": 0,
       "metrics": {
         "clarity": {
-          "mean": 52,
+          "median": 67,
+          "mean": 67,
           "stddev": 0,
-          "min": 52,
-          "max": 52,
+          "min": 67,
+          "max": 67,
           "n": 1
         },
         "alignment": {
+          "median": 60,
           "mean": 60,
           "stddev": 0,
           "min": 60,
@@ -114,6 +123,7 @@
           "n": 1
         },
         "completeness": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -121,6 +131,7 @@
           "n": 1
         },
         "testability": {
+          "median": 94,
           "mean": 94,
           "stddev": 0,
           "min": 94,
@@ -128,6 +139,7 @@
           "n": 1
         },
         "actionability": {
+          "median": 85,
           "mean": 85,
           "stddev": 0,
           "min": 85,
@@ -148,24 +160,27 @@
       "model_key": "haiku",
       "scenario": "03",
       "bri": {
-        "mean": 83,
+        "median": 89,
+        "mean": 89,
         "stddev": 0,
-        "min": 83,
-        "max": 83,
+        "min": 89,
+        "max": 89,
         "n": 1
       },
-      "band": "buildable-with-gaps",
+      "band": "ship-ready",
       "align_ok": true,
       "errors": 0,
       "metrics": {
         "clarity": {
-          "mean": 40,
+          "median": 62,
+          "mean": 62,
           "stddev": 0,
-          "min": 40,
-          "max": 40,
+          "min": 62,
+          "max": 62,
           "n": 1
         },
         "alignment": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -173,6 +188,7 @@
           "n": 1
         },
         "completeness": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -180,6 +196,7 @@
           "n": 1
         },
         "testability": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -187,6 +204,7 @@
           "n": 1
         },
         "actionability": {
+          "median": 88,
           "mean": 88,
           "stddev": 0,
           "min": 88,
@@ -206,10 +224,11 @@
       "model_key": "sonnet",
       "scenario": "01",
       "bri": {
-        "mean": 90,
+        "median": 93,
+        "mean": 93,
         "stddev": 0,
-        "min": 90,
-        "max": 90,
+        "min": 93,
+        "max": 93,
         "n": 1
       },
       "band": "ship-ready",
@@ -217,13 +236,15 @@
       "errors": 0,
       "metrics": {
         "clarity": {
-          "mean": 64,
+          "median": 73,
+          "mean": 73,
           "stddev": 0,
-          "min": 64,
-          "max": 64,
+          "min": 73,
+          "max": 73,
           "n": 1
         },
         "alignment": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -231,6 +252,7 @@
           "n": 1
         },
         "completeness": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -238,6 +260,7 @@
           "n": 1
         },
         "testability": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -245,6 +268,7 @@
           "n": 1
         },
         "actionability": {
+          "median": 95,
           "mean": 95,
           "stddev": 0,
           "min": 95,
@@ -264,10 +288,11 @@
       "model_key": "sonnet",
       "scenario": "02",
       "bri": {
-        "mean": 93,
+        "median": 94,
+        "mean": 94,
         "stddev": 0,
-        "min": 93,
-        "max": 93,
+        "min": 94,
+        "max": 94,
         "n": 1
       },
       "band": "ship-ready",
@@ -275,13 +300,15 @@
       "errors": 0,
       "metrics": {
         "clarity": {
-          "mean": 76,
+          "median": 80,
+          "mean": 80,
           "stddev": 0,
-          "min": 76,
-          "max": 76,
+          "min": 80,
+          "max": 80,
           "n": 1
         },
         "alignment": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -289,6 +316,7 @@
           "n": 1
         },
         "completeness": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -296,6 +324,7 @@
           "n": 1
         },
         "testability": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -303,6 +332,7 @@
           "n": 1
         },
         "actionability": {
+          "median": 94,
           "mean": 94,
           "stddev": 0,
           "min": 94,
@@ -321,24 +351,27 @@
       "model_key": "sonnet",
       "scenario": "03",
       "bri": {
-        "mean": 82,
+        "median": 88,
+        "mean": 88,
         "stddev": 0,
-        "min": 82,
-        "max": 82,
+        "min": 88,
+        "max": 88,
         "n": 1
       },
-      "band": "buildable-with-gaps",
+      "band": "ship-ready",
       "align_ok": true,
       "errors": 0,
       "metrics": {
         "clarity": {
-          "mean": 40,
+          "median": 62,
+          "mean": 62,
           "stddev": 0,
-          "min": 40,
-          "max": 40,
+          "min": 62,
+          "max": 62,
           "n": 1
         },
         "alignment": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -346,6 +379,7 @@
           "n": 1
         },
         "completeness": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -353,6 +387,7 @@
           "n": 1
         },
         "testability": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -360,6 +395,7 @@
           "n": 1
         },
         "actionability": {
+          "median": 81,
           "mean": 81,
           "stddev": 0,
           "min": 81,
@@ -380,50 +416,56 @@
       "model_key": "opus",
       "scenario": "01",
       "bri": {
-        "mean": 93,
+        "median": 94,
+        "mean": 94,
         "stddev": 0,
-        "min": 93,
-        "max": 93,
-        "n": 1
+        "min": 94,
+        "max": 94,
+        "n": 5
       },
       "band": "ship-ready",
       "align_ok": true,
       "errors": 0,
       "metrics": {
         "clarity": {
-          "mean": 76,
+          "median": 80,
+          "mean": 80,
           "stddev": 0,
-          "min": 76,
-          "max": 76,
-          "n": 1
+          "min": 80,
+          "max": 80,
+          "n": 5
         },
         "alignment": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "completeness": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "testability": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "actionability": {
-          "mean": 95,
-          "stddev": 0,
+          "median": 95,
+          "mean": 95.4,
+          "stddev": 0.55,
           "min": 95,
-          "max": 95,
-          "n": 1
+          "max": 96,
+          "n": 5
         }
       },
       "top_gaps": [
@@ -438,10 +480,11 @@
       "model_key": "opus",
       "scenario": "02",
       "bri": {
-        "mean": 93,
+        "median": 94,
+        "mean": 94,
         "stddev": 0,
-        "min": 93,
-        "max": 93,
+        "min": 94,
+        "max": 94,
         "n": 1
       },
       "band": "ship-ready",
@@ -449,13 +492,15 @@
       "errors": 0,
       "metrics": {
         "clarity": {
-          "mean": 76,
+          "median": 80,
+          "mean": 80,
           "stddev": 0,
-          "min": 76,
-          "max": 76,
+          "min": 80,
+          "max": 80,
           "n": 1
         },
         "alignment": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -463,6 +508,7 @@
           "n": 1
         },
         "completeness": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -470,6 +516,7 @@
           "n": 1
         },
         "testability": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
@@ -477,6 +524,7 @@
           "n": 1
         },
         "actionability": {
+          "median": 95,
           "mean": 95,
           "stddev": 0,
           "min": 95,
@@ -495,50 +543,56 @@
       "model_key": "opus",
       "scenario": "03",
       "bri": {
-        "mean": 79,
-        "stddev": 0,
-        "min": 79,
-        "max": 79,
-        "n": 1
+        "median": 94,
+        "mean": 93,
+        "stddev": 4.12,
+        "min": 86,
+        "max": 97,
+        "n": 5
       },
-      "band": "buildable-with-gaps",
+      "band": "ship-ready",
       "align_ok": true,
       "errors": 0,
       "metrics": {
         "clarity": {
-          "mean": 28,
-          "stddev": 0,
-          "min": 28,
-          "max": 28,
-          "n": 1
+          "median": 80,
+          "mean": 77.2,
+          "stddev": 11.95,
+          "min": 57,
+          "max": 89,
+          "n": 5
         },
         "alignment": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "completeness": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "testability": {
+          "median": 100,
           "mean": 100,
           "stddev": 0,
           "min": 100,
           "max": 100,
-          "n": 1
+          "n": 5
         },
         "actionability": {
-          "mean": 81,
-          "stddev": 0,
+          "median": 94,
+          "mean": 91.8,
+          "stddev": 6.06,
           "min": 81,
-          "max": 81,
-          "n": 1
+          "max": 95,
+          "n": 5
         }
       },
       "top_gaps": [

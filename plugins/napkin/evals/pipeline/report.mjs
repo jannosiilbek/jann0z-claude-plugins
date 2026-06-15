@@ -73,7 +73,7 @@ function aggregateCell(grades) {
   for (const name of METRICS) metrics[name] = stats(grades.map((g) => g.metrics?.[name]?.score).filter((x) => typeof x === 'number'))
   const rep = grades[0] // representative run for qualitative fields
   return {
-    bri, band: band(Math.round(bri.mean)), metrics,
+    bri, band: band(Math.round(bri.median)), metrics,
     align_ok: grades.every((g) => g.mechanical?.align_ok),
     errors: Math.max(...grades.map((g) => g.mechanical?.errors ?? 0)),
     n: grades.length,
@@ -86,12 +86,17 @@ const cells = {}
 for (const [k, grades] of groups) cells[k] = aggregateCell(grades)
 
 const anyProv = Object.values(cells).find((c) => c.provenance)?.provenance || {}
-const maxN = Math.max(...Object.values(cells).map((c) => c.n))
-const fmt = (st) => st.n > 1 ? `${st.mean}±${st.stddev}` : `${st.mean}`
+const ns = Object.values(cells).map((c) => c.n)
+const maxN = Math.max(...ns), minN = Math.min(...ns)
+const repeatsLabel = maxN === 1 ? 'n=1 per cell — no variance yet'
+  : minN === maxN ? `${maxN} repeats/cell (median±σ)`
+  : `n=${minN}–${maxN} per cell (replicated cells show median±σ)`
+// median is the headline (robust to the judge's fat tail); show ±σ when replicated.
+const fmt = (st) => st.n > 1 ? `${st.median}±${st.stddev}` : `${st.median}`
 
 // --- matrix.md ---
 const L = ['# Pipeline eval — Build-Readiness matrix', '']
-L.push(`_judge: ${anyProv.judge_model || 'n/a'} (held constant) · skills @ ${anyProv.skills_hash || '?'} · git ${anyProv.git_sha || '?'} · ${maxN > 1 ? `${maxN} repeats/cell (mean±σ)` : 'n=1 per cell — no variance yet'}._`)
+L.push(`_judge: ${anyProv.judge_model || 'n/a'} (held constant) · skills @ ${anyProv.skills_hash || '?'} · git ${anyProv.git_sha || '?'} · ${repeatsLabel}._`)
 L.push('_BRI 0–100. Bands: ≥85 ship-ready · 70–84 buildable-with-gaps · 50–69 underspecified · <50 not-buildable._', '')
 L.push(`| Executor \\ scenario | ${scenarios.map((s) => `${s}${scenMeta[s]?.sizing ? ` (${scenMeta[s].sizing})` : ''}`).join(' | ')} |`)
 L.push(`|---|${scenarios.map(() => '---').join('|')}|`)
@@ -104,7 +109,7 @@ for (const mk of execOrder) {
 }
 const absent = execOrder.filter((mk) => !scenarios.some((s) => cells[`${mk}|${s}`]))
 if (absent.length) L.push('', `_Not run: ${absent.map((mk) => modelLabel[mk] || mk).join(', ')}._`)
-L.push('', '## Per-metric (mean' + (maxN > 1 ? ' ± σ' : '') + '): clarity / alignment / completeness / testability / actionability', '')
+L.push('', '## Per-metric (median' + (maxN > 1 ? ' ± σ' : '') + '): clarity / alignment / completeness / testability / actionability', '')
 L.push('| Cell | BRI | band | clar | algn | cmpl | test | actn | gate |')
 L.push('|------|----:|------|----:|----:|----:|----:|----:|------|')
 for (const mk of execOrder) for (const s of scenarios) {
@@ -137,7 +142,7 @@ for (const mk of execOrder) for (const s of scenarios) {
 writeFileSync(join(OUT, 'latest.json'), JSON.stringify(payload, null, 2) + '\n')
 
 // --- latest.md ---
-const D = ['# Pipeline eval — last result (detail)', '', `_${payload.cells.length} cells · judge ${payload.judge_model} · ${maxN > 1 ? maxN + ' repeats/cell' : 'n=1'} · skills @ ${anyProv.skills_hash}_`, '']
+const D = ['# Pipeline eval — last result (detail)', '', `_${payload.cells.length} cells · judge ${payload.judge_model} · ${repeatsLabel} · skills @ ${anyProv.skills_hash}_`, '']
 for (const cell of payload.cells) {
   const m = cell.metrics
   D.push(`## ${modelLabel[cell.model_key] || cell.model_key} × ${cell.scenario}${scenMeta[cell.scenario]?.title ? ` (${scenMeta[cell.scenario].title})` : ''} — BRI ${fmt(cell.bri)} (${cell.band})`)

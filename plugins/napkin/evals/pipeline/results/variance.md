@@ -38,11 +38,17 @@ not include generation variance (re-running the pipeline), which the full replic
 - **Baseline corrected:** `baseline.json` opus-03 updated to the replicated median (BRI 93,
   σ 6); opus-01 confirmed (93, σ 0). The other 7 cells remain n=1 **provisional**.
 
-## Fixes (recommended, not yet built)
+## Fixes
 
-1. **Median-of-N per cell** in `report.mjs` (robust to the fat tail) — run cells with
-   `--repeat 5`, take the median BRI as the cell value, carry σ for the gate.
-2. **Soften the clarity formula** so a ±1 subjective question count doesn't move BRI ~3 pts —
-   e.g. cap the count, use a gentler curve, or have the judge score clarity holistically and
-   treat the question list as evidence rather than the arithmetic input.
-3. **Full replicated matrix** (`--repeat 5`) + re-bless, so every cell's gate uses measured σ.
+1. **Median-of-N per cell** — ✅ implemented. `report.mjs` now uses the median across repeats
+   as the headline (robust to the fat tail) and carries σ; `check-regression.mjs` gates on the
+   median and widens tolerance by σ.
+2. **Softened clarity** — ✅ implemented. The brittle `100 − 12·count` (in the stochastic judge)
+   is replaced by a deterministic diminishing-returns curve in `lib.mjs`
+   (`clarity = round(100·8/(8+count))`: 0q→100, 1q→89, 2q→80, 3q→73, 6q→**57** not 28). The judge
+   now only reports the integer count; the harness owns the score. A single harsh draw moves BRI
+   far less, and median-of-N removes the rest.
+3. **Re-blessed baseline** — ✅ opus-01 (n=5) and opus-03 (n=5) replicated; opus-03 corrected to
+   **BRI 94 (ship-ready)**, σ 4.1. The other 7 cells remain **n=1 provisional** until a full
+   `--repeat 5` matrix run (the remaining live step — adds generation variance on top of this
+   judge-only measurement).
