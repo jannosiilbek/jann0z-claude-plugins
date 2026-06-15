@@ -39,3 +39,6 @@ plugins/napkin/evals/pipeline/runs/
 
 # Claude Code worktrees (created by `claude --worktree` / EnterWorktree; never commit)
 .claude/worktrees/
+
+# Playwright MCP scratch (browser automation; not part of any plugin)
+.playwright-mcp/

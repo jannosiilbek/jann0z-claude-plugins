@@ -38,7 +38,7 @@ cd plugins/napkin/evals/pipeline
 npm run smoke                 # all oracle/harness selftests + grade golden spec clean
 
 # SLOW tier — live, periodic / pre-release. Run after changing a skill.
-node run-pipeline.mjs --repeat 3            # full matrix, 3 generations/cell -> mean ± σ
+node run-pipeline.mjs --repeat 3            # full matrix, 3 generations/cell -> median ± σ
 node check-regression.mjs                   # diff latest vs baseline; EXIT 1 on degradation
 node check-regression.mjs --bless           # accept latest as the new baseline (once happy)
 ```
@@ -71,7 +71,7 @@ Runner flags: `--models <all|csv>` · `--scenario <all|id>` · `--repeat <n>` ·
 
 ### Variance, baseline, provenance
 
-- **Replication** (`--repeat n`) makes the BRI a distribution (mean ± σ), so a score change
+- **Replication** (`--repeat n`) makes the BRI a distribution (median ± σ), so a score change
   can be told apart from run-to-run noise. `--repeat 1` is fine for a quick look but is **not
   a regression-grade signal** — the gate widens its tolerance by a cell's σ, which is 0 at n=1.
 - **`baseline.json`** is the committed expected score per cell (+ tolerances). `check-regression`

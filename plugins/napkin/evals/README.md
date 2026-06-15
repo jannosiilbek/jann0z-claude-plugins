@@ -46,7 +46,7 @@ The pipeline tier is a **regression guardrail**, not just a scoreboard:
 1. `cd pipeline && npm run smoke` — deterministic, seconds, no model calls. Protects the
    oracles + grader. Run on every change.
 2. Edit a skill, then `node run-pipeline.mjs --repeat 3 [--scenario X]` — re-run with
-   replication (mean ± σ).
+   replication (median ± σ).
 3. `node check-regression.mjs` — **exits non-zero if any cell degraded** beyond tolerance +
    run noise (compared to the committed `baseline.json`).
 4. Green + the win you wanted? `node check-regression.mjs --bless` to advance the baseline.
