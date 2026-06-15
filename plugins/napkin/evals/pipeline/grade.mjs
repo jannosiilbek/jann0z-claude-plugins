@@ -20,33 +20,29 @@ import { parseArgs } from 'node:util'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, relative } from 'node:path'
+import { WEIGHTS, band, clamp, round, mean, loadModels, provenance } from './lib.mjs'
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
 const NAPKIN = join(SCRIPT_DIR, '..', '..')
 const CHECK_ALIGN = join(NAPKIN, 'skills', 'ddd-align', 'scripts', 'check-align.mjs')
 const ERD_TEST = join(NAPKIN, 'skills', 'erd-modeler', 'scripts', 'run-erd-test.mjs')
-const MODELS = JSON.parse(readFileSync(join(SCRIPT_DIR, 'models.json'), 'utf8'))
-
-const WEIGHTS = { clarity: 0.25, alignment: 0.20, completeness: 0.20, testability: 0.20, actionability: 0.15 }
-const BANDS = [[85, 'ship-ready'], [70, 'buildable-with-gaps'], [50, 'underspecified'], [0, 'not-buildable']]
+const MODELS = loadModels()
 
 const { values } = parseArgs({
   options: {
     spec: { type: 'string' },
     'no-judge': { type: 'boolean', default: false },
     'judge-model': { type: 'string' },
+    'judge-file': { type: 'string' }, // pre-computed judge JSON (first-class: lets run/grade be decoupled)
+    'model-key': { type: 'string' },  // executor identity, stamped into the result for the report/regression layer
+    scenario: { type: 'string' },
     out: { type: 'string' },
   },
 })
-if (!values.spec) { console.error('usage: node grade.mjs --spec <dir> [--no-judge] [--judge-model <id>] [--out <file>]'); process.exit(2) }
+if (!values.spec) { console.error('usage: node grade.mjs --spec <dir> [--no-judge|--judge-file f.json] [--judge-model id] [--model-key k --scenario s] [--out file]'); process.exit(2) }
 const SPEC = values.spec
 if (!existsSync(SPEC)) { console.error(`[grade] spec dir not found: ${SPEC}`); process.exit(2) }
 const JUDGE_MODEL = values['judge-model'] || MODELS.judge?.id || 'claude-opus-4-8'
-
-const clamp = (x, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, x))
-const round = (x) => Math.round(x)
-const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null)
-const band = (bri) => BANDS.find(([t]) => bri >= t)[1]
 
 // Run a JSON-emitting oracle that may exit non-zero; capture stdout either way.
 function runJsonTool(file, args) {
@@ -147,7 +143,11 @@ function runJudge(mech) {
   ].join('\n')
 
   let raw
-  if (process.env.GRADE_FAKE_JUDGE != null) {
+  if (values['judge-file']) {
+    // first-class: a judge result computed elsewhere (e.g. by a subagent) is fed back in,
+    // so "run the judge" and "compute the score" are decoupled and reproducible.
+    raw = readFileSync(values['judge-file'], 'utf8')
+  } else if (process.env.GRADE_FAKE_JUDGE != null) {
     // test seam: selftest substitutes a canned judge response (valid or malformed) so the
     // judge path and its false-green guard are covered without a model call.
     raw = process.env.GRADE_FAKE_JUDGE
@@ -223,6 +223,8 @@ if (!values['no-judge']) {
   catch (e) { console.error(`[grade] judge skipped (${e.message}); reporting mechanical-only`) }
 }
 const result = combine(mech, judge)
+result.cell = { model_key: values['model-key'] ?? null, scenario: values.scenario ?? null }
+result.provenance = provenance({ judgeModel: result.judge_model, now: new Date().toISOString() })
 const json = JSON.stringify(result, null, 2)
 if (values.out) writeFileSync(values.out, json + '\n')
 process.stdout.write(json + '\n')

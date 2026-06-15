@@ -44,8 +44,12 @@ cd plugins/napkin/skills/erd-diagram/scripts && npm test
 # ddd-align spec-consistency harness selftest (zero deps)
 cd plugins/napkin/skills/ddd-align/scripts && npm test
 
-# pipeline-eval grader selftest (zero deps; proves grade.mjs refuses false-green)
+# pipeline-eval selftests (grader refuses false-green; regression gate catches degradation)
 cd plugins/napkin/evals/pipeline && npm test
+
+# pipeline-eval FAST smoke gate (deterministic, no model calls): oracle/harness selftests
+# + grade the golden spec clean. Run on every change.
+cd plugins/napkin/evals/pipeline && npm run smoke
 ```
 
 The erd-modeler harness (`run-erd-test.mjs`) is the oracle for the skill's live-test stage; the ddd-align harness (`check-align.mjs`) is the oracle for spec cross-artifact consistency; each skill's `selftest.mjs` is an adversarial suite proving its script refuses false-greens. A skill change is not done until its selftest passes.
@@ -53,7 +57,7 @@ The erd-modeler harness (`run-erd-test.mjs`) is the oracle for the skill's live-
 ## Evals — two tiers (see `plugins/napkin/evals/README.md`)
 
 - **Unit (per-skill):** `skills/<skill>/evals/evals.json`, run by **skill-creator** (its standard — keep these files where it expects them). `evals/aggregate-unit.mjs` reads the gitignored `*-workspace/` output (incl. `model-*` variants) and writes the committed, model-explicit summary `skills/<skill>/evals/results.{md,json}`.
-- **Pipeline (integration):** `evals/pipeline/` runs the whole pipeline end-to-end across a model matrix (`models.json`) via `claude -p`, then `grade.mjs` scores the produced `spec/` for **build-readiness** (mechanical oracles + an LLM buildability judge) into `evals/pipeline/results/matrix.md`. The judge model is held constant across the matrix. Raw runs under `evals/pipeline/runs/` are gitignored; `results/` summaries are committed.
+- **Pipeline (integration):** `evals/pipeline/` is a **regression guardrail**, not just a benchmark. `run-pipeline.mjs` runs the whole pipeline end-to-end across a model matrix (`models.json`) via `claude -p` with `--repeat n` for replication (mean ± σ); `grade.mjs` scores the produced `spec/` for **build-readiness** (mechanical oracles `check-align.mjs` + `run-erd-test.mjs`, blended with an LLM buildability judge held constant across the matrix) and stamps provenance (harness version, git SHA, skills-hash, rubric-hash); `report.mjs` renders `results/{matrix,latest}.*`; **`check-regression.mjs` diffs latest vs the committed `baseline.json` and exits non-zero on any degradation beyond tolerance + run noise** (`--bless` advances the baseline). `npm run smoke` is the fast deterministic gate (no model calls). Raw runs under `evals/pipeline/runs/` are gitignored; `results/` + `baseline.json` are committed. See `evals/pipeline/README.md`.
 
 ## Layout conventions
 

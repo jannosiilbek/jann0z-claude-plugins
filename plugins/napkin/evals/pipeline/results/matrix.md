@@ -1,18 +1,18 @@
 # Pipeline eval — Build-Readiness matrix
 
-_Run 2026-06-15 · executor matrix × scenarios · judge held constant: claude-opus-4-8._
+_judge: claude-opus-4-8 (held constant) · skills @ 8514f3610da2 · git aab8080 · n=1 per cell — no variance yet._
 _BRI 0–100. Bands: ≥85 ship-ready · 70–84 buildable-with-gaps · 50–69 underspecified · <50 not-buildable._
 
-| Executor \ scenario | 01 feedback-inbox (full) | 02 marketplace (full) | 03 waitlist (delta) |
+| Executor \ scenario | 01 (full) | 02 (full) | 03 (delta) |
 |---|---|---|---|
 | **Haiku 4.5** | 73 gaps | 77 gaps | 83 gaps |
 | **Sonnet 4.6** | 90 ship | 93 ship | 82 gaps |
+| **Fable 5** | — | — | — |
 | **Opus 4.8** | 93 ship | 93 ship | 79 gaps |
-| Fable 5 | ⚠️ unavailable | ⚠️ unavailable | ⚠️ unavailable |
 
-_Fable 5 was unavailable at run time (API returned "currently unavailable"); re-run that row when access returns: `node run-pipeline.mjs --models fable`._
+_Not run: Fable 5._
 
-## Per-metric breakdown (clarity / alignment / completeness / testability / actionability)
+## Per-metric (mean): clarity / alignment / completeness / testability / actionability
 
 | Cell | BRI | band | clar | algn | cmpl | test | actn | gate |
 |------|----:|------|----:|----:|----:|----:|----:|------|

@@ -1,26 +1,27 @@
 {
-  "run": "2026-06-15",
+  "generated": "2026-06-15T18:54:41.589Z",
   "judge_model": "claude-opus-4-8",
-  "executors": [
-    "claude-haiku-4-5-20251001",
-    "claude-sonnet-4-6",
-    "claude-opus-4-8"
-  ],
-  "fable_status": "unavailable at run time",
+  "provenance": {
+    "harness_version": "1.0.0",
+    "git_sha": "aab8080",
+    "skills_hash": "8514f3610da2",
+    "judge_rubric_hash": "6cec0d406175"
+  },
+  "repeats_per_cell": 1,
   "scenarios": [
     {
       "id": "01",
-      "title": "B2B feedback inbox",
+      "title": "B2B feedback inbox (greenfield SaaS)",
       "sizing": "full"
     },
     {
       "id": "02",
-      "title": "Local services marketplace",
+      "title": "Local services marketplace (greenfield)",
       "sizing": "full"
     },
     {
       "id": "03",
-      "title": "Course waitlists",
+      "title": "Delta — add waitlists to the course platform",
       "sizing": "delta"
     }
   ],
@@ -29,64 +30,172 @@
       "model": "claude-haiku-4-5-20251001",
       "model_key": "haiku",
       "scenario": "01",
-      "bri": 73,
+      "bri": {
+        "mean": 73,
+        "stddev": 0,
+        "min": 73,
+        "max": 73,
+        "n": 1
+      },
       "band": "buildable-with-gaps",
       "align_ok": false,
       "errors": 4,
       "metrics": {
-        "clarity": 52,
-        "alignment": 40,
-        "completeness": 100,
-        "testability": 95,
-        "actionability": 89
+        "clarity": {
+          "mean": 52,
+          "stddev": 0,
+          "min": 52,
+          "max": 52,
+          "n": 1
+        },
+        "alignment": {
+          "mean": 40,
+          "stddev": 0,
+          "min": 40,
+          "max": 40,
+          "n": 1
+        },
+        "completeness": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "testability": {
+          "mean": 95,
+          "stddev": 0,
+          "min": 95,
+          "max": 95,
+          "n": 1
+        },
+        "actionability": {
+          "mean": 89,
+          "stddev": 0,
+          "min": 89,
+          "max": 89,
+          "n": 1
+        }
       },
       "top_gaps": [
         "How an inbound feedback submission is routed to a specific organization (end_users has no org link; no submission endpoint/form/token mechanism specified).",
         "The role-based authorization model: owner/admin/agent are defined but no acceptance criterion enforces who may triage, create releases, or comment.",
         "Feedback status transition rules: UC-002 AC-4 privileges 'new' but the legal transition graph is otherwise undefined.",
-        "Enforcement home for guard rules (UC-006 AC-2 'no changes once shipped', UC-003 AC-4 'at most one release') \u2014 DB trigger vs application layer, and neither is live-tested."
+        "Enforcement home for guard rules (UC-006 AC-2 'no changes once shipped', UC-003 AC-4 'at most one release') — DB trigger vs application layer, and neither is live-tested."
       ]
     },
     {
       "model": "claude-haiku-4-5-20251001",
       "model_key": "haiku",
       "scenario": "02",
-      "bri": 77,
+      "bri": {
+        "mean": 77,
+        "stddev": 0,
+        "min": 77,
+        "max": 77,
+        "n": 1
+      },
       "band": "buildable-with-gaps",
       "align_ok": true,
       "errors": 0,
       "metrics": {
-        "clarity": 52,
-        "alignment": 60,
-        "completeness": 100,
-        "testability": 94,
-        "actionability": 85
+        "clarity": {
+          "mean": 52,
+          "stddev": 0,
+          "min": 52,
+          "max": 52,
+          "n": 1
+        },
+        "alignment": {
+          "mean": 60,
+          "stddev": 0,
+          "min": 60,
+          "max": 60,
+          "n": 1
+        },
+        "completeness": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "testability": {
+          "mean": 94,
+          "stddev": 0,
+          "min": 94,
+          "max": 94,
+          "n": 1
+        },
+        "actionability": {
+          "mean": 85,
+          "stddev": 0,
+          "min": 85,
+          "max": 85,
+          "n": 1
+        }
       },
       "top_gaps": [
-        "Booking lifecycle rules (accept-only-when-requested, complete-only-when-confirmed, rate-only-when-completed) are stated in ACs but enforced nowhere in the model; the agent must invent CHECK constraints, triggers, or app guards \u2014 and the live tests are inconsistent about whether these are DB errors or WHERE-clause no-ops.",
+        "Booking lifecycle rules (accept-only-when-requested, complete-only-when-confirmed, rate-only-when-completed) are stated in ACs but enforced nowhere in the model; the agent must invent CHECK constraints, triggers, or app guards — and the live tests are inconsistent about whether these are DB errors or WHERE-clause no-ops.",
         "UC-006/DA-2 contradicts its own AC-2: the AC says rating a non-completed booking SHALL be rejected, but the live test inserts that rating and expects success (rowcount=1). The agent gets opposite signals from the same use case.",
         "stars 1-5 range has no CHECK constraint and no validation home despite being stated in glossary and UC-006.",
-        "Payment.amount has no derivation rule \u2014 UC-003 initializes a pending payment but never says how the amount is computed (hourly_rate x time window? fixed?).",
-        "'Provider/customer notified' steps and 'update provider reputation' / rating-propagation NFR have no entity, field, or integration \u2014 reputation aggregation and notifications are unhomed."
+        "Payment.amount has no derivation rule — UC-003 initializes a pending payment but never says how the amount is computed (hourly_rate x time window? fixed?).",
+        "'Provider/customer notified' steps and 'update provider reputation' / rating-propagation NFR have no entity, field, or integration — reputation aggregation and notifications are unhomed."
       ]
     },
     {
       "model": "claude-haiku-4-5-20251001",
       "model_key": "haiku",
       "scenario": "03",
-      "bri": 83,
+      "bri": {
+        "mean": 83,
+        "stddev": 0,
+        "min": 83,
+        "max": 83,
+        "n": 1
+      },
       "band": "buildable-with-gaps",
       "align_ok": true,
       "errors": 0,
       "metrics": {
-        "clarity": 40,
-        "alignment": 100,
-        "completeness": 100,
-        "testability": 100,
-        "actionability": 88
+        "clarity": {
+          "mean": 40,
+          "stddev": 0,
+          "min": 40,
+          "max": 40,
+          "n": 1
+        },
+        "alignment": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "completeness": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "testability": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "actionability": {
+          "mean": 88,
+          "stddev": 0,
+          "min": 88,
+          "max": 88,
+          "n": 1
+        }
       },
       "top_gaps": [
-        "Capacity enforcement and the enroll-vs-waitlist routing rule are never specified \u2014 the agent must guess how 'full' is detected and whether UC-001 rejects when at capacity.",
+        "Capacity enforcement and the enroll-vs-waitlist routing rule are never specified — the agent must guess how 'full' is detected and whether UC-001 rejects when at capacity.",
         "Offer lifecycle timing: expires_at has no concrete duration and the 'expired' status has no handling/re-offer policy.",
         "Re-enrollment contradiction: dropped enrollment rows are kept but unique(student_id,course_id) blocks re-enroll via waitlist; usecases.md ('error ~ check') and usecases.sql ('error ~ unique') disagree on UC-005/DA-3.",
         "Waitlist_entry has no terminal state after a successful accept, and the drop->offer / accept->enroll policies are asserted but only tested as isolated inserts, not as enforced causation."
@@ -96,42 +205,114 @@
       "model": "claude-sonnet-4-6",
       "model_key": "sonnet",
       "scenario": "01",
-      "bri": 90,
+      "bri": {
+        "mean": 90,
+        "stddev": 0,
+        "min": 90,
+        "max": 90,
+        "n": 1
+      },
       "band": "ship-ready",
       "align_ok": true,
       "errors": 0,
       "metrics": {
-        "clarity": 64,
-        "alignment": 100,
-        "completeness": 100,
-        "testability": 100,
-        "actionability": 95
+        "clarity": {
+          "mean": 64,
+          "stddev": 0,
+          "min": 64,
+          "max": 64,
+          "n": 1
+        },
+        "alignment": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "completeness": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "testability": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "actionability": {
+          "mean": 95,
+          "stddev": 0,
+          "min": 95,
+          "max": 95,
+          "n": 1
+        }
       },
       "top_gaps": [
-        "Status-transition legality is undefined: ordered 'new\u2192triaged\u2192planned\u2192shipped\u2192declined' workflow in the brief vs. enum-only validation in UC-008 \u2014 agent must guess whether to enforce transition guards.",
+        "Status-transition legality is undefined: ordered 'new→triaged→planned→shipped→declined' workflow in the brief vs. enum-only validation in UC-008 — agent must guess whether to enforce transition guards.",
         "Owner-uniqueness ('exactly one owner per org') is asserted in the glossary but enforced nowhere; UC-004 lets admins freely set the owner role.",
         "Invitee vs. removed member states both collapse to is_active=false with no distinct 'pending'/'invited' field, so UC-002's pending entry and UC-005's soft-delete are indistinguishable.",
-        "end_users has a global-unique email and no organization_id, making end-user identity cross-tenant \u2014 intended per UC-006 but its visibility consequences across orgs are unspecified."
+        "end_users has a global-unique email and no organization_id, making end-user identity cross-tenant — intended per UC-006 but its visibility consequences across orgs are unspecified."
       ]
     },
     {
       "model": "claude-sonnet-4-6",
       "model_key": "sonnet",
       "scenario": "02",
-      "bri": 93,
+      "bri": {
+        "mean": 93,
+        "stddev": 0,
+        "min": 93,
+        "max": 93,
+        "n": 1
+      },
       "band": "ship-ready",
       "align_ok": true,
       "errors": 0,
       "metrics": {
-        "clarity": 76,
-        "alignment": 100,
-        "completeness": 100,
-        "testability": 100,
-        "actionability": 94
+        "clarity": {
+          "mean": 76,
+          "stddev": 0,
+          "min": 76,
+          "max": 76,
+          "n": 1
+        },
+        "alignment": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "completeness": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "testability": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "actionability": {
+          "mean": 94,
+          "stddev": 0,
+          "min": 94,
+          "max": 94,
+          "n": 1
+        }
       },
       "top_gaps": [
-        "Pricing rule on acceptance is unspecified \u2014 UC-005 'sets the agreed price' and the test hardcodes a value; the agent must guess hourly_rate x hours vs. provider-entered.",
-        "Authorization/ownership is undefined \u2014 nothing ties the accepting/declining Provider to the service, the completing Customer to the booking, or the rating's Customer to the booking; the agent must invent who-may-act rules.",
+        "Pricing rule on acceptance is unspecified — UC-005 'sets the agreed price' and the test hardcodes a value; the agent must guess hourly_rate x hours vs. provider-entered.",
+        "Authorization/ownership is undefined — nothing ties the accepting/declining Provider to the service, the completing Customer to the booking, or the rating's Customer to the booking; the agent must invent who-may-act rules.",
         "Status-transition and rating-eligibility rules are labeled 'error ~ check' but require triggers (a plain CHECK cannot see the prior status); resolved only because model.dbml Notes explicitly say triggers enforce them."
       ]
     },
@@ -139,21 +320,57 @@
       "model": "claude-sonnet-4-6",
       "model_key": "sonnet",
       "scenario": "03",
-      "bri": 82,
+      "bri": {
+        "mean": 82,
+        "stddev": 0,
+        "min": 82,
+        "max": 82,
+        "n": 1
+      },
       "band": "buildable-with-gaps",
       "align_ok": true,
       "errors": 0,
       "metrics": {
-        "clarity": 40,
-        "alignment": 100,
-        "completeness": 100,
-        "testability": 100,
-        "actionability": 81
+        "clarity": {
+          "mean": 40,
+          "stddev": 0,
+          "min": 40,
+          "max": 40,
+          "n": 1
+        },
+        "alignment": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "completeness": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "testability": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "actionability": {
+          "mean": 81,
+          "stddev": 0,
+          "min": 81,
+          "max": 81,
+          "n": 1
+        }
       },
       "top_gaps": [
         "Seat-offer lifecycle is undefined: waitlist_entries has no offered/expires_at state, and UC-005 explicitly leaves 'mark as offered OR create offered-seat record' unresolved",
         "Offer expiry is promised in scope but has zero specification (no timeout, state, or AC)",
-        "'Course is full' / capacity enforcement is a brief assumption with no UC, AC, or DB constraint \u2014 nothing blocks enrolling past capacity or requires fullness before waitlisting",
+        "'Course is full' / capacity enforcement is a brief assumption with no UC, AC, or DB constraint — nothing blocks enrolling past capacity or requires fullness before waitlisting",
         "The drop->offer->accept->enrollment causation is only a flow policy; no AC or data assertion mechanizes it, and 'auto-offer' (scope) contradicts the Registrar-driven manual accept in FL-006/UC-006",
         "UC-006/DA-2 tests a student foreign-key error instead of the missing-waitlist-entry rejection its AC-2 specifies"
       ]
@@ -162,21 +379,57 @@
       "model": "claude-opus-4-8",
       "model_key": "opus",
       "scenario": "01",
-      "bri": 93,
+      "bri": {
+        "mean": 93,
+        "stddev": 0,
+        "min": 93,
+        "max": 93,
+        "n": 1
+      },
       "band": "ship-ready",
       "align_ok": true,
       "errors": 0,
       "metrics": {
-        "clarity": 76,
-        "alignment": 100,
-        "completeness": 100,
-        "testability": 100,
-        "actionability": 95
+        "clarity": {
+          "mean": 76,
+          "stddev": 0,
+          "min": 76,
+          "max": 76,
+          "n": 1
+        },
+        "alignment": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "completeness": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "testability": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "actionability": {
+          "mean": 95,
+          "stddev": 0,
+          "min": 95,
+          "max": 95,
+          "n": 1
+        }
       },
       "top_gaps": [
-        "Authorization: hierarchical owner/admin/agent privilege model asserted in the brief but no UC, AC, or live test enforces role-based denial \u2014 the agent must invent the authz layer.",
+        "Authorization: hierarchical owner/admin/agent privilege model asserted in the brief but no UC, AC, or live test enforces role-based denial — the agent must invent the authz layer.",
         "Transport/API surface unspecified (no endpoints, payloads, REST-vs-GraphQL), so the agent picks the external interface unilaterally.",
-        "No use case for browsing/listing/filtering the inbox (only single-item history view) \u2014 primary read/query/pagination surface left to invention.",
+        "No use case for browsing/listing/filtering the inbox (only single-item history view) — primary read/query/pagination surface left to invention.",
         "Physical end-user submission channel (widget/public endpoint/email) named as the intake path but left out of scope, so ingestion wiring is undefined."
       ]
     },
@@ -184,16 +437,52 @@
       "model": "claude-opus-4-8",
       "model_key": "opus",
       "scenario": "02",
-      "bri": 93,
+      "bri": {
+        "mean": 93,
+        "stddev": 0,
+        "min": 93,
+        "max": 93,
+        "n": 1
+      },
       "band": "ship-ready",
       "align_ok": true,
       "errors": 0,
       "metrics": {
-        "clarity": 76,
-        "alignment": 100,
-        "completeness": 100,
-        "testability": 100,
-        "actionability": 95
+        "clarity": {
+          "mean": 76,
+          "stddev": 0,
+          "min": 76,
+          "max": 76,
+          "n": 1
+        },
+        "alignment": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "completeness": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "testability": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "actionability": {
+          "mean": 95,
+          "stddev": 0,
+          "min": 95,
+          "max": 95,
+          "n": 1
+        }
       },
       "top_gaps": [
         "Booking lifecycle transition guards live only at the application layer and are never specified -- legal status moves (requested->confirmed/declined, confirmed->completed) and the rate-only-completed-bookings rule must be invented; the schema enforces uniqueness/CHECK/FK but not transition legality.",
@@ -205,22 +494,58 @@
       "model": "claude-opus-4-8",
       "model_key": "opus",
       "scenario": "03",
-      "bri": 79,
+      "bri": {
+        "mean": 79,
+        "stddev": 0,
+        "min": 79,
+        "max": 79,
+        "n": 1
+      },
       "band": "buildable-with-gaps",
       "align_ok": true,
       "errors": 0,
       "metrics": {
-        "clarity": 28,
-        "alignment": 100,
-        "completeness": 100,
-        "testability": 100,
-        "actionability": 81
+        "clarity": {
+          "mean": 28,
+          "stddev": 0,
+          "min": 28,
+          "max": 28,
+          "n": 1
+        },
+        "alignment": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "completeness": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "testability": {
+          "mean": 100,
+          "stddev": 0,
+          "min": 100,
+          "max": 100,
+          "n": 1
+        },
+        "actionability": {
+          "mean": 81,
+          "stddev": 0,
+          "min": 81,
+          "max": 81,
+          "n": 1
+        }
       },
       "top_gaps": [
-        "Offer expiry is completely unspecified \u2014 no expires_at/timeout column, no rule for what happens to an unaccepted offer, no re-offer to the next waiting entry.",
+        "Offer expiry is completely unspecified — no expires_at/timeout column, no rule for what happens to an unaccepted offer, no re-offer to the next waiting entry.",
         "Capacity/'full' is narrative only: occupancy is never defined and UC-001 enroll has no capacity guard, so 'a course is full' (UC-004) is unenforceable as written.",
         "Flows vs. use cases contradict on causation: FL-005/FL-006 make drop->offer and accept->enroll automatic policies, but the use cases and usecases.sql implement them as independent manual registrar UPDATEs/INSERTs.",
-        "Lifecycle transitions are unguarded \u2014 nothing requires offer only from waiting or accept only from offered, and accept->enroll is neither atomic nor links the new enrollment to the waitlist entry."
+        "Lifecycle transitions are unguarded — nothing requires offer only from waiting or accept only from offered, and accept->enroll is neither atomic nor links the new enrollment to the waitlist entry."
       ]
     }
   ]

@@ -4,6 +4,9 @@
   "type": "module",
   "description": "End-to-end pipeline eval for the napkin DDD suite: run the full pipeline across a model matrix, grade the produced spec for build-readiness.",
   "scripts": {
-    "test": "node selftest.mjs"
+    "test": "node selftest.mjs && node selftest-regression.mjs",
+    "smoke": "node smoke.mjs",
+    "report": "node report.mjs",
+    "regression": "node check-regression.mjs"
   }
 }

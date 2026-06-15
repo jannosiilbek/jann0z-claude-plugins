@@ -9,8 +9,10 @@
 //
 //   node run-pipeline.mjs                                  # full matrix (all models × all scenarios)
 //   node run-pipeline.mjs --models opus --scenario 01      # one cell
+//   node run-pipeline.mjs --repeat 3                       # 3 generations/cell -> mean ± σ (variance)
 //   node run-pipeline.mjs --models haiku,sonnet --dry-run  # preview plan + cost, no model calls
 //   node run-pipeline.mjs --skip-run                       # re-grade existing runs/ dirs only
+// After a run, gate it: node check-regression.mjs  (and bless a new baseline once happy).
 
 import { spawn } from 'node:child_process'
 import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync, cpSync, appendFileSync } from 'node:fs'
@@ -24,6 +26,7 @@ const SCEN_DIR = join(DIR, 'scenarios')
 const RESULTS = join(DIR, 'results')
 const RUNS = join(DIR, 'runs')
 const GRADE = join(DIR, 'grade.mjs')
+const REPORT = join(DIR, 'report.mjs')
 
 const STAGES = [
   { skill: 'ddd-brief', instruct: (ctx) => `Use the ddd-brief skill to create spec/brief.md for this project. Write all artifacts under ./spec in the current directory. Run the skill to completion.\n\nProject request:\n${ctx}` },
@@ -39,6 +42,7 @@ const { values } = parseArgs({
     scenario: { type: 'string' },
     'judge-model': { type: 'string' },
     concurrency: { type: 'string' },
+    repeat: { type: 'string' },
     'dry-run': { type: 'boolean', default: false },
     'skip-run': { type: 'boolean', default: false },
   },
@@ -46,6 +50,7 @@ const { values } = parseArgs({
 
 const JUDGE = values['judge-model'] || MODELS.judge.id
 const CONCURRENCY = Math.max(1, parseInt(values.concurrency || '1'))
+const REPEAT = Math.max(1, parseInt(values.repeat || '1'))
 
 // resolve executor matrix
 let executors = MODELS.executors
@@ -89,8 +94,8 @@ function sh(cmd, args, opts = {}) {
   })
 }
 
-async function runCell(model, scenario) {
-  const runDir = join(RUNS, RUN_ID, model.key, scenario.id)
+async function runCell(model, scenario, rep) {
+  const runDir = join(RUNS, RUN_ID, model.key, scenario.id, `run-${rep}`)
   const specDir = join(runDir, 'spec')
   if (!values['skip-run']) {
     mkdirSync(runDir, { recursive: true })
@@ -107,76 +112,51 @@ async function runCell(model, scenario) {
       if (r.code !== 0) console.error(`[run] ${model.key}/${scenario.id} stage ${stage.skill} exited ${r.code}`)
     }
   }
-  // grade
-  const g = await sh('node', [GRADE, '--spec', specDir, '--judge-model', JUDGE, '--out', join(runDir, 'grade.json')])
+  // grade (stamps cell identity + provenance into runDir/grade.json; report.mjs aggregates)
+  const g = await sh('node', [GRADE, '--spec', specDir, '--judge-model', JUDGE,
+    '--model-key', model.key, '--scenario', scenario.id, '--out', join(runDir, 'grade.json')])
   let grade = null
   try { grade = JSON.parse(g.out) } catch { /* leave null */ }
-  const cell = {
-    model: model.id, model_key: model.key, scenario: scenario.id, scenario_title: scenario.title,
-    bri: grade?.build_readiness_index ?? null, band: grade?.band ?? 'error',
-    align_ok: grade?.mechanical?.align_ok ?? false, errors: grade?.mechanical?.errors ?? null,
-    metrics: grade?.metrics ?? null, top_gaps: grade?.top_gaps ?? [], run_dir: runDir,
-  }
-  appendFileSync(join(RESULTS, 'history.jsonl'), JSON.stringify({ ts: RUN_ID, judge: JUDGE, ...cell, metrics: undefined, top_gaps: undefined, run_dir: undefined }) + '\n')
-  console.log(`[run] ${model.key} × ${scenario.id}: BRI ${cell.bri} (${cell.band})`)
-  return cell
+  const bri = grade?.build_readiness_index ?? null
+  appendFileSync(join(RESULTS, 'history.jsonl'), JSON.stringify({
+    ts: RUN_ID, judge: JUDGE, model: model.id, model_key: model.key, scenario: scenario.id, repeat: rep,
+    bri, band: grade?.band ?? 'error', align_ok: grade?.mechanical?.align_ok ?? false, errors: grade?.mechanical?.errors ?? null,
+    skills_hash: grade?.provenance?.skills_hash ?? null, git_sha: grade?.provenance?.git_sha ?? null,
+  }) + '\n')
+  console.log(`[run] ${model.key} × ${scenario.id} (run ${rep}/${REPEAT}): BRI ${bri} (${grade?.band ?? 'error'})`)
+  return { model_key: model.key, scenario: scenario.id, rep, bri }
 }
 
 // ---- dry run -----------------------------------------------------------------
 if (values['dry-run']) {
   const cells = executors.length * scenarios.length
-  console.log(`Plan: ${executors.length} models × ${scenarios.length} scenarios = ${cells} cells`)
-  console.log(`  each cell = ${STAGES.length} pipeline stages + 1 grade  → ${cells * (STAGES.length + 1)} claude -p invocations`)
+  const runsTotal = cells * REPEAT
+  console.log(`Plan: ${executors.length} models × ${scenarios.length} scenarios × ${REPEAT} repeat(s) = ${runsTotal} pipeline runs (${cells} cells)`)
+  console.log(`  each run = ${STAGES.length} pipeline stages + 1 grade  → ${runsTotal * (STAGES.length + 1)} claude -p invocations`)
   console.log(`  executors: ${executors.map((m) => m.id).join(', ')}`)
   console.log(`  judge (constant): ${JUDGE}`)
   console.log(`  scenarios: ${scenarios.map((s) => `${s.id}${s.sizing ? ` [${s.sizing}]` : ''}`).join(', ')}`)
-  console.log(`  results -> ${RESULTS}/  ·  raw runs -> ${RUNS}/${RUN_ID}/ (gitignored)`)
+  console.log(`  repeats/cell: ${REPEAT}${REPEAT > 1 ? ' (report computes mean ± σ)' : ' (no variance — pass --repeat 3+ for a regression-grade signal)'}`)
+  console.log(`  results -> ${RESULTS}/ (via report.mjs)  ·  raw runs -> ${RUNS}/${RUN_ID}/ (gitignored)`)
   process.exit(0)
 }
 
 // ---- run matrix with a concurrency pool --------------------------------------
 mkdirSync(RESULTS, { recursive: true })
 const jobs = []
-for (const m of executors) for (const s of scenarios) jobs.push({ m, s })
+for (const m of executors) for (const s of scenarios) for (let r = 1; r <= REPEAT; r++) jobs.push({ m, s, r })
 
-const results = []
 let idx = 0
 async function worker() {
   while (idx < jobs.length) {
     const job = jobs[idx++]
-    results.push(await runCell(job.m, job.s))
+    await runCell(job.m, job.s, job.r)
   }
 }
 await Promise.all(Array.from({ length: Math.min(CONCURRENCY, jobs.length) }, worker))
 
-// ---- persist -----------------------------------------------------------------
-const payload = { run_id: RUN_ID, judge_model: JUDGE, executors: executors.map((m) => m.id), scenarios: scenarios.map((s) => ({ id: s.id, title: s.title, sizing: s.sizing })), cells: results }
-writeFileSync(join(RESULTS, 'latest.json'), JSON.stringify(payload, null, 2) + '\n')
-writeFileSync(join(RESULTS, 'matrix.md'), renderMatrix(payload))
-writeFileSync(join(RESULTS, 'latest.md'), renderDetail(payload))
-console.log(`\n[run] wrote results/{latest.json,matrix.md,latest.md} + appended history.jsonl`)
-
-function cell(results, modelId, scenId) { return results.find((c) => c.model === modelId && c.scenario === scenId) }
-function renderMatrix(p) {
-  const L = [`# Pipeline eval — Build-Readiness matrix`, '', `_Run ${p.run_id} · judge (constant): ${p.judge_model} · BRI 0–100; bands: ≥85 ship-ready, 70–84 buildable-with-gaps, 50–69 underspecified, <50 not-buildable._`, '']
-  L.push(`| Executor model \\ scenario | ${p.scenarios.map((s) => s.id).join(' | ')} |`)
-  L.push(`|---|${p.scenarios.map(() => '---').join('|')}|`)
-  for (const mId of p.executors) {
-    const cells = p.scenarios.map((s) => { const c = cell(p.cells, mId, s.id); return c && c.bri != null ? `${c.bri} (${c.band})` : '—' })
-    L.push(`| ${mId.replace(/^claude-/, '')} | ${cells.join(' | ')} |`)
-  }
-  L.push('')
-  L.push(`Scenarios: ${p.scenarios.map((s) => `**${s.id}** ${s.title}${s.sizing ? ` (${s.sizing})` : ''}`).join(' · ')}`)
-  return L.join('\n') + '\n'
-}
-function renderDetail(p) {
-  const L = [`# Pipeline eval — last result (detail)`, '', `_Run ${p.run_id} · judge: ${p.judge_model}_`, '']
-  for (const c of p.cells) {
-    L.push(`## ${c.model_key} × ${c.scenario} — BRI ${c.bri} (${c.band})`)
-    L.push(`- align_ok: ${c.align_ok}, errors: ${c.errors}`)
-    if (c.metrics) for (const [k, v] of Object.entries(c.metrics)) L.push(`- ${k}: ${v.score}${v.note ? ` — ${v.note}` : ''}`)
-    if (c.top_gaps?.length) L.push(`- top gaps: ${c.top_gaps.join('; ')}`)
-    L.push('')
-  }
-  return L.join('\n')
-}
+// ---- render via the committed report path (single source of report logic) ----
+const rep = await sh('node', [REPORT, '--runs', join(RUNS, RUN_ID), '--out-dir', RESULTS])
+process.stdout.write(rep.out); if (rep.err) process.stderr.write(rep.err)
+console.log(`\n[run] results in ${RESULTS}/ · raw runs in ${join(RUNS, RUN_ID)}/ (gitignored)`)
+console.log(`[run] gate this run:  node check-regression.mjs   (then  --bless  once you accept it as the new baseline)`)

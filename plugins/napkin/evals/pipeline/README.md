@@ -27,22 +27,58 @@ For every **executor model × scenario** cell:
 3. **Persists** `results/{latest.json, matrix.md, latest.md}` and appends a `history.jsonl`
    line per cell. Raw run output goes under `runs/` (gitignored).
 
-## Run
+## The 0-degrade workflow
+
+This suite is a **regression guardrail**, not just a benchmark. Two tiers of gate:
 
 ```bash
 cd plugins/napkin/evals/pipeline
 
-node run-pipeline.mjs --dry-run                  # preview matrix size + cost, no model calls
-node run-pipeline.mjs --models opus --scenario 01 # one cell (cheapest end-to-end)
-node run-pipeline.mjs                             # full matrix (all models × all scenarios)
-node run-pipeline.mjs --skip-run                  # re-grade existing runs/ without re-running
+# FAST tier — deterministic, no model calls, seconds. Run on EVERY change.
+npm run smoke                 # all oracle/harness selftests + grade golden spec clean
 
-npm test                                          # selftest: grade.mjs refuses false-green
-node grade.mjs --spec <dir> [--no-judge]          # grade any produced spec/ directly
+# SLOW tier — live, periodic / pre-release. Run after changing a skill.
+node run-pipeline.mjs --repeat 3            # full matrix, 3 generations/cell -> mean ± σ
+node check-regression.mjs                   # diff latest vs baseline; EXIT 1 on degradation
+node check-regression.mjs --bless           # accept latest as the new baseline (once happy)
 ```
 
-Flags: `--models <all|csv of keys>` · `--scenario <all|id>` · `--judge-model <id>` ·
-`--concurrency <n>` · `--dry-run` · `--skip-run`.
+`npm run smoke` is the cheap net that protects the oracles + grader; `run-pipeline` +
+`check-regression` is the expensive net that protects the skills' generative quality.
+
+### Iterating on a skill (the loop this exists for)
+
+1. `npm run smoke` — confirm the machinery is healthy before you start.
+2. Edit a skill. (`grade.mjs` records the skills git-hash, so every score is attributable.)
+3. `node run-pipeline.mjs --repeat 3 --scenario <the one you touched>` (subset to save cost).
+4. `node check-regression.mjs` — **fails if any cell dropped beyond tolerance + run noise.**
+5. Green + the improvement you wanted? `node check-regression.mjs --bless` to move the baseline.
+
+### Run / grade flags
+
+```bash
+node run-pipeline.mjs --dry-run                  # preview matrix size + cost, no model calls
+node run-pipeline.mjs --models opus --scenario 01 # one cell
+node run-pipeline.mjs --skip-run                  # re-grade existing runs/ without re-running
+node report.mjs                                   # regenerate results/ from runs/ (reproducible)
+node grade.mjs --spec <dir> [--no-judge]          # grade any spec/ directly
+node grade.mjs --spec <dir> --judge-file j.json   # grade with a judge result computed elsewhere
+npm test                                          # grader + regression-gate selftests
+```
+
+Runner flags: `--models <all|csv>` · `--scenario <all|id>` · `--repeat <n>` ·
+`--judge-model <id>` · `--concurrency <n>` · `--dry-run` · `--skip-run`.
+
+### Variance, baseline, provenance
+
+- **Replication** (`--repeat n`) makes the BRI a distribution (mean ± σ), so a score change
+  can be told apart from run-to-run noise. `--repeat 1` is fine for a quick look but is **not
+  a regression-grade signal** — the gate widens its tolerance by a cell's σ, which is 0 at n=1.
+- **`baseline.json`** is the committed expected score per cell (+ tolerances). `check-regression`
+  is the enforcement; `--bless` is how you advance it deliberately.
+- **Provenance**: every `grade.json` records the harness version, git SHA, **skills-hash**, and
+  judge-rubric-hash. `check-regression` warns if the judge model/rubric changed since the
+  baseline (scores not comparable) and notes when the skills changed (expected while iterating).
 
 ## The model matrix
 

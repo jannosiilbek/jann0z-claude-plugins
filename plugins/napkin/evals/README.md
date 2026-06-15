@@ -39,8 +39,19 @@ node run-pipeline.mjs --models opus --scenario 01 # one cell
 npm test                                          # grader selftest (refuses false-green)
 ```
 
-## The improvement loop
+## The improvement loop (0-degrade)
 
-Harden a skill (for a weak model, say) → re-run that tier → watch the number move:
-`skills/<skill>/evals/results.md` for unit pass-rate, `pipeline/results/matrix.md` +
-`history.jsonl` for pipeline Build-Readiness. Both are model-explicit and committed.
+The pipeline tier is a **regression guardrail**, not just a scoreboard:
+
+1. `cd pipeline && npm run smoke` — deterministic, seconds, no model calls. Protects the
+   oracles + grader. Run on every change.
+2. Edit a skill, then `node run-pipeline.mjs --repeat 3 [--scenario X]` — re-run with
+   replication (mean ± σ).
+3. `node check-regression.mjs` — **exits non-zero if any cell degraded** beyond tolerance +
+   run noise (compared to the committed `baseline.json`).
+4. Green + the win you wanted? `node check-regression.mjs --bless` to advance the baseline.
+
+Every score is attributable: `grade.json` records the **skills git-hash**, judge model, and
+rubric hash, so a moved number maps to a specific change. Unit-tier pass-rate lives in
+`skills/<skill>/evals/results.md`; pipeline Build-Readiness in `pipeline/results/matrix.md`
++ `history.jsonl`. All committed, all model-explicit. See `pipeline/README.md` for details.
