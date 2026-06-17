@@ -77,7 +77,9 @@ block, clarifications table, changelog).
 
 ### 5. Gate
 
-Run the alignment harness and include its one-line result:
+Run the **self-correcting exit gate** (ddd-align → "Self-correcting exit gate"): run the
+harness, fix every **error** routed to an artifact you wrote this session, re-run until clean
+(≤3 passes), then include the final one-line result:
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spec/

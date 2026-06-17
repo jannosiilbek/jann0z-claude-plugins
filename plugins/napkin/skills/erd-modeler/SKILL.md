@@ -192,8 +192,18 @@ Severities:
 - `⚠️ warn` — participation, naming, or trap risks (fix or flag clearly).
 - `ℹ️ info` — style suggestions.
 
-When a `spec/` directory exists and the ddd-align skill is installed, run its harness
-after saving and append the one-line result to the report:
+When a `spec/` directory exists and the ddd-align skill is installed, run its harness after
+saving as a **self-correcting exit gate** (ddd-align → "Self-correcting exit gate"). The
+errors you own are the model/SQL checks — fix them in `model.dbml` / `usecases.sql` and
+re-run until clean (≤3 passes), then append the final one-line result:
+
+- **AL-01 / AL-02** — every glossary-mapped table exists in the model, and every model table
+  traces back to a glossary term (name a bridge/relationship table's term too).
+- **AL-03 / AL-04** — every enumeration named in the glossary has a matching `Enum <name>`
+  block with the exact values; an enum-typed column with no `Enum` block fails here.
+- **AL-14** — every active UC has at least one `-- usecase: UC-xxx/DA-n` block in
+  `usecases.sql`; descriptive-only labels (no UC id) read as never-tested.
+
 `node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spec/`.
 
 If the loop exhausts its max iterations without full convergence, end with

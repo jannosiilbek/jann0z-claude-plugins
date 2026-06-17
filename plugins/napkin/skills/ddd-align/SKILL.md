@@ -97,6 +97,24 @@ audit and route; the owning skill carries the update protocol.
 ## As an exit gate
 
 The other pipeline skills run stage 2 (harness only) after writing their artifact and
-append the one-line result to their own report. When invoked that way, skip stage 3
-unless the harness reports errors — the full judged audit is for explicit `ddd-align`
-invocations.
+append the result to their own report. When invoked that way, skip stage 3 — the full
+judged audit is for explicit `ddd-align` invocations — but **self-correct first** instead
+of merely reporting the errors.
+
+### Self-correcting exit gate
+
+After writing your artifact(s), run the harness — then loop, do not just report:
+
+1. **Fix what you own.** For every finding of severity **error** whose **Fix via** routes to
+   an artifact you wrote **this session**, fix it in place, then re-run the harness.
+2. **Bounded.** Repeat until no owned-error remains, or you have run **3 fix passes** (most
+   specs clear in one; the cap stops a genuinely hard inconsistency from looping forever).
+3. **Don't touch what you don't own.** A finding routed to an upstream artifact (a skill
+   earlier in the pipeline owns it) is **surfaced in your report** so it routes back — never
+   silently passed, never edited by you.
+4. **Warnings** are reported, never looped on.
+5. **Report honestly.** Append the final one-line result. If errors remain after 3 passes,
+   show them — never hide a failing gate behind a green checkmark.
+
+A clean artifact passes on the first run, so this loop is a **no-op when nothing is wrong**;
+it only does work when your output actually drifted.

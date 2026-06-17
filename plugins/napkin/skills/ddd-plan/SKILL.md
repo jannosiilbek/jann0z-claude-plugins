@@ -54,6 +54,10 @@ Apply spec-format.md §1.4, plus:
 
 ### 4. Gate
 
+Run the **self-correcting exit gate** (ddd-align → "Self-correcting exit gate"): fix every
+**error** routed to `plan.md` (a UC with no implementing task, a dangling reference, a
+dependency cycle) and re-run until clean (≤3 passes) before reporting:
+
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spec/ --require usecases,plan
 ```

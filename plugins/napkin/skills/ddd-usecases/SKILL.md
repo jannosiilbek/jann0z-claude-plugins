@@ -68,6 +68,10 @@ Apply spec-format.md §1.4, plus:
 
 ### 5. Gate
 
+Run the **self-correcting exit gate** (ddd-align → "Self-correcting exit gate"): fix every
+**error** routed to `usecases.md` (a non-EARS criterion, an out-of-grammar assertion, a
+non-glossary actor, a duplicate id) and re-run until clean (≤3 passes) before reporting:
+
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spec/
 ```

@@ -81,6 +81,10 @@ language artifacts:
 
 ### 6. Gate
 
+Run the **self-correcting exit gate** (ddd-align → "Self-correcting exit gate"): fix every
+**error** routed to `glossary.md` / `flows.md` (e.g. a non-glossary actor, a malformed
+`Maps to`, an undefined enumeration) and re-run until clean (≤3 passes) before reporting:
+
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spec/
 ```
