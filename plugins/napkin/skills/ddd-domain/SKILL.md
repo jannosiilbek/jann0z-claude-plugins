@@ -57,7 +57,10 @@ Follow spec-format.md §3. The glossary is the single source of naming truth:
   **including relationship concepts that become bridge tables** (an *Enrollment*, a
   *Loan*): the alignment check requires every future DBML table to trace to a term, so
   name the relationship now, in domain language, before it becomes `student_courses`.
-- Pure roles that own no rows (a *Registrar*) get a term but no mapping.
+- Pure roles or system actors that own no rows (a *Registrar*, a *System*) get a term but
+  **no `Maps to:` line at all** — simply omit it. Never write a placeholder such as
+  `Maps to: —`, `Maps to: none`, or `Maps to: N/A`: the gate reads any `Maps to:` value
+  that isn't `ERD: <table_name>` as malformed (AL-15).
 - **Enumerations**: every closed value set, with exact, final spellings — these flow
   verbatim into DBML enums and then into live-tested SQL. `canceled` vs `cancelled` is
   a contract, not a style choice: preserve whatever spelling the user/domain uses, and

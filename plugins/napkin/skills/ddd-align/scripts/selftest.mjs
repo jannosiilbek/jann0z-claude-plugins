@@ -85,6 +85,16 @@ testCase("golden fixture is green",
     ? null
     : `expected clean green, got exit=${r.exit}, findings=${r.json ? r.json.findings.length : "?"}`));
 
+// 1b. Lowercase DBML block keywords (`table`/`enum`) are valid DBML — the diagram renderer
+//     and the PGlite live-test accept them as readily as `Table`/`Enum`. A case-sensitive
+//     parser would see zero tables and cascade false AL-01/AL-02/AL-04s; this locks that shut.
+testCase("lowercase DBML keywords stay green",
+  (s) => edit(s, "data/model.dbml", (t) =>
+    t.replace(/^(\s*)Table\b/gm, "$1table").replace(/^(\s*)Enum\b/gm, "$1enum")),
+  (r) => (r.exit === 0 && r.json && r.json.ok && r.json.findings.length === 0
+    ? null
+    : `expected clean green with lowercase keywords, got exit=${r.exit}, findings=${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"}`));
+
 // 2. A table renamed in the DBML (e.g. by a hand edit) breaks glossary tracing.
 testCase("renamed DBML table → AL-01 + AL-02",
   (s) => edit(s, "data/model.dbml", (t) => t.replace("Table enrollments {", "Table registrations {")),
@@ -113,6 +123,25 @@ testCase("UC without EARS criteria → AL-07",
 testCase("non-glossary actor → AL-09",
   (s) => edit(s, "usecases.md", (t) => t.replace("- Actor: Registrar", "- Actor: Administrator")),
   (r) => caught(r, "AL-09"));
+
+// 6b. A forbidden synonym that appears only as a sub-token of a LONGER canonical term
+//     ("Pupil" inside the distinct term "Pupil Liaison") is legitimate, not drift — it must
+//     NOT trip AL-13. (Student forbids "Pupil"; we add "Pupil Liaison" as its own role term.)
+testCase("forbidden synonym inside a longer term → not flagged",
+  (s) => {
+    edit(s, "glossary.md", (t) => t.replace("### Registrar",
+      "### Pupil Liaison\n- Definition: A volunteer who supports pupils; owns no rows.\n\n### Registrar"));
+    edit(s, "flows.md", (t) => t.replace("- 2026-06-11 (ddd-domain): created",
+      "- 2026-06-11 (ddd-domain): created; added Pupil Liaison role"));
+  },
+  (r) => (r.exit === 0 && !hasWarn(r, "AL-13") ? null
+    : `"Pupil Liaison" must not trip AL-13 (exit=${r.exit}, al13=${r.json ? JSON.stringify(r.json.findings.filter((f) => f.check === "AL-13")) : "?"})`));
+
+// 6c. ...but a STANDALONE forbidden synonym is still caught — the shield didn't disable AL-13.
+testCase("standalone forbidden synonym → AL-13 warn",
+  (s) => edit(s, "flows.md", (t) => t.replace("- 2026-06-11 (ddd-domain): created",
+    "- 2026-06-11 (ddd-domain): created; Pupil signup flow pending")),
+  (r) => (hasWarn(r, "AL-13") ? null : `standalone "Pupil" should trip AL-13 (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
 
 // 7. Duplicate ID — renumbering/copy-paste accidents must not pass.
 testCase("duplicate UC id → AL-10",

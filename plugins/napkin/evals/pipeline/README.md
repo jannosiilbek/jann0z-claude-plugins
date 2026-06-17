@@ -20,9 +20,12 @@ For every **executor model × scenario** cell:
    - **Mechanical** (objective, reproducible): `check-align.mjs` (AL-01…AL-15) and, when the
      SQL trio is present, `run-erd-test.mjs` (PGlite live-test) → alignment, coverage %s,
      live-test pass rate, plan acyclicity, reference validity.
-   - **Judged** (only what a parser can't see): `buildability-judge.md` run through `claude -p`
-     scores clarity/ambiguity, non-vacuity of acceptance criteria, and task sizing — from the
-     perspective of **Claude Code + superpowers receiving this spec as its sole input**.
+   - **Judged** (only what a parser can't see), from the perspective of **Claude Code +
+     superpowers receiving this spec as its sole input**, in two separate `claude -p` passes:
+     `clarity-judge.md` scores clarity **alone** (spec only — no mechanical signals, no other
+     metrics — so the blocking-question count can't be inflated by context), and
+     `buildability-judge.md` scores non-vacuity of acceptance criteria and task sizing (with the
+     mechanical signals in view).
    - Combines both into a **Build-Readiness Index (BRI, 0–100)** + band.
 3. **Persists** `results/{latest.json, matrix.md, latest.md}` and appends a `history.jsonl`
    line per cell. Raw run output goes under `runs/` (gitignored).
@@ -99,7 +102,7 @@ ones are LLM-scored):
 
 | Metric | Wt | Source | The number |
 |--------|----|--------|------------|
-| Clarity | 0.25 | judged | judge reports the blocking-question COUNT; harness derives the score via a diminishing-returns curve `100·8/(8+count)` (0q→100, 2q→80, 6q→57). Robust to ±1-question judge jitter; median-of-N removes the rest. |
+| Clarity | 0.25 | judged (isolated) | a **dedicated** judge pass (spec only — no mechanical signals, no other metrics) reports the blocking-question COUNT; harness derives the score via a diminishing-returns curve `100·8/(8+count)` (0q→100, 2q→80, 6q→57). Isolation removes the measured cross-metric/anchoring inflation; median-of-N removes residual jitter. |
 | Alignment | 0.20 | mechanical | `100 − 15·errors − 5·warnings` (check-align AL-01…AL-15) |
 | Completeness | 0.20 | hybrid | mean of UC→task and UC→live-test coverage %, minus orphan/untraced-table penalty |
 | Testability | 0.20 | hybrid | mean of EARS %, data-assertion %, live-test pass rate, and judged non-vacuous-AC % |

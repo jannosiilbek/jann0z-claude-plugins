@@ -1,54 +1,57 @@
 # Pipeline eval — last result (detail)
 
-_9 cells · judge claude-opus-4-8 · n=4–5 per cell (replicated cells show median±σ) · skills @ 8514f3610da2_
+_9 cells · judge claude-opus-4-8 · n=3–5 per cell (replicated cells show median±σ) · skills @ a4f6a326b50d_
 
-## Haiku 4.5 × 01 (B2B feedback inbox (greenfield SaaS)) — BRI 89.5±0.96 (ship-ready)
-- gate: aligned · clar 67±2.5 · algn 100±0 · cmpl 100±0 · test 99±2.83 · actn 87±2.52
-  - gap: Feedback type (bug/idea/question) and the feedback description have nowhere to live in the data model, yet UC-001 requires recording both.
-  - gap: status_history records no actor — contradicts the glossary definition and UC-003 AC-2 ('record who changed it').
-  - gap: members have no email or name, so UC-008 (invite by email) and AC-3 (reject duplicate email) are unimplementable as written.
+## Haiku 4.5 × 01 (B2B feedback inbox (greenfield SaaS)) — BRI 90±3.11 (ship-ready)
+- gate: DRIFT — 2 errors · clar 73±2.68 · algn 90±12.45 · cmpl 100±0 · test 100±2.24 · actn 90±1.87
+  - gap: Role-based authorization matrix: roles (owner/admin/agent) and 'by Agent/Admin' triggers are named, but no UC/AC specifies the permission rules the agent must enforce.
+  - gap: Status-transition state machine: legal transitions and the 'immutable once shipped/declined' rule are asserted in ACs but neither modeled (no CHECK/trigger) nor specified as a transition table — the agent must invent enforcement.
+  - gap: Org-scoped FK validation: ACs require member/release to belong to the same organization, but the model only enforces global existence, so cross-tenant assignment/attachment would silently succeed.
 
-## Haiku 4.5 × 02 (Local services marketplace (greenfield)) — BRI 88±17.84 (ship-ready)
-- gate: DRIFT — 13 errors · clar 62±4.87 · algn 95±53.9 · cmpl 100±33.35 · test 97±2.12 · actn 90±1.22
-  - gap: Location/service-area matching is the core premise but unmodeled — providers have no zones, service_area is unused free text, and UC-001/003 location filtering cannot be built or tested
-  - gap: payments.amount is required with no derivation rule (hourly_rate × estimated_duration_hours is implied but never stated)
-  - gap: Refund contradiction: brief puts refunds out of scope, but UC-012 AC-2 / FL-006 mandate refund initiation, and payment_status has no 'refunded' value
+## Haiku 4.5 × 02 (Local services marketplace (greenfield)) — BRI 88±11.52 (ship-ready)
+- gate: DRIFT — 13 errors · clar 80±3.83 · algn 80±38.99 · cmpl 100±22.36 · test 100±1.34 · actn 92±1.34
+  - gap: Status-transition enforcement: DAs expect a 'check' error and the plan promises a state machine, but model.dbml has no CHECK/trigger defining valid or terminal (shipped/declined) transitions — agent must invent it.
+  - gap: Auto status-history creation mechanism (DB trigger vs application code) is asserted as a policy but never specified.
+  - gap: End-user feedback ingestion: no public submission endpoint/contract and no spec for how the embedded form identifies and authorizes the target organization.
 
-## Haiku 4.5 × 03 (Delta — add waitlists to the course platform) — BRI 92±1.34 (ship-ready)
-- gate: aligned · clar 73±3.83 · algn 100±0 · cmpl 100±0 · test 100±0 · actn 91±2.19
-  - gap: Seat-tracking mechanism: nothing links an enrollment INSERT to courses.available_seats, yet UC-005/DA-2 expects a CHECK violation when a course is full — the decrement-on-enroll trigger (or app logic) is entirely unspecified, so the live test cannot pass as written.
-  - gap: Seat lifecycle on drop/complete: UC-005 recounts only on enroll while dropped rows are kept — the agent must guess whether dropping or completing frees a seat back.
-  - gap: Interface and access control: T-002 assumes an API with no contract, and Student-facing UC-002 ('view their own enrollments') has no student identity/authentication model to scope ownership.
+## Haiku 4.5 × 03 (Delta — add waitlists to the course platform) — BRI 90±14.6 (ship-ready)
+- gate: DRIFT — 6 errors · clar 73±5.32 · algn 100±42.43 · cmpl 100±24.17 · test 100±0 · actn 87±6.5
+  - gap: How a course is determined to be 'full' and how over-enrollment is prevented — the trigger for the entire waitlist feature, but no UC, constraint, or seat-count is specified (UC-001 enrolls with no capacity check).
+  - gap: Notifications referenced in FL-005/FL-006 ('Student notified of offer') — never specified as a UC or integration, nor placed out of scope.
+  - gap: Whether waitlist ordering is authoritative on queue_position or created_at — both exist and UC-005 references queue position while indexes/seed lean on created_at.
 
-## Sonnet 4.6 × 01 (B2B feedback inbox (greenfield SaaS)) — BRI 91±1.3 (ship-ready)
-- gate: aligned · clar 73±4.6 · algn 100±8.22 · cmpl 100±0 · test 100±0.89 · actn 92±1.3
-  - gap: No organization-creation / first-Owner bootstrap path — the tenant boundary and Owner role are defined but never instantiated by any use case, flow, or task.
-  - gap: Feedback submission needs a not-null end_user_id but the spec never states how the end_user is resolved from the submitted email (find-or-create vs reject).
-  - gap: No read/list use cases for the Inbox itself (listing/filtering feedback, viewing status history, listing comments/releases) even though the Inbox is the product's core concept.
+## Sonnet 4.6 × 01 (B2B feedback inbox (greenfield SaaS)) — BRI 92±2.7 (ship-ready)
+- gate: aligned · clar 73±3.13 · algn 100±10.84 · cmpl 100±0 · test 100±0 · actn 94±2
+  - gap: Role/authorization enforcement: distinct Owner/Admin/Agent powers are specified in prose but no UC, data assertion, or task operationalizes them — the agent must invent the entire authz layer.
+  - gap: Same-org integrity between feedback_items and its assignee/release/end_user references is not enforced (FKs point to global PKs), contradicting the stated no-cross-org-leakage NFR.
+  - gap: Status lifecycle is described as ordered but UC-008 permits any enum-to-any-enum transition; the agent must decide whether to constrain it.
 
-## Sonnet 4.6 × 02 (Local services marketplace (greenfield)) — BRI 92±1.34 (ship-ready)
-- gate: aligned · clar 73±5.5 · algn 100±0 · cmpl 100±0 · test 100±0 · actn 93±1.14
-  - gap: No interface/transport layer specified — the agent must choose how the use cases are exposed (REST/GraphQL/RPC).
-  - gap: Authorization & ownership enforcement is assumed by the use-case narratives but unspecified and out of scope — who may accept/decline/complete/rate is undecided.
-  - gap: payment_status progression is ambiguous: ordered (pending→paid→refunded) per the brief vs. free enum per the model/use cases (no transition guard).
+## Sonnet 4.6 × 02 (Local services marketplace (greenfield)) — BRI 94±0.89 (ship-ready)
+- gate: aligned · clar 80±4.02 · algn 100±0 · cmpl 100±0 · test 100±0 · actn 93±1.87
+  - gap: Authentication & password storage — UC-001 collects a password but the schema models no credentials and no auth flow exists
+  - gap: Booking state-machine guards — legal transitions are unenforced, and 'rate only a completed booking' is prose-only (schema enforces just one-rating-per-booking)
+  - gap: Authorization/ownership rules — only-the-targeted-provider-accepts and only-the-customer-rates are implied by actor labels but never made checkable
 
-## Sonnet 4.6 × 03 (Delta — add waitlists to the course platform) — BRI 92±1.79 (ship-ready)
-- gate: aligned · clar 73±2.68 · algn 100±0 · cmpl 100±0 · test 100±0 · actn 92±6.54
-  - gap: Capacity is modeled (courses.capacity) but never enforced — no UC/AC/DA rejects enrolling into a full course, leaving the brief's core anti-double-booking goal unimplemented.
-  - gap: Accepting a waitlist offer is said to 'convert to enrollment' (FL-005/UC-007), but no acceptance criterion or data assertion creates the enrollment row; its interaction with unique(student_id,course_id) and prior dropped enrollments is undefined.
-  - gap: Offer-next-seat automation is ambiguous: UC-006 lists Actor=Registrar but Trigger=Enrollment dropped — automatic policy or manual action?
+## Sonnet 4.6 × 03 (Delta — add waitlists to the course platform) — BRI 94±2.61 (ship-ready)
+- gate: aligned · clar 80±4.5 · algn 100±0 · cmpl 100±0 · test 100±0 · actn 92±3.97
+  - gap: Define 'enrolled-count' in the courses capacity trigger — it must count only status='enrolled' (excluding dropped/waitlisted), otherwise a freed seat is never seen and UC-007 accept-enrollment is blocked by the capacity check.
+  - gap: Specify where the seat-offer policy lives (DB trigger vs. application service): FL-003/FL-006 and UC-006/UC-008-AC-2 describe 'offer the earliest waiting entry on drop/decline' but the data model only encodes the offered status, not what fires the transition.
+  - gap: Clarify or drop FL-001's 'Recount course seats' policy/event — it has no use case, data assertion, or distinct effect, so a builder must guess whether it's a no-op or a real responsibility.
 
-## Opus 4.8 × 01 (B2B feedback inbox (greenfield SaaS)) — BRI 92±0.89 (ship-ready)
-- gate: aligned · clar 73±3.13 · algn 100±0 · cmpl 100±0 · test 100±0 · actn 94±1.14
-  - gap: Authentication: members sign in but there is no credential model or sign-in flow — the agent must choose one to ship.
-  - gap: Cross-org integrity for assignment and release-linking is claimed 'structurally impossible' but the FKs don't constrain organization and no assertion tests a cross-tenant link — it's actually unspecified app-layer logic.
-  - gap: Status-transition validity graph is undefined (which lifecycle transitions are legal; whether 'declined' is reachable from any state).
+## Opus 4.8 × 01 (B2B feedback inbox (greenfield SaaS)) — BRI 94±0 (ship-ready)
+- gate: aligned · clar 80±0 · algn 100±0 · cmpl 100±0 · test 100±0 · actn 95±0.89
+  - gap: The role permission matrix: which role may perform each action and how an unauthorized action is rejected — promised in the brief ('pinned in ddd-usecases') but never turned into testable acceptance criteria.
+  - gap: Cross-tenant write enforcement: ACs assert 'same organization' for assignee/release links, but neither composite FKs nor any live test enforce it — the agent must invent org-scoping guards on every write.
+  - gap: Append-only enforcement mechanism for status_changes (DB-level trigger/revoke vs. application convention) — the requirement is first-class but its enforcement point is unstated.
 
-## Opus 4.8 × 02 (Local services marketplace (greenfield)) — BRI 92±3.46 (ship-ready)
-- gate: aligned · clar 76.5±4.04 · algn 100±4.47 · cmpl 100±0 · test 100±0 · actn 94±3.13
+## Opus 4.8 × 02 (Local services marketplace (greenfield)) — BRI 94±3.46 (ship-ready)
+- gate: aligned · clar 80±0 · algn 100±0 · cmpl 100±0 · test 100±0 · actn 95±2.89
+  - gap: How a booking's price is set at acceptance — provider-entered or computed from hourly_rate x (ends_at - starts_at)? UC-003 only says 'agreed price', leaving the agent to guess the pricing rule.
+  - gap: The entire application/API layer is unspecified (endpoints, payloads, framework) and auth + per-account data isolation are deferred — the agent must invent the enforcement mechanism behind the UC-009/010 isolation tests.
+  - gap: TypeID generation (prefix scheme is documented, but the library/mechanism to mint acct_/svc_/book_/rating_ ids is not pinned).
 
-## Opus 4.8 × 03 (Delta — add waitlists to the course platform) — BRI 94±0 (ship-ready)
-- gate: aligned · clar 80±0 · algn 100±0 · cmpl 100±0 · test 100±0 · actn 93±1.3
-  - gap: No capacity enforcement: nothing defines how a course is 'full' or makes enrollment reject/route to the waitlist when at capacity — yet the entire waitlist feature is premised on full courses.
-  - gap: FL-001's 'Recount course seats' policy and 'Course seats recounted' event have no use case, table column, task, or data assertion — the agent must invent what they compute and where the result lives.
-  - gap: The unique (student_id, course_id) index on enrollments conflicts with keeping dropped rows: re-enrolling or accepting a waitlist offer after a prior dropped enrollment in the same course would violate it — needs a partial-index decision.
+## Opus 4.8 × 03 (Delta — add waitlists to the course platform) — BRI 92±1.1 (ship-ready)
+- gate: aligned · clar 73±3.13 · algn 100±0 · cmpl 100±0 · test 100±0 · actn 90±1.95
+  - gap: Capacity / over-enrollment is modeled (courses.capacity) but no use case, AC, or data assertion enforces it — the brief's stated reason for the system (double bookings) is left unspecified.
+  - gap: The `completed` status and FL-002 (Complete enrollment) have no use case and no plan task; the builder must invent the completion flow end-to-end.
+  - gap: FL-001's 'Recount course seats' policy has no use case or task — unclear if seat counts are derived, cached, or ignored.

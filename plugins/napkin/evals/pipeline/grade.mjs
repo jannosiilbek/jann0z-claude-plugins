@@ -131,44 +131,69 @@ function readSpecBundle() {
   return files.map((p) => `\n===== ${relative(SPEC, p)} =====\n${readFileSync(p, 'utf8')}`).join('\n')
 }
 
-function runJudge(mech) {
-  const rubric = readFileSync(join(SCRIPT_DIR, 'buildability-judge.md'), 'utf8')
-  const prompt = [
-    rubric,
-    '\n## Mechanical signals already computed (do NOT recompute; use to inform notes only)\n',
-    '```json\n' + JSON.stringify({ errors: mech.errors, warnings: mech.warnings, ...mech.numbers }, null, 2) + '\n```',
-    '\n## The spec to score (this is the entire input a builder would receive)\n',
-    readSpecBundle(),
-    '\n## Output\nReturn ONLY the JSON object specified above — no prose, no markdown fences.',
-  ].join('\n')
-
-  let raw
-  if (values['judge-file']) {
-    // first-class: a judge result computed elsewhere (e.g. by a subagent) is fed back in,
-    // so "run the judge" and "compute the score" are decoupled and reproducible.
-    raw = readFileSync(values['judge-file'], 'utf8')
-  } else if (process.env.GRADE_FAKE_JUDGE != null) {
-    // test seam: selftest substitutes a canned judge response (valid or malformed) so the
-    // judge path and its false-green guard are covered without a model call.
-    raw = process.env.GRADE_FAKE_JUDGE
-  } else {
-    try {
-      raw = execFileSync('claude', ['-p', prompt, '--output-format', 'json', '--model', JUDGE_MODEL],
-        { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: { ...process.env, CLAUDECODE: undefined } })
-    } catch (e) {
-      throw new Error(`judge invocation failed: ${String(e.message || e).slice(0, 300)}`)
-    }
-  }
+// Parse a judge response: unwrap claude -p's {result} envelope if present, then the object.
+function extractJson(raw) {
   let text = raw
   try { const env = JSON.parse(raw); if (env && typeof env.result === 'string') text = env.result } catch { /* raw was plain text */ }
   const first = text.indexOf('{'), last = text.lastIndexOf('}')
   if (first < 0 || last < 0) throw new Error('judge returned no JSON object')
-  const j = JSON.parse(text.slice(first, last + 1))
-  // shape guard — refuse false-green. The harness owns the clarity score (derived from the
-  // count via the curve in lib.mjs), so the judge MUST report the count.
+  return JSON.parse(text.slice(first, last + 1))
+}
+
+function callJudge(prompt) {
+  let raw
+  try {
+    raw = execFileSync('claude', ['-p', prompt, '--output-format', 'json', '--model', JUDGE_MODEL],
+      { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: { ...process.env, CLAUDECODE: undefined } })
+  } catch (e) {
+    throw new Error(`judge invocation failed: ${String(e.message || e).slice(0, 300)}`)
+  }
+  return extractJson(raw)
+}
+
+// shape guard — refuse false-green: the harness owns the clarity score (derived from the
+// count via the curve in lib.mjs), so a usable judge MUST carry an integer question count.
+function validateJudge(j) {
   if (typeof j?.metrics?.clarity?.clarification_questions_needed !== 'number')
     throw new Error('judge JSON missing metrics.clarity.clarification_questions_needed')
   return j
+}
+
+// Two-pass judge. **Clarity is scored in isolation** — spec bundle only, with neither the
+// mechanical signals nor the other metrics in context — because measured cross-metric and
+// mechanical-anchoring contamination inflates the blocking-question count (combined judging
+// over-counted clarity by 1–2 questions vs an isolated pass). The **quality pass** keeps the
+// mechanical signals: its dimensions are hybrid mechanical+judged by design.
+function runJudge(mech) {
+  // file / fake seams short-circuit before any model call: they supply the already-merged
+  // judge object (one JSON with all metrics), so the selftest and --judge-file path are
+  // unaffected by the two-call split.
+  if (values['judge-file']) return validateJudge(extractJson(readFileSync(values['judge-file'], 'utf8')))
+  if (process.env.GRADE_FAKE_JUDGE != null) return validateJudge(extractJson(process.env.GRADE_FAKE_JUDGE))
+
+  const bundle = readSpecBundle()
+  const clarityPrompt = [
+    readFileSync(join(SCRIPT_DIR, 'clarity-judge.md'), 'utf8'),
+    '\n## The spec to score (this is your entire input)\n', bundle,
+  ].join('\n')
+  const qualityPrompt = [
+    readFileSync(join(SCRIPT_DIR, 'buildability-judge.md'), 'utf8'),
+    '\n## Mechanical signals already computed (do NOT recompute; use to inform notes only)\n',
+    '```json\n' + JSON.stringify({ errors: mech.errors, warnings: mech.warnings, ...mech.numbers }, null, 2) + '\n```',
+    '\n## The spec to score (this is the entire input a builder would receive)\n', bundle,
+    '\n## Output\nReturn ONLY the JSON object specified above — no prose, no markdown fences.',
+  ].join('\n')
+
+  const clarity = callJudge(clarityPrompt)
+  const quality = callJudge(qualityPrompt)
+  return validateJudge({
+    metrics: {
+      clarity: { clarification_questions_needed: clarity.clarification_questions_needed, note: clarity.note || '' },
+      ...(quality.metrics || {}),
+    },
+    top_gaps: Array.isArray(quality.top_gaps) ? quality.top_gaps : [],
+    rationale: quality.rationale || '',
+  })
 }
 
 // --- combine -----------------------------------------------------------------

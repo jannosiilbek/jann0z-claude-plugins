@@ -92,7 +92,8 @@ export function provenance({ judgeModel = null, now } = {}) {
     harness_version: HARNESS_VERSION,
     git_sha: gitSha(),
     skills_hash: skillsHash(),
-    judge_rubric_hash: fileHash(join(HERE, 'buildability-judge.md')),
+    judge_rubric_hash: sha12(['clarity-judge.md', 'buildability-judge.md']
+      .map((f) => { try { return readFileSync(join(HERE, f), 'utf8') } catch { return '' } }).join('\n')),
     judge_model: judgeModel,
     generated: now || null,
   }

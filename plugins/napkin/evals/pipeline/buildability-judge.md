@@ -16,15 +16,12 @@ has **already been computed** by the repo's oracles and is provided to you as JS
 recompute it.** Score only what a parser cannot see, and use the mechanical signals to inform
 your notes (e.g. if alignment errors exist, say which gaps would actually block a build).
 
+**Clarity is judged in a separate, isolated pass** (`clarity-judge.md`) so that the
+blocking-question count cannot be skewed by what you conclude here or by the mechanical
+error count. Do **not** score clarity in this pass.
+
 Score these judged dimensions (0–100 each unless noted):
 
-- **clarity** — Could the agent act without asking a human? Read every artifact and count the
-  genuine **blocking** ambiguities: undefined behavior, vague terms ("appropriately", "etc."),
-  unresolved TODOs, contradictions, decisions deferred to "later". Report ONLY the integer
-  `clarification_questions_needed` (and your reasoning in `note`). **Do not compute a clarity
-  score** — the harness derives it deterministically from your count. Be disciplined and
-  consistent about what counts as *blocking*: a missing API surface or an unstated default is
-  usually a single question, not several; only count things that would actually stop the agent.
 - **testability.nonvacuous_ac_pct** — Of the acceptance criteria present, what % are
   *substantive* (assert a concrete, checkable outcome) rather than vacuous ("the system works
   correctly", "behaves as expected")? TDD depends on this. Report the percentage 0–100.
@@ -41,7 +38,6 @@ Score these judged dimensions (0–100 each unless noted):
 ```json
 {
   "metrics": {
-    "clarity":       { "clarification_questions_needed": 0, "note": "" },
     "testability":   { "nonvacuous_ac_pct": 0, "note": "" },
     "actionability": { "score": 0, "note": "" },
     "completeness":  { "note": "" }
@@ -52,5 +48,4 @@ Score these judged dimensions (0–100 each unless noted):
 ```
 
 Be a discerning grader: reward specs that are genuinely executable, and dock specs that look
-complete but would force the agent to guess. `clarity.clarification_questions_needed` is
-required and must be an integer.
+complete but would force the agent to guess.

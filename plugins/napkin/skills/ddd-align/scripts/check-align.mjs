@@ -235,9 +235,12 @@ function parseDbml(raw) {
   let currentEnum = null;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const t = line.match(/^\s*Table\s+"?([\w.]+)"?\s*\{/);
+    // DBML keywords are case-insensitive (the renderer/live-test accept `table`/`enum`
+    // as readily as `Table`/`Enum`), so the parser must be too — otherwise a valid model
+    // written with lowercase keywords parses as zero tables and cascades false AL-01/02/04s.
+    const t = line.match(/^\s*Table\s+"?([\w.]+)"?\s*\{/i);
     if (t) { tables.set(t[1], i + 1); currentEnum = null; continue; }
-    const e = line.match(/^\s*Enum\s+"?([\w.]+)"?\s*\{/);
+    const e = line.match(/^\s*Enum\s+"?([\w.]+)"?\s*\{/i);
     if (e) { currentEnum = { values: [], line: i + 1 }; enums.set(e[1], currentEnum); continue; }
     if (currentEnum) {
       if (/^\s*\}/.test(line)) { currentEnum = null; continue; }
@@ -470,17 +473,26 @@ if (plan) {
   }
 }
 
-// --- AL-13: forbidden synonyms in downstream prose
+// --- AL-13: forbidden synonyms in downstream prose.
+// A synonym that appears only as a sub-token of a *longer* canonical glossary term
+// (e.g. "User" inside the distinct term "End User") is legitimate, not drift — shield
+// those term occurrences before testing so the check fires only on standalone misuse.
 if (glossary) {
+  const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const termNames = [...glossary.terms.keys()];
   for (const [term, t] of glossary.terms) {
     const syns = (t.fields["Forbidden synonyms"] || "")
       .split(",").map((s) => s.trim()).filter(Boolean);
     for (const syn of syns) {
-      const re = new RegExp(`\\b${syn.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+      const re = new RegExp(`\\b${escape(syn)}\\b`, "i");
+      const shields = termNames
+        .filter((n) => n.toLowerCase() !== syn.toLowerCase() && re.test(n))
+        .map((n) => new RegExp(escape(n), "gi"));
+      const mask = (l) => shields.reduce((acc, r) => acc.replace(r, (m) => " ".repeat(m.length)), l);
       for (const type of ["flows", "usecases", "plan"]) {
         const art = artifacts[type];
         if (!art) continue;
-        const idx = art.lines.findIndex((l) => re.test(l));
+        const idx = art.lines.findIndex((l) => re.test(mask(l)));
         if (idx !== -1) {
           report("AL-13", "warn", art.file, idx + 1,
             `forbidden synonym "${syn}" used — the glossary term is "${term}"`);

@@ -74,7 +74,7 @@ node check-regression.mjs --bless               # set baseline := latest (advanc
 
 **Model-driven — these invoke `claude -p`:**
 ```bash
-node grade.mjs --spec <dir>                     # full grade: mechanical + ONE read-only judge call (NOT permission-blocked)
+node grade.mjs --spec <dir>                     # full grade: mechanical + two read-only judge calls — isolated clarity + quality (NOT permission-blocked)
 node run-pipeline.mjs --dry-run                 # preview matrix size + cost; no calls
 node run-pipeline.mjs --models opus --scenario 01 --repeat 3   # run cells; --models all / --scenario all for the full matrix
 node run-pipeline.mjs --skip-run                # re-grade existing runs/ without re-running the pipeline
@@ -82,7 +82,7 @@ node run-pipeline.mjs --skip-run                # re-grade existing runs/ withou
 
 **Running the full live pipeline (important):** `run-pipeline.mjs` drives each stage with `claude -p --permission-mode bypassPermissions`. An interactive Claude Code session's auto-mode classifier **blocks that** (nested unattended agents) unless the user adds a Bash allow-rule for `node *run-pipeline.mjs*`. So in-session you have two correct options: **(a)** the user pre-authorizes that rule and you run the script, or **(b)** drive the pipeline via the **Agent tool — one subagent per stage**, sharing a run dir, each invoking the napkin skill via the Skill tool, then grade with `grade.mjs --judge-file` (or the read-only judge, which is not blocked). Weaker models often won't chain all 5 stages in one agent — stage-drive them (one subagent per skill). The executor matrix + the constant judge model live in `models.json`.
 
-**Scoring:** the headline **Build-Readiness Index** is a weighted blend of clarity / alignment / completeness / testability / actionability; a cell's value is the **median** across `--repeat` runs (robust to judge noise), carried with σ. Clarity is derived in-code from the judge's question count via a diminishing-returns curve (`lib.mjs`), not by the judge. Provenance (git SHA, **skills-hash**, judge-rubric-hash) is stamped on every score, so a moved number is attributable to a skill edit vs a judge/scenario change. Raw runs under `evals/pipeline/runs/` are gitignored; `results/` + `baseline.json` are committed.
+**Scoring:** the headline **Build-Readiness Index** is a weighted blend of clarity / alignment / completeness / testability / actionability; a cell's value is the **median** across `--repeat` runs (robust to judge noise), carried with σ. Clarity is scored by an **isolated** judge pass (`clarity-judge.md` — spec only, no mechanical signals or other metrics, to avoid the measured cross-metric/anchoring count-inflation); the harness derives the score in-code from its blocking-question count via a diminishing-returns curve (`lib.mjs`), not the judge. The other judged dimensions run in a second pass (`buildability-judge.md`) that does see the mechanical signals. Provenance (git SHA, **skills-hash**, judge-rubric-hash) is stamped on every score, so a moved number is attributable to a skill edit vs a judge/scenario change. Raw runs under `evals/pipeline/runs/` are gitignored; `results/` + `baseline.json` are committed.
 
 ## Layout conventions
 

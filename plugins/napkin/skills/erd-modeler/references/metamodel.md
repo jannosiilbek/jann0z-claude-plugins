@@ -74,6 +74,12 @@ singular glossary name (`user`, `order_item`). Record each table's prefix in a `
 
 ## DBML cheat-sheet
 
+**Block keywords are Capitalized; identifiers are lowercase.** Write the keywords as
+`Table`, `Enum`, `Ref` (capitalized) and every table / column / enum **name** as lowercase
+`snake_case`. The PGlite live-test tolerates lowercase keywords, but the canonical form —
+and what the diagram renderer and the alignment parser read most reliably — is capitalized
+keywords. Don't carry the lowercase identifier rule over onto the keywords.
+
 ### Table and columns
 
 ```dbml

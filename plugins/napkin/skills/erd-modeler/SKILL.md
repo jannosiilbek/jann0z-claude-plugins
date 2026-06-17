@@ -21,7 +21,10 @@ even for a "simple" model.
 - **`spec/glossary.md`** — every term flagged `Maps to: ERD: <Entity>` is a table; use the
   glossary's canonical names verbatim (respect Forbidden synonyms). The **Enumerations**
   table becomes DBML `Enum`s with the exact values and spelling (`canceled`, `past_due`) —
-  never invent or rename an enum value.
+  never invent or rename an enum value. **Every enumeration — and every column you type as
+  an enum — must have a matching `Enum <name> { … }` block in the model**: a column typed
+  `booking_request_status` with no `Enum booking_request_status { … }` block fails the gate
+  (AL-04).
 - **`spec/usecases.md`** (when present) — the active use cases' **data assertions are the
   business use-case list** for stage 4: each `DA-n: <description> => expect: <assertion>`
   becomes one live-test block labeled `-- usecase: UC-xxx/DA-n <description>` with the
@@ -105,6 +108,11 @@ test run (e.g. `/tmp/erd-test-<n>/` or a `.erd-test/` subdir). In summary:
    using the **closed assertion grammar** (`error ~ <reason>`, `rowcount=`, `rows=`,
    `value=`, `col:<name>=`). Meet the **coverage floor**: ≥1 write and ≥1 negative test, and
    prove each FK's ON DELETE behavior.
+   - **Label every block exactly `-- usecase: UC-xxx/DA-n <description>`** when a
+     `spec/usecases.md` exists: `UC-xxx` is the use case's three-digit id and `DA-n` the
+     data-assertion number from it, 1:1. The alignment gate (AL-14) matches this exact
+     shape. **Never** invent sub-letter labels like `-- usecase: UC-001a` — `UC-001a` does
+     not match `UC-001/DA-1`, so the gate reads every such use case as never live-tested.
 4. **Run** the three files through the PGlite harness: `scripts/run-erd-test.mjs`.
 5. **Evaluate** the JSON result against the optimality checklist (every use-case `pass`,
    no `malformed`/`broken-test`, `usecases_total` matches your use-case count).
