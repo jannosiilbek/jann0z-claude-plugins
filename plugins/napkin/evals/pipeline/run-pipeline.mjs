@@ -50,7 +50,10 @@ const { values } = parseArgs({
 
 const JUDGE = values['judge-model'] || MODELS.judge.id
 const CONCURRENCY = Math.max(1, parseInt(values.concurrency || '1'))
-const REPEAT = Math.max(1, parseInt(values.repeat || '1'))
+// n=3 is the standard replication: a robust-enough median ± σ to gate on, at 40% less cost
+// than n=5. Pass --repeat 1 for a quick no-variance look, or a higher n to characterize a
+// genuinely flaky cell.
+const REPEAT = Math.max(1, parseInt(values.repeat || '3'))
 
 // resolve executor matrix
 let executors = MODELS.executors
