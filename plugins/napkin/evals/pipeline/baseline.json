@@ -5,64 +5,64 @@
     "note": "Regression = drop beyond tolerance. With n>1, a BRI drop must also exceed the cell stddev (noise)."
   },
   "blessed": {
-    "git_sha": "9cc2490",
-    "skills_hash": "a4f6a326b50d",
-    "judge_model": "claude-opus-4-8",
+    "git_sha": "f88e102",
+    "skills_hash": "5903e36dca28",
+    "judge_model": null,
     "judge_rubric_hash": "6b590a5b76f5",
     "repeats_per_cell": 5,
-    "generated": "2026-06-16T19:52:49.347Z"
+    "generated": "2026-06-17T10:54:06.447Z"
   },
   "cells": {
     "haiku-01": {
       "model_key": "haiku",
       "scenario": "01",
-      "bri": 90,
-      "bri_stddev": 3.11,
+      "bri": 93,
+      "bri_stddev": 1.22,
       "band": "ship-ready",
-      "align_ok": false,
+      "align_ok": true,
       "metrics": {
-        "clarity": 73,
-        "alignment": 90,
-        "completeness": 100,
-        "testability": 100,
-        "actionability": 90
-      }
-    },
-    "haiku-02": {
-      "model_key": "haiku",
-      "scenario": "02",
-      "bri": 88,
-      "bri_stddev": 11.52,
-      "band": "ship-ready",
-      "align_ok": false,
-      "metrics": {
-        "clarity": 80,
-        "alignment": 80,
+        "clarity": 76.5,
+        "alignment": 95,
         "completeness": 100,
         "testability": 100,
         "actionability": 92
       }
     },
+    "haiku-02": {
+      "model_key": "haiku",
+      "scenario": "02",
+      "bri": 94,
+      "bri_stddev": 3.49,
+      "band": "ship-ready",
+      "align_ok": false,
+      "metrics": {
+        "clarity": 80,
+        "alignment": 100,
+        "completeness": 100,
+        "testability": 100,
+        "actionability": 93
+      }
+    },
     "haiku-03": {
       "model_key": "haiku",
       "scenario": "03",
-      "bri": 90,
-      "bri_stddev": 14.6,
+      "bri": 92,
+      "bri_stddev": 1.41,
       "band": "ship-ready",
-      "align_ok": false,
+      "align_ok": true,
       "metrics": {
         "clarity": 73,
         "alignment": 100,
         "completeness": 100,
         "testability": 100,
-        "actionability": 87
+        "actionability": 91
       }
     },
     "sonnet-01": {
       "model_key": "sonnet",
       "scenario": "01",
       "bri": 92,
-      "bri_stddev": 2.7,
+      "bri_stddev": 0.58,
       "band": "ship-ready",
       "align_ok": true,
       "metrics": {
@@ -76,12 +76,12 @@
     "sonnet-02": {
       "model_key": "sonnet",
       "scenario": "02",
-      "bri": 94,
-      "bri_stddev": 0.89,
+      "bri": 92,
+      "bri_stddev": 1.53,
       "band": "ship-ready",
       "align_ok": true,
       "metrics": {
-        "clarity": 80,
+        "clarity": 73,
         "alignment": 100,
         "completeness": 100,
         "testability": 100,
@@ -91,16 +91,16 @@
     "sonnet-03": {
       "model_key": "sonnet",
       "scenario": "03",
-      "bri": 94,
-      "bri_stddev": 2.61,
+      "bri": 96,
+      "bri_stddev": 3.06,
       "band": "ship-ready",
       "align_ok": true,
       "metrics": {
-        "clarity": 80,
+        "clarity": 84.5,
         "alignment": 100,
         "completeness": 100,
         "testability": 100,
-        "actionability": 92
+        "actionability": 93
       }
     },
     "opus-01": {
@@ -121,12 +121,12 @@
     "opus-02": {
       "model_key": "opus",
       "scenario": "02",
-      "bri": 94,
-      "bri_stddev": 3.46,
+      "bri": 96,
+      "bri_stddev": 1.53,
       "band": "ship-ready",
       "align_ok": true,
       "metrics": {
-        "clarity": 80,
+        "clarity": 89,
         "alignment": 100,
         "completeness": 100,
         "testability": 100,
@@ -136,12 +136,12 @@
     "opus-03": {
       "model_key": "opus",
       "scenario": "03",
-      "bri": 92,
-      "bri_stddev": 1.1,
+      "bri": 94,
+      "bri_stddev": 4.16,
       "band": "ship-ready",
       "align_ok": true,
       "metrics": {
-        "clarity": 73,
+        "clarity": 76.5,
         "alignment": 100,
         "completeness": 100,
         "testability": 100,
