@@ -1,0 +1,9 @@
+{
+  "name": "lunchbox",
+  "version": "0.1.0",
+  "description": "Productivity tools for Claude Code workflows. Starts with /goal — an interview-driven goal sharpener that turns a vague intent into a precise /goal completion condition.",
+  "author": {
+    "name": "Janno Siilbek",
+    "email": "janno.siilbek@gmail.com"
+  }
+}

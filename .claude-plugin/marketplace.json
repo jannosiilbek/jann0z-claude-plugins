@@ -10,6 +10,14 @@
   },
   "plugins": [
     {
+      "name": "lunchbox",
+      "source": "./plugins/lunchbox",
+      "license": "MIT",
+      "category": "productivity",
+      "keywords": ["goal", "productivity", "workflow", "planning"],
+      "description": "Productivity tools for Claude Code workflows. The /goal skill sharpens a vague intent into a precise, self-checkable completion condition through a focused interview (one question at a time, max three), then hands it off to Claude Code's built-in /goal command."
+    },
+    {
       "name": "napkin",
       "source": "./plugins/napkin",
       "license": "MIT",
