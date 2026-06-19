@@ -1,7 +1,8 @@
 ---
 name: goal
-description: This skill should be used when the user runs "/lunchbox:goal" or wants to sharpen a vague intent into a precise completion condition for Claude Code's built-in /goal command — including "help me write a goal", "I want Claude to work toward X", "define a goal for me", or when the user passes a rough description they want turned into an unambiguous, self-checkable goal text.
+description: Sharpens a vague intent into a precise, self-checkable completion condition for Claude Code's built-in /goal command, through a focused interview (one question at a time, max five), then outputs the ready-to-run /goal command.
 argument-hint: "[your rough intent or goal]"
+disable-model-invocation: true
 ---
 
 # Goal Sharpener
