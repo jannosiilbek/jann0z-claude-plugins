@@ -82,6 +82,8 @@ up front as an explicit, overridable decision, recommending the default:
 > scheme.
 
 - If the user already named a preference in their request, use it — no need to ask.
+- If `spec/stack.md` exists and `Identity strategy:` is not `unknown`, use that value
+  directly — no prompt needed. State: "Identity strategy: <value> (from spec/stack.md)."
 - If they haven't, proceed with **TypeID** (the recommended default) and the line above
   makes the choice visible so they can override. Don't block the workflow waiting for an
   answer.
@@ -296,6 +298,18 @@ ddd-align gate audits for it). The `.dbml` is the source of truth;
 everything else is reproducible from it (each FK's ON DELETE policy is carried as a
 trailing `//` comment, since DBML has no native syntax for it — see stage 2).
 
+**Decisions log:** when a `spec/` directory exists, write every row from the Assumptions
+table (stage 7) to `spec/decisions.md` as an ADR log following spec-format.md §10:
+
+- If `spec/decisions.md` does not exist, create it.
+- If it exists (delta run), **append** new ADR entries — never edit existing ones.
+- Each row in the Assumptions table becomes one `## ADR-xxx` block. Use the next free
+  `ADR-` number (scan the existing file for the highest ADR id and increment by 1).
+- Set `- Skill: erd-modeler` and `- Date: <today's date>` on every generated entry.
+- Minimum 1 ADR (the identity strategy choice is always recorded, even when it matches
+  the default, so future delta sessions know it was an explicit decision and not an
+  oversight).
+
 ### 7. Report
 
 **Report completeness gate** — this is distinct from the live-test optimality checklist
@@ -395,6 +409,7 @@ Iterations to convergence: N
 | *(any other non-obvious choice)* | ... | ... |
 
 📄 Model saved to `<path>/model.dbml`
+📄 Decisions saved to spec/decisions.md (N decisions recorded)
 ✅ Compliant & live-tested — all use-cases pass, X issues fixed over Y iterations.
 ➡️ Done — the validated, live-tested model is the deliverable.
 ````
