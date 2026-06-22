@@ -23,6 +23,12 @@ The artifact grammar is defined once, in
   (or further back) first.
 - Read `spec/data/model.dbml`, `spec/glossary.md`, and `spec/brief.md` (sizing
   decision) for context.
+- Read `spec/api.md` (when present) — operation paths, request/response shapes, and
+  error codes inform task scope. A task implementing UC-001 should cite the
+  corresponding API-UC-001 entry as context for the implementing agent.
+- Read `spec/decisions.md` (when present) — architectural rationale. Tasks that
+  implement entities with non-default FK policies (e.g. RESTRICT) should reference the
+  relevant ADR so the implementing agent does not re-derive it.
 - If `spec/plan.md` exists, read it fully — **delta mode** (stage 3).
 
 ### 2. Structure the plan
@@ -40,7 +46,16 @@ The artifact grammar is defined once, in
   - `- Acceptance:` points at the cited UCs' criteria. Resist writing new acceptance
     language here: a second phrasing of the same requirement is a fork that will drift.
   - `- Terms:` (optional) glossary anchors that help the implementing agent load the
-    right context.
+    right context. The `- Terms:` field may also cite `ADR-xxx` IDs from decisions.md
+    when a task touches a decision that has non-obvious consequences (e.g. a task
+    implementing deletes on a RESTRICT FK should cite the ADR that explains why RESTRICT
+    was chosen, so the agent surfaces the correct 409 error rather than letting the DB
+    error bubble through).
+  - `- Effort:` populate using the task's total AC count + DA count across all cited UCs
+    as the primary signal, with external-integration presence as a modifier:
+    XS (1–2 AC+DA, no integrations) · S (3–4) · M (5–7) · L (8–12 or any integration) ·
+    XL (13+ or multiple integrations). check-align warns when a task implements 3+ UCs
+    and has no Effort field, so populate it for every multi-UC task.
 
 ### 3. Delta mode
 
