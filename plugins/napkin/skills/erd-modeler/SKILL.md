@@ -301,11 +301,31 @@ trailing `//` comment, since DBML has no native syntax for it — see stage 2).
 **Decisions log:** when a `spec/` directory exists, write every row from the Assumptions
 table (stage 7) to `spec/decisions.md` as an ADR log following spec-format.md §10:
 
-- If `spec/decisions.md` does not exist, create it.
-- If it exists (delta run), **append** new ADR entries — never edit existing ones.
+- If `spec/decisions.md` does not exist, create it with this exact structure:
+  ```
+  # Decisions — <Project name>
+  <!-- ddd: decisions -->
+
+  ## ADR-001 — <title>
+  - Date: <today>
+  - Status: accepted
+  - Skill: erd-modeler
+  - Context: <why this decision was needed>
+  - Decision: <what was decided>
+  - Consequences: <what this implies at runtime or in future work>
+  - Supersedes: n/a
+
+  ## Changelog
+  - <today> (erd-modeler): created, N decisions recorded
+  ```
+- If it exists (delta run), **append** new ADR entries before `## Changelog` — never
+  edit existing ones; then append one new line to `## Changelog`.
 - Each row in the Assumptions table becomes one `## ADR-xxx` block. Use the next free
   `ADR-` number (scan the existing file for the highest ADR id and increment by 1).
-- Set `- Skill: erd-modeler` and `- Date: <today's date>` on every generated entry.
+- Every generated entry must carry all seven fields in this order:
+  `Date`, `Status` (always `accepted` for new entries), `Skill` (`erd-modeler`),
+  `Context`, `Decision`, `Consequences`, `Supersedes` (`n/a` unless an earlier ADR is
+  being explicitly superseded).
 - Minimum 1 ADR (the identity strategy choice is always recorded, even when it matches
   the default, so future delta sessions know it was an explicit decision and not an
   oversight).
