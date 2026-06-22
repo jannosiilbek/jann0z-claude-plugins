@@ -26,20 +26,33 @@ participation assumption in the report.
 would allow orphan rows).
 
 ### A3 — Fan traps
-**Detect:** one entity holding **two or more 1:N relationships** such that querying
-across both branches through the shared parent produces ambiguous or inflated results
-(e.g. `division 1:N department` and `division 1:N employee`, then asking "which
-employees are in which department" via division — the join fans out incorrectly).
-**Fix:** restructure so the real relationship is direct (e.g. `department 1:N employee`),
-or document that the two branches must not be joined through the shared parent.
-**Severity:** `⚠️ warn`.
+**Detect:** for every table in the model, count how many OTHER tables carry a FK that
+points to it (inbound 1:N arms). Any table with **2 or more inbound 1:N arms** is a
+potential fan trap hub. For each hub, list the arms explicitly:
+> "`users` is the hub of: `projects.owner_id → users` AND `tasks.assignee_id → users`.
+> Joining projects and tasks through users in a single query fans out."
+**Fix:** restructure so the real relationship is direct (e.g. `department 1:N employee`
+instead of `division 1:N department` and `division 1:N employee`), OR document explicitly
+in the report: "Do not join [arm A] and [arm B] through [hub] in a single query — query
+each arm independently."
+**Severity:** `⚠️ warn`. **The warn fires whenever a hub exists** — it is the required
+documentation that the arms must not be joined through the hub, not a signal of a
+structural defect. A `✅ pass` verdict is only valid when no table has 2+ inbound 1:N
+arms. If no hub exists, state: "N/A — no table has 2+ inbound 1:N arms."
 
 ### A4 — Chasm traps
-**Detect:** a broken or optional path across a three-entity chain (A→B→C where the B↔C
-link is optional) that silently drops rows when traversed — a query that should reach C
-from A returns nothing because the middle participation is optional.
-**Fix:** add the missing direct relationship, or make the intermediate participation
-mandatory where the domain requires the path to always resolve.
+**Detect:** trace every **optional (nullable) FK** in the model. For each nullable FK
+`B.fk → A`, ask: "Is there a natural query path A → B → C where C is reached through
+this optional link?" If yes, that path is a chasm: rows from A with no matching B are
+silently dropped when the join is traversed. State each chasm path explicitly in the
+report:
+> "Path `users → (assignee_id) → tasks` is a chasm: users with no assigned tasks
+> disappear. Use `LEFT JOIN` and document the intended query direction."
+Self-referential nullable FKs (e.g. `tasks.parent_id`) also create chasm paths for
+recursive queries — note these too.
+**Fix:** add a direct relationship where the domain requires the path to always resolve,
+or document each chasm path with the correct `LEFT JOIN` pattern. If no nullable FK
+creates a meaningful query chain, state: "N/A — no chasm-trap path."
 **Severity:** `⚠️ warn`.
 
 ### A5 — Self-referential & cyclic foreign keys
@@ -105,18 +118,23 @@ one row per value.
 ### B4 — Second normal form (2NF)
 **Detect:** in a table with a **composite** PK, any non-key column that depends on only
 *part* of the key (partial dependency). Single-column PK tables are automatically 2NF —
-note this explicitly and move on.
-**Fix:** decompose so each non-key attribute depends on the entire primary key; extract
-the partially-dependent attribute into a table keyed by that part of the key.
-**Severity:** `❌ error`.
+note this and move on.
+**Flag:** record the candidate as `partial-dependency` and note the dependent column and
+the PK part it depends on. The binding verdict and fix are rendered at **stage 4
+(professor gate)**, which is the blocking gate for normalization — do not mark B4 as
+resolved here.
+**Severity:** `❌ error` (resolved at stage 4).
 
 ### B5 — Third normal form (3NF)
 **Detect:** any non-key column determined by *another non-key column* rather than
 directly by the key (transitive dependency). Classic example: `zip` → `city` → `state`
-all stored in one table whose key is `order_id`.
-**Fix:** extract the transitively-dependent attribute into its own table keyed by its
-determinant and reference it via FK.
-**Severity:** `❌ error`.
+all stored in one table whose key is `order_id`. Note: FK columns count as non-key
+columns — a non-key attribute determined by a FK column is a 3NF violation.
+**Flag:** record the candidate as `transitive-dep` and name the dependency chain
+(e.g. `order_id → zip → city`). The binding verdict and fix are rendered at **stage 4
+(professor gate)**, which is the blocking gate for normalization — do not mark B5 as
+resolved here.
+**Severity:** `❌ error` (resolved at stage 4).
 
 ### B6 — BCNF / 4NF advisory
 **Detect:** a functional dependency whose determinant is not a candidate key (BCNF
@@ -132,6 +150,15 @@ column explaining *why* the relationship is optional.
 This keeps intentional optionality explicit and prevents future readers from treating
 the nullable FK as an oversight.
 **Severity:** `⚠️ warn`.
+
+### B7a — SET NULL policy on NOT NULL column
+**Detect:** a FK column declared `not null` in the DBML that also carries an
+`// ON DELETE SET NULL` comment. Postgres rejects this at DDL time:
+"column defined NOT NULL but foreign key has ON DELETE SET NULL."
+**Fix:** either (a) remove `not null` from the FK column (the relationship is optional),
+or (b) change the ON DELETE policy to `RESTRICT` (the relationship is mandatory and the
+parent cannot be deleted while children exist).
+**Severity:** `❌ error`.
 
 ---
 

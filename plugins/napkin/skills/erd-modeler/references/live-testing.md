@@ -1,6 +1,6 @@
 # Live-testing the ERD against in-memory Postgres (PGlite)
 
-This is stage 4 of the skill: prove the model works by running it against a real
+This is stage 5 of the skill: prove the model works by running it against a real
 Postgres engine (PGlite, in-memory), seeding realistic data, and executing one query
 per business use-case. Loop with improvements until every use-case passes.
 
@@ -16,7 +16,7 @@ assertions that prove the right things.
 
 These three are **working files** — write them to a scratch dir (e.g.
 `/tmp/erd-test-<n>/`). They are optional to keep; the persisted deliverable is the
-`.dbml` model (SKILL.md stage 5), and these are reproducible from it.
+`.dbml` model (SKILL.md stage 6), and these are reproducible from it.
 
 1. **`schema.sql`** — Postgres DDL converted from the validated DBML.
 2. **`seed.sql`** — realistic simulation data.
@@ -55,6 +55,8 @@ The harness prints a JSON summary and exits non-zero on any failure.
 | `indexes { customer_id }` | `CREATE INDEX ON orders (customer_id);` |
 | `indexes { (tenant_id, slug) [unique] }` | `UNIQUE (tenant_id, slug)` (composite, non-PK) |
 | junction composite PK `indexes { (a_id, b_id) [pk] }` | `PRIMARY KEY (a_id, b_id)` inside the table (both columns `text`) |
+
+> **Note:** In DBML, function-call defaults require backtick quoting: `default: \`now()\`` — not `default: now()`. The DDL output `DEFAULT now()` is correct as-is.
 
 Rules:
 - **PK/FK type follows the identity strategy.** The FK, optional-FK, 1:1-FK, and
@@ -165,7 +167,9 @@ Each use-case is **one SQL statement** by default. A multi-statement body (write
 verify) is allowed; the assertion applies to the **last** statement's result. Every
 use-case runs in **its own transaction that is rolled back**, so use-cases are
 order-independent — a write in one does not leak into another. (Append `[persist]` to the
-label to commit instead, if you deliberately need build-up.)
+**end** of the label to commit instead, if you deliberately need build-up —
+e.g. `-- usecase: Seed baseline data [persist]`. Never place `[persist]` at the start
+of the label; the harness only recognises it at the end.)
 
 ### The assertion grammar is CLOSED — never invent operators
 
@@ -242,6 +246,10 @@ loop:
   else:
      derive improvement recommendations from the failures:
        - schema/seed error    -> fix DDL type/constraint/order or seed integrity (FK/PK string values)
+       - SET NULL on NOT NULL column → Postgres rejects the FK at DDL time with
+                                       "column defined NOT NULL but foreign key has ON DELETE SET NULL".
+                                       Fix: make the column nullable in DBML (remove `not null`) or
+                                       change the ON DELETE policy. This is a model error, not a seed error.
        - malformed/broken-test -> fix the ASSERTION (not the model)
        - unexpected-error      -> a non-error block raised: read its detail; usually a
                                   schema/seed/model problem surfacing inside a use-case
@@ -250,7 +258,8 @@ loop:
        - use-case wrong value  -> fix the model (missing relationship, wrong cardinality,
                                   missing bridge, fan/chasm trap) per validation-rules A3/A4
        - ON DELETE failure     -> fix the policy per the §1 table
-     apply fixes to the DBML, re-run static validation (stage 3)
+     apply fixes to the DBML, re-run static validation (stage 3) and the
+       professor gate (stage 4) for any table you modified
      iteration += 1
      if iteration > max_iterations: STOP (not converged)
 ```
