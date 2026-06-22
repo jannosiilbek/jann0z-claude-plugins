@@ -1,6 +1,6 @@
 ---
 name: ddd-brief
-description: Use when the user wants to start a spec, scope a project or feature, write a project brief, kick off the DDD spec pipeline, or clarify what to build before designing anything — including "let's spec this out", "help me define this product", or when they hand over requirement documents/transcripts to turn into a structured starting point. Interactively elicits the problem, actors, scope, and constraints (one question at a time, never re-asking what provided material already answers), then writes or incrementally updates a living spec/brief.md and sizes how much of the downstream pipeline (ddd-domain → ddd-usecases → erd-modeler → ddd-plan) the work actually warrants.
+description: Use when the user wants to start a spec, scope a project or feature, write a project brief, kick off the DDD spec pipeline, or clarify what to build before designing anything — including "let's spec this out", "help me define this product", or when they hand over requirement documents/transcripts to turn into a structured starting point. Interactively elicits the problem, actors, scope, and constraints (one question at a time, never re-asking what provided material already answers), then writes or incrementally updates a living spec/brief.md, spec/stack.md, and spec/nfr.md, and sizes how much of the downstream pipeline (ddd-domain → ddd-usecases → ddd-api → erd-modeler → ddd-plan) the work actually warrants.
 ---
 
 # DDD Brief
@@ -24,6 +24,8 @@ The artifact grammar is defined once, in
   requirement docs, meeting transcripts, existing glossaries, README files, tickets.
   This material is evidence; mine it for answers before asking a single question.
 - Read `references/elicitation.md` for the coverage checklist and questioning method.
+- **Existing stack/nfr**: if `spec/stack.md` or `spec/nfr.md` exists, read them — you
+  are in **delta mode** for those artifacts (update, don't regenerate).
 
 ### 2. Elicit — one question at a time
 
@@ -43,6 +45,24 @@ Every question asked and answer received is appended to the brief's
 **Clarifications log** — that log is the audit trail that lets a future session see why
 the spec says what it says.
 
+### 2a. Elicit stack and NFR — four questions max
+
+After the domain elicitation (or in parallel when provided material already answers
+domain questions), work through the stack/NFR coverage checklist in
+`references/elicitation.md`. For each area:
+
+- If provided material already answers it, record the answer — **never re-ask**.
+- If genuinely uncovered, ask — **one question per message**, multiple-choice where
+  possible, in this priority order:
+  1. **Interface type** — REST API / GraphQL / tRPC / CLI / library / full-stack / none
+  2. **Language + framework** — what runtime and web framework?
+  3. **Auth mechanism** — JWT / session / API key / OAuth2 / none
+  4. **Error contract shape** — RFC 7807 / `{code, message}` / framework default / unknown
+- If the user has no preference on a field, write `unknown` — alignment checks skip
+  unknown fields.
+- When `Interface: Kind = none`, set `ddd-api: no` in the sizing block and skip the
+  api.md prompt — there is no external surface to spec.
+
 ### 3. Size the pipeline
 
 Decide — and record in the **Pipeline sizing** block — how much machinery this work
@@ -55,6 +75,9 @@ warrants. This is the anti-bloat contract: read the sizing rubric in
 - **delta** — a change to an already-specced system: downstream skills update existing
   artifacts incrementally; a bug fix may need nothing but a clarifying line and one
   changed use case.
+- `ddd-api`: `yes` when the project has an external surface (REST, CLI, library, etc.);
+  `no` when `Interface: Kind = none` or the scope is purely internal. A lean data-layer
+  tool usually has `ddd-api: no`.
 
 The rule of thumb: the spec must always be lighter than the work it describes. If
 reviewing the artifacts would take longer than reviewing the change itself, you've
@@ -75,6 +98,18 @@ block, clarifications table, changelog).
   while calling the work a delta in the report is the spec contradicting itself, and the
   next session will trust the file, not the report.
 
+### 4a. Write or update spec/stack.md and spec/nfr.md
+
+Follow the skeletons in spec-format.md §7 and §8 exactly.
+
+- **Greenfield**: create both files (creating `spec/` if needed).
+- **Delta mode**: apply spec-format.md §1.4 — touch only fields whose answers changed,
+  preserve user edits verbatim, append one Changelog line. Never regenerate wholesale.
+- Omit sections the user didn't specify — no placeholders. An nfr.md with only
+  `## Error contracts` and `## Auth` is correct if the user didn't address performance.
+- `unknown` values: a field the user has no opinion on is written as `unknown`. The
+  alignment checks skip unknown fields; the implementing agent uses framework defaults.
+
 ### 5. Gate
 
 Run the **self-correcting exit gate** (ddd-align → "Self-correcting exit gate"): run the
@@ -88,6 +123,10 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spe
 A brief-only spec passes trivially on the cross-checks — the gate here catches
 structural mistakes (missing marker, malformed sizing block) before they propagate.
 
+At this stage the gate checks structure of stack.md and nfr.md (marker presence,
+section shape). It does not yet enforce AL-17/AL-18 (those activate only once api.md
+exists after ddd-api runs).
+
 ### 6. Report
 
 ```
@@ -100,11 +139,15 @@ structural mistakes (missing marker, malformed sizing block) before they propaga
 | Scope | 3 in / 2 out |
 | Constraints | 2 |
 | Pipeline sizing | full — greenfield system of record |
+| Stack | TypeScript / Fastify / REST API / JWT |
+| NFR | auth + error contracts + performance |
 
 Clarifications this session: N asked, M answered from provided material
 Alignment gate: ✅ ok (or the harness's error lines)
 
 📄 Brief saved to spec/brief.md
+📄 Stack saved to spec/stack.md
+📄 NFR saved to spec/nfr.md
 ➡️ Next: run ddd-domain to build the glossary and flows
 ```
 

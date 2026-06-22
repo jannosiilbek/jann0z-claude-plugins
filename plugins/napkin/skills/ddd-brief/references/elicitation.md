@@ -36,6 +36,21 @@ question.
   covers the checklist outright. Say "your material covered everything — no questions"
   and move on. This is also why the skill works non-interactively.
 
+## Stack/NFR coverage checklist
+
+A stack.md + nfr.md are complete when each area is either answered or recorded as `unknown`:
+
+| Area | What "covered" means | Questions to ask (pick from priority order) |
+|------|----------------------|---------------------------------------------|
+| Interface type | The kind of external surface (or none) | "REST API / GraphQL / tRPC / CLI / library / full-stack / or none?" |
+| Language + framework | Runtime and web framework | "Which language and web framework?" |
+| Auth mechanism | How callers authenticate | "JWT / session cookie / API key / OAuth2 / or none?" |
+| Error contract shape | How errors are serialised | "RFC 7807 Problem Details / `{code, message}` / framework default / or unknown?" |
+
+Walk these four areas against provided material first. Only genuinely uncovered areas
+earn a question — and only one question per message. If the user has no preference,
+write `unknown`; the alignment checks skip those fields.
+
 ## Sizing rubric (the anti-bloat contract)
 
 The documented failure mode of spec pipelines is weight that doesn't adapt: one
