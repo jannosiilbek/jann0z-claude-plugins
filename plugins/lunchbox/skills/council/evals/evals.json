@@ -1,0 +1,146 @@
+{
+  "skill_name": "council",
+  "evals": [
+    {
+      "id": 1,
+      "name": "semantic-drift-architecture",
+      "prompt": "I just finished refactoring the auth service at /Users/janno/Projects/claude-plugins-2/plugins/lunchbox/skills/council-workspace/test-projects/auth-service. The changes update the token structure to include expiration times and add a refresh token endpoint. I also added an AuthMiddleware class. Please run council on these changes.",
+      "expected_output": "The council should catch: (1) Semantic Alignment flags README still documents {userId, token} but code returns {id, accessToken, expiresAt}; (2) Architecture flags AuthMiddleware directly instantiates PostgresUserRepository instead of depending on an interface. Verdict: revise or rework, with specific file+location citations.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "council_report_present",
+          "description": "Output contains a Council Report header, confirming the skill was invoked and produced a structured report",
+          "type": "output_contains_any",
+          "values": ["Council Report", "council report", "## Council", "# Council"]
+        },
+        {
+          "id": "has_verdict",
+          "description": "Report includes a ship/revise/rework verdict",
+          "type": "output_contains_any",
+          "values": ["SHIP", "REVISE", "REWORK", "ship", "revise", "rework"]
+        },
+        {
+          "id": "catches_readme_drift",
+          "description": "Report flags the contradiction between README.md (userId/token) and code (id/accessToken/expiresAt)",
+          "type": "output_contains_any",
+          "values": ["userId", "accessToken", "expiresAt", "README", "readme", "AuthResult"]
+        },
+        {
+          "id": "catches_concrete_dependency",
+          "description": "Report flags that AuthMiddleware depends on a concrete class instead of an interface",
+          "type": "output_contains_any",
+          "values": ["PostgresUserRepository", "concrete", "interface", "middleware", "Middleware"]
+        },
+        {
+          "id": "has_location_citations",
+          "description": "Report cites specific file names or locations (src/auth.ts or src/middleware.ts)",
+          "type": "output_contains_any",
+          "values": ["auth.ts", "middleware.ts", "src/"]
+        },
+        {
+          "id": "six_experts_referenced",
+          "description": "Report references all six expert domains",
+          "type": "output_contains_all",
+          "values": ["Architecture", "DRY", "Clarity", "SOLID", "Alignment"]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "dry-clarity-violations",
+      "prompt": "Added the updateOrder function to the order processor at /Users/janno/Projects/claude-plugins-2/plugins/lunchbox/skills/council-workspace/test-projects/order-processor and created a processor utility module. Ready for council review.",
+      "expected_output": "The council should catch: (1) DRY flags updateOrder re-implements validateOrderInput logic inline instead of calling it; (2) Clarity flags handleData and processInfo as semantically empty function names. Specific lines and concrete fix suggestions expected.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "council_report_present",
+          "description": "Output contains a Council Report header, confirming the skill was invoked and produced a structured report",
+          "type": "output_contains_any",
+          "values": ["Council Report", "council report", "## Council", "# Council"]
+        },
+        {
+          "id": "has_verdict",
+          "description": "Report includes a ship/revise/rework verdict",
+          "type": "output_contains_any",
+          "values": ["SHIP", "REVISE", "REWORK", "ship", "revise", "rework"]
+        },
+        {
+          "id": "catches_dry_violation",
+          "description": "Report flags duplicated validation logic in updateOrder",
+          "type": "output_contains_any",
+          "values": ["updateOrder", "duplicate", "DRY", "validateOrderInput", "repeated", "validation"]
+        },
+        {
+          "id": "catches_vague_names",
+          "description": "Report flags handleData or processInfo as vague names",
+          "type": "output_contains_any",
+          "values": ["handleData", "processInfo", "vague", "unclear", "ambiguous", "rename"]
+        },
+        {
+          "id": "has_location_citations",
+          "description": "Report cites specific file names",
+          "type": "output_contains_any",
+          "values": ["orders.ts", "processor.ts", "src/"]
+        },
+        {
+          "id": "suggests_concrete_fix",
+          "description": "Report gives a concrete fix suggestion for at least one finding",
+          "type": "output_contains_any",
+          "values": ["validateOrderInput", "calculateLine", "computeLineTotal", "sanitize", "strip", "→", "suggestion", "rename"]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "solid-semantic-multi-doc",
+      "prompt": "I extended PaymentService to handle email confirmations and audit logging directly in /Users/janno/Projects/claude-plugins-2/plugins/lunchbox/skills/council-workspace/test-projects/payment-gateway. The service now returns a PaymentResult object instead of void. Run council.",
+      "expected_output": "The council should catch: (1) SOLID S: PaymentService has 3 responsibilities; (2) SOLID D: EmailClient/fs are concrete dependencies; (3) Semantic: architecture.md says email belongs to NotificationService but code puts it in PaymentService; (4) Semantic: IPaymentGateway declares Promise<void> but impl returns Promise<PaymentResult>. Verdict: rework.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "council_report_present",
+          "description": "Output contains a Council Report header, confirming the skill was invoked and produced a structured report",
+          "type": "output_contains_any",
+          "values": ["Council Report", "council report", "## Council", "# Council"]
+        },
+        {
+          "id": "verdict_is_rework",
+          "description": "Verdict is 'rework' (multiple critical issues present)",
+          "type": "output_contains_any",
+          "values": ["REWORK", "rework"]
+        },
+        {
+          "id": "catches_single_responsibility",
+          "description": "Report flags that PaymentService now handles email, logging, and payment (S violation)",
+          "type": "output_contains_any",
+          "values": ["Single Responsibility", "single responsibility", "three", "email", "logging", "audit", "responsibility"]
+        },
+        {
+          "id": "catches_dependency_inversion",
+          "description": "Report flags EmailClient or fs as concrete dependencies (D violation)",
+          "type": "output_contains_any",
+          "values": ["EmailClient", "Dependency Inversion", "dependency inversion", "concrete", "fs", "interface"]
+        },
+        {
+          "id": "catches_doc_contradiction",
+          "description": "Report flags that architecture.md or README contradicts the implementation (NotificationService)",
+          "type": "output_contains_any",
+          "values": ["NotificationService", "architecture.md", "architecture", "README", "contradicts", "contradiction", "drift"]
+        },
+        {
+          "id": "catches_interface_mismatch",
+          "description": "Report flags the Promise<void> vs Promise<PaymentResult> mismatch between interface and implementation",
+          "type": "output_contains_any",
+          "values": ["void", "PaymentResult", "interface", "IPaymentGateway", "mismatch", "return type"]
+        },
+        {
+          "id": "multi_doc_checked",
+          "description": "Both README and architecture.md are used as sources",
+          "type": "output_contains_all",
+          "values": ["architecture", "README"]
+        }
+      ]
+    }
+  ]
+}

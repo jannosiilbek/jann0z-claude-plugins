@@ -30,6 +30,10 @@ plugins/napkin/skills/ddd-usecases-workspace/
 plugins/napkin/skills/ddd-plan-workspace/
 plugins/napkin/skills/ddd-align-workspace/
 
+# skill-creator eval run output for the lunchbox council skill. Reproducible from
+# skills/council/evals/evals.json, so never committed.
+plugins/lunchbox/skills/council-workspace/
+
 # Pipeline-eval raw run output (full spec/ per model × scenario + stage transcripts).
 # Reproducible from scenarios/ + models.json; only results/ summaries are committed.
 plugins/napkin/evals/pipeline/runs/
