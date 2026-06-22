@@ -6,8 +6,6 @@
 - Steps:
   1. Command: Enroll student (Actor: Registrar)
   2. Event: Student enrolled
-  3. Policy: Whenever Student enrolled, then Recount course seats
-  4. Event: Course seats recounted
 
 ## FL-002 — Finish a course
 - Actor: Registrar

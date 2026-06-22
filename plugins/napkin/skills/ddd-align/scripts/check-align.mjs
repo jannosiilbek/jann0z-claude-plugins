@@ -15,7 +15,8 @@
  */
 
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
+import { createHash } from "node:crypto";
 
 // ---------------------------------------------------------------- CLI
 
@@ -45,13 +46,17 @@ function report(check, severity, artifact, line, message) {
 
 // ---------------------------------------------------------------- parsing
 
-const KNOWN_TYPES = ["brief", "glossary", "flows", "usecases", "plan"];
+const KNOWN_TYPES = ["brief", "glossary", "flows", "usecases", "plan", "stack", "nfr", "api", "decisions"];
 const EXPECTED_FILENAMES = {
   "brief.md": "brief",
   "glossary.md": "glossary",
   "flows.md": "flows",
   "usecases.md": "usecases",
   "plan.md": "plan",
+  "stack.md": "stack",
+  "nfr.md": "nfr",
+  "api.md": "api",
+  "decisions.md": "decisions",
 };
 const MARKER_RE = /<!--\s*ddd:\s*([a-z]+)\s*-->/;
 
@@ -251,6 +256,45 @@ function parseDbml(raw) {
   return { tables, enums };
 }
 
+function parseApi(art) {
+  const ops = [];
+  let current = null;
+  const API_HEAD_RE = /^## (API-UC-\d{3}(?:-internal)?) — (.+)$/;
+  const ERROR_RE = /^\s*- Response \d{3}: ([A-Z][A-Z0-9_]+)/;
+  for (let i = 0; i < art.lines.length; i++) {
+    const line = art.lines[i];
+    const m = line.match(API_HEAD_RE);
+    if (m) {
+      current = { id: m[1], title: m[2].trim(), line: i + 1, fields: {}, errorCodes: [] };
+      ops.push(current);
+      continue;
+    }
+    if (/^## /.test(line) && !m) { current = null; continue; }
+    if (current) {
+      const f = line.match(FIELD_RE);
+      if (f && line.match(/^- /)) current.fields[f[1]] = f[2].trim();
+      const e = line.match(ERROR_RE);
+      if (e) current.errorCodes.push({ code: e[1], line: i + 1 });
+    }
+  }
+  return ops;
+}
+
+function parseNfr(art) {
+  const errorCodes = new Set();
+  let inErrorContracts = false;
+  for (let i = 0; i < art.lines.length; i++) {
+    const line = art.lines[i];
+    if (/^## Error contracts/.test(line)) { inErrorContracts = true; continue; }
+    if (/^## /.test(line)) { inErrorContracts = false; continue; }
+    if (inErrorContracts) {
+      const m = line.match(/^\s*- .+: \d{3} ([A-Z][A-Z0-9_]+)/);
+      if (m) errorCodes.add(m[1]);
+    }
+  }
+  return { errorCodes };
+}
+
 // ---------------------------------------------------------------- main
 
 const args = parseArgs(process.argv);
@@ -293,6 +337,8 @@ const glossary = artifacts.glossary ? parseGlossary(artifacts.glossary) : null;
 const flows = artifacts.flows ? parseFlows(artifacts.flows) : null;
 const ucs = artifacts.usecases ? parseUsecases(artifacts.usecases) : null;
 const plan = artifacts.plan ? parsePlan(artifacts.plan) : null;
+const apiOps = artifacts.api ? parseApi(artifacts.api) : null;
+const nfr = artifacts.nfr ? parseNfr(artifacts.nfr) : null;
 
 // Trigger malformed-heading detection for artifacts not covered by extractItems.
 if (artifacts.brief) extractItems(artifacts.brief, "brief.md");
@@ -510,6 +556,72 @@ if (sqlRaw && ucs) {
     if (uc.status === "active" && !labeled.has(uc.id)) {
       report("AL-14", "error", "data/usecases.sql", 1,
         `${uc.id} is active but has no \`-- usecase: ${uc.id}/DA-n …\` block in usecases.sql — its data assertions were never live-tested`);
+    }
+  }
+}
+
+// --- AL-16: upstream-fingerprint staleness
+if (existsSync(modelPath)) {
+  const modelRaw = readFileSync(modelPath, "utf8");
+  const fpRe = /^\/\/ upstream-fingerprint: (.+)@sha256:([0-9a-f]{64})/gm;
+  for (const fp of modelRaw.matchAll(fpRe)) {
+    const [, relPath, storedHash] = fp;
+    const absPath = join(args.spec, "..", relPath);
+    if (!existsSync(absPath)) {
+      report("AL-16", "warn", "data/model.dbml", 1,
+        `fingerprint references ${relPath} which does not exist`);
+      continue;
+    }
+    const actual = createHash("sha256").update(readFileSync(absPath)).digest("hex");
+    if (actual !== storedHash) {
+      report("AL-16", "warn", "data/model.dbml", 1,
+        `upstream fingerprint mismatch for ${relPath} — model may be stale (stored ${storedHash.slice(0, 8)}…, actual ${actual.slice(0, 8)}…)`);
+    }
+  }
+}
+
+// --- AL-17: every active UC has an API-UC-xxx entry in api.md (when api.md exists)
+if (apiOps !== null && ucs) {
+  const apiIds = new Set(apiOps.map((op) => op.id));
+  for (const uc of ucs) {
+    if (uc.status !== "active") continue;
+    const expected = "API-" + uc.id;
+    if (!apiIds.has(expected)) {
+      report("AL-17", "error", "api.md", 1,
+        `${uc.id} is active but has no \`## ${expected}\` entry in api.md`);
+    }
+  }
+}
+
+// --- AL-18: every error code in api.md appears in nfr.md Error contracts (when both exist)
+if (apiOps !== null && nfr !== null) {
+  for (const op of apiOps) {
+    for (const { code, line } of op.errorCodes) {
+      if (!nfr.errorCodes.has(code)) {
+        report("AL-18", "error", "api.md", line,
+          `error code ${code} in ${op.id} is not declared in nfr.md §Error contracts`);
+      }
+    }
+  }
+}
+
+// --- AL-19: every Policy command Y is the trigger of at least one active UC
+if (flows && ucs) {
+  const ucTriggers = new Set(
+    ucs.filter((u) => u.status === "active").map((u) => u.fields["Trigger"]).filter(Boolean)
+  );
+  const POLICY_RE = /^Whenever .+, then (.+)$/;
+  for (const fl of flows.flows) {
+    for (const { line, n } of fl.body) {
+      const s = line.match(/^\s*\d+\.\s+Policy:\s*(.+)$/);
+      if (!s) continue;
+      const m = s[1].match(POLICY_RE);
+      if (!m) continue;
+      const cmd = m[1].trim();
+      if (!ucTriggers.has(cmd)) {
+        report("AL-19", "warn", "flows.md", n,
+          `policy command "${cmd}" is not the trigger of any active use case — implement it as a UC or document the deferral`);
+      }
     }
   }
 }

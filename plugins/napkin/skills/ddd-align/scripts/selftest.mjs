@@ -79,11 +79,16 @@ console.log("check-align selftest — every case proves a refused false-green\n"
 
 // 1. Baseline: the golden fixture must be green (guards against over-strictness —
 //    a checker that rejects correct specs trains people to ignore it).
+//    Info-level findings (AL-00 "artifact not present") are informational and never
+//    affect exit code or ok status — they are excluded from this assertion.
 testCase("golden fixture is green",
   () => {},
-  (r) => (r.exit === 0 && r.json && r.json.ok && r.json.findings.length === 0
-    ? null
-    : `expected clean green, got exit=${r.exit}, findings=${r.json ? r.json.findings.length : "?"}`));
+  (r) => {
+    const nonInfo = r.json ? r.json.findings.filter((f) => f.severity !== "info") : null;
+    return (r.exit === 0 && r.json && r.json.ok && nonInfo && nonInfo.length === 0
+      ? null
+      : `expected clean green, got exit=${r.exit}, findings=${r.json ? r.json.findings.length : "?"}`);
+  });
 
 // 1b. Lowercase DBML block keywords (`table`/`enum`) are valid DBML — the diagram renderer
 //     and the PGlite live-test accept them as readily as `Table`/`Enum`. A case-sensitive
@@ -91,9 +96,12 @@ testCase("golden fixture is green",
 testCase("lowercase DBML keywords stay green",
   (s) => edit(s, "data/model.dbml", (t) =>
     t.replace(/^(\s*)Table\b/gm, "$1table").replace(/^(\s*)Enum\b/gm, "$1enum")),
-  (r) => (r.exit === 0 && r.json && r.json.ok && r.json.findings.length === 0
-    ? null
-    : `expected clean green with lowercase keywords, got exit=${r.exit}, findings=${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"}`));
+  (r) => {
+    const nonInfo = r.json ? r.json.findings.filter((f) => f.severity !== "info") : null;
+    return (r.exit === 0 && r.json && r.json.ok && nonInfo && nonInfo.length === 0
+      ? null
+      : `expected clean green with lowercase keywords, got exit=${r.exit}, findings=${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"}`);
+  });
 
 // 2. A table renamed in the DBML (e.g. by a hand edit) breaks glossary tracing.
 testCase("renamed DBML table → AL-01 + AL-02",
