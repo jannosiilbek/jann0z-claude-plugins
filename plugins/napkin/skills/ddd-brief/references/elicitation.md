@@ -12,6 +12,8 @@ A brief is complete when each of these is either answered or explicitly assumed:
 | Scope out | The tempting neighbors explicitly excluded | "Payments: in or out?" |
 | Constraints | Tech, regulatory, budget, deadline boundaries | "Any storage/stack it must run on?" |
 | Non-functional | Performance, security, compliance expectations that shape design | "Roughly how many records/users?" |
+| Interface type | What kind of surface the system exposes (REST / CLI / library / none) | "Is there an HTTP API, or is this a library/CLI?" |
+| Stack | Runtime language, framework, auth mechanism, error contract shape | "What language/framework? JWT or session auth?" |
 
 Walk the checklist against the user's request **and every provided document** first.
 Mark each area covered/uncovered. Only uncovered-and-consequential areas earn a
@@ -65,6 +67,7 @@ never happens here.
 | Data-model-only work (a tool, a report, an import) | **lean** — often `ddd-domain: yes, ddd-usecases: yes, erd-modeler: yes, ddd-plan: no` |
 | Bug fix / small behavior change | **delta**, usually touching one use case and nothing else — and if not even a use case changes, say the pipeline isn't needed at all |
 | Spike / prototype the user calls throwaway | **lean** at most — and say that the spec can be skipped entirely; don't manufacture ceremony |
+| No external API surface (internal tool, library, data pipeline) | **lean** — set `ddd-api: no` |
 
 Two tests before settling:
 
