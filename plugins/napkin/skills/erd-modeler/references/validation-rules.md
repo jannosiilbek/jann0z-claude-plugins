@@ -94,19 +94,44 @@ Model a mandatory-both-sides 1:1 as a single table. This is live-testable: inser
 children referencing one parent and assert `error ~ unique`.
 **Severity:** `❌ error`.
 
-### B3 — Normalization (≥ 3NF)
-**Detect and fix:**
-- **1NF** — no repeating groups and no multi-value columns. A `tags varchar` holding
-  `"a,b,c"` or columns like `phone1, phone2, phone3` violate 1NF. Fix: split into a
-  related table (often a bridge table or a child table).
-- **2NF** — on a table with a composite key, no non-key attribute may depend on only
-  part of the key. Fix: move the partially-dependent attribute to a table keyed by that
-  part.
-- **3NF** — no transitive dependency: a non-key attribute must not depend on another
-  non-key attribute (e.g. `zip` determining `city`, `city` determining `state` inside an
-  `addresses`-less table). Fix: extract the dependent attributes into their own entity
-  and reference it.
+### B3 — First normal form (1NF)
+**Detect:** any column holding a list/array/CSV of values (`tags varchar` storing
+`"a,b,c"`), or repeated columns encoding a multivalued attribute (`phone1`, `phone2`,
+`phone3`).
+**Fix:** move the repeating attribute into its own table with an FK back to the owner —
+one row per value.
 **Severity:** `❌ error`.
+
+### B4 — Second normal form (2NF)
+**Detect:** in a table with a **composite** PK, any non-key column that depends on only
+*part* of the key (partial dependency). Single-column PK tables are automatically 2NF —
+note this explicitly and move on.
+**Fix:** decompose so each non-key attribute depends on the entire primary key; extract
+the partially-dependent attribute into a table keyed by that part of the key.
+**Severity:** `❌ error`.
+
+### B5 — Third normal form (3NF)
+**Detect:** any non-key column determined by *another non-key column* rather than
+directly by the key (transitive dependency). Classic example: `zip` → `city` → `state`
+all stored in one table whose key is `order_id`.
+**Fix:** extract the transitively-dependent attribute into its own table keyed by its
+determinant and reference it via FK.
+**Severity:** `❌ error`.
+
+### B6 — BCNF / 4NF advisory
+**Detect:** a functional dependency whose determinant is not a candidate key (BCNF
+violation), or two independent multivalued facts co-located in one table (4NF).
+**Fix:** consider decomposing; state the trade-off explicitly. Non-blocking — flag and
+document the judgment call.
+**Severity:** `⚠️ warn`.
+
+### B7 — Nullable FK documentation
+**Detect:** an FK column that is nullable (no `not null`) without a `note:` on the
+column explaining *why* the relationship is optional.
+**Fix:** add a short inline note — e.g. `[note: 'null until a manager is assigned']`.
+This keeps intentional optionality explicit and prevents future readers from treating
+the nullable FK as an oversight.
+**Severity:** `⚠️ warn`.
 
 ---
 
@@ -138,9 +163,59 @@ missing sane defaults, or missing timestamps the domain implies (`created_at`).
 **Fix:** add explicit types, `unique` constraints, defaults, and standard timestamps.
 **Severity:** `ℹ️ info`.
 
+### C4 — No invented entities
+**Detect:** a `Table` whose name does not trace to any glossary term (when
+`spec/glossary.md` is present) and is not a junction/bridge table resolving a
+documented many-to-many relationship. An LLM hallucinating a plausible-but-undocumented
+table (e.g. `reservations` when the glossary only defines `booking_requests`) is the
+failure this rule guards against.
+**Fix:** remove the invented table, or trace it to its upstream glossary term. If the
+concept is genuinely missing from the glossary, stop and add it there first — do not
+invent vocabulary in the model.
+**Carve-out:** bridge/junction tables that exist solely to resolve an N:M relationship
+between two mapped entities are allowed even without a direct glossary term, provided
+they are named for the relationship (e.g. `course_enrollments` for `courses ↔ students`).
+**Severity:** `❌ error` (when `spec/glossary.md` is present).
+
+### C5 — Cross-aggregate cascade advisory
+**Detect:** an `ON DELETE CASCADE` FK that crosses an aggregate boundary — i.e. the
+child table belongs to a different aggregate root than the parent, as indicated by
+`spec/glossary.md` aggregate-root annotations or domain knowledge.
+**Fix:** replace with `ON DELETE RESTRICT` (hold the reference by identity without
+cascading). The lifecycle coupling belongs in application/policy logic, not a DB
+cascade. Judgment call — document the decision with a trailing comment.
+**Severity:** `⚠️ warn`.
+
+---
+
+## D. Lifecycle & transitions
+
+### D1 — One transition table per lifecycle entity, none extra
+**Detect:** an entity with a status enum column has no `### <table_name>` transition
+block in the report, OR a transition block exists for an entity with no status enum
+column.
+**Fix:** emit exactly one transition block per status-bearing entity; remove any orphan
+blocks.
+**Severity:** `❌ error`.
+
+### D2 — Every enum value is reachable
+**Detect:** a status enum value that never appears as a `To` in the transition table and
+is not the initial state produced by the `∅` row (dead/orphan state).
+**Fix:** add the transition(s) that lead to it, or remove the value from the enum. Do
+not silently leave an unreachable state — it will never be set and clutters the schema.
+**Severity:** `❌ error`.
+
+### D3 — Connected lifecycle (no exit from unreachable states)
+**Detect:** a `From` value in the transition table that itself never appears as a `To`
+and is not the initial state — meaning there is a transition *out of* a state that can
+never be entered.
+**Fix:** add the transition that reaches that `From` state, or remove the row.
+**Severity:** `⚠️ warn`.
+
 ---
 
 ## Pass condition
 
-The model passes when the corrected DBML has **zero `❌ error` findings**. Report any
-remaining `⚠️ warn` / `ℹ️ info` items but they do not block compliance.
+The model passes when the corrected DBML has **zero `❌ error` findings** across all
+sections (A–D). Report any remaining `⚠️ warn` / `ℹ️ info` items — they do not block
+compliance but must be documented in the validation report with an explicit judgment.

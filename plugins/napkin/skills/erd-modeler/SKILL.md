@@ -11,8 +11,8 @@ Postgres (PGlite)** — looping with improvements until every business use-case 
 
 ## Workflow
 
-Follow these stages in order. Stages 3 and 4 run on every invocation — never skip them,
-even for a "simple" model.
+Follow these stages in order. Stages 3, 4, and 5 run on every invocation — never skip
+them, even for a "simple" model.
 
 ### 1. Understand the domain
 
@@ -87,13 +87,57 @@ model using this output template:
 - Add an `indexes` block for FK columns and natural lookup columns.
 - Use `Note:` to record intent where it helps a future reader.
 
+#### Transition tables
+
+For every entity whose `status` column is typed by an enum, generate a transition
+table alongside the DBML. This makes the lifecycle explicit — which states can move
+to which, and what event drives each move.
+
+One `### <table_name>` block per lifecycle entity, in this format:
+
+| From | Event | To |
+|------|-------|----|
+| ∅ | &lt;creation event&gt; | &lt;initial state&gt; |
+| &lt;state&gt; | &lt;event name&gt; | &lt;next state&gt; |
+
+Rules:
+- `From = ∅` marks the creation transition — exactly one such row per entity.
+- `From`/`To` values must be members of that entity's status enum.
+- Every enum value must appear as a `To` at least once (no dead/unreachable states).
+- Events are short descriptive strings (`"submit"`, `"approve"`, `"cancel"`).
+- State your transition assumptions explicitly. Ask the user only when the legal
+  transitions are genuinely ambiguous from the domain description.
+
 ### 3. Validate — best-practices audit
 
 Read `references/validation-rules.md` and run **every** check against the generated DBML.
 This step always runs and always produces a report. Apply the fix for each finding before
 moving on.
 
-### 4. Live-test — prove it works against real Postgres
+### 4. Professor gate — semantic normalization judgment
+
+Before live-testing, make one explicit normalization judgment pass. The mechanical
+rules in stage 3 catch structural violations, but 2NF and 3NF depend on **functional
+dependencies** — semantic facts about the data that cannot be recovered from schema
+shape alone.
+
+For every table with a composite PK **or** ≥2 non-key columns, state both verdicts
+explicitly:
+
+- **2NF:** "Does any non-key column depend on only *part* of the composite PK?"
+  If the PK is single-column, 2NF is automatically satisfied — note this and move on.
+  Verdict: `no-violation | partial-dependency`.
+- **3NF:** "Does any non-key column depend on *another non-key column* rather than
+  directly on the key?" Name the dependency chain.
+  Verdict: `no-violation | transitive-dep`.
+
+**This gate is blocking.** Fix any `partial-dependency` or `transitive-dep` verdict
+before proceeding to stage 5 — decompose the table, extracting the partial/transitive
+dependent into its own entity keyed by its determinant. Do not skip this gate for
+"simple" models: a single-column-PK table with ≥2 non-key attributes still needs an
+explicit `no-violation` verdict.
+
+### 5. Live-test — prove it works against real Postgres
 
 Read `references/live-testing.md` and run the closed-loop test. This step always runs.
 The three SQL files below are **working artifacts** — write them to a scratch dir for the
@@ -119,12 +163,34 @@ test run (e.g. `/tmp/erd-test-<n>/` or a `.erd-test/` subdir). In summary:
 6. **If any use-case fails or any error is reported** — a `malformed`/`broken-test`
    status means fix the *assertion*; a content failure means fix the *model*. Adjust and
    repeat from stage 3. Bounded by a max-iteration guard (default 5).
+
+   **Upstream-defect exception:** if a failure traces to an upstream artifact rather
+   than the model — for example, a `spec/glossary.md` enum value that doesn't exist in
+   the model because it was wrong in the glossary, or a `spec/usecases.md` DA that
+   references an entity name not in the glossary — **STOP**. Name exactly what the
+   upstream artifact needs to fix and do not patch the DBML to work around it. Upstream
+   defects must be fixed upstream.
 7. **Stop** when the harness exits green with the coverage floor met.
 
-### 5. Save the model — always
+### 6. Save the model — always
 
 **Always write the final, validated DBML to a `.dbml` file. This is the primary
-deliverable and is never skipped.** Resolve the location deterministically, in order:
+deliverable and is never skipped.**
+
+**Drift fingerprinting:** if upstream inputs were used (`spec/glossary.md`,
+`spec/usecases.md`), embed their sha256 digests as comment lines at the top of the
+generated DBML — before the first `Table` or `Enum` block:
+
+```dbml
+// upstream-fingerprint: spec/glossary.md@sha256:<64-hex>
+// upstream-fingerprint: spec/usecases.md@sha256:<64-hex>
+```
+
+Compute with `shasum -a 256 spec/glossary.md spec/usecases.md`. Re-embed on every
+save when upstream content changes. A future ddd-align run that detects a digest
+mismatch signals the model may be stale.
+
+Resolve the location deterministically, in order:
 
 1. **Explicit** — if the user gave a path or filename, use it. An explicit instruction
    always wins, even when a `spec/` workspace exists.
@@ -151,7 +217,7 @@ ddd-align gate audits for it). The `.dbml` is the source of truth;
 everything else is reproducible from it (each FK's ON DELETE policy is carried as a
 trailing `//` comment, since DBML has no native syntax for it — see stage 2).
 
-### 6. Report
+### 7. Report
 
 Emit the report in this fixed format (outer fence shown with four backticks so the inner
 DBML fence is literal):
