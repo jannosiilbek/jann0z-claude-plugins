@@ -44,8 +44,14 @@ A spec file without a marker is invisible to the alignment check; never remove i
 | Flow | `FL-` + 3 digits | `FL-001` | global |
 | Task | `T-` + 3 digits | `T-001` | global |
 | Milestone | `M` + number | `M1` | plan.md |
+| Architecture decision | `ADR-` + 3 digits | `ADR-001` | global |
 | Acceptance criterion | `AC-` + number | `AC-1` | within its UC |
 | Data assertion | `DA-` + number | `DA-1` | within its UC |
+
+**Superseded-by:** When an item is deprecated in favour of a replacement, add an optional
+`- Superseded-by: <id>` field (e.g. `- Superseded-by: UC-007`). check-align verifies the
+cited id exists and is active — an error if it points at another deprecated item or a
+non-existent id.
 
 IDs are **immutable and never reused**. A new item takes the next free number — even if
 lower numbers have been retired. An item that is no longer wanted is **deprecated, not
@@ -123,7 +129,7 @@ Every artifact ends with:
 
 ## Pipeline sizing
 - Decision: full | lean | delta
-- Stages: ddd-domain: yes|no|delta · ddd-usecases: yes|no|delta · erd-modeler: yes|no|delta · ddd-plan: yes|no|delta
+- Stages: ddd-domain: yes|no|delta · ddd-usecases: yes|no|delta · ddd-api: yes|no|delta · erd-modeler: yes|no|delta · ddd-plan: yes|no|delta
 - Rationale: <one line>
 
 ## Clarifications log
@@ -157,6 +163,8 @@ This is the same format the erd-modeler skill consumes for structured intake.
 - Maps to: ERD: <table_name>
 - Forbidden synonyms: <a>, <b>
 - Context: <bounded context name>
+- Aggregate root: yes
+- Aggregate: <root-term>
 
 ## Enumerations
 
@@ -168,6 +176,12 @@ This is the same format the erd-modeler skill consumes for structured intake.
 - ...
 ```
 
+- `- Aggregate root: yes` — marks the entity that owns its cluster (the root of an
+  aggregate). Omit the field for entities that are not aggregate roots.
+- `- Aggregate: <Term>` — on leaf entities, points at the aggregate root term. When
+  present, check-align warns if the FK from this entity's table to the root's table
+  uses `ON DELETE CASCADE` (cross-aggregate cascade is a DDD violation: use RESTRICT or
+  SET NULL instead).
 - `### <Term>` — singular, Capitalized domain name. Every actor, flow step subject, and
   use-case actor in the other artifacts must be one of these terms.
 - `- Maps to: ERD: <table_name>` — **only** for concepts persisted as a table;
@@ -272,6 +286,7 @@ a live-tested SQL assertion when erd-modeler runs.
 ### T-001 — <Task title>
 - Implements: UC-001, UC-003
 - Depends on: none
+- Effort: M
 - Terms: Order, Customer
 - Status: todo
 - Acceptance: the acceptance criteria of UC-001, UC-003 pass
@@ -287,17 +302,221 @@ a live-tested SQL assertion when erd-modeler runs.
   never edit them, add new tasks instead.
 - `- Acceptance:` — points at the cited UCs' criteria. Don't write new acceptance
   language here; that would create a second source of truth that drifts.
+- `- Effort:` — optional; `XS | S | M | L | XL`. `ddd-plan` populates it from the
+  task's AC count + DA count + presence of external integrations. check-align warns when
+  a task implements 3+ UCs and has no Effort field.
 
-## 7. How the artifacts interlock
+## 7. spec/stack.md
+
+The technology stack contract. Declared once at brief time; every downstream skill
+reads it rather than asking the user to repeat choices.
+
+```markdown
+# Stack — <Project name>
+<!-- ddd: stack -->
+
+## Runtime
+- Language: TypeScript
+- Framework: Fastify
+- Package manager: pnpm
+
+## Interface
+- Kind: REST API
+- Protocol: HTTP/1.1
+
+## Data layer
+- ORM: Prisma
+- Migration tool: Prisma Migrate
+- Identity strategy: TypeID
+
+## Auth
+- Mechanism: JWT
+- Library: jose
+
+## Deployment
+- Target: container
+- Environment config: dotenv
+
+## Testing
+- Framework: Vitest
+- DB strategy: PGlite
+
+## Changelog
+- 2026-06-22 (ddd-brief): created
+```
+
+Fields are `- Key: value` lines. Unknown values write `unknown`; alignment checks skip
+unknown fields. `Identity strategy` feeds erd-modeler's stage 1 — when present and not
+`unknown`, erd-modeler uses it directly without prompting. `Interface: Kind` controls
+which grammar branch ddd-api uses for api.md.
+
+Known `Interface: Kind` values: `REST API`, `GraphQL`, `tRPC`, `CLI`, `library`,
+`full-stack`, `none`. When `none`, ddd-api is skipped and api.md is not written.
+
+## 8. spec/nfr.md
+
+Structured non-functional requirements. Sections the user doesn't specify are omitted
+(no placeholders). ddd-api reads `## Error contracts` to populate error codes in
+api.md — codes not declared here cannot appear in api.md (AL-18).
+
+```markdown
+# Non-functional requirements — <Project name>
+<!-- ddd: nfr -->
+
+## Auth
+- Public endpoints: none
+- Authorization model: ownership-scoped; callers see only their own org's data
+
+## Error contracts
+- Body shape: {"code": "<SLUG>", "message": "<human-readable>"}
+- Validation error: 400 VALIDATION_ERROR
+- Not found: 404 NOT_FOUND
+- Conflict: 409 ENROLLMENT_EXISTS
+- Forbidden: 403 FORBIDDEN
+- Unauthorized: 401 UNAUTHORIZED
+
+## Performance
+- List endpoints: p99 < 500ms
+- Write endpoints: p99 < 200ms
+
+## Data retention
+- PII entities: User
+- Soft-delete: deleted_at column on all entities; hard delete not exposed
+
+## Audit
+- Status transitions: logged to status_history
+
+## Changelog
+- 2026-06-22 (ddd-brief): created
+```
+
+The `## Error contracts` lines follow the shape `- <label>: <HTTP-status> <ERROR_CODE>`.
+AL-18 parses the `<ERROR_CODE>` token (all-caps + underscores) and checks that every
+error code referenced in api.md appears here.
+
+## 9. spec/api.md
+
+One operation block per use case. The identifier `API-UC-xxx` mirrors the UC-xxx
+number — `API-UC-001` is always the contract for `UC-001`. Grammar adapts to the
+interface kind declared in stack.md.
+
+**Artifact marker:** `<!-- ddd: api -->`
+
+### §9a REST branch
+
+```markdown
+# API — <Project name>
+<!-- ddd: api -->
+
+## API-UC-001 — <UC title>
+- Interface: REST
+- Method: POST
+- Path: /enrollments
+- Auth: required (role: Registrar)
+- Request body:
+    - student_id: TypeID<students> required
+    - course_id: TypeID<courses> required
+- Response 201:
+    - id: TypeID<enrollments>
+    - status: enrollment_status
+    - enrolled_at: timestamp
+- Response 400: VALIDATION_ERROR — missing or invalid field
+- Response 409: ENROLLMENT_EXISTS — student already enrolled in this course
+- Pagination: n/a
+
+## API-UC-002 — <UC title>
+- Interface: REST
+- Method: GET
+- Path: /students/{student_id}/courses
+- Auth: required (role: Student | Registrar)
+- Response 200 (array):
+    - id: TypeID<courses>
+    - title: text
+    - status: enrollment_status
+- Pagination: cursor-based (cursor, limit)
+
+## Changelog
+- 2026-06-22 (ddd-api): created
+```
+
+### §9b Function/library branch
+
+```markdown
+## API-UC-001 — <UC title>
+- Interface: function
+- Module: payments/process
+- Signature: processPayment(amount: Money, source: PaymentSource): Promise<PaymentResult>
+- Auth: n/a (internal)
+- Throws: PaymentDeclinedError | ValidationError
+```
+
+### §9c CLI branch
+
+```markdown
+## API-UC-001 — <UC title>
+- Interface: CLI
+- Command: deploy <app-name> [--env <env>]
+- Auth: ambient (host credentials)
+- Output: progress stream → "Deployed <app> to <env> in <n>s"
+- Exit codes: 0 success · 1 validation error · 2 deploy failed
+```
+
+### Field rules
+
+- `- Response 4xx: ERROR_CODE — description`: the `ERROR_CODE` token must appear in
+  `nfr.md § Error contracts` (AL-18 enforces this when both files exist).
+- `- Status: deprecated` + `- Superseded-by: API-UC-xxx` follow the same deprecation
+  discipline as UCs and tasks.
+- `Internal:` operations (from Policy flows) use `## API-UC-xxx-internal` and are
+  excluded from AL-17 (they have no external auth requirement).
+
+## 10. spec/decisions.md
+
+Architecture decision log. Auto-populated by erd-modeler from its Assumptions table
+at stage 7; human authors may also append entries. Append-only — existing entries are
+never edited.
+
+```markdown
+# Decisions — <Project name>
+<!-- ddd: decisions -->
+
+## ADR-001 — TypeID over UUID for primary keys
+- Date: 2026-06-22
+- Status: accepted
+- Skill: erd-modeler
+- Context: The data model requires globally unique identifiers that are human-readable
+  in logs and type-safe at the application layer.
+- Decision: Use TypeID (base32 ULID with a type prefix) for all primary keys,
+  generated by the application using typeid-js at entity creation time.
+- Consequences: Postgres does not generate these; the application must supply the id
+  on INSERT. No auto-increment fallback.
+- Supersedes: n/a
+
+## Changelog
+- 2026-06-22 (erd-modeler): created, 2 decisions recorded
+```
+
+Field vocabulary:
+- `- Status:` — `accepted | deprecated | superseded`
+- `- Skill:` — which pipeline skill generated the entry
+- `- Supersedes:` — `n/a` or `ADR-xxx` (check-align verifies the target exists and is active)
+
+IDs (`ADR-xxx`) are immutable and never reused.
+
+## 11. How the artifacts interlock
 
 ```
 brief.md ──actors──▶ glossary.md ──terms──▶ flows.md ──commands──▶ usecases.md
-                          │                                            │
-                          │ Maps to: ERD / Enumerations                │ DA => expect
-                          ▼                                            ▼
-                     data/model.dbml ◀─────live-tested against────data/usecases.sql
-                          ▲                                            ▲
-                          └────────────── plan.md ──Implements: UC-xxx─┘
+stack.md ──────────────────────────────────────────────────────────────────┐  │
+nfr.md ─────────────────────────────────────────────────────────────────┐ │  │
+                    │                                                    │ │  │ DA => expect
+                    │ Maps to: ERD / Enumerations                        ▼ ▼  ▼
+                    ▼                                               api.md  data/usecases.sql
+               data/model.dbml ◀──────live-tested against──────────────────────┘
+                    │                                                              ▲
+                    └──Assumptions──▶ decisions.md                                │
+                                                                            plan.md
+                                                              (Implements: UC-xxx, reads api.md + decisions.md)
 ```
 
 `check-align.mjs` proves these edges mechanically (see `../scripts/README.md` for the
