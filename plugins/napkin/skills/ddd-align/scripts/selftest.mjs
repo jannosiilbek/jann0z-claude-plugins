@@ -187,7 +187,7 @@ testCase("empty spec dir → non-zero (no vacuous green)",
   (s) => {
     rmSync(s, { recursive: true });
     cpSync(GOLDEN, s, { recursive: true });
-    for (const f of ["brief.md", "glossary.md", "flows.md", "usecases.md", "plan.md"]) unlinkSync(join(s, f));
+    for (const f of ["brief.md", "glossary.md", "flows.md", "usecases.md", "plan.md", "stack.md", "nfr.md", "api.md"]) unlinkSync(join(s, f));
     rmSync(join(s, "data"), { recursive: true });
   },
   (r) => (r.exit !== 0 && r.json && r.json.ok === false ? null : `expected non-zero exit, got ${r.exit}`));
@@ -202,6 +202,39 @@ testCase("--require plan without plan.md → non-zero",
 testCase("usecases.sql missing a UC label → AL-14",
   (s) => edit(s, "data/usecases.sql", (t) => t.replace(/-- usecase: UC-002[\s\S]*?-- expect: rows=2\n/, "")),
   (r) => caught(r, "AL-14"));
+
+// 14. AL-17: api.md exists but is missing an entry for an active UC.
+testCase("api.md missing API-UC-002 entry → AL-17",
+  (s) => edit(s, "api.md", (t) => t.replace(
+    /## API-UC-002[\s\S]*?(?=## API-UC-003)/, "")),
+  (r) => caught(r, "AL-17"));
+
+// 15. AL-18: api.md uses an error code not declared in nfr.md.
+testCase("api.md uses undeclared error code → AL-18",
+  (s) => edit(s, "api.md", (t) => t.replace(
+    "- Response 409: ENROLLMENT_EXISTS — student already enrolled in this course",
+    "- Response 409: DUPLICATE_ENROLLMENT — student already enrolled in this course")),
+  (r) => caught(r, "AL-18"));
+
+// 16. AL-19: flows.md has a Policy whose command Y is not a UC trigger.
+testCase("uncovered policy command → AL-19 warn",
+  (s) => edit(s, "flows.md", (t) => t.replace(
+    "## Changelog",
+    "## FL-002 — Auto-notify on enrollment\n- Actor: Registrar\n- Steps:\n  1. Command: Enroll student\n  2. Event: Student enrolled\n  3. Policy: Whenever Student enrolled, then Send welcome email\n\n## Changelog")),
+  (r) => (hasWarn(r, "AL-19") ? null : `"Send welcome email" has no UC trigger — expected AL-19 warn`));
+
+// 17. AL-16: model.dbml fingerprint is stale (glossary was edited after model was saved).
+testCase("stale upstream fingerprint → AL-16 warn",
+  (s) => edit(s, "data/model.dbml", (t) =>
+    t.replace(/sha256:[0-9a-f]{64}/, "sha256:" + "0".repeat(64))),
+  (r) => (hasWarn(r, "AL-16") ? null : `stale fingerprint must produce an AL-16 warn`));
+
+// 18. AL-17 only fires when api.md exists — a spec without api.md is fine.
+testCase("spec without api.md does not trigger AL-17",
+  (s) => { unlinkSync(join(s, "api.md")); },
+  (r) => (r.exit === 0 && !hasCheck(r, "AL-17")
+    ? null
+    : `spec without api.md must not fire AL-17 (exit=${r.exit})`));
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);
