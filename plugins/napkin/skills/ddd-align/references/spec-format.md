@@ -18,6 +18,7 @@ is free prose the parser ignores and the skills must preserve.
 
 Artifacts live at fixed paths under the target project's `spec/` directory —
 `spec/brief.md`, `spec/glossary.md`, `spec/flows.md`, `spec/usecases.md`,
+`spec/stack.md`, `spec/nfr.md`, `spec/api.md`, `spec/decisions.md`,
 `spec/plan.md`, and `spec/data/` for the model and its live-test record. Create
 `spec/` when it doesn't exist yet; never write these files at the project root or
 anywhere else — every downstream skill and the alignment harness looks for them only
