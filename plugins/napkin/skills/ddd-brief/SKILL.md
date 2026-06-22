@@ -107,6 +107,9 @@ Follow the skeletons in spec-format.md §7 and §8 exactly.
   preserve user edits verbatim, append one Changelog line. Never regenerate wholesale.
 - Omit sections the user didn't specify — no placeholders. An nfr.md with only
   `## Error contracts` and `## Auth` is correct if the user didn't address performance.
+- **Exception**: when `Interface: Kind = none`, always write `Interface: Kind: none`
+  explicitly in stack.md — do not omit the section. ddd-api reads this field to determine
+  whether to skip.
 - `unknown` values: a field the user has no opinion on is written as `unknown`. The
   alignment checks skip unknown fields; the implementing agent uses framework defaults.
 
