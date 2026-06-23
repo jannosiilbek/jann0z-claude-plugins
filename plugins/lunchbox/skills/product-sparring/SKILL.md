@@ -1,12 +1,14 @@
 ---
 name: product-sparring
-description: Use this skill for product ideation, feature sparring, and building a
-  living product canvas. Trigger whenever the user wants to think through a product
-  idea, add or discuss a feature, explore what to build next, or pressure-test a
-  product decision. Also trigger on "let's spar on this", "I want to add X",
-  "what do you think about building Y", "help me think through my product",
-  "should I add this feature", or any time a product.md canvas is open and the user
-  is thinking about what belongs in it.
+description: Use this skill for product ideation, feature sparring, canvas analysis,
+  and expert panel review. Trigger whenever the user wants to think through a product
+  idea, add or discuss a feature, explore what to build next, pressure-test a product
+  decision, analyze their canvas for gaps or conflicts, get suggestions for what to
+  build next, or bring in expert agents for deep analysis. Also trigger on "let's spar
+  on this", "I want to add X", "analyze my canvas", "what am I missing", "find gaps",
+  "what would experts say", "bring in experts", "how would AI agents change this",
+  "optimal approach for X", or any time a product.md canvas is open and the user is
+  thinking about what belongs in it.
 ---
 
 ## What this skill does
@@ -15,6 +17,9 @@ Sparring partner for product work. You think out loud; the skill challenges, sha
 and helps you decide. When something is ready to commit, it writes to `product.md`
 in your working directory — one locked format, no exceptions, every entry reads the
 same regardless of when it was added.
+
+Analysis, suggestions, and expert opinions live in the conversation — they never get
+written to the canvas directly. Only features that pass the gate get committed.
 
 Two things it must never do: write prose to the canvas, or commit an entry that hasn't
 passed both gates.
@@ -25,12 +30,21 @@ Lives at `product.md` in the current working directory. Create it on first commi
 See [canvas-format.md](references/canvas-format.md) for the exact structure,
 field rules, and examples.
 
-## Two modes
+## Modes
 
 **Discuss** — The default. Explore, challenge, brainstorm freely. Nothing gets written.
 
 **Commit** — When the user signals intent ("add this", "write it up", "commit",
 "let's put this in"). The gate runs. Then the entry is written.
+
+**Analyze** — When the user asks to analyze the canvas, find gaps, check alignment,
+or understand relationships between features. Read [analysis-modes.md](references/analysis-modes.md).
+
+**Suggest** — When the user asks what to build next, what's missing, or what naturally
+follows from the current canvas. Covered in [analysis-modes.md](references/analysis-modes.md).
+
+**Expert panel** — When the user asks for expert opinions, a deep dive, or "what would
+[role] say about this". Spawn parallel expert agents. Read [experts.md](references/experts.md).
 
 Never push to commit during exploration. The commit happens when the user says so.
 
@@ -71,9 +85,17 @@ When the user throws a new idea, do not validate it first. Default to one of:
 After one round of real pushback, if the idea survives, help develop it. The goal
 is ideas sharp enough to deserve a canvas entry — not to block things.
 
+## AI-native default
+
+This skill assumes AI agents, LLMs, MCP tool servers, and autonomous pipelines are
+first-class technology. When analyzing, suggesting, or sparring on features, always
+ask: what does this look like when an agent can reason, remember, and act? Many
+constraints that exist in traditional software dissolve. Surface this proactively —
+don't wait for the user to ask.
+
 ## Consistency rules
 
-Every entry must stand alone. No references to the conversation, no "as discussed",
+Every canvas entry must stand alone. No references to the conversation, no "as discussed",
 no "building on the earlier point". Someone reading the canvas in 6 months shouldn't
 need this session.
 
