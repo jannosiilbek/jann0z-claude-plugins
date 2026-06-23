@@ -14,7 +14,13 @@
 
 ## Features
 
-[entries]
+### [Section name]
+
+#### [Feature name]
+**What:** [One sentence. User-facing. What does this thing do?]
+**Why it matters:** [One or two sentences. The job it does or problem it solves.]
+**Sharpest constraint:** [One sentence. The hardest thing to get right.]
+**Enabled by:** [Optional. One line naming the technology or approach that makes this feasible.]
 ```
 
 The intro block is written once, on first commit. All three fields are required —
@@ -22,10 +28,27 @@ if any can't be filled without guessing, ask one question before proceeding.
 
 ---
 
+## Sections
+
+Features are grouped under named sections. Sections surface the product's logical
+structure and keep the canvas readable as it grows.
+
+**Rules:**
+- Every feature must be inside a section. No feature sits directly under `## Features`.
+- Section names are 1–3 words, noun phrases. Not verb phrases. Not sentences.
+- A section needs at least one feature. Empty sections must be removed.
+- The skill owns section organization proactively — the user can rename or reorganize at any time.
+
+**Common section names:** Core, Onboarding, Growth, Monetization, Collaboration,
+Admin, Developer Experience. Let the product's domain drive the naming — group by
+user journey or problem space, not technical layer.
+
+---
+
 ## Feature entry template
 
 ```markdown
-### [Feature name]
+#### [Feature name]
 **What:** [One sentence. User-facing. What does this thing do?]
 **Why it matters:** [One or two sentences. The job it does or problem it solves.]
 **Sharpest constraint:** [One sentence. The hardest thing to get right.]
@@ -86,7 +109,9 @@ When adding a new entry to a non-empty canvas:
 
 ## Examples
 
-### Offline mode
+### Core
+
+#### Offline mode
 **What:** Users can read and edit documents without an internet connection.
 **Why it matters:** Network drops during travel make the app unusable; work shouldn't
 wait for reconnection.
@@ -94,14 +119,16 @@ wait for reconnection.
 on two devices.
 **Enabled by:** CRDTs (Yjs) for automatic merge of concurrent offline edits.
 
-### Guest access
+### Growth
+
+#### Guest access
 **What:** Anyone with a link can view a project without signing up.
 **Why it matters:** Sharing work with stakeholders who won't create accounts is a
 constant friction point.
 **Sharpest constraint:** Deciding what guests can and cannot see — overly permissive
 leaks sensitive context.
 
-### Version history
+#### Version history
 **What:** Users can browse and restore any previous version of a document.
 **Why it matters:** Accidental overwrites are unrecoverable today; people work around
 this with duplicate files.

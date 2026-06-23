@@ -8,6 +8,8 @@
  *   node lint-canvas.mjs --canvas <path>              # lint full existing canvas
  *   node lint-canvas.mjs --canvas <path> --entry <md> # lint candidate entry against canvas style
  *
+ * Canvas structure: features use #### headings, grouped under ### section headings.
+ *
  * Exit codes: 0 = pass, 1 = violations found
  */
 
@@ -27,33 +29,117 @@ if (!canvasPath) {
   process.exit(1);
 }
 
-function argValue(args, flag) {
-  const idx = args.indexOf(flag);
-  return idx !== -1 ? args[idx + 1] : null;
+function argValue(list, flag) {
+  const idx = list.indexOf(flag);
+  return idx !== -1 ? list[idx + 1] : null;
 }
 
 // ---------------------------------------------------------------------------
-// Parse canvas
+// Parse canvas — features are #### headings, sections are ### headings
 // ---------------------------------------------------------------------------
 
 function parseCanvas(text) {
   const entries = [];
-  const sections = text.split(/^(?=### )/m);
-  for (const section of sections) {
-    if (!section.startsWith('### ')) continue;
-    const nameMatch = section.match(/^### (.+)/);
-    if (!nameMatch) continue;
-    const name = nameMatch[1].trim();
-    const what = fieldValue(section, 'What');
-    const why = fieldValue(section, 'Why it matters');
-    const constraint = fieldValue(section, 'Sharpest constraint');
-    const enabledBy = fieldValue(section, 'Enabled by');
-    if (what !== null || why !== null || constraint !== null) {
-      entries.push({ name, what, why, constraint, enabledBy, raw: section });
+  let currentSection = null;
+  const lines = text.split('\n');
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (/^### /.test(line)) {
+      currentSection = line.replace(/^### /, '').trim();
+      i++;
+      continue;
     }
+
+    if (/^#### /.test(line)) {
+      const blockLines = [line];
+      i++;
+      // Collect body until the next heading (H1–H4)
+      while (i < lines.length && !/^#{1,4} /.test(lines[i])) {
+        blockLines.push(lines[i]);
+        i++;
+      }
+      const block = blockLines.join('\n');
+      const name = line.replace(/^#### /, '').trim();
+      const what = fieldValue(block, 'What');
+      const why = fieldValue(block, 'Why it matters');
+      const constraint = fieldValue(block, 'Sharpest constraint');
+      const enabledBy = fieldValue(block, 'Enabled by');
+      if (what !== null || why !== null || constraint !== null) {
+        entries.push({ name, section: currentSection, what, why, constraint, enabledBy, raw: block });
+      }
+      continue;
+    }
+
+    i++;
   }
+
   return entries;
 }
+
+// ---------------------------------------------------------------------------
+// Section structure parsing
+// ---------------------------------------------------------------------------
+
+function extractFeaturesBlock(text) {
+  const lines = text.split('\n');
+  let inFeatures = false;
+  const result = [];
+  for (const line of lines) {
+    if (/^## Features\s*$/.test(line)) { inFeatures = true; continue; }
+    if (inFeatures && /^## /.test(line)) break;
+    if (inFeatures) result.push(line);
+  }
+  return result.join('\n');
+}
+
+function parseCanvasSections(text) {
+  const featuresBlock = extractFeaturesBlock(text);
+  const sections = [];
+  const orphaned = [];
+  let currentSection = null;
+
+  for (const line of featuresBlock.split('\n')) {
+    if (/^### /.test(line)) {
+      currentSection = { name: line.replace(/^### /, '').trim(), features: [] };
+      sections.push(currentSection);
+    } else if (/^#### /.test(line)) {
+      const featureName = line.replace(/^#### /, '').trim();
+      if (!currentSection) {
+        orphaned.push(featureName);
+      } else {
+        currentSection.features.push(featureName);
+      }
+    }
+  }
+
+  return { sections, orphaned };
+}
+
+// Detect features written with the old ### heading (pre-section format).
+// A ### block is old-format only if it has feature fields AND no #### children
+// (a valid section header's block will contain its child #### features).
+function detectOldFormatEntries(text) {
+  const warnings = [];
+  const parts = text.split(/^(?=### )/m);
+  for (const part of parts) {
+    if (!part.startsWith('### ')) continue;
+    const nameMatch = part.match(/^### (.+)/);
+    if (!nameMatch) continue;
+    const name = nameMatch[1].trim();
+    const hasChildFeatures = /^#### /m.test(part);
+    if (!hasChildFeatures && (fieldValue(part, 'What') !== null || fieldValue(part, 'Why it matters') !== null)) {
+      warnings.push(`"${name}" uses old ### heading — features now use #### headings inside a ### section`);
+    }
+  }
+  return warnings;
+}
+
+// ---------------------------------------------------------------------------
+// Field extraction
+// ---------------------------------------------------------------------------
 
 function fieldValue(text, fieldName) {
   const re = new RegExp(`\\*\\*${fieldName}:\\*\\*\\s*(.+?)(?=\\n\\*\\*|$)`, 's');
@@ -62,12 +148,11 @@ function fieldValue(text, fieldName) {
 }
 
 // ---------------------------------------------------------------------------
-// Sentence counting (simple but robust for single-paragraph values)
+// Sentence / word counting
 // ---------------------------------------------------------------------------
 
 function countSentences(text) {
   if (!text) return 0;
-  // Split on sentence-ending punctuation followed by space or end of string
   const cleaned = text.trim();
   const matches = cleaned.match(/[^.!?]*[.!?]+/g);
   return matches ? matches.length : (cleaned.length > 0 ? 1 : 0);
@@ -79,10 +164,39 @@ function countWords(text) {
 }
 
 // ---------------------------------------------------------------------------
-// Lint rules
+// Structural lint (canvas-level)
 // ---------------------------------------------------------------------------
 
 const VERB_PREFIX = /^(add|build|create|implement|enable|allow|support|make|provide|give|let|show|display|update|change|fix|remove|introduce|integrate|improve|extend|handle)\b/i;
+
+function lintCanvasStructure(text) {
+  const violations = [];
+  const { sections, orphaned } = parseCanvasSections(text);
+
+  for (const feature of orphaned) {
+    violations.push(`Feature "${feature}" is not inside any section — every feature must be under a ### section header`);
+  }
+
+  for (const section of sections) {
+    if (section.features.length === 0) {
+      violations.push(`Section "${section.name}" is empty — add a feature or remove the section`);
+    }
+    const nameWords = section.name.split(/\s+/).filter(Boolean);
+    if (nameWords.length > 3) {
+      violations.push(`Section name "${section.name}" is too long (${nameWords.length} words, max 3)`);
+    }
+    if (VERB_PREFIX.test(section.name)) {
+      violations.push(`Section name "${section.name}" starts with a verb — use a noun phrase`);
+    }
+  }
+
+  return violations;
+}
+
+// ---------------------------------------------------------------------------
+// Entry lint (field-level)
+// ---------------------------------------------------------------------------
+
 const CONVERSATION_REFS = /\b(as discussed|as mentioned|as we said|as noted|building on|from earlier|previously|in our conversation|we talked about)\b/i;
 const SUBBULLET = /^[ \t]*[-*•]/m;
 
@@ -90,15 +204,13 @@ function lintEntry(entry, existingEntries) {
   const violations = [];
   const { name, what, why, constraint } = entry;
 
-  // --- Structural: all fields present ---
-  if (!name || name.length === 0) violations.push('Missing feature name (### heading)');
+  if (!name || name.length === 0) violations.push('Missing feature name (#### heading)');
   if (!what) violations.push('Missing **What:** field');
   if (!why) violations.push('Missing **Why it matters:** field');
   if (!constraint) violations.push('Missing **Sharpest constraint:** field');
 
-  if (violations.length > 0) return violations; // can't continue
+  if (violations.length > 0) return violations;
 
-  // --- Feature name: noun phrase, ≤4 words, no verb prefix ---
   const nameWords = name.split(/\s+/).filter(Boolean);
   if (nameWords.length > 4) {
     violations.push(`Feature name too long (${nameWords.length} words, max 4): "${name}"`);
@@ -107,25 +219,21 @@ function lintEntry(entry, existingEntries) {
     violations.push(`Feature name starts with a verb: "${name}" — use a noun phrase (e.g. "Dark mode" not "Add dark mode")`);
   }
 
-  // --- What: exactly 1 sentence ---
   const whatSentences = countSentences(what);
   if (whatSentences !== 1) {
     violations.push(`**What** must be exactly 1 sentence (found ${whatSentences}): "${what}"`);
   }
 
-  // --- Why it matters: 1–2 sentences ---
   const whySentences = countSentences(why);
   if (whySentences < 1 || whySentences > 2) {
     violations.push(`**Why it matters** must be 1–2 sentences (found ${whySentences}): "${why}"`);
   }
 
-  // --- Sharpest constraint: exactly 1 sentence ---
   const constraintSentences = countSentences(constraint);
   if (constraintSentences !== 1) {
     violations.push(`**Sharpest constraint** must be exactly 1 sentence (found ${constraintSentences}): "${constraint}"`);
   }
 
-  // --- Enabled by: optional, but if present must be a single line ---
   const { enabledBy } = entry;
   if (enabledBy !== null) {
     if (enabledBy.includes('\n')) {
@@ -139,20 +247,17 @@ function lintEntry(entry, existingEntries) {
     }
   }
 
-  // --- No conversation references ---
   for (const [label, value] of [['What', what], ['Why it matters', why], ['Sharpest constraint', constraint]]) {
     if (CONVERSATION_REFS.test(value)) {
       violations.push(`**${label}** contains a conversation reference — entries must stand alone`);
     }
   }
 
-  // --- No sub-bullets ---
   const bodyText = `${what}\n${why}\n${constraint}\n${enabledBy ?? ''}`;
   if (SUBBULLET.test(bodyText)) {
     violations.push('Entry contains sub-bullets — use prose only');
   }
 
-  // --- Style gate: word count calibration ---
   if (existingEntries.length > 0) {
     const avgs = computeAverages(existingEntries);
     const checks = [
@@ -196,18 +301,17 @@ let canvasText = '';
 try {
   canvasText = readFileSync(canvasPath, 'utf8');
 } catch {
-  // Canvas doesn't exist yet — that's fine for new canvases
-  canvasText = '';
+  // Canvas doesn't exist yet — fine for new canvases
 }
 
 const existingEntries = parseCanvas(canvasText);
 
 if (rawEntry) {
-  // Lint a candidate entry against the existing canvas
-  const candidate = parseCanvas(`# dummy\n## Features\n${rawEntry}`);
+  // Lint a candidate entry. Entry must start with #### Feature name.
+  const candidate = parseCanvas(rawEntry);
 
   if (candidate.length === 0) {
-    console.error('Could not parse entry. Ensure it starts with ### and has all three fields.');
+    console.error('Could not parse entry. Ensure it starts with #### and has all three required fields.');
     process.exit(1);
   }
 
@@ -222,25 +326,45 @@ if (rawEntry) {
     process.exit(1);
   }
 } else {
-  // Lint the full canvas (all existing entries)
-  let allViolations = [];
+  // Lint the full canvas: old-format detection + structure + per-entry fields
+  const oldFormatWarnings = detectOldFormatEntries(canvasText);
+  const structuralViolations = lintCanvasStructure(canvasText);
+  const entryViolations = [];
+
   for (const entry of existingEntries) {
     const others = existingEntries.filter(e => e !== entry);
     const violations = lintEntry(entry, others);
     if (violations.length > 0) {
-      allViolations.push({ entry: entry.name, violations });
+      entryViolations.push({ entry: entry.name, violations });
     }
   }
 
-  if (allViolations.length === 0) {
+  const totalIssues = oldFormatWarnings.length + structuralViolations.length + entryViolations.length;
+
+  if (totalIssues === 0) {
     console.log(`PASS — ${existingEntries.length} entries checked`);
     process.exit(0);
-  } else {
-    console.log(`FAIL — ${allViolations.length} of ${existingEntries.length} entries have violations`);
-    for (const { entry, violations } of allViolations) {
-      console.log(`\n  ### ${entry}`);
+  }
+
+  console.log('FAIL');
+
+  if (oldFormatWarnings.length > 0) {
+    console.log('\n  Migration needed (old ### format):');
+    oldFormatWarnings.forEach(w => console.log(`  • ${w}`));
+  }
+
+  if (structuralViolations.length > 0) {
+    console.log('\n  Structure:');
+    structuralViolations.forEach(v => console.log(`  • ${v}`));
+  }
+
+  if (entryViolations.length > 0) {
+    console.log(`\n  Entry violations (${entryViolations.length} of ${existingEntries.length} entries):`);
+    for (const { entry, violations } of entryViolations) {
+      console.log(`\n  #### ${entry}`);
       violations.forEach(v => console.log(`    • ${v}`));
     }
-    process.exit(1);
   }
+
+  process.exit(1);
 }

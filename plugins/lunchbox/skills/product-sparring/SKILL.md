@@ -57,7 +57,8 @@ node <skill-dir>/scripts/lint-canvas.mjs --canvas product.md --entry "<entry mar
 ```
 
 `<skill-dir>` is the directory containing this SKILL.md. `product.md` is resolved
-from the user's current working directory.
+from the user's current working directory. The entry markdown must start with
+`#### Feature name`.
 
 The linter checks: all fields present, correct sentence counts, no verb-phrase name,
 no conversation references, no sub-bullets. If it fails, auto-fix the violations,
@@ -69,10 +70,43 @@ compare the new entry's per-field word count against the existing average (±20%
 tolerance per field). If any field is out of range, rewrite it to match, show
 the change, then pass to Step 3.
 
-**Step 3 — Write.** Append the entry under `## Features` in the canvas.
+**Step 3 — Assign section.** Determine the best section for this feature. Show the
+proposed placement before writing: "I'd put this under **[Section]** — ok?" If the
+canvas has no sections yet, propose the first section name at the same time. If the
+user redirects to a different section or names a new one, use that.
 
-If both steps pass cleanly (no fixes needed), write silently. Only surface changes
-when something was actually corrected.
+**Step 4 — Write.** Append the entry under the confirmed section. If the section
+doesn't exist yet, create it at the most logical position in the file. If all steps
+pass cleanly with no fixes, write silently. Only surface changes when something was
+actually corrected.
+
+## Section management
+
+Sections keep the canvas coherent as it grows. The skill owns section organization
+proactively — not on request.
+
+**After every commit**, evaluate whether the sections still reflect the best logical
+grouping:
+- Does the new feature fit cleanly under its assigned section?
+- Has any section grown large enough to split?
+- Would a rename make a grouping clearer?
+- Are any sections now redundant and better merged?
+
+If reorganization would help, propose it concretely: name the specific change and why.
+Only propose one change at a time. Do not propose reorganization if the canvas has
+fewer than three features — it's too early to know the shape.
+
+The user can always rename a section, move a feature to a different section, merge
+sections, or reject a proposed reorganization. The canvas belongs to the user.
+
+When proposing reorganization, use the linter to validate the canvas structure
+before and after:
+
+```bash
+node <skill-dir>/scripts/lint-canvas.mjs --canvas product.md
+```
+
+---
 
 ## Sparring posture
 
