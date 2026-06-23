@@ -1,0 +1,108 @@
+{
+  "skill_name": "doc-align",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/doc-align plan",
+      "expected_output": "A structured operation table listing every RENAME/MERGE/DELETE/EDIT with violation code and one-line detail. No files are modified. Ends with a question asking whether to proceed.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "has_operation_table",
+          "description": "Output contains a typed operation table with TYPE, TARGET, VIOLATION, and DETAIL columns or equivalent structured list",
+          "type": "llm_judge"
+        },
+        {
+          "name": "uses_violation_codes",
+          "description": "At least 3 taxonomy violation codes appear in the output (e.g. OVERLAP, SLOP, VAGUE, WRONG_OWNER, NEGATIVE_FRAMING, BAD_FILENAME, DEAD_LINK)",
+          "type": "string_match",
+          "patterns": ["OVERLAP", "SLOP", "VAGUE", "WRONG_OWNER", "NEGATIVE_FRAMING", "BAD_FILENAME", "DEAD_LINK", "WRONG_SCOPE", "DENSE_CLAIM", "STALE_FILE"]
+        },
+        {
+          "name": "no_files_modified",
+          "description": "All .md files in the test fixture are unchanged after the run — plan mode must be non-destructive",
+          "type": "file_unchanged"
+        },
+        {
+          "name": "ends_with_confirmation_ask",
+          "description": "Output ends with a question asking whether to proceed with the changes (e.g. 'Proceed?', 'yes / adjust')",
+          "type": "llm_judge"
+        },
+        {
+          "name": "identifies_readme_claude_overlap",
+          "description": "The plan explicitly identifies overlap between README.md and CLAUDE.md — both contain the same stack description and 'never use var' rule",
+          "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "my docs are a total mess — there's overlap everywhere and CLAUDE.md has stuff that probably belongs in the README and vice versa. can you clean this up properly?",
+      "expected_output": "Skill triggers on natural language, runs in plan mode (default), produces a structured operation list covering OVERLAP and WRONG_OWNER issues, presents it and asks for confirmation before touching any file.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "triggered_correctly",
+          "description": "Output is a structured plan of operations, not a generic reply or prose advice — the skill engaged its full inventory-and-plan workflow",
+          "type": "llm_judge"
+        },
+        {
+          "name": "identifies_wrong_owner",
+          "description": "Plan explicitly calls out WRONG_OWNER or OVERLAP between CLAUDE.md and README.md, noting that behavioral rules belong in CLAUDE.md not README",
+          "type": "llm_judge"
+        },
+        {
+          "name": "no_files_modified",
+          "description": "No .md files in the test fixture were modified — default is plan mode",
+          "type": "file_unchanged"
+        },
+        {
+          "name": "structured_not_prose",
+          "description": "Output contains a table or numbered operation list, not just a paragraph of prose suggestions",
+          "type": "llm_judge"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/doc-align edit",
+      "expected_output": "Full autonomous loop executes: inventory, plan, execute changes (with link updates), verify, loop until convergence. Ends with a completion report showing pass count, operation breakdown, and zero remaining violations.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "files_were_modified",
+          "description": "At least one .md file in the working copy was modified, renamed, merged, or deleted",
+          "type": "file_changed"
+        },
+        {
+          "name": "completion_report_format",
+          "description": "report.md contains the structured completion report with Passes:, Files touched:, and Operations: fields",
+          "type": "string_match",
+          "patterns": ["Passes:", "Files touched:", "Operations:"]
+        },
+        {
+          "name": "notes_md_eliminated",
+          "description": "notes.md no longer exists in final-docs/ — it had a BAD_FILENAME violation, a dead link, and content that belongs elsewhere",
+          "type": "file_absent"
+        },
+        {
+          "name": "overlap_resolved",
+          "description": "CLAUDE.md and final README.md no longer both contain the same stack description (React, Node.js, PostgreSQL) or the same rules",
+          "type": "llm_judge"
+        },
+        {
+          "name": "dead_link_fixed",
+          "description": "No .md file in final-docs/ contains a reference to docs/architecture.md, which never existed in the fixture",
+          "type": "string_absent",
+          "pattern": "architecture.md"
+        },
+        {
+          "name": "no_throat_clearing",
+          "description": "Final docs contain none of the banned throat-clearing phrases: 'It\\'s worth noting', 'Please be aware', 'Keep in mind that', 'It\\'s important to'",
+          "type": "string_absent_all",
+          "patterns": ["It's worth noting", "Please be aware", "Keep in mind that", "It's important to"]
+        }
+      ]
+    }
+  ]
+}
