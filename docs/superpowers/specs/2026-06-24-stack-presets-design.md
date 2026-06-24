@@ -40,7 +40,7 @@ infra/
   aws.md    ← AWS only
 ```
 
-Each infra preset contains only the `## Deployment` section; it is merged into `stack.md` after the stack preset is applied. The stack preset does **not** include a `## Deployment` section — that comes exclusively from the infra preset.
+Each infra preset contains the `## Deployment` and `## Pipeline` sections; both are merged into `stack.md` after the stack preset is applied. The stack preset does **not** include these sections — they come exclusively from the infra preset.
 
 Each file is a **complete `stack.md` + `nfr.md` template** in the same markdown format that the pipeline writes. The skill reads the file and copies it verbatim, substituting only the project name. Presets stay in sync with the artifact grammar defined in `spec-format.md` by construction — they are valid artifact stubs.
 
@@ -81,7 +81,7 @@ Monorepo layout:
 
 ### Infra presets
 
-All three infra presets share the same shape; only `Clouds:` differs:
+All three infra presets share the same shape; only `Clouds:` differs. Each contains two sections — `## Deployment` and `## Pipeline`:
 
 ```
 ## Deployment
@@ -91,9 +91,19 @@ All three infra presets share the same shape; only `Clouds:` differs:
 - Clouds: <aws, gcp | gcp | aws>
 - Environments: preview, staging, production
 - Preview: per-PR
+
+## Pipeline
+- CI: GitHub Actions
+- Branching: GitHub Flow
+- Branch map: feature/* → preview · main → staging · staging → production (manual)
+- Gates: lint · type-check · test · build · deploy
 ```
 
 `Environment config` is the one field that varies by language (`dotenv` for TypeScript, `python-dotenv` for Python) — the infra preset uses a placeholder that the skill resolves from the active stack preset before writing.
+
+`Branch map` encodes the full promotion chain: feature branches auto-deploy to ephemeral preview environments (per-PR), merging to `main` auto-deploys to staging, and staging → production is a manual promote (GitHub Actions `workflow_dispatch`). The `·` separator matches the existing spec-format.md inline-list convention.
+
+`Gates` are the ordered CI steps that run on every PR: lint → type-check → test → build → deploy (to preview). On merge to `main`: same gates, deploy target is staging.
 
 ---
 
@@ -107,12 +117,17 @@ Two preset dispatch questions are added before Tier 1 domain questions, neither 
 **Q2 — Cloud:**
 > "Which cloud? **(1) Both** [default — AWS + GCP] / **(2) GCP** / **(3) AWS** / **(4) Custom**"
 
+**Q3 — CI:**
+> "Which CI? **(1) GitHub Actions** [default] / **(2) Custom**"
+
 Rules:
 
 - If provided material already names a framework or cloud, the skill selects the matching preset automatically and states which ones were chosen — no question asked.
-- Selecting a named preset: skill reads `stacks/<selection>.md` + `infra/<selection>.md`; all Tier 1 + Tier 2 stack and deployment fields are considered covered. Override questions are asked only when provided material contradicts a preset field.
-- Selecting Custom for either dimension: normal Tier 1/2 elicitation runs for that dimension only.
-- Both questions must be answered (or auto-resolved) before writing any artifact.
+- If provided material already names a framework, cloud, or CI tool, the skill auto-selects and states which presets were chosen — no question asked for that dimension.
+- Selecting a named preset for stack or cloud: skill reads the corresponding file; all Tier 1 + Tier 2 fields for that dimension are considered covered. Override questions are asked only when provided material contradicts a preset field.
+- Q3 CI: selecting GitHub Actions uses the preset's `## Pipeline` section verbatim. Selecting Custom triggers manual elicitation of `CI:`, `Branching:`, `Branch map:`, and `Gates:`.
+- Selecting Custom for any dimension: normal Tier 1/2 elicitation runs for that dimension only.
+- All three questions must be answered (or auto-resolved) before writing any artifact.
 
 ---
 
@@ -167,9 +182,19 @@ AL-23 stack.md §Conventions File naming mismatch: expected "stereotype_identifi
 AL-23 stack.md §Conventions File structure mismatch: expected "flat per stereotype", got "domain-grouped"
 ```
 
-Gate is structural for AL-20/21/22, and convention-conformant for AL-23. Path entries in `## Structure` are not validated — correctness there is the model's responsibility.
+### AL-24 — `## Pipeline` shape
 
-Selftest fixtures: one malformed `stack.md` per check (triggers the error), one correct `stack.md` (passes all four).
+Fails if `## Pipeline` section is absent, or if `CI:`, `Branching:`, or `Branch map:` fields are missing.
+
+```
+AL-24 stack.md §Pipeline missing required field: CI
+AL-24 stack.md §Pipeline missing required field: Branching
+AL-24 stack.md §Pipeline missing required field: Branch map
+```
+
+Gate is structural for AL-20/21/22/24, and convention-conformant for AL-23. Path entries in `## Structure` and gate step values in `## Pipeline` are not validated — correctness there is the model's responsibility.
+
+Selftest fixtures: one malformed `stack.md` per check (triggers the error), one correct `stack.md` (passes all five).
 
 ---
 
@@ -182,12 +207,12 @@ Selftest fixtures: one malformed `stack.md` per check (triggers the error), one 
 | `ddd-brief/references/infra/both.md` | New file — AWS + GCP infra preset [default] |
 | `ddd-brief/references/infra/gcp.md` | New file — GCP-only infra preset |
 | `ddd-brief/references/infra/aws.md` | New file — AWS-only infra preset |
-| `ddd-brief/SKILL.md` | Add two dispatch questions (stack + cloud) to §2a; add preset + infra file read + merge to §4a |
-| `ddd-brief/references/elicitation.md` | Add preset and infra dispatch to Stack/NFR coverage checklist |
+| `ddd-brief/SKILL.md` | Add three dispatch questions (stack + cloud + CI) to §2a; add preset + infra file read + merge to §4a |
+| `ddd-brief/references/elicitation.md` | Add preset, infra, and CI dispatch to Stack/NFR coverage checklist |
 | `ddd-domain/SKILL.md` | Add `packages/domains` update step after glossary write |
-| `ddd-align/references/spec-format.md` | Document `Preset:` field in §7; add AL-20–AL-23 to check list |
-| `ddd-align/scripts/check-align.mjs` | Implement AL-20, AL-21, AL-22, AL-23 |
-| `ddd-align/scripts/selftest.mjs` | Add fixtures for AL-20, AL-21, AL-22, AL-23 |
+| `ddd-align/references/spec-format.md` | Document `Preset:` field in §7; document `## Pipeline` section in §7; add AL-20–AL-24 to check list |
+| `ddd-align/scripts/check-align.mjs` | Implement AL-20, AL-21, AL-22, AL-23, AL-24 |
+| `ddd-align/scripts/selftest.mjs` | Add fixtures for AL-20, AL-21, AL-22, AL-23, AL-24 |
 
 ## Out of scope
 
