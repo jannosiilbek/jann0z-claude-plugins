@@ -43,6 +43,10 @@ node check-align.mjs --spec path/to/spec [--require glossary,model,usecases,plan
 | AL-13 | warn | forbidden synonyms do not appear in flows/usecases/plan |
 | AL-14 | error | every active UC has a labeled block in `data/usecases.sql` (when present) |
 | AL-15 | error | structural integrity: markers present, ID headings well-formed, policies parse — reported with line numbers, never silently skipped |
+| AL-16 | warn | upstream-fingerprint in `data/model.dbml` is stale — a source file it hashes has changed since the model was last generated |
+| AL-17 | error | every active UC has a corresponding `## API-UC-xxx` entry in `api.md` (when api.md exists) |
+| AL-18 | error | every error code slug in a `Response 4xx:` line in `api.md` appears in `nfr.md § Error contracts` (when both exist) |
+| AL-19 | warn | every `Policy: Whenever X, then Y` command Y is the trigger of at least one active UC — an unmatched policy command indicates a missing use case |
 | AL-00 | info/error | artifact presence bookkeeping; `--require` misses are errors |
 
 The assertion grammar checked by AL-08 is erd-modeler's closed set (its

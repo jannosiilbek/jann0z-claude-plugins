@@ -33,7 +33,7 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spe
 - Add `--require <list>` when auditing a milestone where specific artifacts must exist
   (e.g. `--require glossary,usecases,model,plan` for a "finished" pipeline). Without it,
   partial pipelines are legal — missing artifacts are informational.
-- The JSON output contract and the full check list (AL-01…AL-15) are documented in
+- The JSON output contract and the full check list (AL-01…AL-19) are documented in
   `scripts/README.md`. Read it if a finding needs interpreting.
 
 ### 3. Judge the residue

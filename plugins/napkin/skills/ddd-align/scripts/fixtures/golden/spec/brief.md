@@ -31,7 +31,7 @@ record for students, courses, and enrollments.
 
 ## Pipeline sizing
 - Decision: full
-- Stages: ddd-domain: yes · ddd-usecases: yes · erd-modeler: yes · ddd-plan: yes
+- Stages: ddd-domain: yes · ddd-usecases: yes · ddd-api: yes · erd-modeler: yes · ddd-plan: yes
 - Rationale: greenfield system of record; full pipeline warranted
 
 ## Clarifications log

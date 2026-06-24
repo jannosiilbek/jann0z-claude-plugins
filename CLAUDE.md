@@ -4,89 +4,101 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-A personal Claude Code plugin marketplace (`jann0z-claude-plugins`). It ships one plugin, **napkin**, which contains a DDD spec pipeline (**ddd-brief → ddd-domain → ddd-usecases → erd-modeler → ddd-plan**, gated by **ddd-align**) plus **erd-diagram** — render an existing DBML model into a self-contained HTML ER diagram (manual `/erd-diagram` command only; `disable-model-invocation: true`). Almost everything is markdown (SKILL.md + references) plus Node.js harnesses — there is no build step, no lint step, and no top-level package.json.
+A personal Claude Code plugin marketplace (`plugins/napkin` and `plugins/lunchbox`) plus the eval infrastructure for measuring and hardening those skills. There is no build step — skills are markdown (`SKILL.md`) plus optional Node.js harnesses.
 
-The plugin is registered in `.claude-plugin/marketplace.json` (a plugin is not installable until it has an entry there).
+## Testing
 
-## What the ddd-* suite does
-
-A spec pipeline whose artifacts all live in the target project's `spec/` directory — the single source of truth, persistent and hand-editable:
-
-| Skill | Artifact | Job |
-|-------|----------|-----|
-| ddd-brief | `spec/brief.md` | interactive elicitation (one question at a time) + pipeline sizing (full/lean/delta) |
-| ddd-domain | `spec/glossary.md`, `spec/flows.md` | ubiquitous language + event/command/actor/policy flows |
-| ddd-usecases | `spec/usecases.md` | UC-xxx use cases, EARS acceptance criteria, data assertions in erd-modeler's closed grammar |
-| erd-modeler | `spec/data/model.dbml`, `spec/data/usecases.sql` | the data model, live-tested — each UC data assertion becomes a PGlite test block |
-| ddd-plan | `spec/plan.md` | milestones + T-xxx tasks, each citing the UC-xxx it implements |
-| ddd-align | (report only) | mechanical cross-artifact consistency gate, run by every skill above |
-
-The **canonical artifact grammar** is `plugins/napkin/skills/ddd-align/references/spec-format.md` — grammar and parser (`check-align.mjs`, checks AL-01…AL-15) live in the same skill so they can't drift; the selftest pins both. Key invariants: IDs are immutable and never reused (deprecate, don't delete); artifacts are updated incrementally, never regenerated wholesale; every assertion stays inside erd-modeler's closed grammar so the spec remains executable.
-
-## What erd-modeler does
-
-Turns a natural-language domain description (or an optional `spec/glossary.md`) into a clean, normalized **DBML** model, audits it against the best-practice rules in `references/validation-rules.md`, then **proves it works** by running it against an in-memory Postgres (PGlite): it generates `schema.sql` + `seed.sql` + one asserting query per business use-case and loops with fixes until every use-case passes. When `spec/usecases.md` exists, the use cases' data assertions are the live tests (labeled `UC-xxx/DA-n`) and the final `usecases.sql` is persisted to `spec/data/`. The `.dbml` model is the deliverable.
-
-## What erd-diagram does
-
-Renders an existing `.dbml` into one self-contained, interactive HTML ER diagram via `scripts/render-erd.mjs` (WASM Graphviz through `@softwaretechnik/dbml-renderer`). Render-only — it never designs or modifies a model. Manual-only: it activates solely on the explicit `/erd-diagram [path]` command.
-
-## Commands
-
-Per-skill harness selftests — each is the oracle's adversarial suite; **a skill change is not done until its selftest passes**:
+Three harnesses have selftests; run each in its own `scripts/` directory:
 
 ```bash
-cd plugins/napkin/skills/erd-modeler/scripts && npm test   # PGlite live-test oracle (run-erd-test.mjs)
-cd plugins/napkin/skills/erd-diagram/scripts && npm test   # HTML renderer
-cd plugins/napkin/skills/ddd-align/scripts   && npm test   # spec-consistency oracle (check-align.mjs), zero-dep
+cd plugins/napkin/skills/erd-modeler/scripts && npm test   # PGlite live-test harness
+cd plugins/napkin/skills/ddd-align/scripts   && npm test   # spec-consistency harness (zero deps)
+cd plugins/napkin/skills/erd-diagram/scripts && npm test   # renderer harness
 ```
 
-`run-erd-test.mjs` is the oracle for erd-modeler's live-test stage; `check-align.mjs` is the oracle for spec cross-artifact consistency.
-
-## Eval platform — how to run it
-
-Two tiers (full guide: `plugins/napkin/evals/README.md`). Both keep committed, model-explicit results; raw runs are gitignored.
-
-### Unit tier (per-skill)
-
-`skills/<skill>/evals/evals.json` is run by **skill-creator** (its standard mechanism — the unit *runner* is external to this repo; keep these files where skill-creator expects them). Turn the gitignored `*-workspace/` output (incl. `model-*` variants) into the committed summary:
+Pipeline eval (integration tier, model-matrix, no model calls for the fast gate):
 
 ```bash
-node plugins/napkin/evals/aggregate-unit.mjs --skill ddd-brief   # one skill
-node plugins/napkin/evals/aggregate-unit.mjs --all               # every skill with a workspace
-# -> writes the committed skills/<skill>/evals/results.{md,json} (model × pass-rate, real model ids)
+cd plugins/napkin/evals/pipeline && npm run smoke   # fast — deterministic, seconds, always run first
+cd plugins/napkin/evals/pipeline && npm test        # grader + regression-gate selftests
 ```
 
-### Pipeline tier (integration) — a regression guardrail
+**A skill change is not done until the selftest(s) it touches pass.**
 
-All commands run from `plugins/napkin/evals/pipeline/`.
+## Skill anatomy
 
-**Deterministic — no model calls, always safe (use freely, incl. CI):**
+Every skill lives at `plugins/<plugin>/skills/<name>/` and follows this layout:
+
+```
+SKILL.md              # the skill text loaded into Claude — this is the primary artifact
+references/           # documents the skill reads at runtime (e.g. spec-format.md)
+scripts/              # Node.js harnesses (selftest.mjs + the oracle script)
+evals/
+  evals.json          # eval definitions consumed by skill-creator
+  results.{md,json}   # committed durable summary (written by aggregate-unit.mjs)
+```
+
+`*-workspace/` directories (e.g. `ddd-brief-workspace/`) are gitignored — they hold ephemeral eval output written by skill-creator.
+
+## Napkin plugin — DDD spec pipeline
+
+`plugins/napkin` chains six skills into a DDD pipeline that writes persistent artifacts to the target project's `spec/` directory:
+
+```
+ddd-brief → ddd-domain → ddd-usecases → erd-modeler → ddd-plan
+                                              │
+                          ddd-align (exit gate on every step)
+```
+
+| Skill | Writes |
+|-------|--------|
+| `ddd-brief` | `spec/brief.md` |
+| `ddd-domain` | `spec/glossary.md`, `spec/flows.md` |
+| `ddd-usecases` | `spec/usecases.md` |
+| `erd-modeler` | `spec/data/model.dbml`, `spec/data/usecases.sql` |
+| `ddd-plan` | `spec/plan.md` |
+| `ddd-align` | report only — never edits |
+| `erd-diagram` | standalone render — never auto-triggers |
+
+**`check-align.mjs`** (in `ddd-align/scripts/`) is both the oracle for the `ddd-align` skill and the exit gate every pipeline skill runs after writing an artifact. Its grammar is defined in `ddd-align/references/spec-format.md`; the grammar and the parser live together so they can't drift.
+
+**`erd-modeler` and `erd-diagram` dependencies are not committed.** They install on first use; `package-lock.json` for both is gitignored by design.
+
+## Napkin eval tiers
+
+**Unit (per-skill):** Each skill has `evals/evals.json`. skill-creator runs these and writes output to `*-workspace/` (gitignored). `aggregate-unit.mjs` collapses that output into committed `results.{md,json}`:
+
 ```bash
-npm run smoke                                   # FAST gate (~15s): all oracle/harness selftests + grade golden clean. Run on EVERY change.
-npm test                                        # grader + regression-gate selftests
-node grade.mjs --spec <dir> --no-judge          # mechanical-only score of any spec/ (check-align + live-test re-check)
-node grade.mjs --spec <dir> --judge-file j.json # grade with a pre-computed judge result (no model call)
-node report.mjs [--runs <dir>] [--out-dir <dir>] # (re)render results/{matrix,latest}.* from runs/ — reproducible
-node check-regression.mjs                       # THE GATE: diff results/latest.json vs baseline.json; exit 1 on degradation
-node check-regression.mjs --bless               # set baseline := latest (advance the baseline deliberately)
+cd plugins/napkin/evals
+node aggregate-unit.mjs --skill ddd-brief   # one skill
+node aggregate-unit.mjs --all               # all skills with a workspace
 ```
 
-**Model-driven — these invoke `claude -p`:**
+**Pipeline (integration):** `plugins/napkin/evals/pipeline/` runs the full pipeline end-to-end across a model matrix and scores the produced `spec/` for build-readiness (BRI 0–100). The 0-degrade loop:
+
 ```bash
-node grade.mjs --spec <dir>                     # full grade: mechanical + two read-only judge calls — isolated clarity + quality (NOT permission-blocked)
-node run-pipeline.mjs --dry-run                 # preview matrix size + cost; no calls
-node run-pipeline.mjs --models opus --scenario 01 --repeat 3   # run cells; --models all / --scenario all for the full matrix
-node run-pipeline.mjs --skip-run                # re-grade existing runs/ without re-running the pipeline
+# 1. Confirm machinery is healthy
+cd plugins/napkin/evals/pipeline && npm run smoke
+
+# 2. Run pipeline for changed scenario/model
+node run-pipeline.mjs --repeat 3 --scenario <id>
+
+# 3. Regression gate — exits 1 if any cell degraded
+node check-regression.mjs
+
+# 4. Advance baseline once happy
+node check-regression.mjs --bless
 ```
 
-**Running the full live pipeline (important):** `run-pipeline.mjs` drives each stage with `claude -p --permission-mode bypassPermissions`. An interactive Claude Code session's auto-mode classifier **blocks that** (nested unattended agents) unless the user adds a Bash allow-rule for `node *run-pipeline.mjs*`. So in-session you have two correct options: **(a)** the user pre-authorizes that rule and you run the script, or **(b)** drive the pipeline via the **Agent tool — one subagent per stage**, sharing a run dir, each invoking the napkin skill via the Skill tool, then grade with `grade.mjs --judge-file` (or the read-only judge, which is not blocked). Weaker models often won't chain all 5 stages in one agent — stage-drive them (one subagent per skill). The executor matrix + the constant judge model live in `models.json`.
+Raw run output goes under `pipeline/runs/` (gitignored); only `pipeline/results/` summaries are committed.
 
-**Scoring:** the headline **Build-Readiness Index** is a weighted blend of clarity / alignment / completeness / testability / actionability; a cell's value is the **median** across `--repeat` runs (robust to judge noise), carried with σ. Clarity is scored by an **isolated** judge pass (`clarity-judge.md` — spec only, no mechanical signals or other metrics, to avoid the measured cross-metric/anchoring count-inflation); the harness derives the score in-code from its blocking-question count via a diminishing-returns curve (`lib.mjs`), not the judge. The other judged dimensions run in a second pass (`buildability-judge.md`) that does see the mechanical signals. Provenance (git SHA, **skills-hash**, judge-rubric-hash) is stamped on every score, so a moved number is attributable to a skill edit vs a judge/scenario change. Raw runs under `evals/pipeline/runs/` are gitignored; `results/` + `baseline.json` are committed.
+## Lunchbox plugin — productivity skills
 
-## Layout conventions
+`plugins/lunchbox` contains four skills: `goal`, `council`, `doc-align`, and `product-sparring`. No harnesses or scripts — these are prompt-only skills with optional `references/` and `evals/`.
 
-- Skill anatomy: `plugins/napkin/skills/<skill>/` = `SKILL.md` + `references/` (if any) + `scripts/`.
-- Skill harnesses with npm dependencies install them on first run (deps float; the generated `package-lock.json` files are gitignored on purpose). The ddd-align harness is zero-dependency.
-- `skills/<skill>-workspace/` directories are gitignored skill-creator eval output — never commit them; they are reproducible from each skill's `evals/evals.json`, and their durable summary is the committed `skills/<skill>/evals/results.md`. Likewise `evals/pipeline/runs/` is gitignored, `evals/pipeline/results/` is committed. (`ddd-align/scripts/fixtures/` is different: committed test inputs.)
-- Link with relative paths in docs and artifacts so they stay portable.
+## Gitignore conventions
+
+- `*-workspace/` — skill-creator eval output, reproducible, never commit
+- `pipeline/runs/` — pipeline eval raw output, reproducible, never commit
+- `package-lock.json` for erd-modeler and erd-diagram — deps float by design, never commit
+- `.claude/settings.local.json` and `.claude/scheduled_tasks.lock` — machine-local, never commit
