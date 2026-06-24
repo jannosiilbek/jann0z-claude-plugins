@@ -40,18 +40,46 @@ question.
 
 ## Stack/NFR coverage checklist
 
+## Preset dispatch (before Tier 1/2, not counted against the 5-question budget)
+
+| Dimension | Question | Auto-resolved when |
+|-----------|----------|--------------------|
+| Stack | "Which stack? (1) Hono monorepo [default] / (2) FastAPI / (3) Custom" | Material names a framework |
+| Cloud | "Which cloud? (1) Both [default — AWS + GCP] / (2) GCP / (3) AWS / (4) Custom" | Material names a cloud or IaC target |
+| CI | "Which CI? (1) GitHub Actions [default] / (2) Custom" | Material names a CI system |
+
+Named selections read the corresponding preset file and mark all fields in that dimension
+as covered. Custom selections fall through to Tier 1/2 for that dimension only. Ask
+questions in order (stack → cloud → CI) — Q1's answer may auto-resolve Q3 (e.g. "we use
+GitHub Actions" in Q1 material).
+
 A stack.md + nfr.md are complete when each area is either answered or recorded as `unknown`:
 
-| Area | What "covered" means | Questions to ask (pick from priority order) |
-|------|----------------------|---------------------------------------------|
+**Tier 1 — always ask if uncovered (affect every downstream stage):**
+
+| Area | What "covered" means | Question to ask |
+|------|----------------------|-----------------|
 | Interface type | The kind of external surface (or none) | "REST API / GraphQL / tRPC / CLI / library / full-stack / or none?" |
 | Language + framework | Runtime and web framework | "Which language and web framework?" |
 | Auth mechanism | How callers authenticate | "JWT / session cookie / API key / OAuth2 / or none?" |
-| Error contract shape | How errors are serialised | "RFC 7807 Problem Details / `{code, message}` / framework default / or unknown?" |
 
-Walk these four areas against provided material first. Only genuinely uncovered areas
-earn a question — and only one question per message. If the user has no preference,
-write `unknown`; the alignment checks skip those fields.
+**Tier 2 — ask if uncovered AND the project has an external surface or deployment concerns:**
+
+| Area | What "covered" means | Question to ask |
+|------|----------------------|-----------------|
+| Error contract shape | How errors are serialised | "RFC 7807 Problem Details / `{code, message}` / framework default / or unknown?" |
+| File naming convention | Confirm or override the default stereotype pattern | "File naming default is `stereotype.identifier` (e.g. `enrollment.aggregate.ts`) — keep it, or use a different convention?" |
+| IaC tool | Infrastructure-as-code tool for deployments | "IaC: Pulumi / Terraform / CDK / none?" |
+| Cloud targets | Which cloud provider(s) will host the system | "Cloud targets: AWS / GCP / Azure / multi-cloud / unknown?" |
+| Environments | Named deploy environments in promotion order | "Environments: preview (per-PR) + staging + production, or different?" |
+
+Walk these areas against provided material first. Only genuinely uncovered areas earn a
+question — and only one question per message. If the user has no preference, write
+`unknown`; the alignment checks skip those fields.
+
+`DRY`, `Dead code`, and `Drift safety` are team-wide quality stances, not project-specific
+choices. Always write `## Code quality` in nfr.md with `DRY: yes`, `Dead code: none`,
+`Drift safety: spec-traced`. Never ask; never omit.
 
 ## Sizing rubric (the anti-bloat contract)
 
