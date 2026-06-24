@@ -701,7 +701,7 @@ nfr.md ────────────────────────�
 ```
 
 `check-align.mjs` proves these edges mechanically (see `../scripts/README.md` for the
-full check list AL-00…AL-24): glossary↔DBML table tracing, enum spelling fidelity,
+full check list AL-00…AL-33): glossary↔DBML table tracing, enum spelling fidelity,
 actor closure, UC→plan coverage, DA grammar validity, UC→usecases.sql labeling,
 ID uniqueness, and dependency acyclicity. Run it after every artifact write; a spec
 that fails the gate is not done.

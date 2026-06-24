@@ -60,11 +60,35 @@ const EXPECTED_FILENAMES = {
 };
 const MARKER_RE = /<!--\s*ddd:\s*([a-z]+)\s*-->/;
 
-// Known preset conventions — inline to preserve zero-dependency contract.
-// Adding a new preset requires updating this map AND adding an AL-22 known value.
-const PRESET_CONVENTIONS = {
-  "hono-monorepo": { "File naming": "stereotype.identifier", "File structure": "flat per stereotype" },
-  "fastapi":       { "File naming": "stereotype_identifier",  "File structure": "flat per stereotype" },
+// Known preset config — inline to preserve zero-dependency contract.
+// Adding a new preset: add one entry here. No new if-branches needed.
+// Fields:
+//   conventions   — AL-23: required §Conventions field values (startsWith match)
+//   typescript    — AL-25/AL-26: required §TypeScript field values (startsWith match)
+//   requiredPaths — AL-33: paths that must appear in §Structure (startsWith match)
+const PRESET_CONFIG = {
+  "hono-monorepo": {
+    conventions: {
+      "File naming":    "stereotype.identifier",
+      "File structure": "flat per stereotype",
+    },
+    typescript: {
+      "strict":              "true",
+      "moduleResolution":    "Bundler",
+      "verbatimModuleSyntax":"true",
+      "isolatedModules":     "true",
+    },
+    requiredPaths: [
+      "apps/api", "packages/api", "packages/domain",
+      "packages/core", "packages/db", "packages/tsconfig", "tooling/eslint",
+    ],
+  },
+  "fastapi": {
+    conventions: {
+      "File naming":    "stereotype_identifier",
+      "File structure": "flat per stereotype",
+    },
+  },
 };
 
 // Heading shapes: `## UC-001 — Title` (em dash, single spaces).
@@ -688,13 +712,14 @@ if (stackSections) {
 
   // AL-22: Preset: value must be a known preset name (when field is present).
   const preset = stackSections["Runtime"]?.fields?.["Preset"];
-  if (preset !== undefined && !PRESET_CONVENTIONS[preset]) {
+  if (preset !== undefined && !PRESET_CONFIG[preset]) {
     report("AL-22", "error", "stack.md", 1, `unknown Preset value: ${preset}`);
   }
 
   // AL-23: When Preset: declared, File naming + File structure must match preset's values.
-  if (preset && PRESET_CONVENTIONS[preset] && conv) {
-    for (const [field, expectedVal] of Object.entries(PRESET_CONVENTIONS[preset])) {
+  const pc = preset ? PRESET_CONFIG[preset] : null;
+  if (pc?.conventions && conv) {
+    for (const [field, expectedVal] of Object.entries(pc.conventions)) {
       const actual = conv.fields[field];
       if (actual && !actual.startsWith(expectedVal)) {
         report("AL-23", "error", "stack.md", 1,
@@ -711,6 +736,35 @@ if (stackSections) {
     for (const field of ["CI", "Branching", "Branch map"]) {
       if (!pipeline.fields[field]) {
         report("AL-24", "error", "stack.md", 1, `§Pipeline missing required field: ${field}`);
+      }
+    }
+  }
+
+  // --- AL-25/AL-26: §TypeScript section presence + required field values (preset-driven).
+  // --- AL-33: canonical §Structure paths (preset-driven).
+  if (pc) {
+    if (pc.typescript) {
+      const ts = stackSections["TypeScript"];
+      if (!ts) {
+        report("AL-25", "error", "stack.md", 1,
+          "§TypeScript section is missing (required for this preset)");
+      } else {
+        for (const [field, expected] of Object.entries(pc.typescript)) {
+          const actual = ts.fields[field];
+          if (!actual)
+            report("AL-26", "error", "stack.md", 1,
+              `§TypeScript missing required field: ${field}`);
+          else if (!actual.startsWith(expected))
+            report("AL-26", "error", "stack.md", 1,
+              `§TypeScript ${field} must be "${expected}" (got "${actual}")`);
+        }
+      }
+    }
+    if (pc.requiredPaths && struct) {
+      for (const req of pc.requiredPaths) {
+        if (!struct.pathEntries.some((p) => p.startsWith(req)))
+          report("AL-33", "error", "stack.md", 1,
+            `§Structure missing canonical path: ${req}`);
       }
     }
   }

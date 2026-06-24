@@ -51,6 +51,9 @@ node check-align.mjs --spec path/to/spec [--require glossary,model,usecases,plan
 | AL-22 | error | `Preset:` in `stack.md §Runtime` must be a known preset name when the field is present |
 | AL-23 | error | when `Preset:` is declared, `File naming:` and `File structure:` in `§Conventions` must match the preset's canonical values |
 | AL-24 | error | `stack.md §Pipeline` must exist with `CI:`, `Branching:`, and `Branch map:` fields present |
+| AL-25 | error | `stack.md §TypeScript` section must exist when the preset declares `typescript` requirements |
+| AL-26 | error | when `§TypeScript` is present, `strict`, `moduleResolution`, `verbatimModuleSyntax`, and `isolatedModules` must match the preset's canonical values |
+| AL-33 | error | `stack.md §Structure` must list every canonical path declared in the preset's `requiredPaths` |
 | AL-00 | info/error | artifact presence bookkeeping; `--require` misses are errors |
 
 

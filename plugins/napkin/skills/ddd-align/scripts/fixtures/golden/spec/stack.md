@@ -31,6 +31,7 @@
 - packages/core: AggregateRoot, Entity, ValueObject, DomainEvent
 - packages/db: schema, migrations, typed client
 - packages/tsconfig: shared TypeScript config
+- tooling/eslint: shared ESLint config
 
 ## Deployment
 - Target: container

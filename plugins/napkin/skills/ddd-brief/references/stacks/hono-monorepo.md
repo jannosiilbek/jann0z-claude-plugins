@@ -7,6 +7,16 @@
 - Preset: hono-monorepo
 - Package manager: pnpm
 
+## TypeScript
+- Config hierarchy: packages/tsconfig/base.json → packages/tsconfig/node.json → each app/package tsconfig.json
+- strict: true
+- target: ES2022
+- module: Preserve
+- moduleResolution: Bundler
+- verbatimModuleSyntax: true (enforces import type for type-only imports)
+- noUncheckedIndexedAccess: true
+- isolatedModules: true (required by Vite; enables fast single-file transforms)
+
 ## Interface
 - Kind: REST API
 - Protocol: HTTP/1.1
@@ -15,7 +25,8 @@
 - Component library: shadcn/ui (Radix primitives)
 - Package: @workspace/ui
 - Primitive location: packages/ui/src/components/<name>.tsx (flat; one file per component)
-- App components: apps/<app>/src/components/<feature>-<noun>.tsx (flat; same stereotype convention as domain)
+- App components (web): apps/web/src/components/<feature>-<noun>.tsx (flat; same stereotype convention as domain)
+- App components (www): apps/www/src/components/<noun>.tsx (noun-only; marketing components carry no feature prefix)
 - CSS: Tailwind v4 (single packages/ui/src/styles/globals.css; @source directives cover all apps)
 - Icons: lucide-react
 - Config: components.json at packages/ui/ root and at each apps/*/ root
@@ -51,7 +62,7 @@
 ## Agentic
 - Framework: Mastra (@mastra/core, @mastra/mcp)
 - Primitives: agents (open-ended LLM tasks), tools (domain use-case adapters), workflows (deterministic multi-step), skills (reusable instruction sets loaded by agents)
-- File naming: stereotype.identifier, flat (same as domains) — <name>.agent.ts, <verb>-<noun>.tool.ts, <verb>-<noun>.workflow.ts, <name>.skill.ts
+- File naming: flat (see § Conventions) — <name>.agent.ts, <verb>-<noun>.tool.ts, <verb>-<noun>.workflow.ts, <name>.skill.ts
 - Tool boundary: Zod-validated inputs; wraps domain use cases via Adapter pattern; USE_MOCK applies
 - MCP server: MCPServer (@mastra/mcp) mounted via startHonoSSE() on the Mastra Hono server (apps/agents); exposes agents + tools to MCP-compatible clients (Claude, AI coding tools, custom agents)
 - MCP coverage: one tool per domain operation — same use cases the REST layer calls, served over MCP
@@ -116,7 +127,7 @@ packages/
       auth.ts
     index.ts                      — AppType export for hc<AppType> RPC client
 
-  domains/                        — flat stereotype naming inside each bc folder
+  domain/                         — flat stereotype naming inside each bc folder
     <bc>/
       <bc>.aggregate.ts
       <noun>.entity.ts

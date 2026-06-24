@@ -278,5 +278,28 @@ testCase("stack.md missing §Pipeline → AL-24",
     t.replace(/\n## Pipeline\n[\s\S]*?(?=\n## )/, "")),
   (r) => caught(r, "AL-24"));
 
+// AL-25: §TypeScript section absent when Preset: hono-monorepo.
+testCase("stack.md Preset: hono-monorepo missing §TypeScript → AL-25",
+  (s) => edit(s, "stack.md", (t) =>
+    t.replace("- Language: TypeScript\n", "- Language: TypeScript\n- Preset: hono-monorepo\n")),
+  (r) => caught(r, "AL-25"));
+
+// AL-26: §TypeScript present but moduleResolution uses wrong value.
+testCase("stack.md Preset: hono-monorepo wrong moduleResolution → AL-26",
+  (s) => edit(s, "stack.md", (t) =>
+    t.replace("- Language: TypeScript\n", "- Language: TypeScript\n- Preset: hono-monorepo\n")
+     .replace("## Changelog",
+       "## TypeScript\n- strict: true\n- moduleResolution: node16\n- verbatimModuleSyntax: true\n- isolatedModules: true\n\n## Changelog")),
+  (r) => caught(r, "AL-26"));
+
+// AL-33: canonical path missing from §Structure for hono-monorepo.
+testCase("stack.md Preset: hono-monorepo missing tooling/eslint → AL-33",
+  (s) => edit(s, "stack.md", (t) =>
+    t.replace("- Language: TypeScript\n", "- Language: TypeScript\n- Preset: hono-monorepo\n")
+     .replace("- tooling/eslint: shared ESLint config\n", "")
+     .replace("## Changelog",
+       "## TypeScript\n- strict: true\n- moduleResolution: Bundler\n- verbatimModuleSyntax: true\n- isolatedModules: true\n\n## Changelog")),
+  (r) => caught(r, "AL-33"));
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);
