@@ -68,6 +68,18 @@ Follow spec-format.md §3. The glossary is the single source of naming truth:
 - `- Forbidden synonyms:` wherever the domain has trap words (Client/Customer,
   User/Member) — the alignment gate warns when downstream prose uses them.
 
+### 4a. Update packages/domains in spec/stack.md
+
+When `spec/stack.md` exists and contains a `- packages/domains:` entry, replace it with
+one line per bounded context identified during storming:
+
+    - packages/domains/<bc>: <bc> bounded context
+
+where `<bc>` is the lowercase, hyphenated bounded context name (e.g. `enrollment`,
+`payment-processing`). Apply the §1.4 update protocol: read the full file first, replace
+only the `packages/domains` line(s), append one Changelog entry. If `spec/stack.md` does
+not exist or has no `packages/domains` line, skip this step silently.
+
 ### 5. Delta mode
 
 When updating existing artifacts, apply spec-format.md §1.4, plus the rules specific to
