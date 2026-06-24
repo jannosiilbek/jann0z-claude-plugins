@@ -68,9 +68,9 @@
 - apps/api: Hono server (shared by web + www)
 - apps/web: authenticated SaaS product
 - apps/www: public marketing site
-- apps/agents: Mastra Hono server + MCP server; imports domain use cases from packages/domains
+- apps/agents: Mastra Hono server + MCP server; imports domain use cases from packages/domain
 - packages/api: Hono routes + middleware; AppType for RPC
-- packages/domains: DDD bounded contexts
+- packages/domain: DDD bounded contexts
 - packages/core: AggregateRoot, Entity, ValueObject, DomainEvent
 - packages/ui (@workspace/ui): shadcn primitives, cn() utility, Tailwind v4 CSS entry point; consumed by apps/web and apps/www
 - packages/db: Drizzle schema, migrations, typed client, repository implementations

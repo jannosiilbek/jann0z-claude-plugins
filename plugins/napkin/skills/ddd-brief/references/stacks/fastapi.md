@@ -38,7 +38,7 @@
 ## Structure
 - Repo: monorepo
 - apps/api: FastAPI server
-- packages/domains: DDD bounded contexts
+- packages/domain: DDD bounded contexts
 - packages/core: AggregateRoot, Entity, ValueObject, DomainEvent
 - packages/db: SQLAlchemy models, Alembic migrations, typed session
 - tests/e2e: browser flows (cross-domain)

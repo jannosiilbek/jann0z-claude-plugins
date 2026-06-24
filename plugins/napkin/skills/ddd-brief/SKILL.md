@@ -124,7 +124,7 @@ alignment checks skip unknown fields; the implementing agent uses framework defa
   only when the system has no external dependencies at all.
 - **`## Structure` in stack.md** — always include the canonical monorepo layout (see
   spec-format.md §7 reference tree). Write the default workspace list; customise
-  `packages/domains` entries once bounded contexts are known (update this field when running
+  `packages/domain` entries once bounded contexts are known (update this field when running
   ddd-domain, or leave generic for the implementing agent).
   Omit entries that don't apply (e.g. omit `apps/www` for a pure API product).
 - **`## Code quality` in nfr.md** — always include with `DRY: yes`, `Dead code: none`,

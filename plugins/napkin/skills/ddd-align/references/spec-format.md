@@ -370,7 +370,7 @@ reads it rather than asking the user to repeat choices.
 - apps/web: authenticated SaaS product
 - apps/www: public marketing site
 - packages/api: Hono routes + middleware; AppType for RPC
-- packages/domains: DDD bounded contexts
+- packages/domain: DDD bounded contexts
 - packages/core: AggregateRoot, Entity, ValueObject, DomainEvent
 - packages/ui: shared component library
 - packages/db: Drizzle schema, migrations, typed client
@@ -491,7 +491,7 @@ playwright.config.ts              — projects[]: api-bdd (domains/**) + ui-bdd 
 ```
 
 Implementing agents use this tree as the canonical reference — every file has a known home.
-`packages/domains/<bc>/` co-locates Gherkin specs with domain code so missing specs are
+`packages/domain/<bc>/` co-locates Gherkin specs with domain code so missing specs are
 visible by inspection. `apps/api` is the single Hono deployment serving both `apps/web`
 (private routes) and `apps/www` (public routes); both import `AppType` from `packages/api`
 for typed RPC via `hc<AppType>` — no separate API client package needed.

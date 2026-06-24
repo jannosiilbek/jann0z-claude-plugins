@@ -27,7 +27,7 @@
 - Repo: monorepo
 - apps/api: API server entry point
 - packages/api: routes + middleware; AppType for RPC
-- packages/domains: DDD bounded contexts (enrollment/)
+- packages/domain: DDD bounded contexts (enrollment/)
 - packages/core: AggregateRoot, Entity, ValueObject, DomainEvent
 - packages/db: schema, migrations, typed client
 - packages/tsconfig: shared TypeScript config
