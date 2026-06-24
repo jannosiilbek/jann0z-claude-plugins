@@ -1,3 +1,5 @@
+<!-- Public-facing marketplace README. Read-only — do not edit programmatically or as part of doc-align passes. -->
+
 # jann0z-claude-plugins
 
 A personal [Claude Code](https://claude.com/claude-code) plugin marketplace, packaged so it
@@ -19,33 +21,18 @@ spec pipeline: a chain of skills that each write one persistent, hand-editable a
 your project's `spec/` directory — the single source of truth for what you're building.
 
 ```
-ddd-brief  →  ddd-domain  →  ddd-usecases  →  erd-modeler  →  ddd-plan
-   │             │               │                │              │
- brief.md   glossary.md      usecases.md      model.dbml       plan.md
-            flows.md                          usecases.sql
-                                  └─────── ddd-align (consistency gate, runs throughout) ───────┘
+ddd-brief  →  ddd-domain  →  ddd-usecases  →  [ddd-api →]  erd-modeler  →  ddd-plan
+   │             │               │                               │              │
+ brief.md   glossary.md      usecases.md                    model.dbml       plan.md
+            flows.md                                         usecases.sql
+                                  └──────── ddd-align (consistency gate, runs throughout) ──────┘
 ```
 
-Each step is its own skill and triggers from plain language — you don't have to memorize the
-pipeline. Say *"let's spec this out"* and `ddd-brief` takes it from there; say *"now derive the
-use cases"* later and `ddd-usecases` picks up where the brief left off. Everything is
-incremental: artifacts are updated in place, never regenerated wholesale, and IDs (UC-xxx,
-T-xxx) are immutable so links between artifacts stay stable.
+- **Plain-language triggers** — each step is its own skill; say *"let's spec this out"* and `ddd-brief` takes it from there.
+- **Incremental** — artifacts are updated in place, never regenerated wholesale.
+- **Stable IDs** — `UC-xxx` and `T-xxx` IDs are immutable so links between artifacts stay stable.
 
-| Skill | Writes | Job |
-|-------|--------|-----|
-| `ddd-brief` | `spec/brief.md` | Interactive elicitation (one question at a time) of problem, actors, scope, constraints — then sizes how much of the pipeline the work actually warrants (full / lean / delta). |
-| `ddd-domain` | `spec/glossary.md`, `spec/flows.md` | Ubiquitous language (terms, entities, enums) + domain event/command/actor/policy flows. |
-| `ddd-usecases` | `spec/usecases.md` | UC-xxx use cases with EARS acceptance criteria and data assertions written in erd-modeler's closed, testable grammar. |
-| `erd-modeler` | `spec/data/model.dbml`, `spec/data/usecases.sql` | A clean, normalized **DBML** data model, **live-tested** against an in-memory Postgres (PGlite): every use-case data assertion becomes a real query that must pass. |
-| `ddd-plan` | `spec/plan.md` | Milestones + T-xxx tasks in dependency order, each citing the UC-xxx it implements. |
-| `ddd-align` | (report only) | A mechanical cross-artifact consistency gate run by every skill above — catches broken IDs, orphan references, and drift between artifacts. |
-
-Plus one standalone, manual-only skill:
-
-| Skill | Job |
-|-------|-----|
-| `erd-diagram` | Render an existing `.dbml` into a single self-contained, interactive HTML ER diagram (WASM Graphviz via `@softwaretechnik/dbml-renderer`). Render-only; never designs a model. |
+See [CLAUDE.md](CLAUDE.md) for the full skill list and what each one writes.
 
 ### Why it's different
 
@@ -99,33 +86,9 @@ what's in `spec/` and fills in the gaps.
 /erd-diagram spec/data/model.dbml
 ```
 
-## Repository layout
-
-```
-.claude-plugin/marketplace.json        # marketplace manifest
-plugins/napkin/
-  .claude-plugin/plugin.json           # plugin manifest
-  skills/ddd-brief/                     # each skill = SKILL.md + references/ + scripts/
-  skills/ddd-domain/
-  skills/ddd-usecases/
-  skills/erd-modeler/
-  skills/ddd-plan/
-  skills/ddd-align/                     # spec-format grammar + consistency harness
-  skills/erd-diagram/                   # render-only HTML ER diagram skill
-```
-
 ## Development
 
-There is no build step — skills are markdown plus Node.js harnesses. The harnesses that have a
-self-test (the oracles for live-testing and consistency) each run with `npm test`:
-
-```
-cd plugins/napkin/skills/erd-modeler/scripts && npm test   # PGlite live-test harness selftest
-cd plugins/napkin/skills/ddd-align/scripts   && npm test   # spec-consistency harness selftest (zero deps)
-cd plugins/napkin/skills/erd-diagram/scripts && npm test   # renderer selftest
-```
-
-A skill change is not done until its selftest passes.
+See [CLAUDE.md](CLAUDE.md) for the repo layout, development workflow, and testing harnesses.
 
 ## License
 

@@ -5,11 +5,9 @@ description: Use when the user wants a development plan, an implementation roadm
 
 # DDD Plan
 
-Turn the spec into an ordered, traceable build plan: `spec/plan.md` with milestones and
-`T-xxx` tasks. Every task cites the use cases it implements, dependencies form a DAG,
-and task acceptance **is** the cited use cases' criteria — the plan adds ordering, never
-new requirements. By this stage the use cases have been live-tested through erd-modeler,
-so the plan is built on proven ground.
+- Turns the spec into an ordered, traceable build plan: `spec/plan.md` with milestones and `T-xxx` tasks.
+- Every task cites the use cases it implements; dependencies form a DAG; task acceptance **is** the cited use cases' criteria — the plan adds ordering, never new requirements.
+- By this stage the use cases have been live-tested through erd-modeler, so the plan is built on proven ground.
 
 The artifact grammar is defined once, in
 `${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/references/spec-format.md` — read its §1
@@ -54,8 +52,8 @@ The artifact grammar is defined once, in
   - `- Effort:` populate using the task's total AC count + DA count across all cited UCs
     as the primary signal, with external-integration presence as a modifier:
     XS (1–2 AC+DA, no integrations) · S (3–4) · M (5–7) · L (8–12 or any integration) ·
-    XL (13+ or multiple integrations). check-align warns when a task implements 3+ UCs
-    and has no Effort field, so populate it for every multi-UC task.
+    XL (13+ or multiple integrations). Per spec-format.md §6, check-align warns when a
+    task implements 3+ UCs and has no Effort field, so populate it for every multi-UC task.
 
 ### 3. Delta mode
 
@@ -71,7 +69,7 @@ Apply spec-format.md §1.4, plus:
 
 Run the **self-correcting exit gate** (ddd-align → "Self-correcting exit gate"): fix every
 **error** routed to `plan.md` (a UC with no implementing task, a dangling reference, a
-dependency cycle) and re-run until clean (≤3 passes) before reporting:
+dependency cycle) and re-run until clean before reporting:
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spec/ --require usecases,plan
@@ -94,7 +92,7 @@ Coverage: every active UC implemented (0 uncovered)
 Dependency order: T-001 → T-002, T-003 (acyclic)
 Alignment gate: ✅ ok
 📄 Saved to spec/plan.md
-✅ Pipeline complete — brief → domain → use cases → live-tested model → plan
+✅ Pipeline complete — brief → domain → use cases → (api) → model → plan
 ```
 
 In delta mode, add "Tasks added: …, done tasks untouched: N". The ✅ footer is the

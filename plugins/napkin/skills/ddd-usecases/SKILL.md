@@ -5,10 +5,8 @@ description: Use when the user wants to write use cases, user stories, acceptanc
 
 # DDD Use Cases
 
-Derive `spec/usecases.md` from the domain flows: every use case gets a stable `UC-xxx`
-id, EARS-shaped acceptance criteria, and — the part that keeps this spec honest —
-**data assertions** that the erd-modeler stage executes 1:1 against a real in-memory
-Postgres. A use case here is not prose that rots; it is a claim the pipeline proves.
+- Derives `spec/usecases.md` from the domain flows: every use case gets a stable `UC-xxx` id, EARS-shaped acceptance criteria, and **data assertions** the erd-modeler stage executes 1:1 against a real in-memory Postgres.
+- A use case here is not prose that rots; it is a claim the pipeline proves.
 
 The artifact grammar is defined once, in
 `${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/references/spec-format.md` — read its §1
@@ -70,7 +68,7 @@ Apply spec-format.md §1.4, plus:
 
 Run the **self-correcting exit gate** (ddd-align → "Self-correcting exit gate"): fix every
 **error** routed to `usecases.md` (a non-EARS criterion, an out-of-grammar assertion, a
-non-glossary actor, a duplicate id) and re-run until clean (≤3 passes) before reporting:
+non-glossary actor, a duplicate id) and re-run until clean before reporting:
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spec/
@@ -92,8 +90,7 @@ trigger closure (AL-12), id discipline (AL-10).
 Coverage: N use cases from M flows · every assertion inside the closed grammar
 Alignment gate: ✅ ok
 📄 Saved to spec/usecases.md
-➡️ Next: run erd-modeler — it will turn every data assertion into a live test
-   against a real in-memory Postgres
+➡️ Next: run ddd-api (if `ddd-api: yes` in the Pipeline sizing block) or erd-modeler directly — erd-modeler turns every data assertion into a live test against a real in-memory Postgres
 ```
 
 In delta mode, add an "Added / changed / deprecated / preserved" line. The ➡️ pointer

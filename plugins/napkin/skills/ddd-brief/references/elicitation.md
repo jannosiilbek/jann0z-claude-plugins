@@ -40,18 +40,34 @@ question.
 
 ## Stack/NFR coverage checklist
 
-A stack.md + nfr.md are complete when each area is either answered or recorded as `unknown`:
+Preset dispatch questions (Q1 Stack, Q2 Cloud, Q3 CI) are specified in full in §2a of
+the skill. After the preset dispatch, a stack.md + nfr.md are complete when each area
+is either answered or recorded as `unknown`:
 
-| Area | What "covered" means | Questions to ask (pick from priority order) |
-|------|----------------------|---------------------------------------------|
+**Tier 1 — always ask if uncovered (affect every downstream stage):**
+
+| Area | What "covered" means | Question to ask |
+|------|----------------------|-----------------|
 | Interface type | The kind of external surface (or none) | "REST API / GraphQL / tRPC / CLI / library / full-stack / or none?" |
 | Language + framework | Runtime and web framework | "Which language and web framework?" |
 | Auth mechanism | How callers authenticate | "JWT / session cookie / API key / OAuth2 / or none?" |
-| Error contract shape | How errors are serialised | "RFC 7807 Problem Details / `{code, message}` / framework default / or unknown?" |
 
-Walk these four areas against provided material first. Only genuinely uncovered areas
-earn a question — and only one question per message. If the user has no preference,
-write `unknown`; the alignment checks skip those fields.
+**Tier 2 — ask if uncovered AND the project has an external surface or deployment concerns:**
+
+| Area | What "covered" means | Question to ask |
+|------|----------------------|-----------------|
+| Error contract shape | How errors are serialised | "RFC 7807 Problem Details / `{code, message}` / framework default / or unknown?" |
+| File naming convention | Confirm or override the default stereotype pattern | "File naming default is `stereotype.identifier` (e.g. `enrollment.aggregate.ts`) — keep it, or use a different convention?" |
+| IaC tool | Infrastructure-as-code tool for deployments | "IaC: Pulumi / Terraform / CDK / none?" |
+| Cloud targets | Which cloud provider(s) will host the system | "Cloud targets: AWS / GCP / Azure / multi-cloud / unknown?" |
+| Environments | Named deploy environments in promotion order | "Environments: preview (per-PR) + staging + production, or different?" |
+
+Walk these areas against provided material first. Only genuinely uncovered areas earn a
+question — and only one question per message. If the user has no preference, write
+`unknown`; the alignment checks skip those fields.
+
+`DRY`, `Dead code`, and `Drift safety` — team-wide quality stances; write per §4a
+defaults in the skill.
 
 ## Sizing rubric (the anti-bloat contract)
 

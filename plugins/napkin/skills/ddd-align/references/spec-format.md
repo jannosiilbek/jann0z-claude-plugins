@@ -1,16 +1,16 @@
 # The spec/ artifact format
 
 This is the **canonical grammar** for every artifact the napkin DDD pipeline reads and
-writes. The pipeline skills (`ddd-brief`, `ddd-domain`, `ddd-usecases`, `erd-modeler`,
-`ddd-plan`) generate these artifacts; the `check-align.mjs` harness in
-`../scripts/` parses them and mechanically proves their cross-references. Grammar and
-parser live in the same skill so they cannot drift apart — if you change one, change the
-other, and the selftest pins both.
+writes.
 
-Two audiences read these files: **humans**, who edit them by hand between pipeline runs,
-and **the parser**, which needs unambiguous anchors. The grammar is therefore plain,
-diff-friendly Markdown with a small set of strict shapes. Everything outside those shapes
-is free prose the parser ignores and the skills must preserve.
+- The napkin DDD pipeline skills generate these artifacts.
+- The `check-align.mjs` harness in `../scripts/` parses them and mechanically proves their cross-references.
+- Grammar and parser live in the same skill so they cannot drift apart — change one, change the other.
+- The selftest pins both: it fails when the parser diverges from the grammar.
+
+- **Human** editors modify them by hand between pipeline runs.
+- **The parser** needs unambiguous anchors — the grammar is plain, diff-friendly Markdown with a small set of strict shapes.
+- Everything outside those shapes is free prose the parser ignores and the skills must preserve.
 
 ## 1. Cross-cutting rules
 
@@ -143,15 +143,20 @@ Every artifact ends with:
 - 2026-06-11 (ddd-brief): created
 ```
 
-The **Pipeline sizing** block is the anti-bloat contract: it pre-declares which
-downstream stages this piece of work warrants, so a bug-fix-sized request never spawns a
-full artifact cascade. `full` = run everything; `lean` = skip stages marked `no`;
-`delta` = downstream skills update existing artifacts incrementally.
+The **Pipeline sizing** block is the anti-bloat contract: it pre-declares which downstream
+stages this piece of work warrants, so a bug-fix-sized request never spawns a full artifact
+cascade. Values:
+
+- `full` — run everything
+- `lean` — skip stages marked `no`
+- `delta` — downstream skills update existing artifacts incrementally
 
 ## 3. spec/glossary.md
 
-The ubiquitous language. One term per domain concept, exact spellings everywhere.
-This is the same format the erd-modeler skill consumes for structured intake.
+The ubiquitous language.
+
+- One term per domain concept — exact spellings everywhere.
+- The same format the erd-modeler skill consumes for structured intake.
 
 ```markdown
 # Glossary — <Project name>
@@ -270,6 +275,8 @@ a live-tested SQL assertion when erd-modeler runs.
   | `value=<v>` | a read returned exactly one cell equal to `<v>` |
   | `col:<name>=<v>` | a read returned one row whose column `<name>` equals `<v>` |
 
+  (Normative definition: `../../erd-modeler/scripts/README.md` §assertion grammar — the table above mirrors it.)
+
   In erd-modeler's live test, `UC-001`'s `DA-1` becomes the block label
   `-- usecase: UC-001/DA-1 <description>` with `-- expect: <assertion>` — a 1:1 mapping,
   which is what makes the spec executable rather than aspirational. Give every UC at
@@ -318,7 +325,7 @@ reads it rather than asking the user to repeat choices.
 
 ## Runtime
 - Language: TypeScript
-- Framework: Fastify
+- Framework: Hono
 - Package manager: pnpm
 
 ## Interface
@@ -326,21 +333,51 @@ reads it rather than asking the user to repeat choices.
 - Protocol: HTTP/1.1
 
 ## Data layer
-- ORM: Prisma
-- Migration tool: Prisma Migrate
+- ORM: Drizzle
+- Migration tool: drizzle-kit
 - Identity strategy: TypeID
 
 ## Auth
 - Mechanism: JWT
 - Library: jose
 
+## Conventions
+- File naming: stereotype.identifier (e.g. enrollment.aggregate.ts, enroll-student.usecase.ts)
+- File structure: flat per stereotype
+
+## Integrations
+- Adapter pattern: yes
+- Mock: yes
+- Mock activation: USE_MOCK=true
+- Mock scope: local dev, unit tests, e2e
+
 ## Deployment
 - Target: container
 - Environment config: dotenv
+- IaC: Pulumi
+- Clouds: aws, gcp
+- Environments: preview, staging, production
+- Preview: per-PR
 
 ## Testing
 - Framework: Vitest
 - DB strategy: PGlite
+- E2E: playwright-bdd
+
+## Structure
+- Repo: monorepo
+- apps/api: Hono server (shared by web + www)
+- apps/web: authenticated SaaS product
+- apps/www: public marketing site
+- packages/api: Hono routes + middleware; AppType for RPC
+- packages/domains: DDD bounded contexts
+- packages/core: AggregateRoot, Entity, ValueObject, DomainEvent
+- packages/ui: shared component library
+- packages/db: Drizzle schema, migrations, typed client
+- packages/tsconfig: shared TypeScript config
+- tooling/eslint: shared ESLint config
+- tests/e2e: browser flows (cross-domain)
+- tests/fixtures: playwright fixtures
 
 ## Changelog
 - 2026-06-22 (ddd-brief): created
@@ -353,6 +390,137 @@ which grammar branch ddd-api uses for api.md.
 
 Known `Interface: Kind` values: `REST API`, `GraphQL`, `tRPC`, `CLI`, `library`,
 `full-stack`, `none`. When `none`, ddd-api is skipped and api.md is not written.
+
+`- Preset: <name>` — optional field in `## Runtime`; names the stack preset that produced
+this file (e.g. `hono-monorepo`, `fastapi`):
+- When present, AL-22 validates it is a known preset name.
+- When present, AL-23 validates that `File naming:` and `File structure:` in `## Conventions`
+  match the preset's declared values.
+- Omit when no preset was used (Custom selection or pre-preset spec).
+
+`## Conventions` fields:
+- `File naming:` — free text; `stereotype.identifier` is the canonical keyword for the
+  flat-stereotype pattern (one file per stereotype role per domain concept,
+  e.g. `enrollment.aggregate.ts`, `enroll-student.usecase.ts`).
+- `File structure:` — known values: `flat per stereotype`, `feature-sliced`, `domain-grouped`, `unknown`.
+
+`## Structure` declares the repository layout. Each line is `- <path>: <one-line
+description>`. The canonical monorepo reference (one sample file per folder — no guessing
+what goes where):
+
+```
+apps/
+  api/                            — Hono server (shared by web + www)
+    src/
+      index.ts                    — serve(app) + runtime adapter
+  web/                            — authenticated SaaS product
+    src/
+      index.tsx
+  www/                            — public marketing site
+    src/
+      index.tsx
+
+packages/
+  api/                            — Hono routes + middleware; AppType for RPC
+    routes/
+      newsletter.ts               — public route (www + web)
+      contact.ts                  — public route
+      enrollments.ts              — private route (auth required)
+      users.ts                    — private route (auth required)
+    middleware/
+      auth.ts
+    index.ts                      — AppType export for hc<AppType> RPC client
+
+  domains/                        — DDD bounded contexts (flat stereotype naming)
+    <bc>/                         — one folder per bounded context
+      <bc>.aggregate.ts           — aggregate root
+      <noun>.entity.ts            — non-root entity
+      <noun>.value-object.ts      — immutable value
+      <noun>.domain-event.ts      — fact that occurred
+      <bc>.repository.ts          — persistence interface (domain layer)
+      <verb>-<noun>.usecase.ts    — one use case per file
+      <verb>-<noun>.feature       — Gherkin spec, co-located (maps to UC-xxx)
+      <verb>-<noun>.steps.ts      — playwright-bdd step definitions, co-located
+      <bc>.repo.ts                — Drizzle implementation of repository
+      <bc>.mapper.ts              — domain ↔ persistence mapping
+
+  core/                           — DDD base classes (imported by every domain)
+    aggregate-root.ts
+    entity.ts
+    value-object.ts
+    domain-event.ts
+    repository.ts                 — generic Repository<T> interface
+    usecase.ts                    — UseCase<TInput, TOutput> interface
+
+  ui/                             — shared component library
+    src/
+      button.tsx
+      form.tsx
+      index.ts
+
+  db/                             — Drizzle schema, migrations, typed client
+    drizzle.config.ts
+    src/
+      client.ts                   — driver setup, exports Db type
+      migrate.ts                  — migration runner
+      schema/
+        <noun>.ts                 — one file per domain concept (bare name)
+        index.ts                  — export * from each schema file
+      index.ts                    — export { schema, createDb, type Db }
+    drizzle/                      — generated SQL migrations (gitignored)
+      0000_initial.sql
+
+  tsconfig/                       — shared TypeScript config
+    base.json
+    node.json
+
+tooling/
+  eslint/                         — shared ESLint config
+    index.js
+
+tests/
+  e2e/                            — browser flows (cross-domain UI tests)
+    features/
+      <flow>.feature              — cross-domain Gherkin scenario
+      <flow>.steps.ts             — playwright-bdd step definitions
+  fixtures/
+    api-world.ts                  — APIRequestContext fixture
+    ui-world.ts                   — Page + custom fixtures
+
+playwright.config.ts              — projects[]: api-bdd (domains/**) + ui-bdd (tests/e2e/)
+```
+
+Implementing agents use this tree as the canonical reference — every file has a known home.
+`packages/domains/<bc>/` co-locates Gherkin specs with domain code so missing specs are
+visible by inspection. `apps/api` is the single Hono deployment serving both `apps/web`
+(private routes) and `apps/www` (public routes); both import `AppType` from `packages/api`
+for typed RPC via `hc<AppType>` — no separate API client package needed.
+
+`## Integrations` fields — `Mock activation:` and `Mock scope:` are omitted when
+`Mock: no`. `Conventions`, `Integrations`, and the extended `Deployment` fields are read
+by the implementing agent for code-generation guidance; the alignment checks skip them.
+
+`## Pipeline` — always included; declares the CI system, branching model, and
+environment promotion chain:
+
+```
+## Pipeline
+- CI: GitHub Actions
+- Branching: GitHub Flow
+- Branch map: feature/* → preview · main → staging · staging → production (manual)
+- Gates: lint · type-check · test · build · deploy
+```
+
+Required fields (AL-24): `CI:`, `Branching:`, `Branch map:`. `Gates:` is optional but
+strongly recommended. `Branch map:` uses the notation
+`<branch-pattern> → <env>` with ` · ` as separator; `(manual)` appended to an env
+signals a manual workflow_dispatch promote rather than an automatic deploy.
+
+Extended `## Deployment` fields:
+- `IaC:` — infrastructure-as-code tool; e.g. `Pulumi`, `Terraform`, `CDK`, `none`, `unknown`.
+- `Clouds:` — comma-separated target cloud(s); e.g. `aws, gcp`.
+- `Environments:` — comma-separated environment names in promotion order; e.g. `preview, staging, production`.
+- `Preview:` — how preview environments are created; e.g. `per-PR`, `manual`; omit when no preview environment exists.
 
 ## 8. spec/nfr.md
 
@@ -380,6 +548,11 @@ api.md — codes not declared here cannot appear in api.md (AL-18).
 - List endpoints: p99 < 500ms
 - Write endpoints: p99 < 200ms
 
+## Code quality
+- DRY: yes
+- Dead code: none
+- Drift safety: spec-traced
+
 ## Data retention
 - PII entities: User
 - Soft-delete: deleted_at column on all entities; hard delete not exposed
@@ -394,6 +567,13 @@ api.md — codes not declared here cannot appear in api.md (AL-18).
 The `## Error contracts` lines follow the shape `- <label>: <HTTP-status> <ERROR_CODE>`.
 AL-18 parses the `<ERROR_CODE>` token (all-caps + underscores) and checks that every
 error code referenced in api.md appears here.
+
+`## Code quality` fields — `DRY: yes` mandates that every piece of logic has exactly one
+implementation; no duplication. `Dead code: none` mandates that unreachable or unused
+exports are removed before merge; no placeholder stubs. `Drift safety: spec-traced` means
+every module traces to a UC, AC, or task; code with no spec citation is presumed dead and
+must be removed or backed by a new task. These fields follow the same "omit if not
+specified" rule as all nfr.md sections — never write placeholders.
 
 ## 9. spec/api.md
 
@@ -521,7 +701,8 @@ nfr.md ────────────────────────�
 ```
 
 `check-align.mjs` proves these edges mechanically (see `../scripts/README.md` for the
-full check list AL-01…AL-19): glossary↔DBML table tracing, enum spelling fidelity,
+full check list AL-00…AL-24): glossary↔DBML table tracing, enum spelling fidelity,
 actor closure, UC→plan coverage, DA grammar validity, UC→usecases.sql labeling,
 ID uniqueness, and dependency acyclicity. Run it after every artifact write; a spec
 that fails the gate is not done.
+

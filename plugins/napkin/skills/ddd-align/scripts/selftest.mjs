@@ -236,5 +236,47 @@ testCase("spec without api.md does not trigger AL-17",
     ? null
     : `spec without api.md must not fire AL-17 (exit=${r.exit})`));
 
+// AL-20: File naming field missing from ##Conventions.
+testCase("stack.md missing File naming in §Conventions → AL-20",
+  (s) => edit(s, "stack.md", (t) =>
+    t.replace(/- File naming:.*\n/, "")),
+  (r) => caught(r, "AL-20"));
+
+// AL-21: Repo field missing from ##Structure.
+testCase("stack.md missing Repo in §Structure → AL-21",
+  (s) => edit(s, "stack.md", (t) =>
+    t.replace(/- Repo:.*\n/, "")),
+  (r) => caught(r, "AL-21"));
+
+// AL-21: Fewer than 3 path entries in ##Structure.
+testCase("stack.md §Structure fewer than 3 path entries → AL-21",
+  (s) => edit(s, "stack.md", (t) => {
+    let kept = 0;
+    return t.replace(/^- (apps|packages|tests|tooling)\/.+$/gm, (m) => {
+      kept++;
+      return kept <= 2 ? m : "";
+    });
+  }),
+  (r) => caught(r, "AL-21"));
+
+// AL-22: Preset field set to an unrecognised name.
+testCase("stack.md Preset: unknown-preset → AL-22",
+  (s) => edit(s, "stack.md", (t) =>
+    t.replace("- Language: TypeScript\n", "- Language: TypeScript\n- Preset: unknown-preset\n")),
+  (r) => caught(r, "AL-22"));
+
+// AL-23: Preset declared as hono-monorepo but File naming uses underscore convention.
+testCase("stack.md Preset: hono-monorepo with wrong File naming → AL-23",
+  (s) => edit(s, "stack.md", (t) =>
+    t.replace("- Language: TypeScript\n", "- Language: TypeScript\n- Preset: hono-monorepo\n")
+     .replace(/- File naming:.*/, "- File naming: stereotype_identifier (e.g. enrollment_aggregate.ts)")),
+  (r) => caught(r, "AL-23"));
+
+// AL-24: ##Pipeline section stripped entirely.
+testCase("stack.md missing §Pipeline → AL-24",
+  (s) => edit(s, "stack.md", (t) =>
+    t.replace(/\n## Pipeline\n[\s\S]*?(?=\n## )/, "")),
+  (r) => caught(r, "AL-24"));
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

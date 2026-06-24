@@ -6,9 +6,9 @@ per business use-case. Loop with improvements until every use-case passes.
 
 The goal is an **absolutely correct** model: every business use-case is provably
 supported by SQL against the actual schema, with referential integrity enforced and no
-fan/chasm traps. The harness is the oracle — it is built to refuse false-green, so an
-assertion only passes when it has actually proven something. Your job is to write
-assertions that prove the right things.
+fan/chasm traps. The harness (see `../scripts/README.md`) refuses false-green: an assertion passes only when
+it has actually proven something. Your job is to write assertions that prove the right
+things.
 
 ---
 
@@ -172,6 +172,8 @@ e.g. `-- usecase: Seed baseline data [persist]`. Never place `[persist]` at the 
 of the label; the harness only recognises it at the end.)
 
 ### The assertion grammar is CLOSED — never invent operators
+
+(Normative definition: `../scripts/README.md` §usecases.sql contract — the table below mirrors it.)
 
 | `-- expect:` | Passes when |
 |---|---|

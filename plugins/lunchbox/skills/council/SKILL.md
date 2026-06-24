@@ -5,7 +5,10 @@ description: Convenes a parallel council of six independent expert agents — ar
 
 # Council
 
-After a coding iteration, convene six expert agents in parallel. Each operates in a clean, isolated context — no shared state, no conversation history, no cross-contamination. The architecture expert does not see the SOLID expert's findings. The clarity expert is not anchored by the DRY analysis. Isolation is intentional: it forces each expert to reason from the code alone, which catches what a single reviewer — or a reviewer who saw another's notes first — would miss.
+After a coding iteration, convene six expert agents in parallel.
+
+- Each operates in a clean, isolated context — no shared state, no conversation history, no cross-contamination.
+- Isolation forces each expert to reason from the code alone, catching what a single reviewer — or one anchored by another's analysis — would miss.
 
 The council returns one verdict: **ship**, **revise**, or **rework**, with every finding mapped to a specific location and a concrete suggestion.
 

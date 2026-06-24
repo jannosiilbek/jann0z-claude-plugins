@@ -5,11 +5,9 @@ description: Use when the user wants to check, validate, or audit the consistenc
 
 # DDD Align
 
-Audit a `spec/` directory for cross-artifact drift. The mechanical work is done by a
-harness — `scripts/check-align.mjs` — that parses every artifact and **proves** the
-cross-references (glossary ↔ DBML tables and enums, actors ↔ terms, use cases ↔ plan
-tasks, data assertions ↔ the closed assertion grammar, use cases ↔ live-test SQL).
-Your job on top of the harness is to judge the things a parser cannot see.
+- Audits a `spec/` directory for cross-artifact drift.
+- The mechanical work is done by a harness — `scripts/check-align.mjs` — that parses every artifact and **proves** the cross-references (glossary ↔ DBML tables and enums, actors ↔ terms, use cases ↔ plan tasks, data assertions ↔ the closed assertion grammar, use cases ↔ live-test SQL).
+- Your job on top of the harness is to judge the things a parser cannot see.
 
 Never hand-verify what the harness verifies. A human-sounding "I checked the glossary
 against the model and it looks consistent" is exactly the false-green this skill exists
@@ -29,12 +27,11 @@ there is nothing to audit (suggest `ddd-brief` to start a spec).
 node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spec/
 ```
 
-- Zero dependencies; no install step.
+Zero dependencies — no install step. Run the script directly.
+
 - Add `--require <list>` when auditing a milestone where specific artifacts must exist
   (e.g. `--require glossary,usecases,model,plan` for a "finished" pipeline). Without it,
   partial pipelines are legal — missing artifacts are informational.
-- The JSON output contract and the full check list (AL-01…AL-15) are documented in
-  `scripts/README.md`. Read it if a finding needs interpreting.
 
 ### 3. Judge the residue
 
@@ -90,16 +87,16 @@ recommendations belong in the Fix via column or above the footer, never after it
 the verdict is always where a reader (or a script) expects it.
 
 The **Fix via** column routes each finding to the skill that owns the artifact:
-glossary/flows → `ddd-domain`, use cases → `ddd-usecases`, model/DBML → `erd-modeler`,
-plan → `ddd-plan`, brief → `ddd-brief`. Never edit an artifact from inside ddd-align —
-audit and route; the owning skill carries the update protocol.
+glossary/flows → `ddd-domain`, use cases → `ddd-usecases`, api → `ddd-api`,
+model/DBML → `erd-modeler`, plan → `ddd-plan`, brief → `ddd-brief`. Never edit an
+artifact from inside ddd-align — audit and route; the owning skill carries the update
+protocol.
 
 ## As an exit gate
 
-The other pipeline skills run stage 2 (harness only) after writing their artifact and
-append the result to their own report. When invoked that way, skip stage 3 — the full
-judged audit is for explicit `ddd-align` invocations — but **self-correct first** instead
-of merely reporting the errors.
+- The other pipeline skills run stage 2 (harness only) after writing their artifact and append the result to their own report.
+- When invoked that way, skip stage 3 — the full judged audit is for explicit `ddd-align` invocations.
+- Self-correct first instead of merely reporting the errors.
 
 ### Self-correcting exit gate
 

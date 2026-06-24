@@ -1,7 +1,7 @@
 # Pipeline eval — Build-Readiness matrix
 
 _judge: n/a (held constant) · skills @ 5903e36dca28 · git f88e102 · n=1–5 per cell (replicated cells show median±σ)._
-_BRI 0–100. Bands: ≥85 ship-ready · 70–84 buildable-with-gaps · 50–69 underspecified · <50 not-buildable._
+_BRI 0–100. Bands: ≥85 ship-ready · 70–84 buildable-with-gaps · 50–69 underspecified · <50 not-buildable (defined in README.md §Metrics)._
 
 | Executor \ scenario | 01 (full) | 02 (full) | 03 (delta) |
 |---|---|---|---|

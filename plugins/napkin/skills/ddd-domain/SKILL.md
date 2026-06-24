@@ -5,11 +5,9 @@ description: Use when the user wants to build a glossary or ubiquitous language,
 
 # DDD Domain
 
-Distill a domain into its **ubiquitous language** (`spec/glossary.md`) and its
-**event flows** (`spec/flows.md`). These two artifacts are the semantic backbone of the
-pipeline: every actor, term, and enum spelling downstream — including the live-tested
-data model — traces back to what is written here. Precision now is what makes the
-alignment gate provable later.
+- Distills a domain into its **ubiquitous language** (`spec/glossary.md`) and its **event flows** (`spec/flows.md`).
+- These two artifacts are the semantic backbone of the pipeline: every actor, term, and enum spelling downstream traces back to what is written here.
+- Precision now is what makes the alignment gate provable later.
 
 The artifact grammar is defined once, in
 `${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/references/spec-format.md` — read its §1
@@ -68,6 +66,18 @@ Follow spec-format.md §3. The glossary is the single source of naming truth:
 - `- Forbidden synonyms:` wherever the domain has trap words (Client/Customer,
   User/Member) — the alignment gate warns when downstream prose uses them.
 
+### 4a. Update packages/domains in spec/stack.md
+
+When `spec/stack.md` exists and contains a `- packages/domains:` entry, replace it with
+one line per bounded context identified during storming:
+
+    - packages/domains/<bc>: <bc> bounded context
+
+where `<bc>` is the lowercase, hyphenated bounded context name (e.g. `enrollment`,
+`payment-processing`). Apply the §1.4 update protocol: read the full file first, replace
+only the `packages/domains` line(s), append one Changelog entry. If `spec/stack.md` does
+not exist or has no `packages/domains` line, skip this step silently.
+
 ### 5. Delta mode
 
 When updating existing artifacts, apply spec-format.md §1.4, plus the rules specific to
@@ -83,7 +93,7 @@ language artifacts:
 
 Run the **self-correcting exit gate** (ddd-align → "Self-correcting exit gate"): fix every
 **error** routed to `glossary.md` / `flows.md` (e.g. a non-glossary actor, a malformed
-`Maps to`, an undefined enumeration) and re-run until clean (≤3 passes) before reporting:
+`Maps to`, an undefined enumeration) and re-run until clean before reporting:
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spec/

@@ -17,5 +17,10 @@
 - List endpoints: p99 < 500ms
 - Write endpoints: p99 < 200ms
 
+## Code quality
+- DRY: yes
+- Dead code: none
+- Drift safety: spec-traced
+
 ## Changelog
 - 2026-06-22 (ddd-brief): created

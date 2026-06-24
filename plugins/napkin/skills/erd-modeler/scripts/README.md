@@ -1,9 +1,10 @@
 # ERD live-test harness
 
 `run-erd-test.mjs` loads a generated schema into an in-memory **PGlite** Postgres, seeds
-it, and runs labeled business-use-case queries with assertions. It is the oracle for
-stage 4 of the erd-modeler skill (see `../references/live-testing.md`). It is built to
-refuse **false-green**: an assertion passes only when it has actually proven something.
+it, and runs labeled business-use-case queries with assertions.
+
+- **Role:** oracle for stage 5 of the erd-modeler skill (see `../references/live-testing.md`).
+- **False-green prevention:** an assertion passes only when it has actually proven something.
 
 `selftest.mjs` is an adversarial regression suite that proves the oracle catches
 false-green (broken negative tests, vacuous passes, rowcount/rows conflation, fan-trap

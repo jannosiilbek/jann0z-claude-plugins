@@ -60,6 +60,13 @@ const EXPECTED_FILENAMES = {
 };
 const MARKER_RE = /<!--\s*ddd:\s*([a-z]+)\s*-->/;
 
+// Known preset conventions — inline to preserve zero-dependency contract.
+// Adding a new preset requires updating this map AND adding an AL-22 known value.
+const PRESET_CONVENTIONS = {
+  "hono-monorepo": { "File naming": "stereotype.identifier", "File structure": "flat per stereotype" },
+  "fastapi":       { "File naming": "stereotype_identifier",  "File structure": "flat per stereotype" },
+};
+
 // Heading shapes: `## UC-001 — Title` (em dash, single spaces).
 const ID_HEADING_RE = /^(#{2,3}) (UC-\d{3}|FL-\d{3}|T-\d{3}|M\d+) — (.+)$/;
 // Near-miss: starts like an ID heading but doesn't match the exact shape.
@@ -295,6 +302,30 @@ function parseNfr(art) {
   return { errorCodes };
 }
 
+function parseStack(art) {
+  const sections = {};
+  let currentSection = null;
+  // Looser field regex for stack.md that also captures path-style keys (e.g. apps/api).
+  const STACK_FIELD_RE = /^\s*- ([A-Za-z][A-Za-z0-9 /_-]*): (.*)$/;
+  for (let i = 0; i < art.lines.length; i++) {
+    const line = art.lines[i];
+    const h2 = line.match(/^## (.+)$/);
+    if (h2) {
+      currentSection = h2[1].trim();
+      if (!sections[currentSection]) sections[currentSection] = { fields: {}, pathEntries: [] };
+      continue;
+    }
+    if (!currentSection) continue;
+    const f = line.match(STACK_FIELD_RE);
+    if (f) {
+      const key = f[1].trim();
+      sections[currentSection].fields[key] = f[2].trim();
+      if (key.includes("/")) sections[currentSection].pathEntries.push(key);
+    }
+  }
+  return sections;
+}
+
 // ---------------------------------------------------------------- main
 
 const args = parseArgs(process.argv);
@@ -339,6 +370,7 @@ const ucs = artifacts.usecases ? parseUsecases(artifacts.usecases) : null;
 const plan = artifacts.plan ? parsePlan(artifacts.plan) : null;
 const apiOps = artifacts.api ? parseApi(artifacts.api) : null;
 const nfr = artifacts.nfr ? parseNfr(artifacts.nfr) : null;
+const stackSections = artifacts.stack ? parseStack(artifacts.stack) : null;
 
 // Trigger malformed-heading detection for artifacts not covered by extractItems.
 if (artifacts.brief) extractItems(artifacts.brief, "brief.md");
@@ -621,6 +653,64 @@ if (flows && ucs) {
       if (!ucTriggers.has(cmd)) {
         report("AL-19", "warn", "flows.md", n,
           `policy command "${cmd}" is not the trigger of any active use case — implement it as a UC or document the deferral`);
+      }
+    }
+  }
+}
+
+// --- AL-20..AL-24: stack.md structural checks (activate only when stack.md present)
+if (stackSections) {
+  // AL-20: ##Conventions must have File naming + File structure fields.
+  const conv = stackSections["Conventions"];
+  if (!conv) {
+    report("AL-20", "error", "stack.md", 1, "§Conventions section is missing");
+  } else {
+    for (const field of ["File naming", "File structure"]) {
+      if (!conv.fields[field]) {
+        report("AL-20", "error", "stack.md", 1, `§Conventions missing required field: ${field}`);
+      }
+    }
+  }
+
+  // AL-21: ##Structure must have Repo field + at least 3 path entries.
+  const struct = stackSections["Structure"];
+  if (!struct) {
+    report("AL-21", "error", "stack.md", 1, "§Structure section is missing");
+  } else {
+    if (!struct.fields["Repo"]) {
+      report("AL-21", "error", "stack.md", 1, "§Structure missing Repo field");
+    }
+    if (struct.pathEntries.length < 3) {
+      report("AL-21", "error", "stack.md", 1,
+        `§Structure has fewer than 3 path entries (found ${struct.pathEntries.length})`);
+    }
+  }
+
+  // AL-22: Preset: value must be a known preset name (when field is present).
+  const preset = stackSections["Runtime"]?.fields?.["Preset"];
+  if (preset !== undefined && !PRESET_CONVENTIONS[preset]) {
+    report("AL-22", "error", "stack.md", 1, `unknown Preset value: ${preset}`);
+  }
+
+  // AL-23: When Preset: declared, File naming + File structure must match preset's values.
+  if (preset && PRESET_CONVENTIONS[preset] && conv) {
+    for (const [field, expectedVal] of Object.entries(PRESET_CONVENTIONS[preset])) {
+      const actual = conv.fields[field];
+      if (actual && !actual.startsWith(expectedVal)) {
+        report("AL-23", "error", "stack.md", 1,
+          `§Conventions ${field} mismatch: expected "${expectedVal}…", got "${actual}"`);
+      }
+    }
+  }
+
+  // AL-24: ##Pipeline must exist with CI, Branching, and Branch map fields.
+  const pipeline = stackSections["Pipeline"];
+  if (!pipeline) {
+    report("AL-24", "error", "stack.md", 1, "§Pipeline section is missing");
+  } else {
+    for (const field of ["CI", "Branching", "Branch map"]) {
+      if (!pipeline.fields[field]) {
+        report("AL-24", "error", "stack.md", 1, `§Pipeline missing required field: ${field}`);
       }
     }
   }

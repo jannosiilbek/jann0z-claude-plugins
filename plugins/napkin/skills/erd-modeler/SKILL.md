@@ -5,15 +5,16 @@ description: Use when the user wants to design a data model, create an ERD, mode
 
 # ERD Modeler
 
-Turn a domain description into a clean, normalized **DBML** data model, **validate it
-against best practices**, then **prove it works by live-testing against a real in-memory
-Postgres (PGlite)** — looping with improvements until every business use-case passes.
+- Turns a domain description into a clean, normalized **DBML** data model.
+- Validates the model against best practices.
+- **Proves it works** by live-testing against a real in-memory Postgres (PGlite) — looping until every business use-case passes.
 
 ## Workflow
 
-Follow these stages in order. Stages 3–7 run on every invocation — never skip them,
-even for a "simple" model. (Stage 6, saving the model, is the primary deliverable and
-is never skipped.)
+Follow these stages in order.
+
+- **Stages 3–7 run on every invocation** — never skip them, even for a "simple" model.
+- **Stage 6** (saving the model) is the primary deliverable and is never skipped.
 
 ### 1. Understand the domain
 
@@ -69,7 +70,7 @@ with an empty entity set.
 - **Relationships** — how entities link, and the cardinality of each end.
 - **Business use-cases** — the concrete operations the system must support (e.g. "enroll
   a student in a course", "list all orders for a customer", "compute revenue per
-  product"). These become the live tests in stage 4.
+  product"). These become the live tests in stage 5.
 
 State your assumptions explicitly. Ask the user only when something is genuinely
 ambiguous and the choice changes the model.
@@ -124,7 +125,7 @@ model using this output template:
 - Add an `indexes` block for FK columns and natural lookup columns.
 - Use `Note:` to record intent where it helps a future reader.
 - DBML block keywords (`Table`, `Enum`, `Ref`, `indexes`) are **Capitalized**; all table,
-  column, and enum names are `lowercase_snake_case`. Do not lowercase keywords.
+  column, and enum names are `lowercase_snake_case` — see `references/metamodel.md` DBML cheat-sheet for the full rule.
 
 **DBML self-audit (required before moving on):** Before proceeding to stage 3, scan
 every table in the model and list every FK column that is **nullable** (no `not null`).
@@ -221,8 +222,7 @@ test run (e.g. `/tmp/erd-test-<n>/` or a `.erd-test/` subdir). In summary:
    - **Label every block exactly `-- usecase: UC-NNN/DA-N <description>`** when a
      `spec/usecases.md` exists: `UC-NNN` is the three-digit use case number and `DA-N`
      is the data-assertion number (e.g. `-- usecase: UC-001/DA-1 Enroll a student`).
-     No other format is valid — AL-14 matches this exact shape, and any deviation causes
-     the gate to treat the use case as never live-tested.
+     The canonical label format is defined in spec-format.md §5; AL-14 enforces it.
 4. **Run** the three files through the PGlite harness: `scripts/run-erd-test.mjs`.
 5. **Evaluate** the JSON result against the optimality checklist (every use-case `pass`,
    no `malformed`/`broken-test`, `usecases_total` matches your use-case count).
@@ -431,7 +431,7 @@ Iterations to convergence: N
 📄 Model saved to `<path>/model.dbml`
 📄 Decisions saved to spec/decisions.md (N decisions recorded)
 ✅ Compliant & live-tested — all use-cases pass, X issues fixed over Y iterations.
-➡️ Done — the validated, live-tested model is the deliverable.
+➡️ Next: run ddd-plan to build the implementation roadmap (or this is the final deliverable when running standalone).
 ````
 
 Severities:
@@ -440,11 +440,11 @@ Severities:
 - `⚠️ warn` — participation, naming, or trap risks (fix or flag clearly).
 - `ℹ️ info` — style suggestions.
 
-When a `spec/` directory exists, attempt to run the ddd-align harness below as a
-**self-correcting exit gate**. If the script does not exist at the path, skip this step
-and note its absence in the report. The
+When a `spec/` directory exists, run the ddd-align harness below as a
+**self-correcting exit gate** (install it via `${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/`
+if absent, and note the absence in the report until installed). The
 errors you own are the model/SQL checks — fix them in `model.dbml` / `usecases.sql` and
-re-run until clean (≤3 passes), then append the final one-line result:
+re-run until clean, then append the final one-line result:
 
 - **AL-01 / AL-02** — every glossary-mapped table exists in the model, and every model table
   traces back to a glossary term (name a bridge/relationship table's term too).
