@@ -82,7 +82,7 @@ model's chosen identity strategy (a stray `uuid` PK in a TypeID model, a `text` 
 auto-increment model, mixed strategies across tables, etc.). The strategy is one decision
 applied uniformly — a model must not mix forms.
 **Fix:** give every entity a single-column `id [pk]` in the chosen strategy's form
-(`references/metamodel.md` → "choose an identity strategy"): `text` TypeID + prefix `Note`
+(`metamodel.md` → "choose an identity strategy"): `text` TypeID + prefix `Note`
 (the default), `uuid` with `gen_random_uuid()`, or `bigint` identity. Keep a natural key
 as a `[unique, not null]` attribute when it matters. Bridge tables use a composite PK of
 the two FKs (each FK typed to its strategy).
@@ -243,6 +243,5 @@ never be entered.
 
 ## Pass condition
 
-The model passes when the corrected DBML has **zero `❌ error` findings** across all
-sections (A–D). Report any remaining `⚠️ warn` / `ℹ️ info` items — they do not block
-compliance but must be documented in the validation report with an explicit judgment.
+- The model passes when the corrected DBML has **zero `❌ error` findings** across all sections (A–D).
+- Report any remaining `⚠️ warn` / `ℹ️ info` items: they do not block compliance but must be documented in the validation report with an explicit judgment.

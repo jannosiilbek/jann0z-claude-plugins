@@ -1,16 +1,16 @@
 # The spec/ artifact format
 
 This is the **canonical grammar** for every artifact the napkin DDD pipeline reads and
-writes. The pipeline skills (`ddd-brief`, `ddd-domain`, `ddd-usecases`, `erd-modeler`,
-`ddd-plan`) generate these artifacts; the `check-align.mjs` harness in
-`../scripts/` parses them and mechanically proves their cross-references. Grammar and
-parser live in the same skill so they cannot drift apart — if you change one, change the
-other, and the selftest pins both.
+writes.
 
-Two audiences read these files: **humans**, who edit them by hand between pipeline runs,
-and **the parser**, which needs unambiguous anchors. The grammar is therefore plain,
-diff-friendly Markdown with a small set of strict shapes. Everything outside those shapes
-is free prose the parser ignores and the skills must preserve.
+- The napkin DDD pipeline skills generate these artifacts.
+- The `check-align.mjs` harness in `../scripts/` parses them and mechanically proves their cross-references.
+- Grammar and parser live in the same skill so they cannot drift apart — change one, change the other.
+- The selftest pins both: it fails when the parser diverges from the grammar.
+
+- **Human** editors modify them by hand between pipeline runs.
+- **The parser** needs unambiguous anchors — the grammar is plain, diff-friendly Markdown with a small set of strict shapes.
+- Everything outside those shapes is free prose the parser ignores and the skills must preserve.
 
 ## 1. Cross-cutting rules
 
@@ -143,15 +143,20 @@ Every artifact ends with:
 - 2026-06-11 (ddd-brief): created
 ```
 
-The **Pipeline sizing** block is the anti-bloat contract: it pre-declares which
-downstream stages this piece of work warrants, so a bug-fix-sized request never spawns a
-full artifact cascade. `full` = run everything; `lean` = skip stages marked `no`;
-`delta` = downstream skills update existing artifacts incrementally.
+The **Pipeline sizing** block is the anti-bloat contract: it pre-declares which downstream
+stages this piece of work warrants, so a bug-fix-sized request never spawns a full artifact
+cascade. Values:
+
+- `full` — run everything
+- `lean` — skip stages marked `no`
+- `delta` — downstream skills update existing artifacts incrementally
 
 ## 3. spec/glossary.md
 
-The ubiquitous language. One term per domain concept, exact spellings everywhere.
-This is the same format the erd-modeler skill consumes for structured intake.
+The ubiquitous language.
+
+- One term per domain concept — exact spellings everywhere.
+- The same format the erd-modeler skill consumes for structured intake.
 
 ```markdown
 # Glossary — <Project name>
@@ -270,6 +275,8 @@ a live-tested SQL assertion when erd-modeler runs.
   | `value=<v>` | a read returned exactly one cell equal to `<v>` |
   | `col:<name>=<v>` | a read returned one row whose column `<name>` equals `<v>` |
 
+  (Normative definition: `../../erd-modeler/scripts/README.md` §assertion grammar — the table above mirrors it.)
+
   In erd-modeler's live test, `UC-001`'s `DA-1` becomes the block label
   `-- usecase: UC-001/DA-1 <description>` with `-- expect: <assertion>` — a 1:1 mapping,
   which is what makes the spec executable rather than aspirational. Give every UC at
@@ -384,16 +391,18 @@ which grammar branch ddd-api uses for api.md.
 Known `Interface: Kind` values: `REST API`, `GraphQL`, `tRPC`, `CLI`, `library`,
 `full-stack`, `none`. When `none`, ddd-api is skipped and api.md is not written.
 
-`- Preset: <name>` — optional field in `## Runtime`; names the stack preset that
-produced this file (`hono-monorepo`, `fastapi`). When present, AL-22 validates it is a
-known preset name and AL-23 validates that `File naming:` and `File structure:` in
-`## Conventions` match the preset's declared values. Omit when no preset was used
-(Custom selection or pre-preset spec).
+`- Preset: <name>` — optional field in `## Runtime`; names the stack preset that produced
+this file (e.g. `hono-monorepo`, `fastapi`):
+- When present, AL-22 validates it is a known preset name.
+- When present, AL-23 validates that `File naming:` and `File structure:` in `## Conventions`
+  match the preset's declared values.
+- Omit when no preset was used (Custom selection or pre-preset spec).
 
-`## Conventions` fields — `File naming:` is free text; `stereotype.identifier` is the
-canonical keyword for the flat-stereotype pattern (one file per stereotype role per domain
-concept, e.g. `enrollment.aggregate.ts`, `enroll-student.usecase.ts`). Known `File
-structure:` values: `flat per stereotype`, `feature-sliced`, `domain-grouped`, `unknown`.
+`## Conventions` fields:
+- `File naming:` — free text; `stereotype.identifier` is the canonical keyword for the
+  flat-stereotype pattern (one file per stereotype role per domain concept,
+  e.g. `enrollment.aggregate.ts`, `enroll-student.usecase.ts`).
+- `File structure:` — known values: `flat per stereotype`, `feature-sliced`, `domain-grouped`, `unknown`.
 
 `## Structure` declares the repository layout. Each line is `- <path>: <one-line
 description>`. The canonical monorepo reference (one sample file per folder — no guessing
@@ -507,11 +516,11 @@ strongly recommended. `Branch map:` uses the notation
 `<branch-pattern> → <env>` with ` · ` as separator; `(manual)` appended to an env
 signals a manual workflow_dispatch promote rather than an automatic deploy.
 
-Extended `## Deployment` fields — `IaC:` the infrastructure-as-code tool, e.g. `Pulumi`,
-`Terraform`, `CDK`, `none`, `unknown`. `Clouds:` comma-separated target cloud(s), e.g.
-`aws, gcp`. `Environments:` comma-separated environment names in promotion order, e.g.
-`preview, staging, production`. `Preview:` how preview environments are created, e.g.
-`per-PR`, `manual`; omit when no preview environment exists.
+Extended `## Deployment` fields:
+- `IaC:` — infrastructure-as-code tool; e.g. `Pulumi`, `Terraform`, `CDK`, `none`, `unknown`.
+- `Clouds:` — comma-separated target cloud(s); e.g. `aws, gcp`.
+- `Environments:` — comma-separated environment names in promotion order; e.g. `preview, staging, production`.
+- `Preview:` — how preview environments are created; e.g. `per-PR`, `manual`; omit when no preview environment exists.
 
 ## 8. spec/nfr.md
 
@@ -692,13 +701,8 @@ nfr.md ────────────────────────�
 ```
 
 `check-align.mjs` proves these edges mechanically (see `../scripts/README.md` for the
-full check list AL-01…AL-24): glossary↔DBML table tracing, enum spelling fidelity,
+full check list AL-00…AL-24): glossary↔DBML table tracing, enum spelling fidelity,
 actor closure, UC→plan coverage, DA grammar validity, UC→usecases.sql labeling,
 ID uniqueness, and dependency acyclicity. Run it after every artifact write; a spec
 that fails the gate is not done.
 
-- **AL-20** — `stack.md §Conventions` shape: section must exist; `File naming:` and `File structure:` fields must be present.
-- **AL-21** — `stack.md §Structure` shape: section must exist; `Repo:` field must be present; at least 3 path entries (`- <path>/…: …` lines) must be present.
-- **AL-22** — `stack.md §Runtime Preset:` value must be a known preset name when the field is present.
-- **AL-23** — When `Preset:` is declared, `File naming:` and `File structure:` in `§Conventions` must match the preset's canonical values.
-- **AL-24** — `stack.md §Pipeline` shape: section must exist; `CI:`, `Branching:`, and `Branch map:` fields must be present.

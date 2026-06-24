@@ -50,7 +50,7 @@
 - tests/e2e: browser flows (cross-domain)
 - tests/fixtures: playwright fixtures
 
-Reference tree (one sample file per folder — implementing agents use this as the canonical layout):
+Reference tree (one sample file per folder — see spec-format.md §7 for the annotated canonical layout):
 
 ```
 apps/

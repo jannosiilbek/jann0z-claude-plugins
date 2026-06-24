@@ -5,11 +5,9 @@ description: Use when the user wants to build a glossary or ubiquitous language,
 
 # DDD Domain
 
-Distill a domain into its **ubiquitous language** (`spec/glossary.md`) and its
-**event flows** (`spec/flows.md`). These two artifacts are the semantic backbone of the
-pipeline: every actor, term, and enum spelling downstream — including the live-tested
-data model — traces back to what is written here. Precision now is what makes the
-alignment gate provable later.
+- Distills a domain into its **ubiquitous language** (`spec/glossary.md`) and its **event flows** (`spec/flows.md`).
+- These two artifacts are the semantic backbone of the pipeline: every actor, term, and enum spelling downstream traces back to what is written here.
+- Precision now is what makes the alignment gate provable later.
 
 The artifact grammar is defined once, in
 `${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/references/spec-format.md` — read its §1
@@ -95,7 +93,7 @@ language artifacts:
 
 Run the **self-correcting exit gate** (ddd-align → "Self-correcting exit gate"): fix every
 **error** routed to `glossary.md` / `flows.md` (e.g. a non-glossary actor, a malformed
-`Maps to`, an undefined enumeration) and re-run until clean (≤3 passes) before reporting:
+`Maps to`, an undefined enumeration) and re-run until clean before reporting:
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spec/

@@ -42,7 +42,7 @@ infra/
 
 Each infra preset contains the `## Deployment` and `## Pipeline` sections; both are merged into `stack.md` after the stack preset is applied. The stack preset does **not** include these sections — they come exclusively from the infra preset.
 
-Each file is a **complete `stack.md` + `nfr.md` template** in the same markdown format that the pipeline writes. The skill reads the file and copies it verbatim, substituting only the project name. Presets stay in sync with the artifact grammar defined in `spec-format.md` by construction — they are valid artifact stubs.
+Each file is a **complete `stack.md` template** in the same markdown format that the pipeline writes. The skill reads the file and copies it verbatim, substituting only the project name. Presets stay in sync with the artifact grammar defined in `spec-format.md` by construction — they are valid artifact stubs.
 
 Each preset includes:
 
@@ -109,7 +109,7 @@ All three infra presets share the same shape; only `Clouds:` differs. Each conta
 
 ## Elicitation flow change (`ddd-brief`)
 
-Two preset dispatch questions are added before Tier 1 domain questions, neither counted against the ~5 question budget:
+Three preset dispatch questions are added before Tier 1 domain questions, none counted against the ~5 question budget:
 
 **Q1 — Stack:**
 > "Which stack? **(1) Hono monorepo** [default — TypeScript, Hono, Drizzle, Vitest] / **(2) FastAPI** [Python, SQLAlchemy, pytest] / **(3) Custom** [answer the questions manually]"
@@ -145,7 +145,7 @@ This is a delta update per the §1.4 update protocol (read first, touch only tha
 
 ## Gate enforcement (`check-align.mjs`)
 
-Three new checks, activating whenever `spec/stack.md` is present:
+Five new checks, activating whenever `spec/stack.md` is present:
 
 ### AL-20 — `## Conventions` shape
 

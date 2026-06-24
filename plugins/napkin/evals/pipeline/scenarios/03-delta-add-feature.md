@@ -5,7 +5,7 @@ sizing: delta
 seed: ../../../skills/ddd-align/scripts/fixtures/golden/spec
 ---
 The spec in ./spec already describes a course-enrollment platform (students enroll in courses,
-enrollments have a status). This is an existing, aligned spec — do NOT regenerate it.
+enrollments have a status). Make the incremental change only — treat this as an existing, aligned spec.
 
 New requirement: add **course waitlists**. When a course is full, a student joins its waitlist
 instead of enrolling. A student holds at most one waitlist entry per course. When a seat opens

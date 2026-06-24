@@ -6,7 +6,8 @@ argument-hint: "[plan|edit]"
 
 # Doc Align
 
-Scans every `.md` file in the project, detects documentation violations, and fixes them — looping until a full pass finds zero violations. Works on markdown documents only: CLAUDE.md, READMEs, spec files, ADRs, runbooks. Never touches code files.
+- Scans every `.md` file in the project, detects documentation violations, and fixes them — looping until a full pass finds zero violations.
+- Markdown files only — code files are never modified.
 
 ## Mode
 
@@ -21,7 +22,7 @@ Scans every `.md` file in the project, detects documentation violations, and fix
 
 **Exclude:** `node_modules/`, `.git/`, `vendor/`, `dist/`, `build/`, `coverage/`, `.cache/`, any `*-workspace/` directory, files larger than 100 KB (flag, skip).
 
-**Link surfaces to update after renames:** all `.md` files, `plugin.json`, `evals.json` path references, skill `references/` entries.
+**Link surfaces to update after renames:** all `.md` files in the project.
 
 ## Phase 1 — Inventory
 

@@ -3,8 +3,8 @@
 ## EARS — the four shapes
 
 EARS (Easy Approach to Requirements Syntax) constrains acceptance criteria to shapes
-that are unambiguous and individually testable. Pick the shape that fits; don't force
-one:
+that are unambiguous and individually testable (canonical shapes defined in
+`ddd-align/references/spec-format.md §5`). Pick the shape that fits; don't force one:
 
 | Shape | Template | Use for |
 |-------|----------|---------|
@@ -24,7 +24,7 @@ What makes a criterion *good* inside the shape:
 ## The assertion bridge
 
 Every data assertion's `=> expect:` tail uses erd-modeler's **closed assertion
-grammar** — erd-modeler's `scripts/README.md` is normative; this table mirrors it:
+grammar** — erd-modeler's `../../erd-modeler/scripts/README.md` is normative; this table mirrors it:
 
 | Assertion | Proves | Use with |
 |-----------|--------|----------|

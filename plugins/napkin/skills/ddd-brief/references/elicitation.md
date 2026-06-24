@@ -40,20 +40,9 @@ question.
 
 ## Stack/NFR coverage checklist
 
-## Preset dispatch (before Tier 1/2, not counted against the 5-question budget)
-
-| Dimension | Question | Auto-resolved when |
-|-----------|----------|--------------------|
-| Stack | "Which stack? (1) Hono monorepo [default] / (2) FastAPI / (3) Custom" | Material names a framework |
-| Cloud | "Which cloud? (1) Both [default — AWS + GCP] / (2) GCP / (3) AWS / (4) Custom" | Material names a cloud or IaC target |
-| CI | "Which CI? (1) GitHub Actions [default] / (2) Custom" | Material names a CI system |
-
-Named selections read the corresponding preset file and mark all fields in that dimension
-as covered. Custom selections fall through to Tier 1/2 for that dimension only. Ask
-questions in order (stack → cloud → CI) — Q1's answer may auto-resolve Q3 (e.g. "we use
-GitHub Actions" in Q1 material).
-
-A stack.md + nfr.md are complete when each area is either answered or recorded as `unknown`:
+Preset dispatch questions (Q1 Stack, Q2 Cloud, Q3 CI) are specified in full in §2a of
+the skill. After the preset dispatch, a stack.md + nfr.md are complete when each area
+is either answered or recorded as `unknown`:
 
 **Tier 1 — always ask if uncovered (affect every downstream stage):**
 
@@ -77,9 +66,8 @@ Walk these areas against provided material first. Only genuinely uncovered areas
 question — and only one question per message. If the user has no preference, write
 `unknown`; the alignment checks skip those fields.
 
-`DRY`, `Dead code`, and `Drift safety` are team-wide quality stances, not project-specific
-choices. Always write `## Code quality` in nfr.md with `DRY: yes`, `Dead code: none`,
-`Drift safety: spec-traced`. Never ask; never omit.
+`DRY`, `Dead code`, and `Drift safety` — team-wide quality stances; write per §4a
+defaults in the skill.
 
 ## Sizing rubric (the anti-bloat contract)
 

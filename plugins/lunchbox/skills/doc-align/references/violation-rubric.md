@@ -24,7 +24,7 @@ The claim is in a doc whose type does not match the claim's function.
 |----------|------|-------------|
 | `CLAUDE.md` | Behavioral rules for AI agents; project-specific overrides | General principles that apply globally (those belong in user-level scope) |
 | `README.md` | Entry point, orientation, where-to-go-next | Full setup steps, design decisions |
-| `spec/*.md` | Domain facts, system requirements, data model | How to run, deploy, or operate |
+| Requirements / domain docs | Domain facts, system requirements, data model | How to run, deploy, or operate |
 | ADRs / `decisions.md` | One architectural decision + rationale | Current system state |
 | Runbooks / how-to guides | Step-by-step operational procedures | Why the system was designed this way |
 

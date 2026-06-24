@@ -5,11 +5,8 @@ description: Use when the user wants to write an API contract, derive interface 
 
 # DDD API
 
-Derive `spec/api.md` from the use cases and stack contract: every active UC gets one
-operation block in the grammar that matches the declared interface kind. The API spec
-is what bridges domain intent (use cases) to implementation reality (endpoints,
-signatures, error codes) — written once here, it stays consistent across all tasks in
-the plan and across all agents that implement them.
+- Derives `spec/api.md` from the use cases and stack contract: every active UC gets one operation block in the grammar that matches the declared interface kind.
+- The API spec bridges domain intent (use cases) to implementation reality (endpoints, signatures, error codes) — written once here, it stays consistent across all tasks and agents that implement them.
 
 The artifact grammar is defined once, in
 `${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/references/spec-format.md` — read its §1
@@ -80,9 +77,9 @@ Apply spec-format.md §1.4, plus:
 
 ### 6. Gate
 
-Run the **self-correcting exit gate**: fix every **error** routed to `api.md`
-(AL-17: missing entry for active UC, AL-18: undeclared error code) and re-run until
-clean (≤3 passes) before reporting:
+Run the **self-correcting exit gate** (ddd-align → "Self-correcting exit gate"): fix every
+**error** routed to `api.md` (AL-17: missing entry for active UC, AL-18: undeclared error
+code) and re-run until clean before reporting:
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spec/

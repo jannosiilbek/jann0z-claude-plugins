@@ -1,10 +1,11 @@
 # Pipeline eval — end-to-end, model-matrix, build-readiness
 
-This is the **integration tier** of the napkin eval suite. The per-skill (unit) evals live
-under each skill at `skills/<skill>/evals/` and are run by skill-creator (its standard,
-untouched). This suite is different: it runs the **whole DDD pipeline** end-to-end on a
-scenario, then rates how **buildable** the produced `spec/` is — across a **matrix of
-models** — so you can harden the skills for weaker models and validate every improvement.
+This is the **integration tier** of the napkin eval suite — distinct from the per-skill
+unit evals (which live under `skills/<skill>/evals/` and are run by skill-creator). It:
+
+- Runs the **whole DDD pipeline** end-to-end on a scenario
+- Rates how **buildable** the produced `spec/` is (BRI 0–100)
+- Covers a **matrix of models** so you can harden skills for weaker models and validate every improvement
 
 ## What it does
 
@@ -13,11 +14,13 @@ For every **executor model × scenario** cell:
 1. **Runs the pipeline** stage by stage via `claude -p` (cwd = a fresh run dir, `CLAUDECODE`
    stripped so the CLI can nest, `--permission-mode bypassPermissions` so stages can write
    files *and* run the harness scripts unattended — trusted skills in a throwaway dir):
-   `ddd-brief → ddd-domain → ddd-usecases → erd-modeler → ddd-plan`. Each stage names its
-   skill explicitly. (One `claude -p` per stage mirrors skill-creator's "one skill per
+   `ddd-brief → ddd-domain → ddd-usecases → erd-modeler → ddd-plan`. The runner covers
+   these five core stages; `ddd-api` is optional and not driven by the runner (exercised
+   via scenario when a project has an external API surface). Each stage names its skill
+   explicitly. (One `claude -p` per stage mirrors skill-creator's "one skill per
    invocation" and keeps each stage debuggable.)
 2. **Grades the produced `spec/`** with `grade.mjs`:
-   - **Mechanical** (objective, reproducible): `check-align.mjs` (AL-01…AL-19) and, when the
+   - **Mechanical** (objective, reproducible): `check-align.mjs` (AL-00…AL-24) and, when the
      SQL trio is present, `run-erd-test.mjs` (PGlite live-test) → alignment, coverage %s,
      live-test pass rate, plan acyclicity, reference validity.
    - **Judged** (only what a parser can't see), from the perspective of **Claude Code +
@@ -92,8 +95,8 @@ Defined in `models.json` (edit it to add a model — no code change):
 - **judge** — held **constant** (default Opus 4.8) across the whole matrix, so BRI is
   comparable down a column. A weak judge could otherwise flatter a weak executor.
 
-`results/matrix.md` is the headline: executor rows × scenario columns, each cell `BRI (band)`.
-A low cell is diagnosable from `results/latest.md` (per-metric scores + the judge's `top_gaps`).
+- `results/matrix.md` is the headline: executor rows × scenario columns, each cell `BRI (band)`.
+- A low cell is diagnosable from `results/latest.md` (per-metric scores + the judge's `top_gaps`).
 
 ## Metrics — the Build-Readiness Index
 
@@ -103,7 +106,7 @@ ones are LLM-scored):
 | Metric | Wt | Source | The number |
 |--------|----|--------|------------|
 | Clarity | 0.25 | judged (isolated) | a **dedicated** judge pass (spec only — no mechanical signals, no other metrics) reports the blocking-question COUNT; harness derives the score via a diminishing-returns curve `100·8/(8+count)` (0q→100, 2q→80, 6q→57). Isolation removes the measured cross-metric/anchoring inflation; median-of-N removes residual jitter. |
-| Alignment | 0.20 | mechanical | `100 − 15·errors − 5·warnings` (check-align AL-01…AL-19) |
+| Alignment | 0.20 | mechanical | `100 − 15·errors − 5·warnings` (check-align AL-00…AL-24) |
 | Completeness | 0.20 | hybrid | mean of UC→task and UC→live-test coverage %, minus orphan/untraced-table penalty |
 | Testability | 0.20 | hybrid | mean of EARS %, data-assertion %, live-test pass rate, and judged non-vacuous-AC % |
 | Actionability | 0.15 | hybrid | plan acyclic + refs resolve (mechanical) blended with judged task-sizing |
@@ -113,11 +116,11 @@ With `--no-judge`, clarity is dropped and the remaining weights are renormalized
 
 ## Scenarios
 
-`scenarios/*.md` — each is committed: YAML frontmatter (`id`, `title`, `sizing`, `seed`) +
-a body that is the user request handed to `ddd-brief`. A `seed:` path (relative to
-`scenarios/`) is copied in as the starting `spec/` for **delta** scenarios. Current set:
-greenfield SaaS (`01`), greenfield marketplace (`02`), and a delta change against the golden
-spec (`03`).
+`scenarios/*.md` — each is committed:
+
+- YAML frontmatter (`id`, `title`, `sizing`, `seed`) + a body that is the user request handed to `ddd-brief`.
+- A `seed:` path (relative to `scenarios/`) is copied in as the starting `spec/` for **delta** scenarios.
+- Current set: greenfield SaaS (`01`), greenfield marketplace (`02`), delta against the golden spec (`03`).
 
 ## Notes
 
