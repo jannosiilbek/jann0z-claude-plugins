@@ -27,11 +27,11 @@ there is nothing to audit (suggest `ddd-brief` to start a spec).
 node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spec/
 ```
 
+Zero dependencies — no install step. Run the script directly.
+
 - Add `--require <list>` when auditing a milestone where specific artifacts must exist
   (e.g. `--require glossary,usecases,model,plan` for a "finished" pipeline). Without it,
   partial pipelines are legal — missing artifacts are informational.
-- The JSON output contract and the full check list (AL-00…AL-24) are documented in
-  `scripts/README.md`. Read it if a finding needs interpreting.
 
 ### 3. Judge the residue
 
