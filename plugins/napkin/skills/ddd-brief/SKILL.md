@@ -45,23 +45,39 @@ Every question asked and answer received is appended to the brief's
 **Clarifications log** — that log is the audit trail that lets a future session see why
 the spec says what it says.
 
-### 2a. Elicit stack and NFR — four questions max
+### 2a. Elicit stack, infra, and CI — three dispatch questions, none count against the 5-question budget
 
-After the domain elicitation (or in parallel when provided material already answers
-domain questions), work through the stack/NFR coverage checklist in
-`references/elicitation.md`. For each area:
+Ask these three questions **before** domain Tier 1/2 questions. Each is a dispatch —
+selecting a named option reads a preset file and considers that dimension fully covered.
+Custom runs the existing Tier 1/2 elicitation for that dimension only.
 
-- If provided material already answers it, record the answer — **never re-ask**.
-- If genuinely uncovered, ask — **one question per message**, multiple-choice where
-  possible, in this priority order:
-  1. **Interface type** — REST API / GraphQL / tRPC / CLI / library / full-stack / none
-  2. **Language + framework** — what runtime and web framework?
-  3. **Auth mechanism** — JWT / session / API key / OAuth2 / none
-  4. **Error contract shape** — RFC 7807 / `{code, message}` / framework default / unknown
-- If the user has no preference on a field, write `unknown` — alignment checks skip
-  unknown fields.
-- When `Interface: Kind = none`, set `ddd-api: no` in the sizing block and skip the
-  api.md prompt — there is no external surface to spec.
+**Q1 — Stack (ask first):**
+> "Which stack? **(1) Hono monorepo** [default — TypeScript, Hono, Drizzle, Vitest] /
+> **(2) FastAPI** [Python, SQLAlchemy, pytest] / **(3) Custom** [I'll answer the questions]"
+
+**Q2 — Cloud (ask second):**
+> "Which cloud? **(1) Both** [default — AWS + GCP, Pulumi] / **(2) GCP** / **(3) AWS** /
+> **(4) Custom**"
+
+**Q3 — CI (ask third):**
+> "Which CI? **(1) GitHub Actions** [default — GitHub Flow, preview/staging/production] /
+> **(2) Custom**"
+
+Auto-resolution rules (skip the question when provided material already answers it):
+- Q1: auto-resolved when material names a framework (`Hono`, `FastAPI`, etc.)
+- Q2: auto-resolved when material names a cloud provider or IaC target
+- Q3: auto-resolved when material names a CI system
+
+Preset file locations (relative to `${CLAUDE_PLUGIN_ROOT}/skills/ddd-brief/`):
+- Stack preset: `references/stacks/<name>.md` where `<name>` is `hono-monorepo` or `fastapi`
+- Infra preset: `references/infra/<name>.md` where `<name>` is `both`, `gcp`, or `aws`
+
+When reading infra preset files, resolve the `<env-config>` placeholder before writing:
+- TypeScript stack → `dotenv`
+- Python stack → `python-dotenv`
+
+**DRY, dead code, and drift safety** are never asked — always write `## Code quality` in
+nfr.md with `DRY: yes`, `Dead code: none`, `Drift safety: spec-traced`.
 
 ### 3. Size the pipeline
 
@@ -100,18 +116,44 @@ block, clarifications table, changelog).
 
 ### 4a. Write or update spec/stack.md and spec/nfr.md
 
-Follow the skeletons in spec-format.md §7 and §8 exactly.
+**Greenfield:** Read the selected stack preset file and the selected infra preset file.
+Merge them: stack preset content first, then `## Deployment` and `## Pipeline` from the
+infra preset (with `<env-config>` resolved), then the nfr.md defaults. Substitute
+`<Project name>` with the project name from the brief and `<DATE>` with today's date.
+Write the merged result as `spec/stack.md` and `spec/nfr.md`.
 
-- **Greenfield**: create both files (creating `spec/` if needed).
-- **Delta mode**: apply spec-format.md §1.4 — touch only fields whose answers changed,
-  preserve user edits verbatim, append one Changelog line. Never regenerate wholesale.
-- Omit sections the user didn't specify — no placeholders. An nfr.md with only
-  `## Error contracts` and `## Auth` is correct if the user didn't address performance.
-- **Exception**: when `Interface: Kind = none`, always write `Interface: Kind: none`
-  explicitly in stack.md — do not omit the section. ddd-api reads this field to determine
-  whether to skip.
-- `unknown` values: a field the user has no opinion on is written as `unknown`. The
-  alignment checks skip unknown fields; the implementing agent uses framework defaults.
+If the user selected Custom for any dimension, elicit that dimension's fields via Tier
+1/2 questions (§2a) and write the resulting values into the appropriate sections instead
+of copying from the preset.
+
+**Delta mode:** apply spec-format.md §1.4 — touch only fields whose answers changed,
+preserve user edits verbatim, append one Changelog line. Never regenerate wholesale.
+Omit sections the user didn't specify — no placeholders. An nfr.md with only
+`## Error contracts` and `## Auth` is correct if the user didn't address performance.
+
+**Exception:** when `Interface: Kind = none`, always write `Interface: Kind: none`
+explicitly in stack.md — do not omit the section.
+
+`unknown` values: a field the user has no opinion on is written as `unknown`. The
+alignment checks skip unknown fields; the implementing agent uses framework defaults.
+
+**Defaults always written — no elicitation needed:**
+
+- **`## Conventions` in stack.md** — always include. Default is `File naming: stereotype.identifier
+  (e.g. enrollment.aggregate.ts, enroll-student.usecase.ts)` and `File structure: flat per stereotype`.
+  Write the elicited value if the user confirmed a different convention; write the default
+  if they confirmed it or if it was not asked yet.
+- **`## Integrations` in stack.md** — include with `Adapter pattern: yes`, `Mock: yes`,
+  `Mock activation: USE_MOCK=true`, `Mock scope: local dev, unit tests, e2e` whenever the
+  brief or domain mentions any external service, API, or third-party integration. Omit
+  only when the system has no external dependencies at all.
+- **`## Structure` in stack.md** — always include the canonical monorepo layout (see
+  spec-format.md §7 reference tree). Write the default workspace list; customise
+  `packages/domains` entries once bounded contexts are known (update this field when running
+  ddd-domain, or leave generic for the implementing agent).
+  Omit entries that don't apply (e.g. omit `apps/www` for a pure API product).
+- **`## Code quality` in nfr.md** — always include with `DRY: yes`, `Dead code: none`,
+  `Drift safety: spec-traced`. Never ask; never omit.
 
 ### 5. Gate
 
@@ -142,7 +184,7 @@ exists after ddd-api runs).
 | Scope | 3 in / 2 out |
 | Constraints | 2 |
 | Pipeline sizing | full — greenfield system of record |
-| Stack | TypeScript / Fastify / REST API / JWT |
+| Stack | TypeScript / Hono / REST API / JWT |
 | NFR | auth + error contracts + performance |
 
 Clarifications this session: N asked, M answered from provided material
