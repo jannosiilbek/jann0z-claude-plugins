@@ -136,18 +136,6 @@ function parseCanvas(text) {
 // Section structure parsing
 // ---------------------------------------------------------------------------
 
-function extractFeaturesBlock(text) {
-  const lines = text.split('\n');
-  let inFeatures = false;
-  const result = [];
-  for (const line of lines) {
-    if (/^## Features\s*$/.test(line)) { inFeatures = true; continue; }
-    if (inFeatures && /^## /.test(line)) break;
-    if (inFeatures) result.push(line);
-  }
-  return result.join('\n');
-}
-
 function extractSectionBlock(text, sectionHeading) {
   const target = sectionHeading.toLowerCase();
   const lines = text.split('\n');
