@@ -29,8 +29,10 @@ passed both gates.
 ## The canvas
 
 Lives at `product.md` in the current working directory. Create it on first commit.
-See [canvas-format.md](references/canvas-format.md) for the exact structure,
-field rules, and examples.
+
+Five top-level parts in fixed order: intro block, then **Personas**, **Technical Constraints**, **Glossary**, **Features**. Not every section needs entries on day one — add sections as the product takes shape.
+
+See [canvas-format.md](references/canvas-format.md) for the exact structure, field rules, sentence-count table, style-lock rules, and examples for every section type.
 
 ## Modes
 
@@ -48,6 +50,8 @@ follows from the current canvas. Covered in [analysis-modes.md](references/analy
 **Expert panel** — When the user asks for expert opinions, a deep dive, or "what would
 [role] say about this". Spawn parallel expert agents. Read [experts.md](references/experts.md).
 
+**Alignment gate** — When the user asks to check alignment, validate the canvas, or run the gate. Also runs after every commit. Six cross-section checks: glossary coverage, persona ↔ feature coverage, constraint ↔ feature consistency, access ↔ feature coherence, ambiguity scan, duplicate intent. All issues must resolve before the canvas is considered complete. Read [analysis-modes.md](references/analysis-modes.md) for the full check list and output format. Output lives in the conversation only — never written to the canvas.
+
 Never push to commit during exploration. The commit happens when the user says so.
 
 ## The gate (runs before every write)
@@ -59,18 +63,12 @@ node <skill-dir>/scripts/lint-canvas.mjs --canvas product.md --entry "<entry mar
 ```
 
 `<skill-dir>` is the directory containing this SKILL.md. `product.md` is resolved
-from the user's current working directory. The entry markdown must start with
-`#### Feature name`.
+from the user's current working directory. The entry markdown starts with
+`#### [entry name]`.
 
-The linter checks: all fields present, correct sentence counts, no verb-phrase name,
-no conversation references, no sub-bullets. If it fails, auto-fix the violations,
-show the user exactly what changed (old vs new for each field), then re-run.
-Only proceed once lint passes.
+The linter auto-detects the entry's section type from its field names (Role/Goal/Access/Friction → Personas; What/Shapes → Technical Constraints; Means → Glossary; What/Why it matters/Sharpest constraint → Features). It checks: all required fields present for that section type, correct sentence counts per field (see the sentence-count table in [canvas-format.md](references/canvas-format.md)), no verb-phrase name, no conversation references, no sub-bullets. If it fails, auto-fix the violations, show the user exactly what changed (old vs new for each field), then re-run. Only proceed once lint passes.
 
-**Step 2 — Style calibration.** When the canvas has at least one existing entry,
-compare the new entry's per-field word count against the existing average (±20%
-tolerance per field). If any field is out of range, rewrite it to match, show
-the change, then pass to Step 3.
+**Step 2 — Style calibration.** Word-count calibration runs within same-section-type only (personas against personas, constraints against constraints, glossary against glossary, features against features). Skip calibration when no same-type entries exist yet. Register matching is canvas-wide: read the two most recent entries from anywhere on the canvas to establish register. If any field is out of range (±20% per field), rewrite it to match, show the change, then pass to Step 3. See the style-lock rules in [canvas-format.md](references/canvas-format.md).
 
 **Step 3 — Assign section.** Determine the best section for this feature. Show the
 proposed placement before writing: "I'd put this under **[Section]** — ok?" If the
