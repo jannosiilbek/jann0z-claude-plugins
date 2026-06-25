@@ -33,6 +33,15 @@
 
 ---
 
+## Foundation
+
+#### [Component name]
+**Does:** [One sentence. What this core engine component does in the running system.]
+**Powers:** [One or two sentences. What capabilities it gives the rest of the system — which features build on it.]
+**Built on:** [Optional. One line. The specific technology, service, or framework that implements it.]
+
+---
+
 ## Glossary
 
 #### [Term]
@@ -55,7 +64,7 @@
 The intro block is written once, on first commit. All three fields are required —
 if any can't be filled without guessing, ask one question before proceeding.
 
-The section order is fixed: **Personas → Technical Constraints → Glossary → Features**.
+The section order is fixed: **Personas → Technical Constraints → Foundation → Glossary → Features**.
 Not every section needs entries on day one; add sections as the product takes shape.
 
 ---
@@ -146,6 +155,39 @@ what features are possible and how they must be designed. Flat — no ### groups
 
 ---
 
+## Foundation
+
+The core engine components the whole system is built on — the substrate that features draw their
+power from. Distinct from Technical Constraints: constraints describe what limits the build,
+Foundation describes what the build runs on. Flat — no ### groups.
+
+**Entry template:**
+
+```markdown
+#### [Component name]
+**Does:** [One sentence. What this core engine component does in the running system.]
+**Powers:** [One or two sentences. What capabilities it gives the rest of the system — which features build on it.]
+**Built on:** [Optional. One line. The specific technology, service, or framework that implements it.]
+```
+
+**Field rules:**
+
+- **Component name** — Noun phrase, 2–4 words. Not a verb phrase.
+- **Does** — Exactly one sentence. What this component does as the system runs — its job in the engine.
+- **Powers** — One or two sentences. What it enables across the rest of the system; which features depend on it.
+- **Built on** *(optional)* — One line. The specific technology, service, or framework that implements it. Use when the implementation isn't obvious from the Does field.
+
+**Example:**
+
+```markdown
+#### Inference Engine
+**Does:** Runs LLM completions and tool-calling loops for every agent action.
+**Powers:** Agent reasoning, feature suggestions, and the expert panel all route through it.
+**Built on:** Claude Sonnet 4.6 via the Anthropic API.
+```
+
+---
+
 ## Glossary
 
 Shared definitions for terms used across the canvas. Flat — no ### groups.
@@ -223,6 +265,9 @@ the feature.
 | Technical Constraints | What | exactly 1 |
 | Technical Constraints | Shapes | 1–2 |
 | Technical Constraints | Locked by | 1 line (no sentence required) |
+| Foundation | Does | exactly 1 |
+| Foundation | Powers | 1–2 |
+| Foundation | Built on | 1 line (no sentence required) |
 | Glossary | Means | exactly 1 |
 | Glossary | Disambiguates | 1 line (no sentence required) |
 | Features | What | exactly 1 |
@@ -237,7 +282,7 @@ the feature.
 When adding any entry (feature, persona, constraint, or term):
 
 1. Read the two most recent entries **from anywhere on the canvas** to establish register (technical vs. product/user language). If the canvas has no existing entries, skip register calibration.
-2. Compute per-field word count against **same-section-type entries only** (personas against personas, constraints against constraints, glossary against glossary, features against features). Field names differ across types — cross-type comparison is meaningless.
+2. Compute per-field word count against **same-section-type entries only** (personas against personas, constraints against constraints, foundation against foundation, glossary against glossary, features against features). Field names differ across types — cross-type comparison is meaningless.
 3. Land within ±20% of that per-field average. Skip word-count calibration if no same-type entries exist yet (first entry of that section type).
 4. Match register canvas-wide: if existing entries use technical language, match it; if they use product/user language, match that.
 5. Never adjust existing entries to match the new one — the existing entries are the baseline.
