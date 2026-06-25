@@ -88,3 +88,30 @@ describe('Feature entries (existing behavior)', () => {
     assert.ok(r.output.includes('not inside any section'), r.output);
   });
 });
+
+describe('Section-type detection via --entry', () => {
+  test('valid persona entry passes', () => {
+    const entry = `#### Solo indie hacker
+**Role:** A solo developer shipping products without a team.
+**Goal:** Validate and launch ideas without operational overhead.
+**Access:** terminal CLI, MCP server
+**Friction:** Context switching between disconnected tools fragments their flow.`;
+    const r = lint('', entry);
+    assert.ok(r.pass, `Expected PASS for valid persona entry:\n${r.output}`);
+  });
+
+  test('valid technical constraint entry passes', () => {
+    const entry = `#### Cloud-only deployment
+**What:** All data lives in cloud infrastructure with no local persistence layer.
+**Shapes:** Features requiring offline access or local-first sync are out of scope; latency assumptions apply to all operations.`;
+    const r = lint('', entry);
+    assert.ok(r.pass, `Expected PASS for valid constraint entry:\n${r.output}`);
+  });
+
+  test('valid glossary entry passes', () => {
+    const entry = `#### Agent
+**Means:** An autonomous process that can invoke tools and make decisions without per-action user confirmation.`;
+    const r = lint('', entry);
+    assert.ok(r.pass, `Expected PASS for valid glossary entry:\n${r.output}`);
+  });
+});

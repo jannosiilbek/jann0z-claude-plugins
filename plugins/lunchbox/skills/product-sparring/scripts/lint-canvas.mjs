@@ -34,21 +34,79 @@ function argValue(list, flag) {
   return idx !== -1 ? list[idx + 1] : null;
 }
 
+function detectSectionType(h2) {
+  const normalized = h2.trim().toLowerCase();
+  if (normalized === 'personas') return 'personas';
+  if (normalized === 'technical constraints') return 'technical-constraints';
+  if (normalized === 'glossary') return 'glossary';
+  if (normalized === 'features') return 'features';
+  return null;
+}
+
+function detectEntryType(block) {
+  if (fieldValue(block, 'Role') !== null || fieldValue(block, 'Goal') !== null || fieldValue(block, 'Friction') !== null) return 'personas';
+  if (fieldValue(block, 'Shapes') !== null) return 'technical-constraints';
+  if (fieldValue(block, 'Means') !== null) return 'glossary';
+  return 'features';
+}
+
+function parseEntryFields(block, name, sectionType, group) {
+  if (sectionType === 'personas') {
+    const role = fieldValue(block, 'Role');
+    const goal = fieldValue(block, 'Goal');
+    const access = fieldValue(block, 'Access');
+    const friction = fieldValue(block, 'Friction');
+    if (role !== null || goal !== null || access !== null || friction !== null) {
+      return { name, sectionType, group, role, goal, access, friction, raw: block };
+    }
+  } else if (sectionType === 'technical-constraints') {
+    const what = fieldValue(block, 'What');
+    const shapes = fieldValue(block, 'Shapes');
+    const lockedBy = fieldValue(block, 'Locked by');
+    if (what !== null || shapes !== null) {
+      return { name, sectionType, group, what, shapes, lockedBy, raw: block };
+    }
+  } else if (sectionType === 'glossary') {
+    const means = fieldValue(block, 'Means');
+    const disambiguates = fieldValue(block, 'Disambiguates');
+    if (means !== null) {
+      return { name, sectionType, group, means, disambiguates, raw: block };
+    }
+  } else {
+    const what = fieldValue(block, 'What');
+    const why = fieldValue(block, 'Why it matters');
+    const constraint = fieldValue(block, 'Sharpest constraint');
+    const enabledBy = fieldValue(block, 'Enabled by');
+    if (what !== null || why !== null || constraint !== null) {
+      return { name, sectionType: 'features', group, what, why, constraint, enabledBy, raw: block };
+    }
+  }
+  return null;
+}
+
 // ---------------------------------------------------------------------------
-// Parse canvas — features are #### headings, sections are ### headings
+// Parse canvas — entries are #### headings, groups are ### headings, sections are ## headings
 // ---------------------------------------------------------------------------
 
 function parseCanvas(text) {
   const entries = [];
-  let currentSection = null;
+  let currentSectionType = null;
+  let currentGroup = null;
   const lines = text.split('\n');
   let i = 0;
 
   while (i < lines.length) {
     const line = lines[i];
 
+    if (/^## /.test(line)) {
+      currentSectionType = detectSectionType(line.replace(/^## /, '').trim());
+      currentGroup = null;
+      i++;
+      continue;
+    }
+
     if (/^### /.test(line)) {
-      currentSection = line.replace(/^### /, '').trim();
+      currentGroup = line.replace(/^### /, '').trim();
       i++;
       continue;
     }
@@ -56,20 +114,15 @@ function parseCanvas(text) {
     if (/^#### /.test(line)) {
       const blockLines = [line];
       i++;
-      // Collect body until the next heading (H1–H4)
       while (i < lines.length && !/^#{1,4} /.test(lines[i])) {
         blockLines.push(lines[i]);
         i++;
       }
       const block = blockLines.join('\n');
       const name = line.replace(/^#### /, '').trim();
-      const what = fieldValue(block, 'What');
-      const why = fieldValue(block, 'Why it matters');
-      const constraint = fieldValue(block, 'Sharpest constraint');
-      const enabledBy = fieldValue(block, 'Enabled by');
-      if (what !== null || why !== null || constraint !== null) {
-        entries.push({ name, section: currentSection, what, why, constraint, enabledBy, raw: block });
-      }
+      const sectionType = currentSectionType ?? detectEntryType(block);
+      const entry = parseEntryFields(block, name, sectionType, currentGroup);
+      if (entry) entries.push(entry);
       continue;
     }
 
@@ -202,7 +255,11 @@ const SUBBULLET = /^[ \t]*[-*•]/m;
 
 function lintEntry(entry, existingEntries) {
   const violations = [];
-  const { name, what, why, constraint } = entry;
+  const { name, sectionType, what, why, constraint } = entry;
+
+  // Non-feature entries (personas, technical-constraints, glossary) have their
+  // own field shapes — feature-specific validation does not apply to them.
+  if (sectionType && sectionType !== 'features') return violations;
 
   if (!name || name.length === 0) violations.push('Missing feature name (#### heading)');
   if (!what) violations.push('Missing **What:** field');
