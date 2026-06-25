@@ -30,7 +30,7 @@ passed both gates.
 
 Lives at `product.md` in the current working directory. Create it on first commit.
 
-Five top-level parts in fixed order: intro block, then **Personas**, **Technical Constraints**, **Glossary**, **Features**. Not every section needs entries on day one — add sections as the product takes shape.
+Six top-level parts in fixed order: intro block, then **Personas**, **Technical Constraints**, **Foundation**, **Glossary**, **Features**. Not every section needs entries on day one — add sections as the product takes shape.
 
 See [canvas-format.md](references/canvas-format.md) for the exact structure, field rules, sentence-count table, style-lock rules, and examples for every section type.
 
@@ -50,7 +50,7 @@ follows from the current canvas. Covered in [analysis-modes.md](references/analy
 **Expert panel** — When the user asks for expert opinions, a deep dive, or "what would
 [role] say about this". Spawn parallel expert agents. Read [experts.md](references/experts.md).
 
-**Alignment gate** — When the user asks to check alignment, run the alignment gate, validate the canvas, or asks "is the canvas consistent". Also runs after every commit. Six cross-section checks: glossary coverage, persona ↔ feature coverage, constraint ↔ feature consistency, access ↔ feature coherence, ambiguity scan, duplicate intent. All issues must resolve before the canvas is considered complete. Read [analysis-modes.md](references/analysis-modes.md) for the full check list and output format. Output lives in the conversation only — never written to the canvas.
+**Alignment gate** — When the user asks to check alignment, run the alignment gate, validate the canvas, or asks "is the canvas consistent". Also runs after every commit. Seven cross-section checks: glossary coverage, persona ↔ feature coverage, constraint ↔ feature consistency, access ↔ feature coherence, foundation ↔ feature coherence, ambiguity scan, duplicate intent. All issues must resolve before the canvas is considered complete. Read [analysis-modes.md](references/analysis-modes.md) for the full check list and output format. Output lives in the conversation only — never written to the canvas.
 
 Never push to commit during exploration. The commit happens when the user says so.
 
@@ -66,7 +66,7 @@ node <skill-dir>/scripts/lint-canvas.mjs --canvas product.md --entry "<entry mar
 from the user's current working directory. The entry markdown starts with
 `#### [entry name]`.
 
-The linter auto-detects the entry's section type from its field names (Role/Goal/Access/Friction → Personas; What/Shapes → Technical Constraints; Means → Glossary; What/Why it matters/Sharpest constraint → Features). It checks: all required fields present for that section type, correct sentence counts per field (see the sentence-count table in [canvas-format.md](references/canvas-format.md)), no verb-phrase name, no conversation references, no sub-bullets. If it fails, auto-fix the violations, show the user exactly what changed (old vs new for each field), then re-run. Only proceed once lint passes.
+The linter auto-detects the entry's section type from its field names (Role/Goal/Access/Friction → Personas; What/Shapes → Technical Constraints; Does/Powers/Built on → Foundation; Means → Glossary; What/Why it matters/Sharpest constraint → Features). It checks: all required fields present for that section type, correct sentence counts per field (see the sentence-count table in [canvas-format.md](references/canvas-format.md)), no verb-phrase name, no conversation references, no sub-bullets. If it fails, auto-fix the violations, show the user exactly what changed (old vs new for each field), then re-run. Only proceed once lint passes.
 
 **Step 2 — Style calibration.** Word-count calibration runs within same-section-type only (personas against personas, constraints against constraints, glossary against glossary, features against features). Skip calibration when no same-type entries exist yet. Register matching is canvas-wide: read the two most recent entries from anywhere on the canvas to establish register. If any field is out of range (±20% per field), rewrite it to match, show the change, then pass to Step 3. See the style-lock rules in [canvas-format.md](references/canvas-format.md).
 
