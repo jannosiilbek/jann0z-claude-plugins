@@ -8,8 +8,9 @@
  *   node lint-canvas.mjs --canvas <path>              # lint full existing canvas
  *   node lint-canvas.mjs --canvas <path> --entry <md> # lint candidate entry against canvas style
  *
- * Canvas structure: four sections (Personas, Technical Constraints, Glossary, Features). Personas
- * and Features group entries under ### headings; Technical Constraints and Glossary are flat.
+ * Canvas structure: five sections (Personas, Technical Constraints, Foundation, Glossary, Features).
+ * Personas and Features group entries under ### headings; Technical Constraints, Foundation, and
+ * Glossary are flat.
  *
  * Exit codes: 0 = pass, 1 = violations found
  */
@@ -41,6 +42,7 @@ function detectSectionType(h2) {
   if (normalized === 'technical constraints') return 'technical-constraints';
   if (normalized === 'glossary') return 'glossary';
   if (normalized === 'features') return 'features';
+  if (normalized === 'foundation') return 'foundation';
   return null;
 }
 
@@ -48,6 +50,7 @@ function detectEntryType(block) {
   if (fieldValue(block, 'Role') !== null || fieldValue(block, 'Goal') !== null || fieldValue(block, 'Friction') !== null) return 'personas';
   if (fieldValue(block, 'Shapes') !== null || fieldValue(block, 'Locked by') !== null) return 'technical-constraints';
   if (fieldValue(block, 'Means') !== null || fieldValue(block, 'Disambiguates') !== null) return 'glossary';
+  if (fieldValue(block, 'Does') !== null || fieldValue(block, 'Powers') !== null || fieldValue(block, 'Built on') !== null) return 'foundation';
   return 'features';
 }
 
@@ -72,6 +75,13 @@ function parseEntryFields(block, name, sectionType, group) {
     const disambiguates = fieldValue(block, 'Disambiguates');
     if (means !== null || disambiguates !== null) {
       return { name, sectionType, group, means, disambiguates, raw: block };
+    }
+  } else if (sectionType === 'foundation') {
+    const does = fieldValue(block, 'Does');
+    const powers = fieldValue(block, 'Powers');
+    const builtOn = fieldValue(block, 'Built on');
+    if (does !== null || powers !== null) {
+      return { name, sectionType, group, does, powers, builtOn, raw: block };
     }
   } else {
     const what = fieldValue(block, 'What');
@@ -291,6 +301,13 @@ function lintCanvasStructure(text) {
     violations.push(`Glossary section must be flat — remove group "${g.replace(/^### /, '').trim()}" and place terms directly under ## Glossary`);
   }
 
+  // Foundation: must be flat — no ### groups allowed
+  const foundationBlock = extractSectionBlock(text, 'Foundation');
+  const foundationGroups = foundationBlock.match(/^### .+/mg) ?? [];
+  for (const g of foundationGroups) {
+    violations.push(`Foundation section must be flat — remove group "${g.replace(/^### /, '').trim()}" and place components directly under ## Foundation`);
+  }
+
   return violations;
 }
 
@@ -410,6 +427,16 @@ function computePersonaAverages(entries) {
   };
 }
 
+function computeFoundationAverages(entries) {
+  const valid = entries.filter(e => e.does && e.powers);
+  if (valid.length === 0) return { does: null, powers: null };
+  const sum = (fn) => valid.reduce((acc, e) => acc + fn(e), 0);
+  return {
+    does: sum(e => countWords(e.does)) / valid.length,
+    powers: sum(e => countWords(e.powers)) / valid.length,
+  };
+}
+
 function computeConstraintAverages(entries) {
   const valid = entries.filter(e => e.what && e.shapes);
   if (valid.length === 0) return { what: null, shapes: null };
@@ -459,6 +486,52 @@ function lintPersonaEntry(entry, existingEntries) {
   if (sameType.length > 0) {
     const avgs = computePersonaAverages(sameType);
     for (const [label, value, avg] of [['Role', role, avgs.role], ['Goal', goal, avgs.goal], ['Friction', friction, avgs.friction]]) {
+      if (avg === null) continue;
+      const count = countWords(value);
+      const min = Math.floor(avg * 0.8);
+      const max = Math.ceil(avg * 1.2);
+      if (count < min || count > max) {
+        violations.push(`**${label}** word count (${count}) is outside style range ${min}–${max} (existing avg ${Math.round(avg)} words)`);
+      }
+    }
+  }
+
+  return violations;
+}
+
+function lintFoundationEntry(entry, existingEntries) {
+  const violations = [];
+  const { name, does, powers, builtOn } = entry;
+
+  if (!name) violations.push('Missing component name (#### heading)');
+  if (!does) violations.push('Missing **Does:** field');
+  if (!powers) violations.push('Missing **Powers:** field');
+  if (violations.length > 0) return violations;
+
+  const nameWords = name.split(/\s+/).filter(Boolean);
+  if (nameWords.length > 4) violations.push(`Component name too long (${nameWords.length} words, max 4): "${name}"`);
+  if (VERB_PREFIX.test(name)) violations.push(`Component name starts with a verb: "${name}" — use a noun phrase`);
+
+  if (countSentences(does) !== 1) violations.push(`**Does** must be exactly 1 sentence (found ${countSentences(does)}): "${does}"`);
+  const powersSentences = countSentences(powers);
+  if (powersSentences < 1 || powersSentences > 2) violations.push(`**Powers** must be 1–2 sentences (found ${powersSentences}): "${powers}"`);
+
+  for (const [label, value] of [['Does', does], ['Powers', powers]]) {
+    if (CONVERSATION_REFS.test(value)) violations.push(`**${label}** contains a conversation reference — entries must stand alone`);
+  }
+
+  if (builtOn !== null) {
+    if (builtOn.includes('\n')) violations.push('**Built on** must be a single line — no multi-line values');
+    if (CONVERSATION_REFS.test(builtOn)) violations.push('**Built on** contains a conversation reference — entries must stand alone');
+  }
+
+  const bodyText = `${does}\n${powers}\n${builtOn ?? ''}`;
+  if (SUBBULLET.test(bodyText)) violations.push('Entry contains sub-bullets — use prose only');
+
+  const sameType = existingEntries.filter(e => e.sectionType === 'foundation');
+  if (sameType.length > 0) {
+    const avgs = computeFoundationAverages(sameType);
+    for (const [label, value, avg] of [['Does', does, avgs.does], ['Powers', powers, avgs.powers]]) {
       if (avg === null) continue;
       const count = countWords(value);
       const min = Math.floor(avg * 0.8);
@@ -562,6 +635,7 @@ function lintEntry(entry, existingEntries) {
   if (entry.sectionType === 'personas') return lintPersonaEntry(entry, existingEntries);
   if (entry.sectionType === 'technical-constraints') return lintConstraintEntry(entry, existingEntries);
   if (entry.sectionType === 'glossary') return lintGlossaryEntry(entry, existingEntries);
+  if (entry.sectionType === 'foundation') return lintFoundationEntry(entry, existingEntries);
   return lintFeatureEntry(entry, existingEntries);
 }
 

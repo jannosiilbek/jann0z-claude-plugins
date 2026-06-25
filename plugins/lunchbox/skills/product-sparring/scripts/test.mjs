@@ -329,3 +329,104 @@ Not a rule-based bot`;
     assert.ok(r.output.includes('**Disambiguates** must be a single line'), r.output);
   });
 });
+
+describe('Foundation entry validation', () => {
+  test('valid foundation entry passes', () => {
+    const entry = `#### Inference Engine
+**Does:** Runs LLM completions and tool-calling loops for every agent action.
+**Powers:** Agent reasoning, feature suggestions, and the expert panel.
+**Built on:** Claude Sonnet 4.6 via the Anthropic API.`;
+    const r = lint('', entry);
+    assert.ok(r.pass, `Expected PASS for valid foundation entry:\n${r.output}`);
+  });
+
+  test('missing Does fails', () => {
+    const entry = `#### Inference Engine
+**Powers:** Agent reasoning, feature suggestions, and the expert panel.`;
+    const r = lint('', entry);
+    assert.ok(!r.pass, 'Expected FAIL for missing Does');
+    assert.ok(r.output.includes('Missing **Does:**'), r.output);
+  });
+
+  test('missing Powers fails', () => {
+    const entry = `#### Inference Engine
+**Does:** Runs LLM completions and tool-calling loops for every agent action.
+**Built on:** Claude Sonnet 4.6 via the Anthropic API.`;
+    const r = lint('', entry);
+    assert.ok(!r.pass, 'Expected FAIL for missing Powers');
+    assert.ok(r.output.includes('Missing **Powers:**'), r.output);
+  });
+
+  test('Built on is optional', () => {
+    const entry = `#### Inference Engine
+**Does:** Runs LLM completions and tool-calling loops for every agent action.
+**Powers:** Agent reasoning, feature suggestions, and the expert panel.`;
+    const r = lint('', entry);
+    assert.ok(r.pass, `Expected PASS with no Built on:\n${r.output}`);
+  });
+
+  test('Does with two sentences fails', () => {
+    const entry = `#### Inference Engine
+**Does:** Runs LLM completions. It also handles tool calls.
+**Powers:** Agent reasoning, feature suggestions, and the expert panel.`;
+    const r = lint('', entry);
+    assert.ok(!r.pass, 'Expected FAIL for two-sentence Does');
+    assert.ok(r.output.includes('**Does** must be exactly 1 sentence'), r.output);
+  });
+
+  test('multi-line Built on fails', () => {
+    const entry = `#### Inference Engine
+**Does:** Runs LLM completions and tool-calling loops for every agent action.
+**Powers:** Agent reasoning and feature suggestions.
+**Built on:** Claude Sonnet 4.6
+via the Anthropic API`;
+    const r = lint('', entry);
+    assert.ok(!r.pass, 'Expected FAIL for multi-line Built on');
+    assert.ok(r.output.includes('**Built on** must be a single line'), r.output);
+  });
+
+  test('verb-phrase component name fails', () => {
+    const entry = `#### Build the engine
+**Does:** Runs LLM completions and tool-calling loops for every agent action.
+**Powers:** Agent reasoning, feature suggestions, and the expert panel.`;
+    const r = lint('', entry);
+    assert.ok(!r.pass, 'Expected FAIL for verb-phrase component name');
+    assert.ok(r.output.includes('starts with a verb'), r.output);
+  });
+});
+
+describe('Canvas structural validation — Foundation', () => {
+  const BASE = `# My Product
+> vision
+
+**What it is:** A thing.
+**Who it's for:** People.
+**What makes it different:** Unique.
+
+---
+
+## Features
+
+### Core
+
+#### Offline mode
+**What:** Users can read and edit documents without an internet connection.
+**Why it matters:** Network drops during travel make the app unusable.
+**Sharpest constraint:** Conflict resolution when the same document is edited on two devices.
+`;
+
+  test('Foundation with a group fails', () => {
+    const canvas = BASE.replace('## Features', `## Foundation
+
+### Compute Layer
+
+#### Inference Engine
+**Does:** Runs LLM completions and tool-calling loops for every agent action.
+**Powers:** Agent reasoning, feature suggestions, and the expert panel.
+
+## Features`);
+    const r = lint(canvas);
+    assert.ok(!r.pass, 'Expected FAIL for foundation with group');
+    assert.ok(r.output.toLowerCase().includes('flat'), r.output);
+  });
+});
