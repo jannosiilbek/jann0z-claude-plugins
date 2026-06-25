@@ -12,6 +12,7 @@ A brief is complete when each of these is either answered or explicitly assumed:
 | Scope out | The tempting neighbors explicitly excluded | "Payments: in or out?" |
 | Constraints | Tech, regulatory, budget, deadline boundaries | "Any storage/stack it must run on?" |
 | Non-functional | Performance, security, compliance expectations that shape design | "Roughly how many records/users?" |
+| Subdomain type | Core / Supporting / Generic classification for each major capability | "Is auth your differentiator, or are you buying Clerk?" |
 | Interface type | What kind of surface the system exposes (REST / CLI / library / none) | "Is there an HTTP API, or is this a library/CLI?" |
 | Stack | Runtime language, framework, auth mechanism, error contract shape | "What language/framework? JWT or session auth?" |
 
@@ -91,3 +92,11 @@ Two tests before settling:
    change? If yes, size down.
 2. **The consumer test** — will anything downstream actually read this artifact? An
    artifact nothing consumes is dead weight; mark its stage `no`.
+
+**Subdomain classification question:** Ask only when the domain has 2+ clearly separable
+capability areas. Single-context, single-purpose tools (a CLI, a data import job) are
+trivially all Core — don't ask. When asked, phrase it as:
+> "Which parts of this system are your actual competitive differentiator versus standard
+> plumbing? (e.g. auth, payments, email sending — buy or use a library? pricing engine,
+> recommendation algorithm — build?)"
+Record one row per answer in `## Subdomain classification` in brief.md.

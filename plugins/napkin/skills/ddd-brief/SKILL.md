@@ -79,6 +79,9 @@ Follow the skeleton in spec-format.md §2 exactly (marker comment, section set, 
 block, clarifications table, changelog).
 
 - **Greenfield**: create `spec/brief.md` (creating `spec/` if needed).
+- When subdomain classification was elicited (or is apparent from provided material),
+  include the `## Subdomain classification` table per spec-format.md §2. Omit the
+  section entirely when the project is clearly single-domain.
 - **Delta mode**: apply the update protocol from spec-format.md §1.4 — read everything,
   touch only the sections your change affects, preserve user edits verbatim, append (not
   rewrite) the Clarifications log, and add one Changelog line.

@@ -128,6 +128,12 @@ Every artifact ends with:
 ## Non-functional notes
 - <item: performance, security, compliance…>
 
+## Subdomain classification
+
+| Subdomain | Type | Build vs. buy |
+|-----------|------|---------------|
+| <subdomain name> | Core \| Supporting \| Generic | build \| <SaaS name> |
+
 ## Pipeline sizing
 - Decision: full | lean | delta
 - Stages: ddd-domain: yes|no|delta · ddd-usecases: yes|no|delta · ddd-api: yes|no|delta · erd-modeler: yes|no|delta · ddd-plan: yes|no|delta
@@ -142,6 +148,16 @@ Every artifact ends with:
 ## Changelog
 - 2026-06-11 (ddd-brief): created
 ```
+
+The **Subdomain classification** table is optional but high-value: it answers the
+make-vs-buy question before the domain is modeled. One row per bounded context or
+major capability area:
+- `Core` — the differentiating capability; deserves full DDD modeling and custom code.
+- `Supporting` — necessary plumbing; build it, but don't over-model it.
+- `Generic` — commodity (auth, payments, email, storage); buy a SaaS or use a library.
+ddd-domain reads this table to calibrate modeling depth; ddd-plan reads it to produce
+a single integration task for Generic entries instead of a full task breakdown.
+Omit the section when all work is clearly in one Core domain (most single-context apps).
 
 The **Pipeline sizing** block is the anti-bloat contract: it pre-declares which downstream
 stages this piece of work warrants, so a bug-fix-sized request never spawns a full artifact
