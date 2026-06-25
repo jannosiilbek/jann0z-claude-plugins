@@ -74,6 +74,15 @@ Follow spec-format.md §3. The glossary is the single source of naming truth:
   the first argument to `newId()` in domain layer code.
 - `- Forbidden synonyms:` wherever the domain has trap words (Client/Customer,
   User/Member) — the alignment gate warns when downstream prose uses them.
+- `- Invariants:` on every term that has `Aggregate root: yes` — a bulleted list
+  (sub-bullets indented two spaces) of the business rules that must hold inside this
+  aggregate boundary: "total equals sum of line item prices", "status may only advance".
+  This documents *why* the boundary exists. If you cannot name at least one invariant,
+  the boundary is unjustified — reconsider whether the root is correct.
+- `- Value object: yes` on terms that are immutable, identity-less values — `Money`,
+  `Email`, `DateRange`. When you write this flag, omit `Maps to: ERD:` and
+  `TypeID prefix:` (value objects have no table and no identity). Sub-bullets on the
+  value object's definition can name its fields (e.g. `amount: decimal, currency: ISO 4217`).
 
 ### 4a. Update packages/domain in spec/stack.md
 

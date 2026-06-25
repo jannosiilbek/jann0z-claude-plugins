@@ -171,6 +171,10 @@ The ubiquitous language.
 - Forbidden synonyms: <a>, <b>
 - Context: <bounded context name>
 - Aggregate root: yes
+- Invariants:
+  - <business rule this aggregate boundary enforces>
+  - <another invariant, e.g. status may only advance>
+- Value object: yes
 - Aggregate: <root-term>
 
 ## Enumerations
@@ -189,6 +193,16 @@ The ubiquitous language.
   present, check-align warns if the FK from this entity's table to the root's table
   uses `ON DELETE CASCADE` (cross-aggregate cascade is a DDD violation: use RESTRICT or
   SET NULL instead).
+- `- Invariants:` — required on every term that carries `Aggregate root: yes`; a
+  bulleted list of the business rules this aggregate boundary enforces. Sub-bullets
+  start with `  - ` (two-space indent). These rules are what justify the aggregate
+  boundary — without them, the boundary is a guess. check-align warns when an
+  aggregate root has no `Invariants:` block (AL-27).
+- `- Value object: yes` — marks the term as an immutable, identity-less value type
+  (e.g. `Money`, `Email`, `DateRange`). When present, the term must **not** carry
+  a `Maps to: ERD:` line — value objects have no identity and do not own a table.
+  Omit the field when the term is an entity or aggregate root. check-align warns
+  when both `Value object: yes` and `Maps to:` appear on the same term (AL-28).
 - `### <Term>` — singular, Capitalized domain name. Every actor, flow step subject, and
   use-case actor in the other artifacts must be one of these terms.
 - `- Maps to: ERD: <table_name>` — **only** for concepts persisted as a table;
