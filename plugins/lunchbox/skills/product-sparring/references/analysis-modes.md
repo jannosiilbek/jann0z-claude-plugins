@@ -71,6 +71,15 @@ Key terms that appear in 2+ entries across any section and are not universally o
 should have a glossary definition. Every glossary term should appear in at least one
 other section — an orphaned definition adds noise without alignment value.
 
+### 8. Foundation coverage
+
+Every foundation component should power at least one feature — a component nothing builds on is
+dead engine weight. Every feature should ultimately rest on a foundation component; if a feature
+needs an engine capability the Foundation doesn't list, that gap is worth surfacing. Flag both
+directions:
+- Foundation components no feature draws on
+- Features that depend on an engine capability absent from Foundation
+
 ---
 
 ## Analysis output format
@@ -96,6 +105,10 @@ Use this structure in the conversation response:
 **Glossary gaps**
 - "[Term]" appears in N entries — no definition
 - Glossary term "[Term]": not referenced in any other section
+
+**Foundation coverage gaps**
+- Component "[name]": no feature draws on this
+- Feature "[name]": depends on [capability] not listed in Foundation
 
 **Scope risks**
 - [Feature name]: constraint suggests this is really two features — [what they are]
@@ -167,6 +180,11 @@ Flag the entry name, field name, and exact phrase.
 Two entries (any section) that describe the same thing. Name the specific pair and
 state what makes them duplicates.
 
+**7. Foundation ↔ Feature coherence**
+- Every foundation component must power at least one feature.
+- No feature may depend on an engine capability absent from Foundation. Flag both directions and
+  name the specific component or feature.
+
 ### Output format
 
 ```
@@ -186,6 +204,9 @@ PASS  (or FAIL — N issues found)
 
 **Access gaps**
 - All personas access via MCP server; no feature reflects this channel
+
+**Foundation gaps**
+- Component "Event Bus": no feature draws on this
 
 **Ambiguity**
 - Feature "Smart routing" / **Why it matters**: contains "often"
