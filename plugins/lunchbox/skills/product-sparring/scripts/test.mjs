@@ -230,6 +230,71 @@ and CloudFront`;
   });
 });
 
+describe('Canvas structural validation — new sections', () => {
+  const BASE = `# My Product
+> vision
+
+**What it is:** A thing.
+**Who it's for:** People.
+**What makes it different:** Unique.
+
+---
+
+## Features
+
+### Core
+
+#### Offline mode
+**What:** Users can read and edit documents without an internet connection.
+**Why it matters:** Network drops during travel make the app unusable.
+**Sharpest constraint:** Conflict resolution when the same document is edited on two devices.
+`;
+
+  test('persona without group fails', () => {
+    const canvas = BASE.replace('## Features', `## Personas
+
+#### Solo indie hacker
+**Role:** A solo developer shipping products without a team.
+**Goal:** Validate and launch ideas without operational overhead.
+**Access:** terminal CLI
+**Friction:** Context switching between tools fragments their flow.
+
+## Features`);
+    const r = lint(canvas);
+    assert.ok(!r.pass, 'Expected FAIL for persona without group');
+    assert.ok(r.output.includes('not inside any group'), r.output);
+  });
+
+  test('Technical Constraints with a group fails', () => {
+    const canvas = BASE.replace('## Features', `## Technical Constraints
+
+### Infrastructure
+
+#### Cloud-only deployment
+**What:** All data lives in cloud infrastructure with no local persistence layer.
+**Shapes:** Features requiring offline access are out of scope.
+
+## Features`);
+    const r = lint(canvas);
+    assert.ok(!r.pass, 'Expected FAIL for constraint with group');
+    assert.ok(r.output.toLowerCase().includes('flat'), r.output);
+  });
+
+  test('Glossary with a group fails', () => {
+    const canvas = BASE.replace('## Features', `## Glossary
+
+### Core terms
+
+#### Agent
+**Means:** An autonomous process that invokes tools without per-action confirmation.
+
+## Features`);
+    const r = lint(canvas);
+    assert.ok(!r.pass, 'Expected FAIL for glossary with group');
+    assert.ok(r.output.toLowerCase().includes('flat'), r.output);
+  });
+});
+
 describe('Glossary entry validation', () => {
   test('missing Means fails', () => {
     const entry = `#### Agent

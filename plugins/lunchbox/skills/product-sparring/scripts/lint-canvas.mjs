@@ -148,22 +148,57 @@ function extractFeaturesBlock(text) {
   return result.join('\n');
 }
 
-function parseCanvasSections(text) {
-  const featuresBlock = extractFeaturesBlock(text);
+function extractSectionBlock(text, sectionHeading) {
+  const target = sectionHeading.toLowerCase();
+  const lines = text.split('\n');
+  let inSection = false;
+  const result = [];
+  for (const line of lines) {
+    const h2Match = line.match(/^## (.+)/);
+    if (h2Match) {
+      if (inSection) break;
+      if (h2Match[1].trim().toLowerCase() === target) {
+        inSection = true;
+        continue;
+      }
+      continue;
+    }
+    if (inSection) result.push(line);
+  }
+  return result.join('\n');
+}
+
+function parseCanvasSections(text, sectionName = 'features') {
+  const target = sectionName.toLowerCase();
+  const lines = text.split('\n');
+  let inSection = false;
   const sections = [];
   const orphaned = [];
   let currentSection = null;
 
-  for (const line of featuresBlock.split('\n')) {
+  for (const line of lines) {
+    const h2Match = line.match(/^## (.+)/);
+    if (h2Match) {
+      if (inSection) break;
+      if (h2Match[1].trim().toLowerCase() === target) {
+        inSection = true;
+        currentSection = null;
+        continue;
+      }
+      continue;
+    }
+
+    if (!inSection) continue;
+
     if (/^### /.test(line)) {
       currentSection = { name: line.replace(/^### /, '').trim(), features: [] };
       sections.push(currentSection);
     } else if (/^#### /.test(line)) {
-      const featureName = line.replace(/^#### /, '').trim();
+      const entryName = line.replace(/^#### /, '').trim();
       if (!currentSection) {
-        orphaned.push(featureName);
+        orphaned.push(entryName);
       } else {
-        currentSection.features.push(featureName);
+        currentSection.features.push(entryName);
       }
     }
   }
@@ -224,23 +259,47 @@ const VERB_PREFIX = /^(add|build|create|implement|enable|allow|support|make|prov
 
 function lintCanvasStructure(text) {
   const violations = [];
-  const { sections, orphaned } = parseCanvasSections(text);
 
-  for (const feature of orphaned) {
+  // Features: must have ### sections, no orphaned #### entries
+  const { sections: featureSections, orphaned: featureOrphaned } = parseCanvasSections(text, 'features');
+  for (const feature of featureOrphaned) {
     violations.push(`Feature "${feature}" is not inside any section — every feature must be under a ### section header`);
   }
-
-  for (const section of sections) {
+  for (const section of featureSections) {
     if (section.features.length === 0) {
       violations.push(`Section "${section.name}" is empty — add a feature or remove the section`);
     }
     const nameWords = section.name.split(/\s+/).filter(Boolean);
-    if (nameWords.length > 3) {
-      violations.push(`Section name "${section.name}" is too long (${nameWords.length} words, max 3)`);
+    if (nameWords.length > 3) violations.push(`Section name "${section.name}" is too long (${nameWords.length} words, max 3)`);
+    if (VERB_PREFIX.test(section.name)) violations.push(`Section name "${section.name}" starts with a verb — use a noun phrase`);
+  }
+
+  // Personas: must have ### groups, no orphaned #### entries
+  const { sections: personaGroups, orphaned: personaOrphaned } = parseCanvasSections(text, 'personas');
+  for (const persona of personaOrphaned) {
+    violations.push(`Persona "${persona}" is not inside any group — every persona must be under a ### group header`);
+  }
+  for (const group of personaGroups) {
+    if (group.features.length === 0) {
+      violations.push(`Persona group "${group.name}" is empty — add a persona or remove the group`);
     }
-    if (VERB_PREFIX.test(section.name)) {
-      violations.push(`Section name "${section.name}" starts with a verb — use a noun phrase`);
-    }
+    const nameWords = group.name.split(/\s+/).filter(Boolean);
+    if (nameWords.length > 3) violations.push(`Persona group name "${group.name}" is too long (${nameWords.length} words, max 3)`);
+    if (VERB_PREFIX.test(group.name)) violations.push(`Persona group name "${group.name}" starts with a verb — use a noun phrase`);
+  }
+
+  // Technical Constraints: must be flat — no ### groups allowed
+  const constraintBlock = extractSectionBlock(text, 'Technical Constraints');
+  const constraintGroups = constraintBlock.match(/^### .+/mg) ?? [];
+  for (const g of constraintGroups) {
+    violations.push(`Technical Constraints section must be flat — remove group "${g.replace(/^### /, '').trim()}" and place constraints directly under ## Technical Constraints`);
+  }
+
+  // Glossary: must be flat — no ### groups allowed
+  const glossaryBlock = extractSectionBlock(text, 'Glossary');
+  const glossaryGroups = glossaryBlock.match(/^### .+/mg) ?? [];
+  for (const g of glossaryGroups) {
+    violations.push(`Glossary section must be flat — remove group "${g.replace(/^### /, '').trim()}" and place terms directly under ## Glossary`);
   }
 
   return violations;
