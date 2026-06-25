@@ -8,7 +8,8 @@
  *   node lint-canvas.mjs --canvas <path>              # lint full existing canvas
  *   node lint-canvas.mjs --canvas <path> --entry <md> # lint candidate entry against canvas style
  *
- * Canvas structure: features use #### headings, grouped under ### section headings.
+ * Canvas structure: four sections (Personas, Technical Constraints, Glossary, Features). Personas
+ * and Features group entries under ### headings; Technical Constraints and Glossary are flat.
  *
  * Exit codes: 0 = pass, 1 = violations found
  */
@@ -362,8 +363,9 @@ function lintFeatureEntry(entry, existingEntries) {
     violations.push('Entry contains sub-bullets — use prose only');
   }
 
-  if (existingEntries.length > 0) {
-    const avgs = computeAverages(existingEntries);
+  const featureEntries = existingEntries.filter(e => e.sectionType === 'features');
+  if (featureEntries.length > 0) {
+    const avgs = computeAverages(featureEntries);
     const checks = [
       ['What', what, avgs.what],
       ['Why it matters', why, avgs.why],
