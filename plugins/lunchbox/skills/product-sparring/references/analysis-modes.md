@@ -42,19 +42,6 @@ access both exist, conflict resolution UI is probably implied. If version histor
 exists, a storage retention policy feature is implied. Surface the implication and
 name the missing piece.
 
-### 6. Persona coverage
-
-Every persona's `Goal` should be served by at least one feature. Every feature should
-be relevant to at least one persona. Flag both directions:
-- Personas with no feature serving their goal
-- Features that no defined persona would use
-
-### 7. Glossary coverage
-
-Key terms that appear in 2+ entries across any section and are not universally obvious
-should have a glossary definition. Every glossary term should appear in at least one
-other section — an orphaned definition adds noise without alignment value.
-
 ### 4. Scope creep risk
 
 Features whose constraint signals they're carrying more than one feature's worth
@@ -70,6 +57,19 @@ instead of reactive?
 
 Then ask: what's missing from the canvas entirely because it wasn't imaginable
 without agents? Surface these as suggestions, not critiques.
+
+### 6. Persona coverage
+
+Every persona's `Goal` should be served by at least one feature. Every feature should
+be relevant to at least one persona. Flag both directions:
+- Personas with no feature serving their goal
+- Features that no defined persona would use
+
+### 7. Glossary coverage
+
+Key terms that appear in 2+ entries across any section and are not universally obvious
+should have a glossary definition. Every glossary term should appear in at least one
+other section — an orphaned definition adds noise without alignment value.
 
 ---
 
