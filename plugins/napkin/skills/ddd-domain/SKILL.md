@@ -63,6 +63,15 @@ Follow spec-format.md §3. The glossary is the single source of naming truth:
   verbatim into DBML enums and then into live-tested SQL. `canceled` vs `cancelled` is
   a contract, not a style choice: preserve whatever spelling the user/domain uses, and
   never respell later.
+- `- TypeID prefix: <prefix>` on every term that has a `Maps to: ERD:` line — up to 4
+  lowercase ASCII letters, unique within this project. Derive mechanically: split the
+  term name on CamelCase / underscore / hyphen boundaries; take the first 2 lowercase
+  letters of each word and concatenate, truncating to 4 characters; for single-word
+  terms take the first 4 lowercase letters instead (`Task → task`, `Project → proj`,
+  `Membership → memb`, `CustomerContract → cuco`, `ActionItem → acit`,
+  `WorkflowRun → woru`). If two terms in the same project produce the same prefix,
+  take 3 letters from the first word of one and 1 from the second. This value becomes
+  the first argument to `newId()` in domain layer code.
 - `- Forbidden synonyms:` wherever the domain has trap words (Client/Customer,
   User/Member) — the alignment gate warns when downstream prose uses them.
 

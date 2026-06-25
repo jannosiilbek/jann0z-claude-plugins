@@ -167,6 +167,7 @@ The ubiquitous language.
 ### <Term>
 - Definition: <what it means in this domain — not a dictionary definition>
 - Maps to: ERD: <table_name>
+- TypeID prefix: <prefix>
 - Forbidden synonyms: <a>, <b>
 - Context: <bounded context name>
 - Aggregate root: yes
@@ -195,6 +196,15 @@ The ubiquitous language.
   **bridge tables get their own term** (e.g. *Enrollment* for students↔courses) — the
   alignment check requires every DBML table to trace back to a glossary term.
   Pure roles/actors that own no rows (e.g. *Registrar*) simply omit the field.
+- `- TypeID prefix: <prefix>` — required on every term that has a `Maps to: ERD:` line;
+  up to 4 lowercase ASCII letters, unique within this project. Derive mechanically:
+  split the term name on CamelCase / underscore / hyphen boundaries; take the first 2
+  lowercase letters of each word and concatenate, truncating to 4 characters; for
+  single-word terms take the first 4 lowercase letters instead
+  (`Task → task`, `Project → proj`, `Membership → memb`, `CustomerContract → cuco`,
+  `ActionItem → acit`, `WorkflowRun → woru`). If two terms produce the same prefix,
+  take 3 letters from the first word of one and 1 from the second. This value becomes
+  the first argument to `newId()` in domain layer code.
 - `- Forbidden synonyms:` — optional; trap words that must not appear in other artifacts
   (e.g. `Client` when the term is *Customer*).
 - `- Context:` — optional; only when the domain is large enough to have bounded contexts.

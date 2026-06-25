@@ -13,9 +13,8 @@
 - target: ES2022
 - module: Preserve
 - moduleResolution: Bundler
-- verbatimModuleSyntax: true (enforces import type for type-only imports)
+- verbatimModuleSyntax: true (enforces import type for type-only imports; implies isolatedModules — required by Vite's single-file transpiler which has no type information)
 - noUncheckedIndexedAccess: true
-- isolatedModules: true (required by Vite; enables fast single-file transforms)
 
 ## Interface
 - Kind: REST API
@@ -49,6 +48,13 @@
 - File naming: stereotype.identifier (e.g. enrollment.aggregate.ts, enroll-student.usecase.ts)
 - File structure: flat per stereotype
 - BC isolation: cross-BC imports forbidden (eslint-plugin-boundaries in tooling/eslint); cross-BC interaction via published domain events or explicit ACL only
+- ACL translators: co-located in the consuming BC (packages/domain/<consuming-bc>/<upstream-bc>.acl.ts); translate upstream-BC events/DTOs into local domain types; must contain no business logic
+
+## Domain model
+- DomainEvent: { readonly eventName: string; readonly aggregateId: string; readonly occurredAt: Date } — all three fields required; concrete event classes implement this interface and add their own payload fields; aggregateId carries the emitting aggregate's id
+- ValueObject: extend ValueObject<TProps> from packages/core; constructor is private; expose a static create(raw) that throws a descriptive Error on invalid input; enum-backed VOs expose a .value getter returning the validated literal type; never use a plain type alias for the .value-object.ts stereotype
+- AggregateRoot: extend AggregateRoot<TId>; protected record(event: DomainEvent) collects events; readonly domainEvents getter exposes them; clearEvents() drains after commit; private constructor + static create() factory; static reconstitute(props) for repository hydration
+- TypeID: newId('<prefix>') where <prefix> is the TypeID prefix declared in the glossary term — up to 4 lowercase ASCII letters, unique within project, derived by taking the first 2 letters of each word in the term name (single-word: first 4 letters); inline implementation via node:crypto (no external typeid package required)
 
 ## Integrations
 - Adapter pattern: yes
@@ -66,13 +72,21 @@
 - Tool boundary: Zod-validated inputs; wraps domain use cases via Adapter pattern; USE_MOCK applies
 - MCP server: MCPServer (@mastra/mcp) mounted via startHonoSSE() on the Mastra Hono server (apps/agents); exposes agents + tools to MCP-compatible clients (Claude, AI coding tools, custom agents)
 - MCP coverage: one tool per domain operation — same use cases the REST layer calls, served over MCP
+- MCP + mock guard: USE_MOCK=true must not be set when apps/agents is reachable by real MCP clients (Claude, coding tools, custom agents); the production guard (NODE_ENV=production) does not cover staging — set USE_MOCK=false explicitly in any environment where the MCP server accepts external connections
+- Workflow continuity: Mastra workflows support suspend/resume natively — a step calls suspend(payload), the orchestrator persists a snapshot to the workflow_snapshots table, and execution resumes via resume(runId, step, data); long-running domain processes (process managers, sagas) are implemented as workflows using this mechanism
 
 ## Testing
 - Framework: Vitest
-- DB strategy: PGlite (pin production Postgres major to PGlite bundled major; per-test isolation via fresh instance + transaction rollback)
+- DB strategy: PGlite (pin production Postgres major to PGlite bundled major; per-test isolation via fresh instance + transaction rollback); known gaps: COPY ... FROM STDIN unsupported, advisory-lock session semantics differ under the WASM single-user process model, extension availability limited to PGlite WASM contrib set — verify each production extension is included; schema drift (ALTER TABLE in prod not mirrored in test schema) is the primary real-world failure mode — add a schema-parity CI job against a real Postgres container to catch it
+- Domain unit: aggregates, value objects, domain events in packages/domain (Vitest, no DB, no HTTP, no ORM); assert invariant enforcement, VO rejection, and domain event emission on aggregate
 - Route integration: Hono testClient(app) in packages/api (Vitest + PGlite); owns 400/401/403/404 paths unreachable from the domain tier
 - E2E: playwright-bdd
 - Step scope: domain steps invoke use cases directly (PGlite + USE_MOCK); browser steps in tests/e2e drive apps/api (happy-path cross-domain flows only — HTTP contract owned by route integration tier)
+- Agentic unit: tools via tool.execute() directly + inputSchema.safeParse(); workflows via workflow.createRun() + run.start(); timeTravel({ step }) for step isolation; vi.mock() for deps — no Mastra instance needed
+- LLM mock: MockLanguageModelV3 (ai/test) in-process; @copilotkit/aimock for SSE-accurate multi-turn scripting
+- MCP server: startHonoSSE() mounted in a Hono app served by Bun.serve (port 0); connect SSEClientTransport from @modelcontextprotocol/sdk/client/sse.js; share one Client across the test suite; run agentic tests with bun test (not Vitest — apps/agents uses @types/bun); assert result.isError before content — errors do not throw
+- Tool schema drift: zod-to-json-schema + toMatchSnapshot() per tool inputSchema; snapshot delta = intentional schema change
+- Agentic CI evals: runEvals + createToolCallAccuracyScorerCode() from @mastra/evals; separate CI job (real LLM, USE_MOCK=false); score ≥ 0.9
 
 ## Structure
 - Repo: monorepo
@@ -137,6 +151,7 @@ packages/
       <verb>-<noun>.usecase.ts    — one use case per file
       <verb>-<noun>.feature       — Gherkin spec, co-located (maps to UC-xxx)
       <verb>-<noun>.steps.ts      — playwright-bdd step definitions (in-memory, PGlite)
+      <upstream-bc>.acl.ts        — ACL translator (consuming BC owns it); no business logic
 
   core/
     aggregate-root.ts

@@ -76,7 +76,6 @@ const PRESET_CONFIG = {
       "strict":              "true",
       "moduleResolution":    "Bundler",
       "verbatimModuleSyntax":"true",
-      "isolatedModules":     "true",
     },
     requiredPaths: [
       "apps/api", "packages/api", "packages/domain",
