@@ -13,6 +13,13 @@ off them.
    ("Member registered", "Membership lapsed", "Check-in recorded".) Include the unhappy
    paths the brief implies — a scope line like "memberships can lapse" is an event in
    disguise.
+1b. **Sweep for error and compensation events.** For each event found in step 1,
+    ask: what can prevent or invalidate this? What does the system emit when the
+    cause of the event fails, is rejected, or times out? ("Payment declined",
+    "Enrollment rolled back", "Invitation expired".) These are the events most
+    reliably missed in a forward-only sweep, and they are the ones that drive the
+    policies and compensating commands that protect domain integrity. Add each
+    to the flow you're storming, then continue to step 2.
 2. **Work each event backwards to its command.** What intent caused it? ("Record
    check-in".) Some events have no command — they're caused by time or by another event
    (that's a policy, below).
