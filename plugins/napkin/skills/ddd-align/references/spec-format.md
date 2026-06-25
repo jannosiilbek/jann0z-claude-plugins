@@ -398,6 +398,23 @@ this file (e.g. `hono-monorepo`, `fastapi`):
   match the preset's declared values.
 - Omit when no preset was used (Custom selection or pre-preset spec).
 
+**Preset-specific sections — hono-monorepo:**
+
+`## TypeScript` — required by AL-25 when `Preset: hono-monorepo` is declared. AL-26
+validates that four fields match the canonical values in `PRESET_CONFIG` in
+`check-align.mjs`:
+- `strict: true`
+- `moduleResolution: Bundler`
+- `verbatimModuleSyntax: true`
+- `isolatedModules: true`
+
+Additional fields (`target`, `module`, `noUncheckedIndexedAccess`) are informational and
+not gate-enforced. Omit the entire section when no TypeScript preset is active.
+
+`## UI` and `## Agentic` — present in the hono-monorepo preset for UI component library
+config and Mastra agent/MCP tooling. Copied verbatim from the preset by ddd-brief; not
+gate-enforced beyond the verbatim-copy rule.
+
 `## Conventions` fields:
 - `File naming:` — free text; `stereotype.identifier` is the canonical keyword for the
   flat-stereotype pattern (one file per stereotype role per domain concept,
@@ -495,6 +512,11 @@ Implementing agents use this tree as the canonical reference — every file has 
 visible by inspection. `apps/api` is the single Hono deployment serving both `apps/web`
 (private routes) and `apps/www` (public routes); both import `AppType` from `packages/api`
 for typed RPC via `hc<AppType>` — no separate API client package needed.
+
+AL-33 verifies that every path in `PRESET_CONFIG[preset].requiredPaths` (hardcoded in
+`check-align.mjs`) appears as a `- <path>: …` entry in `## Structure`. For
+`hono-monorepo` the required paths are: `apps/api`, `packages/api`, `packages/domain`,
+`packages/core`, `packages/db`, `packages/tsconfig`, `tooling/eslint`.
 
 `## Integrations` fields — `Mock activation:` and `Mock scope:` are omitted when
 `Mock: no`. `Conventions`, `Integrations`, and the extended `Deployment` fields are read

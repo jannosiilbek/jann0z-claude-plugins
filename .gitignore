@@ -30,9 +30,10 @@ plugins/napkin/skills/ddd-usecases-workspace/
 plugins/napkin/skills/ddd-plan-workspace/
 plugins/napkin/skills/ddd-align-workspace/
 
-# skill-creator eval run output for the lunchbox council skill. Reproducible from
-# skills/council/evals/evals.json, so never committed.
+# skill-creator eval run output for lunchbox skills. Reproducible from each skill's
+# evals/evals.json, so never committed.
 plugins/lunchbox/skills/council-workspace/
+plugins/lunchbox/skills/doc-align-workspace/
 
 # Pipeline-eval raw run output (full spec/ per model × scenario + stage transcripts).
 # Reproducible from scenarios/ + models.json; only results/ summaries are committed.
@@ -46,3 +47,6 @@ plugins/napkin/evals/pipeline/runs/
 
 # Playwright MCP scratch (browser automation; not part of any plugin)
 .playwright-mcp/
+
+# Superpowers session artifacts (working plans and design specs; ephemeral, never shared)
+docs/superpowers/

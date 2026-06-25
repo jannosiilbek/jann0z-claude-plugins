@@ -11,6 +11,8 @@ description: Use this skill for product ideation, feature sparring, canvas analy
   thinking about what belongs in it.
 ---
 
+# Product Sparring
+
 ## What this skill does
 
 Sparring partner for product work. You think out loud; the skill challenges, sharpens,

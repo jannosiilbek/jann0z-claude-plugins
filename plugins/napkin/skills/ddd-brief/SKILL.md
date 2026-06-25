@@ -64,7 +64,7 @@ Preset file locations (relative to `${CLAUDE_PLUGIN_ROOT}/skills/ddd-brief/`):
 - Stack preset: `references/stacks/<name>.md` where `<name>` is `hono-monorepo` or `fastapi`
 - Infra preset: `references/infra/<name>.md` where `<name>` is `both`, `gcp`, or `aws`
 
-When reading infra preset files, resolve the `<env-config>` placeholder before writing:
+The infra preset contains an `<env-config>` placeholder — its resolved value depends on the stack:
 - TypeScript stack → `dotenv`
 - Python stack → `python-dotenv`
 
@@ -91,10 +91,13 @@ block, clarifications table, changelog).
 
 **Greenfield:**
 1. Read the selected stack preset file and the selected infra preset file.
-2. Merge them: stack preset content first, then `## Deployment` and `## Pipeline` from
-   the infra preset (with `<env-config>` resolved), then the nfr.md defaults.
-3. Substitute `<Project name>` with the project name from the brief and `<DATE>` with today's date.
-4. Write the merged result as `spec/stack.md` and `spec/nfr.md`.
+2. Copy the stack preset into `spec/stack.md` **verbatim**. The only permitted transformations:
+   - Substitute `<Project name>` and `<DATE>`.
+   - Resolve `<env-config>` (see §2a for the value). Never write `<env-config>` literally.
+   - Omit `## Integrations` only when the system has zero external dependencies.
+3. Append `## Deployment` and `## Pipeline` from the infra preset **verbatim**
+   (with `<env-config>` resolved as above).
+4. Write `spec/stack.md` and `spec/nfr.md`.
 
 If the user selected Custom for any dimension, elicit that dimension's fields via the
 Tier 1/2 questions in `references/elicitation.md` and write the resulting values into
@@ -114,21 +117,9 @@ alignment checks skip unknown fields; the implementing agent uses framework defa
 
 **Defaults always written — no elicitation needed:**
 
-- **`## Conventions` in stack.md** — always include. Default is `File naming: stereotype.identifier
-  (e.g. enrollment.aggregate.ts, enroll-student.usecase.ts)` and `File structure: flat per stereotype`.
-  Write the elicited value if the user confirmed a different convention; write the default
-  if they confirmed it or if it was not asked yet.
-- **`## Integrations` in stack.md** — include with `Adapter pattern: yes`, `Mock: yes`,
-  `Mock activation: USE_MOCK=true`, `Mock scope: local dev, unit tests, e2e` whenever the
-  brief or domain mentions any external service, API, or third-party integration. Omit
-  only when the system has no external dependencies at all.
-- **`## Structure` in stack.md** — always include the canonical monorepo layout (see
-  spec-format.md §7 reference tree). Write the default workspace list; customise
-  `packages/domain` entries once bounded contexts are known (update this field when running
-  ddd-domain, or leave generic for the implementing agent).
-  Omit entries that don't apply (e.g. omit `apps/www` for a pure API product).
 - **`## Code quality` in nfr.md** — always include with `DRY: yes`, `Dead code: none`,
-  `Drift safety: spec-traced`. Never ask; never omit.
+  `Drift safety: spec-traced`. Never ask; never omit. (Not in any preset — must be added
+  explicitly when writing nfr.md.)
 
 ### 5. Gate
 
