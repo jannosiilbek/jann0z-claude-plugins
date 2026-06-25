@@ -301,5 +301,29 @@ testCase("stack.md Preset: hono-monorepo missing tooling/eslint → AL-33",
        "## TypeScript\n- strict: true\n- moduleResolution: Bundler\n- verbatimModuleSyntax: true\n- isolatedModules: true\n\n## Changelog")),
   (r) => caught(r, "AL-33"));
 
+// AL-27: aggregate root with no Invariants block → warn.
+testCase("aggregate root missing Invariants block → AL-27 warn",
+  (s) => edit(s, "glossary.md", (t) => t.replace(
+    "### Student\n- Definition: A person who enrolls in and takes courses.\n- Maps to: ERD: students\n- Forbidden synonyms: Learner, Pupil",
+    "### Student\n- Definition: A person who enrolls in and takes courses.\n- Aggregate root: yes\n- Maps to: ERD: students\n- Forbidden synonyms: Learner, Pupil")),
+  (r) => (hasWarn(r, "AL-27") ? null
+    : `aggregate root without Invariants must produce AL-27 warn (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
+
+// AL-27 does NOT fire when Invariants is present.
+testCase("aggregate root WITH Invariants block → no AL-27",
+  (s) => edit(s, "glossary.md", (t) => t.replace(
+    "### Student\n- Definition: A person who enrolls in and takes courses.\n- Maps to: ERD: students\n- Forbidden synonyms: Learner, Pupil",
+    "### Student\n- Definition: A person who enrolls in and takes courses.\n- Aggregate root: yes\n- Invariants:\n  - a student may not be enrolled in more than one section of the same course\n- Maps to: ERD: students\n- Forbidden synonyms: Learner, Pupil")),
+  (r) => (!hasWarn(r, "AL-27") ? null
+    : `aggregate root with Invariants must NOT fire AL-27 (got ${r.json ? JSON.stringify(r.json.findings.filter((f) => f.check === "AL-27")) : "?"})`));
+
+// AL-28: value object with Maps to → warn.
+testCase("value object with Maps to → AL-28 warn",
+  (s) => edit(s, "glossary.md", (t) => t.replace(
+    "### Registrar\n- Definition: Staff member who manages the catalog and enrollments; owns no rows of their own.",
+    "### Email\n- Definition: An immutable validated email address.\n- Value object: yes\n- Maps to: ERD: students\n\n### Registrar\n- Definition: Staff member who manages the catalog and enrollments; owns no rows of their own.")),
+  (r) => (hasWarn(r, "AL-28") ? null
+    : `value object with Maps to must produce AL-28 warn (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

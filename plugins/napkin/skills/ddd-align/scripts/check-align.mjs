@@ -46,7 +46,7 @@ function report(check, severity, artifact, line, message) {
 
 // ---------------------------------------------------------------- parsing
 
-const KNOWN_TYPES = ["brief", "glossary", "flows", "usecases", "plan", "stack", "nfr", "api", "decisions"];
+const KNOWN_TYPES = ["brief", "glossary", "flows", "usecases", "plan", "stack", "nfr", "api", "decisions", "env"];
 const EXPECTED_FILENAMES = {
   "brief.md": "brief",
   "glossary.md": "glossary",
@@ -57,6 +57,7 @@ const EXPECTED_FILENAMES = {
   "nfr.md": "nfr",
   "api.md": "api",
   "decisions.md": "decisions",
+  "env.md": "env",
 };
 const MARKER_RE = /<!--\s*ddd:\s*([a-z]+)\s*-->/;
 
@@ -95,7 +96,7 @@ const ID_HEADING_RE = /^(#{2,3}) (UC-\d{3}|FL-\d{3}|T-\d{3}|M\d+) — (.+)$/;
 // Near-miss: starts like an ID heading but doesn't match the exact shape.
 const ID_HEADING_LOOSE_RE = /^#{2,3}\s+(UC|FL|T)-?\d/;
 
-const FIELD_RE = /^\s*- ([A-Za-z][A-Za-z ]*): (.*)$/;
+const FIELD_RE = /^\s*- ([A-Za-z][A-Za-z ]*): ?(.*)$/;
 
 function readArtifact(path) {
   const raw = readFileSync(path, "utf8");
@@ -571,6 +572,26 @@ if (plan) {
     const first = plan.tasks.find((t) => inCycle.has(t.id));
     report("AL-11", "error", "plan.md", first.line,
       `dependency cycle between tasks: ${[...inCycle].sort().join(" → ")}`);
+  }
+}
+
+// --- AL-27: aggregate roots should declare invariants
+if (glossary) {
+  for (const [term, t] of glossary.terms) {
+    if (t.fields["Aggregate root"] === "yes" && !("Invariants" in t.fields)) {
+      report("AL-27", "warn", "glossary.md", t.line,
+        `"${term}" is an aggregate root with no "- Invariants:" block — document the business rules this aggregate boundary enforces`);
+    }
+  }
+}
+
+// --- AL-28: value objects must not map to a table
+if (glossary) {
+  for (const [term, t] of glossary.terms) {
+    if (t.fields["Value object"] === "yes" && t.fields["Maps to"]) {
+      report("AL-28", "warn", "glossary.md", t.line,
+        `"${term}" is a value object but also has a "Maps to:" line — value objects are identity-less and should not own a table; remove one or the other`);
+    }
   }
 }
 
