@@ -42,6 +42,19 @@ access both exist, conflict resolution UI is probably implied. If version histor
 exists, a storage retention policy feature is implied. Surface the implication and
 name the missing piece.
 
+### 6. Persona coverage
+
+Every persona's `Goal` should be served by at least one feature. Every feature should
+be relevant to at least one persona. Flag both directions:
+- Personas with no feature serving their goal
+- Features that no defined persona would use
+
+### 7. Glossary coverage
+
+Key terms that appear in 2+ entries across any section and are not universally obvious
+should have a glossary definition. Every glossary term should appear in at least one
+other section — an orphaned definition adds noise without alignment value.
+
 ### 4. Scope creep risk
 
 Features whose constraint signals they're carrying more than one feature's worth
@@ -76,6 +89,14 @@ Use this structure in the conversation response:
 **Gaps**
 - [Missing feature name]: implied by [Feature A] + [Feature B] because [reason]
 
+**Persona coverage gaps**
+- [Persona name]: goal not served by any feature
+- Feature "[name]": no defined persona for whom this is relevant
+
+**Glossary gaps**
+- "[Term]" appears in N entries — no definition
+- Glossary term "[Term]": not referenced in any other section
+
 **Scope risks**
 - [Feature name]: constraint suggests this is really two features — [what they are]
 
@@ -104,3 +125,74 @@ without naming the connection. Do not suggest abstract capabilities — every
 suggestion should be a concrete feature the user could write a canvas entry for.
 
 If a suggestion sparks interest, move into Discuss mode naturally.
+
+---
+
+## Alignment gate
+
+Triggered by: "check alignment", "run alignment gate", "is the canvas consistent",
+"validate the canvas". Runs after every commit and on demand.
+
+All issues must be resolved before the canvas is considered complete — no partial passes.
+
+### Checks
+
+**1. Glossary coverage**
+- Any term appearing in 2+ entries across any section that is not universally obvious
+  must have a glossary definition. Flag the term and each entry that uses it.
+- Every glossary term must appear in at least one other section. Flag orphaned definitions.
+
+**2. Persona ↔ Feature coverage**
+- Every persona's `Goal` must be served by at least one feature.
+- Every feature must be relevant to at least one persona.
+
+**3. Constraint ↔ Feature consistency**
+- No feature may contradict a technical constraint. Flag the specific pair and state
+  what conflicts.
+
+**4. Access ↔ Feature coherence**
+- Persona `Access` channels (MCP server, terminal, SMS, browser, agent, API…) must be
+  reflected somewhere in the feature set. If a channel appears in personas but no feature
+  accounts for it, flag the gap.
+
+**5. Ambiguity scan**
+Banned phrases across every field of every entry:
+`some`, `many`, `various`, `etc`, `and so on`, `usually`, `often`, `typically`,
+`might`, `may` *(when not clearly intentional)*, `could`, `any user`, `most users`,
+`in general`
+
+Flag the entry name, field name, and exact phrase.
+
+**6. Duplicate intent**
+Two entries (any section) that describe the same thing. Name the specific pair and
+state what makes them duplicates.
+
+### Output format
+
+```
+## Alignment gate
+
+PASS  (or FAIL — N issues found)
+
+**Glossary gaps**
+- "Agent" appears in 4 entries — no definition
+
+**Persona coverage gaps**
+- Persona "Non-technical founder" goal not served by any feature
+- Feature "API key management": no defined persona for whom this is relevant
+
+**Constraint conflicts**
+- Feature "Offline mode" × Constraint "Cloud-only deployment": offline storage contradicts cloud-only persistence
+
+**Access gaps**
+- All personas access via MCP server; no feature reflects this channel
+
+**Ambiguity**
+- Feature "Smart routing" / **Why it matters**: contains "often"
+
+**Duplicate intent**
+- Feature "Smart routing" × Feature "Adaptive dispatch": appear to describe the same capability
+```
+
+Omit any section where nothing fires. On FAIL, list every issue — do not stop at the
+first. Resolve all issues, then re-run the gate.
