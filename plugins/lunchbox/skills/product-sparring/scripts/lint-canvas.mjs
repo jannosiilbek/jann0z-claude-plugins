@@ -47,10 +47,6 @@ function detectEntryType(block) {
   if (fieldValue(block, 'Role') !== null || fieldValue(block, 'Goal') !== null || fieldValue(block, 'Friction') !== null) return 'personas';
   if (fieldValue(block, 'Shapes') !== null || fieldValue(block, 'Locked by') !== null) return 'technical-constraints';
   if (fieldValue(block, 'Means') !== null || fieldValue(block, 'Disambiguates') !== null) return 'glossary';
-  // What without feature-specific fields is a technical constraint missing Shapes
-  if (fieldValue(block, 'What') !== null &&
-      fieldValue(block, 'Why it matters') === null &&
-      fieldValue(block, 'Sharpest constraint') === null) return 'technical-constraints';
   return 'features';
 }
 

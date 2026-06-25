@@ -203,7 +203,8 @@ describe('Technical constraint entry validation', () => {
 
   test('missing Shapes fails', () => {
     const entry = `#### Cloud-only deployment
-**What:** All data lives in cloud infrastructure with no local persistence layer.`;
+**What:** All data lives in cloud infrastructure with no local persistence layer.
+**Locked by:** AWS S3`;
     const r = lint('', entry);
     assert.ok(!r.pass, 'Expected FAIL for missing Shapes');
     assert.ok(r.output.includes('Missing **Shapes:**'), r.output);
