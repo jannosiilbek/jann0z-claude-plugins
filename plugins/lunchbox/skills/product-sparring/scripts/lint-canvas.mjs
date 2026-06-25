@@ -45,8 +45,12 @@ function detectSectionType(h2) {
 
 function detectEntryType(block) {
   if (fieldValue(block, 'Role') !== null || fieldValue(block, 'Goal') !== null || fieldValue(block, 'Friction') !== null) return 'personas';
-  if (fieldValue(block, 'Shapes') !== null) return 'technical-constraints';
-  if (fieldValue(block, 'Means') !== null) return 'glossary';
+  if (fieldValue(block, 'Shapes') !== null || fieldValue(block, 'Locked by') !== null) return 'technical-constraints';
+  if (fieldValue(block, 'Means') !== null || fieldValue(block, 'Disambiguates') !== null) return 'glossary';
+  // What without feature-specific fields is a technical constraint missing Shapes
+  if (fieldValue(block, 'What') !== null &&
+      fieldValue(block, 'Why it matters') === null &&
+      fieldValue(block, 'Sharpest constraint') === null) return 'technical-constraints';
   return 'features';
 }
 
@@ -69,7 +73,7 @@ function parseEntryFields(block, name, sectionType, group) {
   } else if (sectionType === 'glossary') {
     const means = fieldValue(block, 'Means');
     const disambiguates = fieldValue(block, 'Disambiguates');
-    if (means !== null) {
+    if (means !== null || disambiguates !== null) {
       return { name, sectionType, group, means, disambiguates, raw: block };
     }
   } else {
@@ -253,7 +257,7 @@ function lintCanvasStructure(text) {
 const CONVERSATION_REFS = /\b(as discussed|as mentioned|as we said|as noted|building on|from earlier|previously|in our conversation|we talked about)\b/i;
 const SUBBULLET = /^[ \t]*[-*•]/m;
 
-function lintEntry(entry, existingEntries) {
+function lintFeatureEntry(entry, existingEntries) {
   const violations = [];
   const { name, sectionType, what, why, constraint } = entry;
 
@@ -348,6 +352,172 @@ function computeAverages(entries) {
     why: sum(e => countWords(e.why)) / valid.length,
     constraint: sum(e => countWords(e.constraint)) / valid.length,
   };
+}
+
+function computePersonaAverages(entries) {
+  const valid = entries.filter(e => e.role && e.goal && e.friction);
+  if (valid.length === 0) return { role: null, goal: null, friction: null };
+  const sum = (fn) => valid.reduce((acc, e) => acc + fn(e), 0);
+  return {
+    role: sum(e => countWords(e.role)) / valid.length,
+    goal: sum(e => countWords(e.goal)) / valid.length,
+    friction: sum(e => countWords(e.friction)) / valid.length,
+  };
+}
+
+function computeConstraintAverages(entries) {
+  const valid = entries.filter(e => e.what && e.shapes);
+  if (valid.length === 0) return { what: null, shapes: null };
+  const sum = (fn) => valid.reduce((acc, e) => acc + fn(e), 0);
+  return {
+    what: sum(e => countWords(e.what)) / valid.length,
+    shapes: sum(e => countWords(e.shapes)) / valid.length,
+  };
+}
+
+function computeGlossaryAverages(entries) {
+  const valid = entries.filter(e => e.means);
+  if (valid.length === 0) return { means: null };
+  return {
+    means: valid.reduce((acc, e) => acc + countWords(e.means), 0) / valid.length,
+  };
+}
+
+function lintPersonaEntry(entry, existingEntries) {
+  const violations = [];
+  const { name, role, goal, access, friction } = entry;
+
+  if (!name) violations.push('Missing persona name (#### heading)');
+  if (!role) violations.push('Missing **Role:** field');
+  if (!goal) violations.push('Missing **Goal:** field');
+  if (!access) violations.push('Missing **Access:** field');
+  if (!friction) violations.push('Missing **Friction:** field');
+  if (violations.length > 0) return violations;
+
+  const nameWords = name.split(/\s+/).filter(Boolean);
+  if (nameWords.length > 4) violations.push(`Persona name too long (${nameWords.length} words, max 4): "${name}"`);
+  if (VERB_PREFIX.test(name)) violations.push(`Persona name starts with a verb: "${name}" — use a noun phrase`);
+
+  if (countSentences(role) !== 1) violations.push(`**Role** must be exactly 1 sentence (found ${countSentences(role)}): "${role}"`);
+  if (countSentences(goal) !== 1) violations.push(`**Goal** must be exactly 1 sentence (found ${countSentences(goal)}): "${goal}"`);
+  if (access.includes('\n')) violations.push('**Access** must be a single line — no multi-line values');
+  if (countSentences(friction) !== 1) violations.push(`**Friction** must be exactly 1 sentence (found ${countSentences(friction)}): "${friction}"`);
+
+  for (const [label, value] of [['Role', role], ['Goal', goal], ['Friction', friction], ['Access', access]]) {
+    if (CONVERSATION_REFS.test(value)) violations.push(`**${label}** contains a conversation reference — entries must stand alone`);
+  }
+
+  const bodyText = `${role}\n${goal}\n${access}\n${friction}`;
+  if (SUBBULLET.test(bodyText)) violations.push('Entry contains sub-bullets — use prose only');
+
+  const sameType = existingEntries.filter(e => e.sectionType === 'personas');
+  if (sameType.length > 0) {
+    const avgs = computePersonaAverages(sameType);
+    for (const [label, value, avg] of [['Role', role, avgs.role], ['Goal', goal, avgs.goal], ['Friction', friction, avgs.friction]]) {
+      if (avg === null) continue;
+      const count = countWords(value);
+      const min = Math.floor(avg * 0.8);
+      const max = Math.ceil(avg * 1.2);
+      if (count < min || count > max) {
+        violations.push(`**${label}** word count (${count}) is outside style range ${min}–${max} (existing avg ${Math.round(avg)} words)`);
+      }
+    }
+  }
+
+  return violations;
+}
+
+function lintConstraintEntry(entry, existingEntries) {
+  const violations = [];
+  const { name, what, shapes, lockedBy } = entry;
+
+  if (!name) violations.push('Missing constraint name (#### heading)');
+  if (!what) violations.push('Missing **What:** field');
+  if (!shapes) violations.push('Missing **Shapes:** field');
+  if (violations.length > 0) return violations;
+
+  const nameWords = name.split(/\s+/).filter(Boolean);
+  if (nameWords.length > 4) violations.push(`Constraint name too long (${nameWords.length} words, max 4): "${name}"`);
+  if (VERB_PREFIX.test(name)) violations.push(`Constraint name starts with a verb: "${name}" — use a noun phrase`);
+
+  if (countSentences(what) !== 1) violations.push(`**What** must be exactly 1 sentence (found ${countSentences(what)}): "${what}"`);
+  const shapesSentences = countSentences(shapes);
+  if (shapesSentences < 1 || shapesSentences > 2) violations.push(`**Shapes** must be 1–2 sentences (found ${shapesSentences}): "${shapes}"`);
+
+  for (const [label, value] of [['What', what], ['Shapes', shapes]]) {
+    if (CONVERSATION_REFS.test(value)) violations.push(`**${label}** contains a conversation reference — entries must stand alone`);
+  }
+
+  if (lockedBy !== null) {
+    if (lockedBy.includes('\n')) violations.push('**Locked by** must be a single line — no multi-line values');
+    if (CONVERSATION_REFS.test(lockedBy)) violations.push('**Locked by** contains a conversation reference — entries must stand alone');
+  }
+
+  const bodyText = `${what}\n${shapes}\n${lockedBy ?? ''}`;
+  if (SUBBULLET.test(bodyText)) violations.push('Entry contains sub-bullets — use prose only');
+
+  const sameType = existingEntries.filter(e => e.sectionType === 'technical-constraints');
+  if (sameType.length > 0) {
+    const avgs = computeConstraintAverages(sameType);
+    for (const [label, value, avg] of [['What', what, avgs.what], ['Shapes', shapes, avgs.shapes]]) {
+      if (avg === null) continue;
+      const count = countWords(value);
+      const min = Math.floor(avg * 0.8);
+      const max = Math.ceil(avg * 1.2);
+      if (count < min || count > max) {
+        violations.push(`**${label}** word count (${count}) is outside style range ${min}–${max} (existing avg ${Math.round(avg)} words)`);
+      }
+    }
+  }
+
+  return violations;
+}
+
+function lintGlossaryEntry(entry, existingEntries) {
+  const violations = [];
+  const { name, means, disambiguates } = entry;
+
+  if (!name) violations.push('Missing term name (#### heading)');
+  if (!means) violations.push('Missing **Means:** field');
+  if (violations.length > 0) return violations;
+
+  const nameWords = name.split(/\s+/).filter(Boolean);
+  if (nameWords.length > 3) violations.push(`Term name too long (${nameWords.length} words, max 3): "${name}"`);
+  if (VERB_PREFIX.test(name)) violations.push(`Term name starts with a verb: "${name}" — use a noun phrase`);
+
+  if (countSentences(means) !== 1) violations.push(`**Means** must be exactly 1 sentence (found ${countSentences(means)}): "${means}"`);
+
+  if (CONVERSATION_REFS.test(means)) violations.push('**Means** contains a conversation reference — entries must stand alone');
+
+  if (disambiguates !== null) {
+    if (disambiguates.includes('\n')) violations.push('**Disambiguates** must be a single line — no multi-line values');
+    if (CONVERSATION_REFS.test(disambiguates)) violations.push('**Disambiguates** contains a conversation reference — entries must stand alone');
+  }
+
+  const bodyText = `${means}\n${disambiguates ?? ''}`;
+  if (SUBBULLET.test(bodyText)) violations.push('Entry contains sub-bullets — use prose only');
+
+  const sameType = existingEntries.filter(e => e.sectionType === 'glossary');
+  if (sameType.length > 0) {
+    const avgs = computeGlossaryAverages(sameType);
+    if (avgs.means !== null) {
+      const count = countWords(means);
+      const min = Math.floor(avgs.means * 0.8);
+      const max = Math.ceil(avgs.means * 1.2);
+      if (count < min || count > max) {
+        violations.push(`**Means** word count (${count}) is outside style range ${min}–${max} (existing avg ${Math.round(avgs.means)} words)`);
+      }
+    }
+  }
+
+  return violations;
+}
+
+function lintEntry(entry, existingEntries) {
+  if (entry.sectionType === 'personas') return lintPersonaEntry(entry, existingEntries);
+  if (entry.sectionType === 'technical-constraints') return lintConstraintEntry(entry, existingEntries);
+  if (entry.sectionType === 'glossary') return lintGlossaryEntry(entry, existingEntries);
+  return lintFeatureEntry(entry, existingEntries);
 }
 
 // ---------------------------------------------------------------------------
