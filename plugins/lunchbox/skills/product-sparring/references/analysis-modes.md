@@ -168,7 +168,12 @@ All issues must be resolved before the canvas is considered complete — no part
   reflected somewhere in the feature set. If a channel appears in personas but no feature
   accounts for it, flag the gap.
 
-**5. Ambiguity scan**
+**5. Foundation ↔ Feature coherence**
+- Every foundation component must power at least one feature.
+- No feature may depend on an engine capability absent from Foundation. Flag both directions and
+  name the specific component or feature.
+
+**6. Ambiguity scan**
 Banned phrases across every field of every entry:
 `some`, `many`, `various`, `etc`, `and so on`, `usually`, `often`, `typically`,
 `might`, `may` *(when not clearly intentional)*, `could`, `any user`, `most users`,
@@ -176,14 +181,9 @@ Banned phrases across every field of every entry:
 
 Flag the entry name, field name, and exact phrase.
 
-**6. Duplicate intent**
+**7. Duplicate intent**
 Two entries (any section) that describe the same thing. Name the specific pair and
 state what makes them duplicates.
-
-**7. Foundation ↔ Feature coherence**
-- Every foundation component must power at least one feature.
-- No feature may depend on an engine capability absent from Foundation. Flag both directions and
-  name the specific component or feature.
 
 ### Output format
 
