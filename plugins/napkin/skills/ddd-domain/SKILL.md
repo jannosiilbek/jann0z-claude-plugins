@@ -20,6 +20,13 @@ The artifact grammar is defined once, in
 - Read `spec/brief.md` if it exists — actors, scope, and the sizing decision come from
   there. If it doesn't, offer to run `ddd-brief` first; if the user prefers to proceed,
   work from their description and state assumptions explicitly.
+- If `spec/brief.md` contains a `## Subdomain classification` table, read it. Calibrate
+  storming depth per subdomain type: **Core** → full event storming, full glossary
+  modeling, `Aggregate root:` + `Invariants:` required; **Supporting** → storm flows
+  and write terms, but fewer flows are expected; **Generic** → stub one glossary term
+  per SaaS/library named in the "Build vs. buy" column (no `Maps to:` line, add a
+  `- Adapter:` note in the definition), skip storming for that subdomain entirely.
+  When no table is present, treat the whole domain as Core.
 - If `spec/glossary.md` or `spec/flows.md` exist, read them fully — you are in
   **delta mode** (stage 5).
 - Read `references/event-storming.md` for the storming method.

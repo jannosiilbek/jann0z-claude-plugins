@@ -27,6 +27,11 @@ The artifact grammar is defined once, in
 - Read `spec/decisions.md` (when present) — architectural rationale. Tasks that
   implement entities with non-default FK policies (e.g. RESTRICT) should reference the
   relevant ADR so the implementing agent does not re-derive it.
+- If `spec/brief.md` contains a `## Subdomain classification` table, read it before
+  structuring the plan. **Generic** subdomains produce exactly one task of the shape
+  `T-xxx — Integrate <SaaS name>` with `- Effort: S` regardless of UC count in that
+  area — the work is wiring, not modeling. **Core** and **Supporting** subdomains
+  follow the normal task-decomposition rules.
 - If `spec/plan.md` exists, read it fully — **delta mode** (stage 3).
 
 ### 2. Structure the plan
