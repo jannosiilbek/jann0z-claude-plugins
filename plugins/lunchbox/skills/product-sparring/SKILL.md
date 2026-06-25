@@ -50,7 +50,7 @@ follows from the current canvas. Covered in [analysis-modes.md](references/analy
 **Expert panel** — When the user asks for expert opinions, a deep dive, or "what would
 [role] say about this". Spawn parallel expert agents. Read [experts.md](references/experts.md).
 
-**Alignment gate** — When the user asks to check alignment, validate the canvas, or run the gate. Also runs after every commit. Six cross-section checks: glossary coverage, persona ↔ feature coverage, constraint ↔ feature consistency, access ↔ feature coherence, ambiguity scan, duplicate intent. All issues must resolve before the canvas is considered complete. Read [analysis-modes.md](references/analysis-modes.md) for the full check list and output format. Output lives in the conversation only — never written to the canvas.
+**Alignment gate** — When the user asks to check alignment, run the alignment gate, validate the canvas, or check if the canvas is consistent. Also runs after every commit. Six cross-section checks: glossary coverage, persona ↔ feature coverage, constraint ↔ feature consistency, access ↔ feature coherence, ambiguity scan, duplicate intent. All issues must resolve before the canvas is considered complete. Read [analysis-modes.md](references/analysis-modes.md) for the full check list and output format. Output lives in the conversation only — never written to the canvas.
 
 Never push to commit during exploration. The commit happens when the user says so.
 
