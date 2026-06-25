@@ -124,6 +124,23 @@ alignment checks skip unknown fields; the implementing agent uses framework defa
   `Drift safety: spec-traced`. Never ask; never omit. (Not in any preset — must be added
   explicitly when writing nfr.md.)
 
+### 4b. Write spec/env.md
+
+**Greenfield:** derive variables from the stack and integrations declared in stack.md:
+1. One `DATABASE_URL` row whenever a SQL data layer is present.
+2. One row per auth secret (e.g. `JWT_SECRET`, `SESSION_SECRET`, `OAUTH_CLIENT_SECRET`).
+3. One row per external integration named in `## Integrations` (e.g. `STRIPE_SECRET_KEY`,
+   `SENDGRID_API_KEY`, `CLERK_SECRET_KEY`). Mark these `Type: secret`.
+4. One `USE_MOCK` row whenever `Mock: yes` is in `## Integrations`, with `Default: false`
+   and `Required-in: dev, test`.
+5. Any environment-specific URLs (e.g. `APP_URL`, `API_URL`) when the stack uses
+   `Environments: preview, staging, production`.
+
+Follow the skeleton in spec-format.md §12. Write `spec/env.md`.
+
+**Delta mode:** append rows for new integrations only; never edit existing rows.
+When no external integrations or auth secrets are present, skip this file silently.
+
 ### 5. Gate
 
 Run the **self-correcting exit gate** (ddd-align → "Self-correcting exit gate"): run the

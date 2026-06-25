@@ -187,7 +187,7 @@ testCase("empty spec dir → non-zero (no vacuous green)",
   (s) => {
     rmSync(s, { recursive: true });
     cpSync(GOLDEN, s, { recursive: true });
-    for (const f of ["brief.md", "glossary.md", "flows.md", "usecases.md", "plan.md", "stack.md", "nfr.md", "api.md"]) unlinkSync(join(s, f));
+    for (const f of ["brief.md", "glossary.md", "flows.md", "usecases.md", "plan.md", "stack.md", "nfr.md", "api.md", "env.md"]) unlinkSync(join(s, f));
     rmSync(join(s, "data"), { recursive: true });
   },
   (r) => (r.exit !== 0 && r.json && r.json.ok === false ? null : `expected non-zero exit, got ${r.exit}`));
