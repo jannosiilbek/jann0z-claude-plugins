@@ -126,11 +126,15 @@ as Feature sections: noun phrase, 1–3 words, no verb prefix, no empty groups.
 ## Technical Constraints
 
 Architectural decisions, platform commitments, and hard technical realities that shape
-what features are possible and how they must be designed. Flat — no ### groups.
+what features are possible and how they must be designed. Groups optional — a flat list
+by default; add `###` groups when the section grows, and then every entry must be grouped
+(all-or-nothing).
 
 **Entry template:**
 
 ```markdown
+### [Group name]   ← optional; if used, every entry in the section must be grouped
+
 #### [Constraint name]
 **What:** [One sentence. The architectural decision, platform commitment, or hard technical reality.]
 **Shapes:** [One or two sentences. How this constrains feature design — what it makes easier, harder, or impossible.]
@@ -159,11 +163,14 @@ what features are possible and how they must be designed. Flat — no ### groups
 
 The core engine components the whole system is built on — the substrate that features draw their
 power from. Distinct from Technical Constraints: constraints describe what limits the build,
-Foundation describes what the build runs on. Flat — no ### groups.
+Foundation describes what the build runs on. Groups optional — a flat list by default; add `###`
+groups when the section grows, and then every entry must be grouped (all-or-nothing).
 
 **Entry template:**
 
 ```markdown
+### [Group name]   ← optional; if used, every entry in the section must be grouped
+
 #### [Component name]
 **Does:** [One sentence. What this core engine component does in the running system.]
 **Powers:** [One or two sentences. What capabilities it gives the rest of the system — which features build on it.]
@@ -190,11 +197,14 @@ Foundation describes what the build runs on. Flat — no ### groups.
 
 ## Glossary
 
-Shared definitions for terms used across the canvas. Flat — no ### groups.
+Shared definitions for terms used across the canvas. Groups optional — a flat list by default;
+add `###` groups when the section grows, and then every entry must be grouped (all-or-nothing).
 
 **Entry template:**
 
 ```markdown
+### [Group name]   ← optional; if used, every entry in the section must be grouped
+
 #### [Term]
 **Means:** [One sentence. What this term means in this product's context.]
 **Disambiguates:** [Optional. One line. What it's not, or how it differs from a term people confuse it with.]
