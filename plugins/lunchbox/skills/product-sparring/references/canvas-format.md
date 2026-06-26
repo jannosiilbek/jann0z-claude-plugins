@@ -128,7 +128,7 @@ as Feature sections: noun phrase, 1–3 words, no verb prefix, no empty groups.
 Architectural decisions, platform commitments, and hard technical realities that shape
 what features are possible and how they must be designed. Groups optional — a flat list
 by default; add `###` groups when the section grows, and then every entry must be grouped
-(all-or-nothing).
+(all-or-nothing). Group names follow the same rules as Feature sections: noun phrase, 1–3 words, no verb prefix, no empty groups.
 
 **Entry template:**
 
@@ -164,7 +164,7 @@ by default; add `###` groups when the section grows, and then every entry must b
 The core engine components the whole system is built on — the substrate that features draw their
 power from. Distinct from Technical Constraints: constraints describe what limits the build,
 Foundation describes what the build runs on. Groups optional — a flat list by default; add `###`
-groups when the section grows, and then every entry must be grouped (all-or-nothing).
+groups when the section grows, and then every entry must be grouped (all-or-nothing). Group names follow the same rules as Feature sections: noun phrase, 1–3 words, no verb prefix, no empty groups.
 
 **Entry template:**
 
@@ -198,7 +198,7 @@ groups when the section grows, and then every entry must be grouped (all-or-noth
 ## Glossary
 
 Shared definitions for terms used across the canvas. Groups optional — a flat list by default;
-add `###` groups when the section grows, and then every entry must be grouped (all-or-nothing).
+add `###` groups when the section grows, and then every entry must be grouped (all-or-nothing). Group names follow the same rules as Feature sections: noun phrase, 1–3 words, no verb prefix, no empty groups.
 
 **Entry template:**
 
