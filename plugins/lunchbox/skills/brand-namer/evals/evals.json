@@ -1,0 +1,50 @@
+{
+  "skill_name": "brand-namer",
+  "evals": [
+    {
+      "id": 0,
+      "name": "devtool-cli-indie",
+      "prompt": "I'm building a CLI tool that watches your test suite and only re-runs the tests affected by your most recent code change, so feedback is instant. Target users are indie developers and small engineering teams who live in the terminal. Help me come up with a brand name that has an available domain.",
+      "expected_output": "Generates a wide, diverse pool of candidates (spanning archetypes), vets them for pronounceability and global/linguistic safety, screens register toward the indie-dev persona (terse, lowercase, CLI-feel), scores/ranks, then actually runs scripts/check-availability.mjs to check .com/.io/.ai/.co/.app plus github/x/instagram, and presents an inline ranked shortlist of names with a free, recall-friendly domain. Availability reported as a tri-state with the 'verify at registrar' caveat — not a bare 'it's free'.",
+      "files": [],
+      "assertions": [
+        { "name": "multiple_candidates", "type": "llm_judge", "description": "Presents at least 5 distinct candidate names, indicating a real generated pool rather than one or two ad-hoc ideas." },
+        { "name": "real_domain_check", "type": "llm_judge", "description": "Reports concrete domain availability across multiple TLDs (.com plus at least one of .io/.ai/.co/.app) for its top candidates, from an actual lookup rather than an unsupported claim." },
+        { "name": "tristate_honesty", "type": "llm_judge", "description": "Reports availability as more than a bare yes/no: distinguishes available vs taken, acknowledges any uncertainty, and caveats 'available' as unverified (verify at registrar; pricing/trademark may apply) rather than asserting a name is simply free to grab." },
+        { "name": "persona_register_fit", "type": "llm_judge", "description": "The recommended names and rationale fit an indie-developer register — terse, lowercase, CLI/terminal-friendly — not corporate or cutesy." },
+        { "name": "linguistic_safety_addressed", "type": "llm_judge", "description": "Addresses whether the recommended names carry bad meanings or unsayable sounds in other languages — an explicit screen or a clear note for finalists." },
+        { "name": "top_pick_gettable", "type": "llm_judge", "description": "The #1 recommended name has at least one genuinely available domain; it does not lead with a name whose every checked domain is taken." }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "consumer-global-wellness",
+      "prompt": "I need a name for a meditation and journaling app aimed at busy parents around the world. It should feel calm and warm, be easy to say out loud, and not mean anything embarrassing in other languages. Find me a few good options where the .com or .io is free.",
+      "expected_output": "Produces calm/warm consumer-register candidates, runs the linguistic-safety screen across major languages and explicitly flags/drops anything with a bad meaning or unsayable sound, applies the radio test, then checks domain availability live and surfaces names whose .com or .io is free. Notes that a native-speaker slang pass is still owed for finalists. Honest tri-state availability.",
+      "files": [],
+      "assertions": [
+        { "name": "multiple_candidates", "type": "llm_judge", "description": "Presents at least 5 distinct candidate names, indicating a real generated pool rather than one or two ad-hoc ideas." },
+        { "name": "real_domain_check", "type": "llm_judge", "description": "Reports concrete domain availability across multiple TLDs (.com plus at least one of .io/.ai/.co/.app) for its top candidates, from an actual lookup rather than an unsupported claim." },
+        { "name": "tristate_honesty", "type": "llm_judge", "description": "Reports availability as more than a bare yes/no: distinguishes available vs taken, acknowledges any uncertainty, and caveats 'available' as unverified rather than asserting a name is simply free to grab." },
+        { "name": "persona_register_fit", "type": "llm_judge", "description": "The recommended names and rationale fit a calm, warm, consumer-wellness register that is easy to say out loud — not technical or cold." },
+        { "name": "explicit_multilanguage_screen", "type": "llm_judge", "description": "Explicitly screens candidate names for meaning/pronunciation across several specific named languages and states which names pass or are dropped, and notes a native-speaker check is still owed for finalists." },
+        { "name": "top_pick_gettable", "type": "llm_judge", "description": "The #1 recommended name has at least one genuinely available domain (ideally .com or .io as the user asked); it does not lead with a fully-taken name." }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "regulated-clinical-b2b",
+      "prompt": "We're launching a HIPAA-compliant scheduling platform for small medical clinics in the US. We need a trustworthy, serious brand name and a domain we can actually register. What should we call it?",
+      "expected_output": "Biases generation toward a serious/clinical register (reassuring, precise, care-adjacent roots), avoids jokes and especially morbid sound-collisions, ranks on the rubric, then runs the checker and presents an inline ranked shortlist with available domains and honest caveats (trademark search still required). Does not recommend a name with a taken .com and no good alternative.",
+      "files": [],
+      "assertions": [
+        { "name": "multiple_candidates", "type": "llm_judge", "description": "Presents at least 5 distinct candidate names, indicating a real generated pool rather than one or two ad-hoc ideas." },
+        { "name": "real_domain_check", "type": "llm_judge", "description": "Reports concrete domain availability across multiple TLDs (.com plus at least one of .io/.ai/.co/.app) for its top candidates, from an actual lookup rather than an unsupported claim." },
+        { "name": "tristate_honesty", "type": "llm_judge", "description": "Reports availability as more than a bare yes/no: distinguishes available vs taken, acknowledges any uncertainty, and caveats 'available' as unverified (verify at registrar; trademark search required) rather than asserting a name is simply free to grab." },
+        { "name": "persona_register_fit", "type": "llm_judge", "description": "The recommended names and rationale project a serious, trustworthy, clinical register with no jokes and no morbid sound-collisions." },
+        { "name": "linguistic_safety_addressed", "type": "llm_judge", "description": "Addresses whether the recommended names carry bad meanings or unsayable sounds in other languages — an explicit screen or a clear note for finalists." },
+        { "name": "top_pick_gettable", "type": "llm_judge", "description": "The #1 recommended name has at least one genuinely available domain; it does not lead with a name whose every checked domain is taken." }
+      ]
+    }
+  ]
+}

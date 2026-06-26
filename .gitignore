@@ -34,6 +34,7 @@ plugins/napkin/skills/ddd-align-workspace/
 # evals/evals.json, so never committed.
 plugins/lunchbox/skills/council-workspace/
 plugins/lunchbox/skills/doc-align-workspace/
+plugins/lunchbox/skills/brand-namer-workspace/
 
 # Pipeline-eval raw run output (full spec/ per model × scenario + stage transcripts).
 # Reproducible from scenarios/ + models.json; only results/ summaries are committed.
@@ -50,3 +51,6 @@ plugins/napkin/evals/pipeline/runs/
 
 # Superpowers session artifacts (working plans and design specs; ephemeral, never shared)
 docs/superpowers/
+
+# Impeccable plugin hook cache (machine-local hook state; not part of any skill's source)
+.impeccable/
