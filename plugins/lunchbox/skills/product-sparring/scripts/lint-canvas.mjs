@@ -9,8 +9,8 @@
  *   node lint-canvas.mjs --canvas <path> --entry <md> # lint candidate entry against canvas style
  *
  * Canvas structure: five sections (Personas, Technical Constraints, Foundation, Glossary, Features).
- * Personas and Features group entries under ### headings; Technical Constraints, Foundation, and
- * Glossary are flat.
+ * Personas and Features require ### group headings; Technical Constraints, Foundation, and
+ * Glossary are flat by default with optional all-or-nothing ### grouping.
  *
  * Exit codes: 0 = pass, 1 = violations found
  */
