@@ -265,7 +265,7 @@ describe('Canvas structural validation — new sections', () => {
     assert.ok(r.output.includes('not inside any group'), r.output);
   });
 
-  test('Technical Constraints with a group fails', () => {
+  test('Technical Constraints fully grouped passes', () => {
     const canvas = BASE.replace('## Features', `## Technical Constraints
 
 ### Infrastructure
@@ -276,11 +276,10 @@ describe('Canvas structural validation — new sections', () => {
 
 ## Features`);
     const r = lint(canvas);
-    assert.ok(!r.pass, 'Expected FAIL for constraint with group');
-    assert.ok(r.output.toLowerCase().includes('flat'), r.output);
+    assert.ok(r.pass, `Expected PASS for fully-grouped constraints:\n${r.output}`);
   });
 
-  test('Glossary with a group fails', () => {
+  test('Glossary fully grouped passes', () => {
     const canvas = BASE.replace('## Features', `## Glossary
 
 ### Core terms
@@ -290,8 +289,7 @@ describe('Canvas structural validation — new sections', () => {
 
 ## Features`);
     const r = lint(canvas);
-    assert.ok(!r.pass, 'Expected FAIL for glossary with group');
-    assert.ok(r.output.toLowerCase().includes('flat'), r.output);
+    assert.ok(r.pass, `Expected PASS for fully-grouped glossary:\n${r.output}`);
   });
 });
 
@@ -415,7 +413,7 @@ describe('Canvas structural validation — Foundation', () => {
 **Sharpest constraint:** Conflict resolution when the same document is edited on two devices.
 `;
 
-  test('Foundation with a group fails', () => {
+  test('Foundation fully grouped passes', () => {
     const canvas = BASE.replace('## Features', `## Foundation
 
 ### Compute Layer
@@ -426,7 +424,83 @@ describe('Canvas structural validation — Foundation', () => {
 
 ## Features`);
     const r = lint(canvas);
-    assert.ok(!r.pass, 'Expected FAIL for foundation with group');
-    assert.ok(r.output.toLowerCase().includes('flat'), r.output);
+    assert.ok(r.pass, `Expected PASS for fully-grouped foundation:\n${r.output}`);
+  });
+});
+
+describe('Optional groups (Constraints / Foundation / Glossary)', () => {
+  const BASE = `# My Product
+> vision
+
+**What it is:** A thing.
+**Who it's for:** People.
+**What makes it different:** Unique.
+
+---
+
+## Features
+
+### Core
+
+#### Offline mode
+**What:** Users can read and edit documents without an internet connection.
+**Why it matters:** Network drops during travel make the app unusable.
+**Sharpest constraint:** Conflict resolution when the same document is edited on two devices.
+`;
+
+  test('flat Technical Constraints (no group) passes', () => {
+    const canvas = BASE.replace('## Features', `## Technical Constraints
+
+#### Cloud-only deployment
+**What:** All data lives in cloud infrastructure with no local persistence layer.
+**Shapes:** Features requiring offline access or local-first sync are out of scope.
+
+## Features`);
+    const r = lint(canvas);
+    assert.ok(r.pass, `Expected PASS for flat constraints:\n${r.output}`);
+  });
+
+  test('mixed ungrouped + grouped constraints fails (all-or-nothing)', () => {
+    const canvas = BASE.replace('## Features', `## Technical Constraints
+
+#### Loose constraint
+**What:** All data lives in cloud infrastructure with no local persistence layer.
+**Shapes:** Features requiring offline access or local-first sync are out of scope.
+
+### Infrastructure
+
+#### Cloud-only deployment
+**What:** Application state is persisted exclusively in managed cloud storage services.
+**Shapes:** Local-first or offline-capable features cannot be supported under this model.
+
+## Features`);
+    const r = lint(canvas);
+    assert.ok(!r.pass, 'Expected FAIL for mixed grouped/ungrouped constraints');
+    assert.ok(r.output.includes('not inside a group'), r.output);
+  });
+
+  test('empty Foundation group fails', () => {
+    const canvas = BASE.replace('## Features', `## Foundation
+
+### Compute Layer
+
+## Features`);
+    const r = lint(canvas);
+    assert.ok(!r.pass, 'Expected FAIL for empty foundation group');
+    assert.ok(r.output.toLowerCase().includes('empty'), r.output);
+  });
+
+  test('verb-phrase glossary group name fails', () => {
+    const canvas = BASE.replace('## Features', `## Glossary
+
+### Build terms
+
+#### Agent
+**Means:** An autonomous process that invokes tools without per-action confirmation.
+
+## Features`);
+    const r = lint(canvas);
+    assert.ok(!r.pass, 'Expected FAIL for verb-phrase glossary group name');
+    assert.ok(r.output.includes('starts with a verb'), r.output);
   });
 });

@@ -147,26 +147,6 @@ function parseCanvas(text) {
 // Section structure parsing
 // ---------------------------------------------------------------------------
 
-function extractSectionBlock(text, sectionHeading) {
-  const target = sectionHeading.toLowerCase();
-  const lines = text.split('\n');
-  let inSection = false;
-  const result = [];
-  for (const line of lines) {
-    const h2Match = line.match(/^## (.+)/);
-    if (h2Match) {
-      if (inSection) break;
-      if (h2Match[1].trim().toLowerCase() === target) {
-        inSection = true;
-        continue;
-      }
-      continue;
-    }
-    if (inSection) result.push(line);
-  }
-  return result.join('\n');
-}
-
 function parseCanvasSections(text, sectionName = 'features') {
   const target = sectionName.toLowerCase();
   const lines = text.split('\n');
@@ -256,6 +236,27 @@ function countWords(text) {
 
 const VERB_PREFIX = /^(add|build|create|implement|enable|allow|support|make|provide|give|let|show|display|update|change|fix|remove|introduce|integrate|improve|extend|handle)\b/i;
 
+// Optional-group sections (Technical Constraints, Foundation, Glossary): flat by
+// default; if any ### group is present, grouping is all-or-nothing — every entry
+// must be under a group, groups must be non-empty, names are noun phrases ≤3 words.
+function lintOptionalGroupSection(text, sectionName, label) {
+  const { sections, orphaned } = parseCanvasSections(text, sectionName);
+  if (sections.length === 0) return []; // flat mode — always valid
+  const violations = [];
+  for (const entry of orphaned) {
+    violations.push(`${label} "${entry}" is not inside a group — when this section uses groups, every entry must be under a ### group header (or remove all groups for a flat list)`);
+  }
+  for (const group of sections) {
+    if (group.features.length === 0) {
+      violations.push(`${label} group "${group.name}" is empty — add an entry or remove the group`);
+    }
+    const nameWords = group.name.split(/\s+/).filter(Boolean);
+    if (nameWords.length > 3) violations.push(`${label} group name "${group.name}" is too long (${nameWords.length} words, max 3)`);
+    if (VERB_PREFIX.test(group.name)) violations.push(`${label} group name "${group.name}" starts with a verb — use a noun phrase`);
+  }
+  return violations;
+}
+
 function lintCanvasStructure(text) {
   const violations = [];
 
@@ -287,26 +288,10 @@ function lintCanvasStructure(text) {
     if (VERB_PREFIX.test(group.name)) violations.push(`Persona group name "${group.name}" starts with a verb — use a noun phrase`);
   }
 
-  // Technical Constraints: must be flat — no ### groups allowed
-  const constraintBlock = extractSectionBlock(text, 'Technical Constraints');
-  const constraintGroups = constraintBlock.match(/^### .+/mg) ?? [];
-  for (const g of constraintGroups) {
-    violations.push(`Technical Constraints section must be flat — remove group "${g.replace(/^### /, '').trim()}" and place constraints directly under ## Technical Constraints`);
-  }
-
-  // Glossary: must be flat — no ### groups allowed
-  const glossaryBlock = extractSectionBlock(text, 'Glossary');
-  const glossaryGroups = glossaryBlock.match(/^### .+/mg) ?? [];
-  for (const g of glossaryGroups) {
-    violations.push(`Glossary section must be flat — remove group "${g.replace(/^### /, '').trim()}" and place terms directly under ## Glossary`);
-  }
-
-  // Foundation: must be flat — no ### groups allowed
-  const foundationBlock = extractSectionBlock(text, 'Foundation');
-  const foundationGroups = foundationBlock.match(/^### .+/mg) ?? [];
-  for (const g of foundationGroups) {
-    violations.push(`Foundation section must be flat — remove group "${g.replace(/^### /, '').trim()}" and place components directly under ## Foundation`);
-  }
+  // Technical Constraints, Foundation, Glossary: groups optional (all-or-nothing)
+  violations.push(...lintOptionalGroupSection(text, 'Technical Constraints', 'Technical Constraint'));
+  violations.push(...lintOptionalGroupSection(text, 'Foundation', 'Foundation component'));
+  violations.push(...lintOptionalGroupSection(text, 'Glossary', 'Glossary term'));
 
   return violations;
 }
