@@ -549,6 +549,37 @@ if (ucs) {
   }
 }
 
+// --- AL-31: vacuous acceptance criteria — EARS-shaped but content-free. The shape
+// passes AL-07; these phrases mean no observable behavior was named.
+const VACUOUS_RE = /\b(works? correctly|behaves? properly|as expected|appropriately|gracefully|handles? errors)\b/i;
+if (ucs) {
+  for (const uc of ucs) {
+    if (uc.status !== "active") continue;
+    for (const ac of uc.acs) {
+      const hit = ac.text.match(VACUOUS_RE);
+      if (hit) {
+        report("AL-31", "warn", "usecases.md", ac.line,
+          `${uc.id}/${ac.id} is vacuous ("${hit[0]}") — name a concrete condition and an observable behavior`);
+      }
+    }
+  }
+}
+
+// --- AL-32: glossary definition restates the term. Heuristic: a short definition
+// (≤10 words) that contains a word sharing the term's first-word stem defines nothing.
+if (glossary) {
+  for (const [term, t] of glossary.terms) {
+    const def = t.fields["Definition"] || "";
+    const stem = term.split(/\s+/)[0].toLowerCase().slice(0, 5);
+    if (stem.length < 3) continue;
+    const words = def.toLowerCase().match(/[a-z]+/g) || [];
+    if (words.length > 0 && words.length <= 10 && words.some((w) => w.startsWith(stem))) {
+      report("AL-32", "warn", "glossary.md", t.line,
+        `"${term}" definition appears to restate the term ("${def}") — say what it means in this domain, not the word itself`);
+    }
+  }
+}
+
 // --- plan (AL-05, AL-06, AL-11)
 if (plan && ucs) {
   const ucIds = new Map(ucs.map((u) => [u.id, u]));

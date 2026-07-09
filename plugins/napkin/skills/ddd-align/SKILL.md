@@ -38,10 +38,11 @@ Zero dependencies — no install step. Run the script directly.
 The harness proves structure; it cannot judge meaning. Review the artifacts for what's
 left — flag, with artifact and location:
 
-- **Vacuous acceptance criteria** — EARS-shaped but content-free ("THE SYSTEM SHALL work
-  correctly"). The shape passed AL-07; the substance is your call.
-- **Definitions that restate the term** ("An Enrollment is when someone enrolls") —
-  a glossary entry that defines nothing invites every reader to invent their own meaning.
+- **Vacuous acceptance criteria** — AL-31 catches a fixed phrase list ("works
+  correctly", "as expected", …); judge what slips past it: criteria with no
+  measurable condition, tautologies, restated titles.
+- **Definitions that restate the term** — AL-32 catches the short-and-circular
+  shape mechanically; judge longer definitions that still define nothing.
 - **Sizing vs. artifact mismatch** — a brief sized `delta` next to artifacts whose
   changelogs show wholesale regeneration; or a bug-fix-sized problem statement with a
   ten-task plan (artifact bloat — the pipeline's documented failure mode).

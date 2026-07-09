@@ -398,5 +398,29 @@ testCase("api.md without model.dbml does not fire AL-34",
     ? null
     : `AL-34 must not fire without model.dbml (got ${JSON.stringify(r.json.findings.filter((f) => f.check === "AL-34"))})`));
 
+// AL-31: an EARS-shaped but content-free acceptance criterion.
+testCase("vacuous acceptance criterion → AL-31 warn",
+  (s) => edit(s, "usecases.md", (t) => t.replace(
+    "  - AC-1: WHEN a student requests their courses, THE SYSTEM SHALL return every enrollment of that student.",
+    "  - AC-1: WHEN a student requests their courses, THE SYSTEM SHALL work correctly.")),
+  (r) => (hasWarn(r, "AL-31") ? null
+    : `"work correctly" must produce AL-31 warn (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
+
+// AL-32: a glossary definition that restates the term.
+testCase("circular glossary definition → AL-32 warn",
+  (s) => edit(s, "glossary.md", (t) => t.replace(
+    "- Definition: The fact that a specific Student is taking a specific Course, with a lifecycle status.",
+    "- Definition: An Enrollment is when a student enrolls.")),
+  (r) => (hasWarn(r, "AL-32") ? null
+    : `circular definition must produce AL-32 warn (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
+
+// AL-32 does NOT fire on a substantive definition that happens to be short.
+testCase("short but substantive definition → no AL-32",
+  (s) => edit(s, "glossary.md", (t) => t.replace(
+    "- Definition: The fact that a specific Student is taking a specific Course, with a lifecycle status.",
+    "- Definition: A student-course pairing with a lifecycle status.")),
+  (r) => (!hasWarn(r, "AL-32") ? null
+    : `substantive short definition must NOT fire AL-32 (got ${JSON.stringify(r.json.findings.filter((f) => f.check === "AL-32"))})`));
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);
