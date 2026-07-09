@@ -16,6 +16,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const GOLDEN = join(HERE, "fixtures", "golden", "spec");
@@ -94,8 +95,16 @@ testCase("golden fixture is green",
 //     and the PGlite live-test accept them as readily as `Table`/`Enum`. A case-sensitive
 //     parser would see zero tables and cascade false AL-01/AL-02/AL-04s; this locks that shut.
 testCase("lowercase DBML keywords stay green",
-  (s) => edit(s, "data/model.dbml", (t) =>
-    t.replace(/^(\s*)Table\b/gm, "$1table").replace(/^(\s*)Enum\b/gm, "$1enum")),
+  (s) => {
+    edit(s, "data/model.dbml", (t) =>
+      t.replace(/^(\s*)Table\b/gm, "$1table").replace(/^(\s*)Enum\b/gm, "$1enum"));
+    // plan.md fingerprints data/model.dbml (spec-format §1.6); re-embed it here as a
+    // real save would, so this DBML-casing test doesn't also trip the unrelated,
+    // separately-tested AL-16 staleness check (see cases 17/17b).
+    const newHash = createHash("sha256").update(readFileSync(join(s, "data/model.dbml"))).digest("hex");
+    edit(s, "plan.md", (t) =>
+      t.replace(/spec\/data\/model\.dbml@sha256:[0-9a-f]{64}/, `spec/data/model.dbml@sha256:${newHash}`));
+  },
   (r) => {
     const nonInfo = r.json ? r.json.findings.filter((f) => f.severity !== "info") : null;
     return (r.exit === 0 && r.json && r.json.ok && nonInfo && nonInfo.length === 0
@@ -228,6 +237,16 @@ testCase("stale upstream fingerprint → AL-16 warn",
   (s) => edit(s, "data/model.dbml", (t) =>
     t.replace(/sha256:[0-9a-f]{64}/, "sha256:" + "0".repeat(64))),
   (r) => (hasWarn(r, "AL-16") ? null : `stale fingerprint must produce an AL-16 warn`));
+
+// 17b. AL-16 generalized: usecases.md fingerprints flows.md — editing flows.md after
+//      usecases.md was generated must warn on usecases.md, not just on model.dbml.
+testCase("stale usecases.md fingerprint after flows.md edit → AL-16 warn on usecases.md",
+  (s) => edit(s, "flows.md", (t) => t.replace(
+    "## FL-001 — Enroll in a course", "## FL-001 — Enroll in a course, revised")),
+  (r) => (r.json && r.json.findings.some(
+      (f) => f.check === "AL-16" && f.severity === "warn" && f.artifact === "usecases.md")
+    ? null
+    : `expected an AL-16 warn on usecases.md (got ${r.json ? JSON.stringify(r.json.findings.filter((f) => f.check === "AL-16")) : "?"})`));
 
 // 18. AL-17 only fires when api.md exists — a spec without api.md is fine.
 testCase("spec without api.md does not trigger AL-17",

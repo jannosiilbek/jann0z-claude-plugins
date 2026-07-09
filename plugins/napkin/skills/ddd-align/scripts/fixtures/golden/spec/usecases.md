@@ -1,5 +1,7 @@
 # Use cases — Course Platform
 <!-- ddd: usecases -->
+<!-- upstream-fingerprint: spec/glossary.md@sha256:438f84b3008c45b2b90f1a291fba3871311b34b5e89b2e6faf347570704ec466 -->
+<!-- upstream-fingerprint: spec/flows.md@sha256:1c0b93652e7780f1aed33e3bcf9962d1fa61a8e7dc569a383dc16aa711e07570 -->
 
 ## UC-001 — Enroll student in course
 - Actor: Registrar

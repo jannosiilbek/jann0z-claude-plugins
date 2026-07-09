@@ -42,7 +42,7 @@ node check-align.mjs --spec path/to/spec [--require glossary,model,usecases,plan
 | AL-13 | warn | forbidden synonyms do not appear in flows/usecases/plan |
 | AL-14 | error | every active UC has a labeled block in `data/usecases.sql` (when present) |
 | AL-15 | error | structural integrity: markers present, ID headings well-formed, policies parse — reported with line numbers, never silently skipped |
-| AL-16 | warn | upstream-fingerprint in `data/model.dbml` is stale — a source file it hashes has changed since the model was last generated |
+| AL-16 | warn | an `upstream-fingerprint` in a derived artifact (`usecases.md`, `api.md`, `plan.md`, `data/model.dbml`) is stale — a source file it hashes has changed since the artifact was last generated (convention: spec-format §1.6) |
 | AL-17 | error | every active UC has a corresponding `## API-UC-xxx` entry in `api.md` (when api.md exists) |
 | AL-18 | error | every error code slug in a `Response 4xx:` line in `api.md` appears in `nfr.md § Error contracts` (when both exist) |
 | AL-19 | warn | every `Policy: Whenever X, then Y` command Y is the trigger of at least one active UC — an unmatched policy command indicates a missing use case |

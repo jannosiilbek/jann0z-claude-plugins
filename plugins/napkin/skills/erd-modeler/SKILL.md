@@ -255,21 +255,9 @@ test run (e.g. `/tmp/erd-test-<n>/` or a `.erd-test/` subdir). In summary:
 **Always write the final, validated DBML to a `.dbml` file. This is the primary
 deliverable and is never skipped.**
 
-**Drift fingerprinting:** if upstream inputs were used (`spec/glossary.md`,
-`spec/usecases.md`), embed their sha256 digests as comment lines at the top of the
-generated DBML — before the first `Table` or `Enum` block:
-
-```dbml
-// upstream-fingerprint: spec/glossary.md@sha256:<64-hex>
-// upstream-fingerprint: spec/usecases.md@sha256:<64-hex>
-```
-
-Compute with `shasum -a 256 <file>` for each upstream file that was actually used.
-Emit one `// upstream-fingerprint:` line per file consumed — if only `spec/glossary.md`
-was used, emit only that line. **Run the command; do not generate or estimate the hash** —
-a fabricated hash is indistinguishable from a correct one and makes the fingerprint
-useless. Re-embed on every save when upstream content changes. A future ddd-align run
-that detects a digest mismatch signals the model may be stale.
+**Drift fingerprinting:** embed upstream fingerprints per spec-format.md §1.6 (`//`
+comment lines before the first `Table` or `Enum` block), one per spec file actually
+consumed — `spec/glossary.md`, and `spec/usecases.md` when it was used.
 
 Resolve the location deterministically, in order:
 

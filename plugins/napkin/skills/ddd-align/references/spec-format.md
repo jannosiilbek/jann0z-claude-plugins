@@ -102,6 +102,31 @@ Every artifact ends with:
 - 2026-06-12 (ddd-brief): added refund scope after clarification
 ```
 
+### 1.6 Upstream fingerprints
+
+Every derived artifact records a sha256 fingerprint of each input it was generated
+from, immediately after its artifact marker — HTML comments in markdown, `//` comment
+lines in DBML:
+
+    <!-- upstream-fingerprint: spec/flows.md@sha256:<64-hex> -->
+    // upstream-fingerprint: spec/glossary.md@sha256:<64-hex>
+
+Paths are relative to the project root (`spec/…`). Compute with `shasum -a 256 <file>`
+— run the command; never generate or estimate a hash (a fabricated hash is
+indistinguishable from a correct one and makes the fingerprint useless). Re-embed on
+every save. Who fingerprints what:
+
+| Artifact | Fingerprints |
+|----------|--------------|
+| usecases.md | glossary.md, flows.md |
+| api.md | usecases.md, stack.md, nfr.md |
+| data/model.dbml | glossary.md, and usecases.md when used |
+| plan.md | usecases.md, data/model.dbml, and api.md when present |
+
+check-align (AL-16) recomputes every fingerprint and warns on mismatch — a stale
+fingerprint means the artifact may no longer reflect its inputs; regenerate it via the
+owning skill.
+
 ## 2. spec/brief.md
 
 ```markdown

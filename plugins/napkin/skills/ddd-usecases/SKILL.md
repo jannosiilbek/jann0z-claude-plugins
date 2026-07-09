@@ -53,6 +53,8 @@ Per spec-format.md §5:
   integrity rule the UC depends on. These become erd-modeler's live-test blocks
   verbatim (`-- usecase: UC-xxx/DA-n`), so every operator you invent here is a test
   that can never run — the alignment gate rejects anything outside the grammar.
+- Embed upstream fingerprints for `spec/glossary.md` and `spec/flows.md` per
+  spec-format.md §1.6, immediately after the artifact marker. Re-embed on every save.
 
 ### 4. Delta mode
 

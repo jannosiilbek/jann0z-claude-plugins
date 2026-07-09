@@ -54,6 +54,9 @@ For each active UC in usecases.md, derive its operation:
   - Include pagination for list operations (cursor-based by default)
 - **`Policy:` steps** → mark as `- Interface: Internal` and use `## API-UC-xxx-internal`;
   these are excluded from AL-17 (no external auth requirement)
+- Embed upstream fingerprints for `spec/usecases.md`, `spec/stack.md`, and
+  `spec/nfr.md` per spec-format.md §1.6, immediately after the artifact marker.
+  Re-embed on every save.
 
 ### 4. Apply error codes from nfr.md
 

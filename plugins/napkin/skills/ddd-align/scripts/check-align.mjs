@@ -636,24 +636,31 @@ if (sqlRaw && ucs) {
   }
 }
 
-// --- AL-16: upstream-fingerprint staleness
-if (existsSync(modelPath)) {
-  const modelRaw = readFileSync(modelPath, "utf8");
-  const fpRe = /^\/\/ upstream-fingerprint: (.+)@sha256:([0-9a-f]{64})/gm;
-  for (const fp of modelRaw.matchAll(fpRe)) {
+// --- AL-16: upstream-fingerprint staleness — model.dbml (`//` comments) and the
+// derived .md artifacts usecases/api/plan (HTML comments). Convention: spec-format §1.6.
+function checkFingerprints(raw, artifactName, fpRe) {
+  for (const fp of raw.matchAll(fpRe)) {
     const [, relPath, storedHash] = fp;
     const absPath = join(args.spec, "..", relPath);
     if (!existsSync(absPath)) {
-      report("AL-16", "warn", "data/model.dbml", 1,
+      report("AL-16", "warn", artifactName, 1,
         `fingerprint references ${relPath} which does not exist`);
       continue;
     }
     const actual = createHash("sha256").update(readFileSync(absPath)).digest("hex");
     if (actual !== storedHash) {
-      report("AL-16", "warn", "data/model.dbml", 1,
-        `upstream fingerprint mismatch for ${relPath} — model may be stale (stored ${storedHash.slice(0, 8)}…, actual ${actual.slice(0, 8)}…)`);
+      report("AL-16", "warn", artifactName, 1,
+        `upstream fingerprint mismatch for ${relPath} — artifact may be stale (stored ${storedHash.slice(0, 8)}…, actual ${actual.slice(0, 8)}…)`);
     }
   }
+}
+const FP_DBML_RE = /^\/\/ upstream-fingerprint: (.+)@sha256:([0-9a-f]{64})/gm;
+const FP_MD_RE = /^<!-- upstream-fingerprint: (.+)@sha256:([0-9a-f]{64}) -->/gm;
+if (existsSync(modelPath)) {
+  checkFingerprints(readFileSync(modelPath, "utf8"), "data/model.dbml", FP_DBML_RE);
+}
+for (const type of ["usecases", "api", "plan"]) {
+  if (artifacts[type]) checkFingerprints(artifacts[type].raw, artifacts[type].file, FP_MD_RE);
 }
 
 // --- AL-17: every active UC has an API-UC-xxx entry in api.md (when api.md exists)

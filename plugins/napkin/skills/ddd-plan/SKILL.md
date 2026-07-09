@@ -59,6 +59,9 @@ The artifact grammar is defined once, in
     XS (1–2 AC+DA, no integrations) · S (3–4) · M (5–7) · L (8–12 or any integration) ·
     XL (13+ or multiple integrations). Per spec-format.md §6, check-align warns when a
     task implements 3+ UCs and has no Effort field, so populate it for every multi-UC task.
+- Embed upstream fingerprints for `spec/usecases.md`, `spec/data/model.dbml`, and
+  `spec/api.md` (when present) per spec-format.md §1.6, immediately after the
+  artifact marker. Re-embed on every save.
 
 ### 3. Delta mode
 
