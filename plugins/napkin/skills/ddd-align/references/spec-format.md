@@ -655,6 +655,17 @@ The `## Error contracts` lines follow the shape `- <label>: <HTTP-status> <ERROR
 AL-18 parses the `<ERROR_CODE>` token (all-caps + underscores) and checks that every
 error code referenced in api.md appears here.
 
+Two nfr.md declarations have data-layer consequences and canonical shapes the
+alignment check parses:
+
+- `- Soft-delete: <column> column on all entities` (in `## Data retention`) — AL-29
+  warns for every model.dbml table missing `<column>`.
+- `- Status transitions: logged to <table>` (in `## Audit`) — AL-30 warns when
+  `<table>` is not in model.dbml.
+
+erd-modeler materializes both at intake; free-text variants of these lines are legal
+but invisible to the gate.
+
 `## Code quality` fields — `DRY: yes` mandates that every piece of logic has exactly one
 implementation; no duplication. `Dead code: none` mandates that unreachable or unused
 exports are removed before merge; no placeholder stubs. `Drift safety: spec-traced` means

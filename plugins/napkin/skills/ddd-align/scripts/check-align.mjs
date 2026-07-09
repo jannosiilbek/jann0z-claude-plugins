@@ -265,23 +265,38 @@ function parsePlan(art) {
 }
 
 function parseDbml(raw) {
-  const tables = new Map(); // name -> line
+  const tables = new Map(); // name -> { line, columns: Set }
   const enums = new Map(); // name -> { values, line }
   const lines = raw.split(/\r?\n/);
   let currentEnum = null;
+  let currentTable = null;
+  let depth = 0; // nested blocks inside a Table (indexes { … })
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     // DBML keywords are case-insensitive (the renderer/live-test accept `table`/`enum`
     // as readily as `Table`/`Enum`), so the parser must be too — otherwise a valid model
     // written with lowercase keywords parses as zero tables and cascades false AL-01/02/04s.
     const t = line.match(/^\s*Table\s+"?([\w.]+)"?\s*\{/i);
-    if (t) { tables.set(t[1], i + 1); currentEnum = null; continue; }
+    if (t) { currentTable = { line: i + 1, columns: new Set() }; tables.set(t[1], currentTable); currentEnum = null; depth = 0; continue; }
     const e = line.match(/^\s*Enum\s+"?([\w.]+)"?\s*\{/i);
-    if (e) { currentEnum = { values: [], line: i + 1 }; enums.set(e[1], currentEnum); continue; }
+    if (e) { currentEnum = { values: [], line: i + 1 }; enums.set(e[1], currentEnum); currentTable = null; continue; }
     if (currentEnum) {
       if (/^\s*\}/.test(line)) { currentEnum = null; continue; }
       const v = line.trim().replace(/\/\/.*$/, "").trim().replace(/^"|"$/g, "");
       if (v) currentEnum.values.push(v);
+      continue;
+    }
+    if (currentTable) {
+      if (/^\s*\}/.test(line)) {
+        if (depth > 0) depth--;
+        else currentTable = null;
+        continue;
+      }
+      if (/\{\s*$/.test(line)) { depth++; continue; } // indexes { … }
+      if (depth === 0) {
+        const c = line.match(/^\s+([A-Za-z_][\w]*)\s+\S/);
+        if (c && !/^(Note|indexes|Ref)$/i.test(c[1])) currentTable.columns.add(c[1]);
+      }
     }
   }
   return { tables, enums };
@@ -313,17 +328,25 @@ function parseApi(art) {
 
 function parseNfr(art) {
   const errorCodes = new Set();
-  let inErrorContracts = false;
+  let softDeleteColumn = null;
+  let auditTable = null;
+  let section = null;
   for (let i = 0; i < art.lines.length; i++) {
     const line = art.lines[i];
-    if (/^## Error contracts/.test(line)) { inErrorContracts = true; continue; }
-    if (/^## /.test(line)) { inErrorContracts = false; continue; }
-    if (inErrorContracts) {
+    const h2 = line.match(/^## (.+)$/);
+    if (h2) { section = h2[1].trim(); continue; }
+    if (section === "Error contracts") {
       const m = line.match(/^\s*- .+: \d{3} ([A-Z][A-Z0-9_]+)/);
       if (m) errorCodes.add(m[1]);
+    } else if (section === "Data retention") {
+      const m = line.match(/^\s*- Soft-delete:\s*([a-z_][\w]*) column on all entities/);
+      if (m) softDeleteColumn = m[1];
+    } else if (section === "Audit") {
+      const m = line.match(/logged to ([a-z_][\w]*)/);
+      if (m) auditTable = m[1];
     }
   }
-  return { errorCodes };
+  return { errorCodes, softDeleteColumn, auditTable };
 }
 
 function parseStack(art) {
@@ -431,9 +454,9 @@ if (glossary && dbml) {
         `term "${term}" has a malformed Maps to field (expected \`Maps to: ERD: <table_name>\`): ${t.fields["Maps to"]}`);
     }
   }
-  for (const [table, line] of dbml.tables) {
+  for (const [table, t] of dbml.tables) {
     if (!mapped.has(table)) {
-      report("AL-02", "error", "data/model.dbml", line,
+      report("AL-02", "error", "data/model.dbml", t.line,
         `table \`${table}\` does not trace to any glossary term (add a term with \`Maps to: ERD: ${table}\` — relationship/bridge concepts deserve a name too)`);
     }
   }
@@ -593,6 +616,22 @@ if (glossary) {
         `"${term}" is a value object but also has a "Maps to:" line — value objects are identity-less and should not own a table; remove one or the other`);
     }
   }
+}
+
+// --- AL-29: nfr.md soft-delete column must exist on every model table
+if (nfr && nfr.softDeleteColumn && dbml) {
+  for (const [table, t] of dbml.tables) {
+    if (!t.columns.has(nfr.softDeleteColumn)) {
+      report("AL-29", "warn", "data/model.dbml", t.line,
+        `nfr.md declares soft-delete via \`${nfr.softDeleteColumn}\` on all entities, but table \`${table}\` has no \`${nfr.softDeleteColumn}\` column`);
+    }
+  }
+}
+
+// --- AL-30: nfr.md §Audit log table must exist in the model
+if (nfr && nfr.auditTable && dbml && !dbml.tables.has(nfr.auditTable)) {
+  report("AL-30", "warn", "nfr.md", 1,
+    `§Audit logs status transitions to \`${nfr.auditTable}\`, which is not a table in model.dbml — materialize it (and name its glossary term) via erd-modeler/ddd-domain`);
 }
 
 // --- AL-13: forbidden synonyms in downstream prose.

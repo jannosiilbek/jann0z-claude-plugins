@@ -344,5 +344,32 @@ testCase("value object with Maps to → AL-28 warn",
   (r) => (hasWarn(r, "AL-28") ? null
     : `value object with Maps to must produce AL-28 warn (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
 
+// AL-29: nfr.md declares soft-delete but no model table has the column.
+testCase("nfr soft-delete with no deleted_at columns → AL-29 warn",
+  (s) => edit(s, "nfr.md", (t) => t.replace("## Changelog",
+    "## Data retention\n- PII entities: Student\n- Soft-delete: deleted_at column on all entities; hard delete not exposed\n\n## Changelog")),
+  (r) => (hasWarn(r, "AL-29") ? null
+    : `nfr soft-delete with a bare model must produce AL-29 warn (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
+
+// AL-29 does NOT fire when every table has the declared column.
+testCase("nfr soft-delete satisfied by the model → no AL-29",
+  (s) => {
+    edit(s, "nfr.md", (t) => t.replace("## Changelog",
+      "## Data retention\n- Soft-delete: deleted_at column on all entities\n\n## Changelog"));
+    edit(s, "data/model.dbml", (t) => t
+      .replace(/^(  email text \[unique, not null\])$/m, "$1\n  deleted_at timestamptz")
+      .replace(/^(  capacity int \[not null\])$/m, "$1\n  deleted_at timestamptz")
+      .replace(/^(  enrolled_at timestamptz \[not null\])$/m, "$1\n  deleted_at timestamptz"));
+  },
+  (r) => (!hasWarn(r, "AL-29") ? null
+    : `model with deleted_at everywhere must NOT fire AL-29 (got ${JSON.stringify(r.json.findings.filter((f) => f.check === "AL-29"))})`));
+
+// AL-30: nfr.md §Audit names a log table the model does not define.
+testCase("nfr audit table missing from model → AL-30 warn",
+  (s) => edit(s, "nfr.md", (t) => t.replace("## Changelog",
+    "## Audit\n- Status transitions: logged to status_history\n\n## Changelog")),
+  (r) => (hasWarn(r, "AL-30") ? null
+    : `undeclared audit table must produce AL-30 warn (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

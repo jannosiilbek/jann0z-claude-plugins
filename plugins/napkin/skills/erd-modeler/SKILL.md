@@ -43,6 +43,17 @@ them in this order and extract:
   becomes one live-test block labeled `-- usecase: UC-xxx/DA-n <description>` with the
   DA's assertion as its `-- expect:`. Use-case main flows and acceptance criteria inform
   the seed-data scenarios.
+- **`spec/nfr.md`** (when present) — non-functional declarations with data-layer
+  consequences, materialized into the model now rather than discovered at build time:
+  - `## Data retention` → `Soft-delete: <column> column on all entities` adds that
+    nullable `timestamptz` column to **every** table, and every live-test read must
+    filter it (`WHERE <column> IS NULL`).
+  - `## Audit` → `Status transitions: logged to <table>` adds `<table>` to the entity
+    manifest (FK to the audited entity, old/new status values, timestamp). It needs a
+    glossary term like any table — if none exists, route back to ddd-domain rather
+    than inventing one (C4).
+  - `## Auth` → an ownership- or tenant-scoped authorization model means the scoping
+    FK comes immediately after the PK on every scoped table (the stage-2 ordering rule).
 
 **After reading all spec files, produce an entity manifest** before writing any DBML:
 

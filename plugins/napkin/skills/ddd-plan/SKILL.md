@@ -27,6 +27,9 @@ The artifact grammar is defined once, in
 - Read `spec/decisions.md` (when present) — architectural rationale. Tasks that
   implement entities with non-default FK policies (e.g. RESTRICT) should reference the
   relevant ADR so the implementing agent does not re-derive it.
+- Read `spec/nfr.md` (when present) — performance budgets, audit, and retention
+  requirements are acceptance context for the tasks that touch them; a task
+  implementing a list endpoint inherits the declared p99 budget.
 - If `spec/brief.md` contains a `## Subdomain classification` table, read it before
   structuring the plan. **Generic** subdomains produce exactly one task of the shape
   `T-xxx — Integrate <SaaS name>` with `- Effort: S` regardless of UC count in that
