@@ -371,5 +371,32 @@ testCase("nfr audit table missing from model → AL-30 warn",
   (r) => (hasWarn(r, "AL-30") ? null
     : `undeclared audit table must produce AL-30 warn (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
 
+// AL-34: api.md TypeID<t> must reference a model.dbml table.
+testCase("api.md TypeID referencing a missing table → AL-34",
+  (s) => edit(s, "api.md", (t) => t.replace(
+    "- student_id: TypeID<students> required",
+    "- student_id: TypeID<people> required")),
+  (r) => caught(r, "AL-34"));
+
+// AL-34b: an enum-shaped field type that is not a model Enum → warn.
+testCase("api.md enum-shaped type missing from model → AL-34b warn",
+  (s) => edit(s, "api.md", (t) => t.replace(
+    "    - status: enrollment_status\n    - enrolled_at: timestamp",
+    "    - status: enrollment_state\n    - enrolled_at: timestamp")),
+  (r) => (hasWarn(r, "AL-34b") ? null
+    : `enum-shaped type \`enrollment_state\` must produce AL-34b warn (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
+
+// AL-34 only activates when the model exists — api.md alone stays quiet.
+testCase("api.md without model.dbml does not fire AL-34",
+  (s) => {
+    edit(s, "api.md", (t) => t.replace(
+      "- student_id: TypeID<students> required",
+      "- student_id: TypeID<people> required"));
+    rmSync(join(s, "data"), { recursive: true });
+  },
+  (r) => (!hasCheck(r, "AL-34")
+    ? null
+    : `AL-34 must not fire without model.dbml (got ${JSON.stringify(r.json.findings.filter((f) => f.check === "AL-34"))})`));
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

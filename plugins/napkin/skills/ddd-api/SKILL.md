@@ -82,7 +82,8 @@ Apply spec-format.md §1.4, plus:
 
 Run the **self-correcting exit gate** (ddd-align → "Self-correcting exit gate"): fix every
 **error** routed to `api.md` (AL-17: missing entry for active UC, AL-18: undeclared error
-code) and re-run until clean before reporting:
+code; once erd-modeler has produced the model, AL-34 also cross-checks every TypeID<t>
+and enum-typed field against model.dbml) and re-run until clean before reporting:
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-align/scripts/check-align.mjs" --spec spec/

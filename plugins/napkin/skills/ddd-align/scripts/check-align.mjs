@@ -311,7 +311,7 @@ function parseApi(art) {
     const line = art.lines[i];
     const m = line.match(API_HEAD_RE);
     if (m) {
-      current = { id: m[1], title: m[2].trim(), line: i + 1, fields: {}, errorCodes: [] };
+      current = { id: m[1], title: m[2].trim(), line: i + 1, fields: {}, errorCodes: [], fieldTypes: [] };
       ops.push(current);
       continue;
     }
@@ -321,6 +321,14 @@ function parseApi(art) {
       if (f && line.match(/^- /)) current.fields[f[1]] = f[2].trim();
       const e = line.match(ERROR_RE);
       if (e) current.errorCodes.push({ code: e[1], line: i + 1 });
+      const ft = line.match(/^\s{2,}- ([A-Za-z_][\w]*): (.+)$/);
+      if (ft) {
+        current.fieldTypes.push({
+          name: ft[1],
+          type: ft[2].trim().split(/\s+/)[0],
+          line: i + 1,
+        });
+      }
     }
   }
   return ops;
@@ -722,6 +730,32 @@ if (apiOps !== null && nfr !== null) {
       if (!nfr.errorCodes.has(code)) {
         report("AL-18", "error", "api.md", line,
           `error code ${code} in ${op.id} is not declared in nfr.md §Error contracts`);
+      }
+    }
+  }
+}
+
+// --- AL-34: api.md field types resolve against model.dbml (when both exist).
+// TypeID<t> must name a model table (error); a snake_case type token that is neither
+// a SQL primitive nor a model Enum looks like a phantom enum (warn).
+const API_TYPE_PRIMITIVES = new Set([
+  "text", "int", "integer", "bigint", "smallint", "decimal", "numeric", "float",
+  "double", "real", "bool", "boolean", "timestamp", "timestamptz", "date", "time",
+  "uuid", "json", "jsonb", "string", "number",
+]);
+if (apiOps !== null && dbml) {
+  for (const op of apiOps) {
+    for (const { name, type, line } of op.fieldTypes) {
+      const t = type.match(/^TypeID<([\w]+)>$/);
+      if (t) {
+        if (!dbml.tables.has(t[1])) {
+          report("AL-34", "error", "api.md", line,
+            `${op.id} field \`${name}\` references TypeID<${t[1]}>, but \`${t[1]}\` is not a table in model.dbml`);
+        }
+      } else if (/^[a-z][a-z0-9]*(_[a-z0-9]+)+$/.test(type)
+          && !API_TYPE_PRIMITIVES.has(type) && !dbml.enums.has(type)) {
+        report("AL-34b", "warn", "api.md", line,
+          `${op.id} field \`${name}\` has enum-shaped type \`${type}\` which is not an Enum in model.dbml`);
       }
     }
   }

@@ -44,6 +44,7 @@ node check-align.mjs --spec path/to/spec [--require glossary,model,usecases,plan
 | AL-15 | error | structural integrity: markers present, ID headings well-formed, policies parse — reported with line numbers, never silently skipped |
 | AL-29 | warn | when nfr.md declares `Soft-delete: <column> column on all entities`, every model.dbml table has that column |
 | AL-30 | warn | when nfr.md §Audit declares `logged to <table>`, that table exists in model.dbml |
+| AL-34 | error | every `TypeID<t>` field type in api.md names a model.dbml table (AL-34b warn: enum-shaped type with no matching DBML Enum) — activates when both api.md and model.dbml exist |
 | AL-16 | warn | an `upstream-fingerprint` in a derived artifact (`usecases.md`, `api.md`, `plan.md`, `data/model.dbml`) is stale — a source file it hashes has changed since the artifact was last generated (convention: spec-format §1.6) |
 | AL-17 | error | every active UC has a corresponding `## API-UC-xxx` entry in `api.md` (when api.md exists) |
 | AL-18 | error | every error code slug in a `Response 4xx:` line in `api.md` appears in `nfr.md § Error contracts` (when both exist) |
