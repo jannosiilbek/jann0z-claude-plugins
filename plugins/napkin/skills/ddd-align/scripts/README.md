@@ -41,7 +41,7 @@ node check-align.mjs --spec path/to/spec [--require glossary,model,usecases,plan
 | AL-12 | warn | every UC trigger names a Command/Event from flows.md |
 | AL-13 | warn | forbidden synonyms do not appear in flows/usecases/plan |
 | AL-14 | error | every active UC has a labeled block in `data/usecases.sql` (when present) |
-| AL-15 | error | structural integrity: markers present, ID headings well-formed, policies parse — reported with line numbers, never silently skipped |
+| AL-15 | error | structural integrity: markers present, ID headings well-formed, policies parse — reported with line numbers, never silently skipped; no unfilled `<TODO:` scaffold markers in usecases.md |
 | AL-29 | warn | when nfr.md declares `Soft-delete: <column> column on all entities`, every model.dbml table has that column |
 | AL-30 | warn | when nfr.md §Audit declares `logged to <table>`, that table exists in model.dbml |
 | AL-31 | warn | active-UC acceptance criteria contain no vacuous phrase ("works correctly", "as expected", "gracefully", …) |

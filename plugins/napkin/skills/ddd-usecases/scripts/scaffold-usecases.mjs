@@ -6,7 +6,7 @@
  * distinct Command step, per policy command, and per `Read paths:` entry, with
  * Actor/Trigger/fingerprints prefilled verbatim from the flows (grammar:
  * ../ddd-align/references/spec-format.md §4). The model fills every `<TODO: …>`
- * marker; an unfilled marker fails the ddd-align gate (AL-07/AL-08/AL-09), so a
+ * marker; an unfilled marker fails the ddd-align gate (AL-15), so a
  * half-filled skeleton cannot pass as done.
  *
  * Usage: node scaffold-usecases.mjs --spec <path-to-spec-dir>

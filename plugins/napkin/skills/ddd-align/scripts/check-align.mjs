@@ -194,9 +194,14 @@ function parseFlows(art) {
       } else if (kind === "Event") {
         events.set(text, n);
       } else if (kind === "Policy") {
-        if (!/^Whenever .+, then .+$/.test(text)) {
+        const m = text.match(/^Whenever .+, then (.+)$/);
+        if (!m) {
           report("AL-15", "error", "flows.md", n,
             `policy step must read \`Whenever <X>, then <Y>\`: ${text}`);
+        } else {
+          // A policy's command is a command: policy-derived UCs use it as their
+          // trigger (AL-19 demands that), so AL-12 must accept it too.
+          commands.set(m[1].trim(), n);
         }
       }
     }
@@ -547,6 +552,18 @@ if (ucs) {
       }
     }
   }
+}
+
+// --- AL-15: unfilled scaffold markers — a saved usecases.md is finished work; a
+// literal `<TODO:` means a scaffold stub survived to disk (DA stubs pass AL-08's
+// grammar, so this is the only check that catches them).
+if (artifacts.usecases) {
+  artifacts.usecases.lines.forEach((line, i) => {
+    if (line.includes("<TODO:")) {
+      report("AL-15", "error", artifacts.usecases.file, i + 1,
+        "unfilled scaffold marker `<TODO: …>` — replace it with real content before saving");
+    }
+  });
 }
 
 // --- AL-31: vacuous acceptance criteria — EARS-shaped but content-free. The shape

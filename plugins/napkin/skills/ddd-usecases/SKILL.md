@@ -28,7 +28,9 @@ The artifact grammar is defined once, in
 
 **Greenfield** (no `spec/usecases.md` yet): generate the skeleton mechanically first —
 
-    node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-usecases/scripts/scaffold-usecases.mjs" --spec spec/
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-usecases/scripts/scaffold-usecases.mjs" --spec spec/
+```
 
 It emits one stub per Command, per policy command, and per `Read paths:` entry, with
 Actor, Trigger, and upstream fingerprints prefilled verbatim. Write the output to

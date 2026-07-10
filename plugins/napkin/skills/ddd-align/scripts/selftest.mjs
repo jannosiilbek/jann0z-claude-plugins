@@ -191,6 +191,13 @@ testCase("stripped ddd marker → AL-15, artifact not counted as found",
     return null;
   });
 
+// An unfilled scaffold marker means the artifact was saved half-finished — never green.
+testCase("unfilled <TODO:> marker in usecases.md → AL-15",
+  (s) => edit(s, "usecases.md", (t) => t.replace(
+    "  - DA-1: enrolling an existing student in an existing course inserts one row => expect: rowcount=1",
+    "  - DA-1: <TODO: positive proof> => expect: rowcount=1")),
+  (r) => caught(r, "AL-15"));
+
 // 11. An empty spec dir must not be green — zero artifacts proves nothing.
 testCase("empty spec dir → non-zero (no vacuous green)",
   (s) => {
@@ -231,6 +238,18 @@ testCase("uncovered policy command → AL-19 warn",
     "## Changelog",
     "## FL-002 — Auto-notify on enrollment\n- Actor: Registrar\n- Steps:\n  1. Command: Enroll student\n  2. Event: Student enrolled\n  3. Policy: Whenever Student enrolled, then Send welcome email\n\n## Changelog")),
   (r) => (hasWarn(r, "AL-19") ? null : `"Send welcome email" has no UC trigger — expected AL-19 warn`));
+
+// A policy-derived UC trigger is legitimate — AL-19 demands it, so AL-12 must accept it.
+testCase("policy-derived UC trigger → no AL-12",
+  (s) => {
+    edit(s, "flows.md", (t) => t.replace(
+      "## Changelog",
+      "## FL-004 — Welcome mail\n- Actor: Registrar\n- Steps:\n  1. Policy: Whenever Student enrolled, then Send welcome email\n\n## Changelog"));
+    edit(s, "usecases.md", (t) => t.replace("- Trigger: Student enrolled", "- Trigger: Send welcome email"));
+  },
+  (r) => (r.json && !r.json.findings.some((f) => f.check === "AL-12")
+    ? null
+    : `policy command as UC trigger must not fire AL-12 (got ${r.json ? JSON.stringify(r.json.findings.filter((f) => f.check === "AL-12")) : "?"})`));
 
 // 17. AL-16: model.dbml fingerprint is stale (glossary was edited after model was saved).
 testCase("stale upstream fingerprint → AL-16 warn",
