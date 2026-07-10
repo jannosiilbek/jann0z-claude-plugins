@@ -354,6 +354,9 @@ a live-tested SQL assertion when erd-modeler runs.
 # Plan — <Project name>
 <!-- ddd: plan -->
 
+## Execution contract
+- ... (five fixed bullets, copied verbatim — see the field list below)
+
 ## M1 — <Milestone name>
 
 ### T-001 — <Task title>
