@@ -9,6 +9,8 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCAFFOLD = join(HERE, "scaffold-usecases.mjs");
@@ -29,10 +31,11 @@ const out = r.stdout;
 check("exits 0 on the fixture spec", r.status === 0, `exit=${r.status} stderr=${r.stderr}`);
 check("emits the usecases marker", out.includes("<!-- ddd: usecases -->"));
 check("emits the project name from flows.md", out.includes("# Use cases — Course Platform"));
-check("fingerprints glossary.md",
-  /<!-- upstream-fingerprint: spec\/glossary\.md@sha256:[0-9a-f]{64} -->/.test(out));
-check("fingerprints flows.md",
-  /<!-- upstream-fingerprint: spec\/flows\.md@sha256:[0-9a-f]{64} -->/.test(out));
+const sha = (rel) => createHash("sha256").update(readFileSync(join(SPEC, rel))).digest("hex");
+check("fingerprints glossary.md with its real sha256",
+  out.includes(`<!-- upstream-fingerprint: spec/glossary.md@sha256:${sha("glossary.md")} -->`));
+check("fingerprints flows.md with its real sha256",
+  out.includes(`<!-- upstream-fingerprint: spec/flows.md@sha256:${sha("flows.md")} -->`));
 check("UC-001 from the first command", out.includes("## UC-001 — Enroll student"));
 check("step-actor override wins over flow actor",
   /## UC-001 — Enroll student\n- Actor: Registrar/.test(out));

@@ -251,6 +251,21 @@ testCase("policy-derived UC trigger → no AL-12",
     ? null
     : `policy command as UC trigger must not fire AL-12 (got ${r.json ? JSON.stringify(r.json.findings.filter((f) => f.check === "AL-12")) : "?"})`));
 
+// The FIRST ", then" separates a policy's trigger from its command — a command
+// containing ", then" stays whole, and AL-12/AL-19 agree on it.
+testCase("compound policy command splits on the first ', then'",
+  (s) => {
+    edit(s, "flows.md", (t) => t.replace(
+      "## Changelog",
+      "## FL-004 — Escalation\n- Actor: Registrar\n- Steps:\n  1. Policy: Whenever Student enrolled, then Notify registrar, then archive\n\n## Changelog"));
+    edit(s, "usecases.md", (t) => t.replace("- Trigger: Student enrolled", "- Trigger: Notify registrar, then archive"));
+  },
+  (r) => (r.json
+      && !r.json.findings.some((f) => f.check === "AL-12")
+      && !r.json.findings.some((f) => f.check === "AL-19")
+    ? null
+    : `compound command must satisfy both AL-12 and AL-19 (got ${r.json ? JSON.stringify(r.json.findings.filter((f) => f.check === "AL-12" || f.check === "AL-19")) : "?"})`));
+
 // 17. AL-16: model.dbml fingerprint is stale (glossary was edited after model was saved).
 testCase("stale upstream fingerprint → AL-16 warn",
   (s) => edit(s, "data/model.dbml", (t) =>
@@ -387,8 +402,20 @@ testCase("nfr soft-delete satisfied by the model → no AL-29",
 testCase("nfr audit table missing from model → AL-30 warn",
   (s) => edit(s, "nfr.md", (t) => t.replace("## Changelog",
     "## Audit\n- Status transitions: logged to status_history\n\n## Changelog")),
-  (r) => (hasWarn(r, "AL-30") ? null
-    : `undeclared audit table must produce AL-30 warn (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
+  (r) => {
+    const f = r.json && r.json.findings.find((x) => x.check === "AL-30" && x.severity === "warn");
+    if (!f) return `undeclared audit table must produce AL-30 warn (got ${r.json ? JSON.stringify(r.json.findings.map((x) => x.check)) : "?"})`;
+    if (!(f.line > 1)) return `AL-30 must anchor at the Status transitions line, not line ${f.line}`;
+    return null;
+  });
+
+// AL-30 parses only the canonical shape — free-text mentions of "logged to" don't count.
+testCase("non-canonical audit line → no AL-30",
+  (s) => edit(s, "nfr.md", (t) => t.replace("## Changelog",
+    "## Audit\n- Rationale: all admin actions are logged to satisfy SOC2\n\n## Changelog")),
+  (r) => (r.json && !r.json.findings.some((f) => f.check === "AL-30")
+    ? null
+    : `free-text "logged to" must not fire AL-30 (got ${JSON.stringify(r.json.findings.filter((f) => f.check === "AL-30"))})`));
 
 // AL-34: api.md TypeID<t> must reference a model.dbml table.
 testCase("api.md TypeID referencing a missing table → AL-34",
@@ -446,6 +473,26 @@ testCase("plan.md missing Execution contract → AL-35 warn",
   (s) => edit(s, "plan.md", (t) => t.replace(/\n## Execution contract\n[\s\S]*?(?=\n## )/, "")),
   (r) => (hasWarn(r, "AL-35") ? null
     : `plan without §Execution contract must produce AL-35 warn (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
+
+// AL-16 resolution must not assume the spec directory is literally named "spec/".
+{
+  const dir = mkdtempSync(join(tmpdir(), "ddd-align-selftest-"));
+  const spec = join(dir, "workspace-spec");
+  try {
+    cpSync(GOLDEN, spec, { recursive: true });
+    const r = run(spec);
+    const al16 = r.json ? r.json.findings.filter((f) => f.check === "AL-16") : null;
+    if (r.exit === 0 && al16 && al16.length === 0) {
+      passed++;
+      console.log("  ✅ renamed spec dir → no false AL-16");
+    } else {
+      failed++;
+      console.log(`  ❌ renamed spec dir → no false AL-16: exit=${r.exit} al16=${JSON.stringify(al16)}`);
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

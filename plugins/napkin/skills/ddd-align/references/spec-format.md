@@ -111,10 +111,11 @@ lines in DBML:
     <!-- upstream-fingerprint: spec/flows.md@sha256:<64-hex> -->
     // upstream-fingerprint: spec/glossary.md@sha256:<64-hex>
 
-Paths are relative to the project root (`spec/…`). Compute with `shasum -a 256 <file>`
-— run the command; never generate or estimate a hash (a fabricated hash is
-indistinguishable from a correct one and makes the fingerprint useless). Re-embed on
-every save. Who fingerprints what:
+Paths carry the `spec/` prefix and are resolved against the spec directory under check,
+so a spec directory not literally named `spec/` still verifies. Compute with
+`shasum -a 256 <file>` — run the command; never generate or estimate a hash (a
+fabricated hash is indistinguishable from a correct one and makes the fingerprint
+useless). Re-embed on every save. Who fingerprints what:
 
 | Artifact | Fingerprints |
 |----------|--------------|
@@ -292,7 +293,8 @@ Event-storming output in linear text: what happens, in what order, caused by who
   - `Command:` — an intent, imperative mood ("Enroll student"). Optionally followed by
     `(Actor: <Glossary term>)` when the actor differs from the flow's actor.
   - `Event:` — a fact, past tense ("Student enrolled").
-  - `Policy:` — automation, exactly `Whenever <X>, then <Y>`.
+  - `Policy:` — automation, exactly `Whenever <X>, then <Y>`; the **first** `, then`
+    separates `<X>` from `<Y>`.
 - `- Context:` is optional (large domains only); `- Actor:` is required and must be a
   glossary term.
 - **Alternate outcomes**: a command with more than one outcome (success / failure /

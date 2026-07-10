@@ -194,7 +194,7 @@ function parseFlows(art) {
       } else if (kind === "Event") {
         events.set(text, n);
       } else if (kind === "Policy") {
-        const m = text.match(/^Whenever .+, then (.+)$/);
+        const m = text.match(/^Whenever .+?, then (.+)$/);
         if (!m) {
           report("AL-15", "error", "flows.md", n,
             `policy step must read \`Whenever <X>, then <Y>\`: ${text}`);
@@ -343,6 +343,7 @@ function parseNfr(art) {
   const errorCodes = new Set();
   let softDeleteColumn = null;
   let auditTable = null;
+  let auditLine = null;
   let section = null;
   for (let i = 0; i < art.lines.length; i++) {
     const line = art.lines[i];
@@ -355,11 +356,11 @@ function parseNfr(art) {
       const m = line.match(/^\s*- Soft-delete:\s*([a-z_][\w]*) column on all entities/);
       if (m) softDeleteColumn = m[1];
     } else if (section === "Audit") {
-      const m = line.match(/logged to ([a-z_][\w]*)/);
-      if (m) auditTable = m[1];
+      const m = line.match(/^\s*- Status transitions:\s*logged to ([a-z_][\w]*)/);
+      if (m) { auditTable = m[1]; auditLine = i + 1; }
     }
   }
-  return { errorCodes, softDeleteColumn, auditTable };
+  return { errorCodes, softDeleteColumn, auditTable, auditLine };
 }
 
 function parseStack(art) {
@@ -686,7 +687,7 @@ if (nfr && nfr.softDeleteColumn && dbml) {
 
 // --- AL-30: nfr.md §Audit log table must exist in the model
 if (nfr && nfr.auditTable && dbml && !dbml.tables.has(nfr.auditTable)) {
-  report("AL-30", "warn", "nfr.md", 1,
+  report("AL-30", "warn", "nfr.md", nfr.auditLine || 1,
     `§Audit logs status transitions to \`${nfr.auditTable}\`, which is not a table in model.dbml — materialize it (and name its glossary term) via erd-modeler/ddd-domain`);
 }
 
@@ -736,7 +737,12 @@ if (sqlRaw && ucs) {
 function checkFingerprints(raw, artifactName, fpRe) {
   for (const fp of raw.matchAll(fpRe)) {
     const [, relPath, storedHash] = fp;
-    const absPath = join(args.spec, "..", relPath);
+    // Recorded paths carry the spec/ prefix by convention (§1.6); resolve them
+    // against the directory under check so a spec dir not literally named
+    // "spec/" still verifies.
+    const absPath = relPath.startsWith("spec/")
+      ? join(args.spec, relPath.slice("spec/".length))
+      : join(args.spec, "..", relPath);
     if (!existsSync(absPath)) {
       report("AL-16", "warn", artifactName, 1,
         `fingerprint references ${relPath} which does not exist`);
@@ -820,7 +826,7 @@ if (flows && ucs) {
   const ucTriggers = new Set(
     ucs.filter((u) => u.status === "active").map((u) => u.fields["Trigger"]).filter(Boolean)
   );
-  const POLICY_RE = /^Whenever .+, then (.+)$/;
+  const POLICY_RE = /^Whenever .+?, then (.+)$/;
   for (const fl of flows.flows) {
     for (const { line, n } of fl.body) {
       const s = line.match(/^\s*\d+\.\s+Policy:\s*(.+)$/);

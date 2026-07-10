@@ -71,7 +71,7 @@ for (const line of lines) {
     seen.add(text);
     candidates.push({ title: text, trigger: text, actor });
   } else if (s[1] === "Policy") {
-    const pm = s[2].trim().match(/^Whenever .+, then (.+)$/);
+    const pm = s[2].trim().match(/^Whenever .+?, then (.+)$/);
     if (!pm) continue;
     const cmd = pm[1].trim();
     if (seen.has(cmd)) continue;

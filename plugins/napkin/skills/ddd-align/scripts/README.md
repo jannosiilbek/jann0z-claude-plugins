@@ -42,11 +42,6 @@ node check-align.mjs --spec path/to/spec [--require glossary,model,usecases,plan
 | AL-13 | warn | forbidden synonyms do not appear in flows/usecases/plan |
 | AL-14 | error | every active UC has a labeled block in `data/usecases.sql` (when present) |
 | AL-15 | error | structural integrity: markers present, ID headings well-formed, policies parse — reported with line numbers, never silently skipped; no unfilled `<TODO:` scaffold markers in usecases.md |
-| AL-29 | warn | when nfr.md declares `Soft-delete: <column> column on all entities`, every model.dbml table has that column |
-| AL-30 | warn | when nfr.md §Audit declares `logged to <table>`, that table exists in model.dbml |
-| AL-31 | warn | active-UC acceptance criteria contain no vacuous phrase ("works correctly", "as expected", "gracefully", …) |
-| AL-32 | warn | glossary definitions do not restate the term they define (short-and-circular heuristic) |
-| AL-34 | error | every `TypeID<t>` field type in api.md names a model.dbml table (AL-34b warn: enum-shaped type with no matching DBML Enum) — activates when both api.md and model.dbml exist |
 | AL-16 | warn | an `upstream-fingerprint` in a derived artifact (`usecases.md`, `api.md`, `plan.md`, `data/model.dbml`) is stale — a source file it hashes has changed since the artifact was last generated (convention: spec-format §1.6) |
 | AL-17 | error | every active UC has a corresponding `## API-UC-xxx` entry in `api.md` (when api.md exists) |
 | AL-18 | error | every error code slug in a `Response 4xx:` line in `api.md` appears in `nfr.md § Error contracts` (when both exist) |
@@ -58,7 +53,12 @@ node check-align.mjs --spec path/to/spec [--require glossary,model,usecases,plan
 | AL-24 | error | `stack.md §Pipeline` must exist with `CI:`, `Branching:`, and `Branch map:` fields present |
 | AL-25 | error | `stack.md §TypeScript` section must exist when the preset declares `typescript` requirements |
 | AL-26 | error | when `§TypeScript` is present, `strict`, `moduleResolution`, `verbatimModuleSyntax`, and `isolatedModules` must match the preset's canonical values |
+| AL-29 | warn | when nfr.md declares `Soft-delete: <column> column on all entities`, every model.dbml table has that column |
+| AL-30 | warn | when nfr.md §Audit declares `logged to <table>`, that table exists in model.dbml |
+| AL-31 | warn | active-UC acceptance criteria contain no vacuous phrase ("works correctly", "as expected", "gracefully", …) |
+| AL-32 | warn | glossary definitions do not restate the term they define (short-and-circular heuristic) |
 | AL-33 | error | `stack.md §Structure` must list every path in `PRESET_CONFIG[preset].requiredPaths` hardcoded in `check-align.mjs` |
+| AL-34 | error | every `TypeID<t>` field type in api.md names a model.dbml table (AL-34b warn: enum-shaped type with no matching DBML Enum) — activates when both api.md and model.dbml exist |
 | AL-35 | warn | plan.md carries the verbatim `## Execution contract` section (spec-format §6) so build-phase rules survive the handoff |
 | AL-00 | info/error | artifact presence bookkeeping; `--require` misses are errors |
 
