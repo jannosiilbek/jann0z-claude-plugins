@@ -1,0 +1,10 @@
+{
+  "name": "ddd-usecases-scaffold",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Mechanical usecases.md skeleton generator for the napkin DDD spec pipeline, plus its selftest.",
+  "type": "module",
+  "scripts": {
+    "test": "node selftest.mjs"
+  }
+}

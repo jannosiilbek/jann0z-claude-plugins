@@ -26,6 +26,17 @@ The artifact grammar is defined once, in
 
 ### 2. Derive the use-case set
 
+**Greenfield** (no `spec/usecases.md` yet): generate the skeleton mechanically first —
+
+    node "${CLAUDE_PLUGIN_ROOT}/skills/ddd-usecases/scripts/scaffold-usecases.mjs" --spec spec/
+
+It emits one stub per Command, per policy command, and per `Read paths:` entry, with
+Actor, Trigger, and upstream fingerprints prefilled verbatim. Write the output to
+`spec/usecases.md`, then replace **every** `<TODO: …>` marker with real content — an
+unfilled marker fails the exit gate by design. The scaffold covers only what flows.md
+names; read paths the brief implies but flows don't list are still yours to add.
+**Delta mode**: never run the scaffolder — apply stage 4.
+
 - Every `Command:` in flows.md is a use-case candidate — the actor wants something done.
 - Every `Policy:` is a system-triggered use-case candidate (actor: the system's
   operator-of-record term, or the policy's acting term).

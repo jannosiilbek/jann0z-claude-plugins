@@ -48,6 +48,7 @@ Run harness selftests from their `scripts/` directories:
 cd plugins/napkin/skills/erd-modeler/scripts && npm test   # PGlite live-test harness
 cd plugins/napkin/skills/ddd-align/scripts   && npm test   # spec-consistency harness
 cd plugins/napkin/skills/erd-diagram/scripts && npm test   # renderer harness
+cd plugins/napkin/skills/ddd-usecases/scripts && npm test  # usecase-scaffolder harness
 ```
 
 Pipeline eval — see `plugins/napkin/evals/README.md` for the full improvement loop:
