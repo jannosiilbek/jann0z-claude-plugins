@@ -4,6 +4,14 @@
 <!-- upstream-fingerprint: spec/api.md@sha256:f6ccc5d625f0233a25afcb4acb627bb25c6526d028f813e2f537e9a043b03e4b -->
 <!-- upstream-fingerprint: spec/data/model.dbml@sha256:edef257ceabb1409b72340bd1dda0e4e4f7823c0aa2db9a310a7d1caecbac9c5 -->
 
+## Execution contract
+
+- Gate: every edit to `spec/` re-runs the alignment gate (`ddd-align`); a failing gate blocks the change that caused it.
+- Schema: `spec/data/usecases.sql` is the schema's regression test — it must pass against every migration.
+- Traceability: every module cites the UC-xxx or T-xxx it implements; code with no citation is presumed dead (nfr.md §Code quality).
+- Deprecation: spec items are retired with `Status: deprecated`, never deleted, so citations cannot dangle.
+- Staleness: derived artifacts carry `upstream-fingerprint` lines; when the gate reports AL-16, regenerate the artifact via its owning skill.
+
 ## M1 — Foundations
 
 ### T-001 — Stand up schema and migrations

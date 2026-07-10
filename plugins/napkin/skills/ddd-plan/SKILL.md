@@ -39,6 +39,10 @@ The artifact grammar is defined once, in
 
 ### 2. Structure the plan
 
+- Open the plan with the `## Execution contract` section copied **verbatim** from
+  spec-format.md §6, immediately after the marker and fingerprint lines. It is the
+  handoff preamble the implementing agent reads first; AL-35 warns when it is missing.
+  In delta mode, add it if absent — it is boilerplate, not history.
 - **Milestones** are dependency-driven, not thematic: foundations (schema, scaffolding)
   first, then use-case clusters grouped by the entities they share, so each milestone
   ships something testable.
@@ -101,6 +105,7 @@ dependency acyclicity (AL-11) all become fully active here.
 
 Coverage: every active UC implemented (0 uncovered)
 Dependency order: T-001 → T-002, T-003 (acyclic)
+Execution contract: present
 Alignment gate: ✅ ok
 📄 Saved to spec/plan.md
 ✅ Pipeline complete — brief → domain → use cases → (api) → model → plan

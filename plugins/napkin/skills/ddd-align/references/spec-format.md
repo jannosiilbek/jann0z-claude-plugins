@@ -378,6 +378,19 @@ a live-tested SQL assertion when erd-modeler runs.
 - `- Effort:` — optional; `XS | S | M | L | XL`. `ddd-plan` populates it from the
   task's AC count + DA count + presence of external integrations. check-align warns when
   a task implements 3+ UCs and has no Effort field.
+- `## Execution contract` — a fixed preamble section, placed immediately after the
+  artifact marker (and fingerprint lines), copied **verbatim** — it is the handoff
+  contract the implementing agent reads first (AL-35 warns when absent):
+
+  ```markdown
+  ## Execution contract
+
+  - Gate: every edit to `spec/` re-runs the alignment gate (`ddd-align`); a failing gate blocks the change that caused it.
+  - Schema: `spec/data/usecases.sql` is the schema's regression test — it must pass against every migration.
+  - Traceability: every module cites the UC-xxx or T-xxx it implements; code with no citation is presumed dead (nfr.md §Code quality).
+  - Deprecation: spec items are retired with `Status: deprecated`, never deleted, so citations cannot dangle.
+  - Staleness: derived artifacts carry `upstream-fingerprint` lines; when the gate reports AL-16, regenerate the artifact via its owning skill.
+  ```
 
 ## 7. spec/stack.md
 

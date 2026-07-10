@@ -59,6 +59,7 @@ node check-align.mjs --spec path/to/spec [--require glossary,model,usecases,plan
 | AL-25 | error | `stack.md §TypeScript` section must exist when the preset declares `typescript` requirements |
 | AL-26 | error | when `§TypeScript` is present, `strict`, `moduleResolution`, `verbatimModuleSyntax`, and `isolatedModules` must match the preset's canonical values |
 | AL-33 | error | `stack.md §Structure` must list every path in `PRESET_CONFIG[preset].requiredPaths` hardcoded in `check-align.mjs` |
+| AL-35 | warn | plan.md carries the verbatim `## Execution contract` section (spec-format §6) so build-phase rules survive the handoff |
 | AL-00 | info/error | artifact presence bookkeeping; `--require` misses are errors |
 
 

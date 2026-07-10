@@ -792,6 +792,12 @@ if (apiOps !== null && dbml) {
   }
 }
 
+// --- AL-35: plan.md must carry the execution contract for the build phase
+if (artifacts.plan && !/^## Execution contract$/m.test(artifacts.plan.raw)) {
+  report("AL-35", "warn", "plan.md", 1,
+    "plan.md has no `## Execution contract` section — the build-phase rules (gate, regression SQL, traceability, deprecation) do not survive the handoff (copy it verbatim from spec-format §6)");
+}
+
 // --- AL-19: every Policy command Y is the trigger of at least one active UC
 if (flows && ucs) {
   const ucTriggers = new Set(

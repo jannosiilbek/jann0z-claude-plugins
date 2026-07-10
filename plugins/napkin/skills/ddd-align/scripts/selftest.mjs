@@ -422,5 +422,11 @@ testCase("short but substantive definition → no AL-32",
   (r) => (!hasWarn(r, "AL-32") ? null
     : `substantive short definition must NOT fire AL-32 (got ${JSON.stringify(r.json.findings.filter((f) => f.check === "AL-32"))})`));
 
+// AL-35: plan.md without the execution contract loses the pipeline's rules at handoff.
+testCase("plan.md missing Execution contract → AL-35 warn",
+  (s) => edit(s, "plan.md", (t) => t.replace(/\n## Execution contract\n[\s\S]*?(?=\n## )/, "")),
+  (r) => (hasWarn(r, "AL-35") ? null
+    : `plan without §Execution contract must produce AL-35 warn (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);
