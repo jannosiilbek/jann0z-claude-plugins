@@ -29,9 +29,19 @@ off them.
 4. **Find policies.** Whenever event X happens, the system itself triggers command Y —
    `Whenever Membership lapsed, then Notify member`. Policies are where automations and
    eventual side effects live; missing them is the most common storming gap.
+   Time-driven automations are policies too — write the time condition as the
+   trigger: `Whenever 30 days pass after Enrollment dropped, then Purge enrollment`.
+4b. **Sweep read models.** For each actor and each decision they make in a flow, ask:
+    what do they need to *see* to decide or verify? ("course list with remaining
+    capacity", "my current enrollments"). Record each as a `- Read paths:` entry on
+    the flow it supports. Read paths are half the eventual API surface and the part a
+    forward-only event sweep never finds.
 5. **Group into flows.** A flow (`FL-xxx`) is one coherent narrative — usually one
    command-to-outcome chain plus its policies. Prefer several small flows over one
    mega-flow; downstream use cases map most cleanly from single-command flows.
+   A command with more than one outcome gets one flow per outcome — a linear step
+   list cannot say "or"; name the non-happy flow after its outcome and start it from
+   the same command.
 
 ## What makes a good event
 

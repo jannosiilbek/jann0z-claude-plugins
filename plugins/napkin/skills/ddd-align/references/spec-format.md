@@ -295,6 +295,19 @@ Event-storming output in linear text: what happens, in what order, caused by who
   - `Policy:` — automation, exactly `Whenever <X>, then <Y>`.
 - `- Context:` is optional (large domains only); `- Actor:` is required and must be a
   glossary term.
+- **Alternate outcomes**: a command with more than one outcome (success / failure /
+  timeout) gets **one flow per outcome** — a linear step list cannot say "or". Name
+  each non-happy flow after its outcome (`FL-004 — Payment declined`) and start it
+  from the same `Command:` step. Never interleave mutually exclusive events in one
+  flow.
+- **Temporal policies**: `<X>` in a policy may be a time condition instead of an
+  event — `Policy: Whenever 30 days pass after Enrollment dropped, then Purge
+  enrollment`. This is the home for scheduled behavior; the resulting use case maps
+  to an internal operation in api.md like any other policy-derived UC.
+- `- Read paths:` — optional flow field: a comma-separated list of the queries this
+  flow's actors need to decide or observe ("student's course list", "capacity
+  report"). ddd-usecases derives one read-path UC per entry, triggered by an Event
+  of this flow.
 
 ## 5. spec/usecases.md
 

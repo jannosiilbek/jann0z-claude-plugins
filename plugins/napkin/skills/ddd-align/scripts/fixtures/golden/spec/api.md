@@ -1,6 +1,6 @@
 # API — Course Platform
 <!-- ddd: api -->
-<!-- upstream-fingerprint: spec/usecases.md@sha256:ec87cc821d3737f1eb24d75f4643c059bee4a97d7bb93aa01da7bf29fd6eaf54 -->
+<!-- upstream-fingerprint: spec/usecases.md@sha256:5c002abf5b0fbf4b56312eaa62b20b1a902d5c4f462778aa4aab91eb4c6c2d0c -->
 <!-- upstream-fingerprint: spec/stack.md@sha256:ca5b092cef9755e7b24c0f210dae76eb8eb5c31c3d1af803a23466ca1e722aa8 -->
 <!-- upstream-fingerprint: spec/nfr.md@sha256:727dc87c21708ff4bd356b78878bf6e65796bafc40daa5991363f13bde00ecc8 -->
 

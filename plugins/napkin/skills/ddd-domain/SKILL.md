@@ -41,6 +41,10 @@ Work the domain narrative chronologically, as an event-storming session in text:
 - **Actors** — who issues each command; must come from the brief's actor list (extend it
   via the glossary if storming reveals a missing actor).
 - **Policies** — automations: `Whenever <Event>, then <Command>`.
+- **Read paths** — per flow, the queries its actors consult (`- Read paths:` field);
+  see the read-model sweep in `references/event-storming.md`.
+- **Alternate outcomes** — one flow per outcome; never interleave mutually exclusive
+  events in one flow (spec-format §4).
 - **Bounded contexts**: only when the domain is genuinely large (see the heuristic in
   `references/event-storming.md`) note a `- Context:` field per flow and per term.
   Don't invent contexts for a domain that is one context — most are.

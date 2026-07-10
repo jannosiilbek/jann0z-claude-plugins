@@ -3,6 +3,7 @@
 
 ## FL-001 — Enroll in a course
 - Actor: Student
+- Read paths: student's course list
 - Steps:
   1. Command: Enroll student (Actor: Registrar)
   2. Event: Student enrolled

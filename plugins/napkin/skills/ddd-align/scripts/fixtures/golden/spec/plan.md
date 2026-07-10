@@ -1,7 +1,7 @@
 # Plan — Course Platform
 <!-- ddd: plan -->
-<!-- upstream-fingerprint: spec/usecases.md@sha256:ec87cc821d3737f1eb24d75f4643c059bee4a97d7bb93aa01da7bf29fd6eaf54 -->
-<!-- upstream-fingerprint: spec/api.md@sha256:f6ccc5d625f0233a25afcb4acb627bb25c6526d028f813e2f537e9a043b03e4b -->
+<!-- upstream-fingerprint: spec/usecases.md@sha256:5c002abf5b0fbf4b56312eaa62b20b1a902d5c4f462778aa4aab91eb4c6c2d0c -->
+<!-- upstream-fingerprint: spec/api.md@sha256:b564796b52f55316f45aaac37198605fd02b5668c2b7e92f5a54665728a25bb8 -->
 <!-- upstream-fingerprint: spec/data/model.dbml@sha256:edef257ceabb1409b72340bd1dda0e4e4f7823c0aa2db9a310a7d1caecbac9c5 -->
 
 ## Execution contract
