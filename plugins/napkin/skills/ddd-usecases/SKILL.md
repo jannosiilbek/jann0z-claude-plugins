@@ -29,7 +29,7 @@ The artifact grammar is defined once, in
 - Every `Command:` in flows.md is a use-case candidate — the actor wants something done.
 - Every `Policy:` is a system-triggered use-case candidate (actor: the system's
   operator-of-record term, or the policy's acting term).
-- Every `Read paths:` entry in flows.md is a read-path use-case candidate (trigger:
+- Every `- Read paths:` entry in flows.md is a read-path use-case candidate (trigger:
   an Event of that flow), and so are key read paths the brief implies that flows
   don't name — read UCs emit no event but are use cases all the same.
 - Confirm with the user only candidates that are genuinely ambiguous (one question at a

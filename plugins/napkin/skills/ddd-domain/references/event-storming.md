@@ -39,9 +39,8 @@ off them.
 5. **Group into flows.** A flow (`FL-xxx`) is one coherent narrative — usually one
    command-to-outcome chain plus its policies. Prefer several small flows over one
    mega-flow; downstream use cases map most cleanly from single-command flows.
-   A command with more than one outcome gets one flow per outcome — a linear step
-   list cannot say "or"; name the non-happy flow after its outcome and start it from
-   the same command.
+   Split a multi-outcome command into one flow per outcome, naming each non-happy
+   flow after its outcome (rule: spec-format §4, Alternate outcomes).
 
 ## What makes a good event
 
