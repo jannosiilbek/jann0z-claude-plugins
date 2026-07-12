@@ -227,10 +227,21 @@ const ASSERTION_RES = [
   /^col:[A-Za-z_][A-Za-z0-9_]*=.*$/,
 ];
 
+// Status vocabularies (spec-format §5/§6). Validation is FAIL-CLOSED: an unknown value
+// reports AL-36 and the item is treated as active/todo, so a typo'd status can never
+// exempt an item from the coverage checks that gate on "active".
+const UC_STATUSES = new Set(["active", "deprecated"]);
+const TASK_STATUSES = new Set(["todo", "in-progress", "done"]);
+
 function parseUsecases(art) {
   const ucs = extractItems(art, "usecases.md").filter((it) => it.id.startsWith("UC-"));
   for (const uc of ucs) {
-    uc.status = (uc.fields["Status"] || "active").toLowerCase();
+    const rawStatus = (uc.fields["Status"] || "active").trim().toLowerCase();
+    if (!UC_STATUSES.has(rawStatus)) {
+      report("AL-36", "error", "usecases.md", uc.fieldLines["Status"] || uc.line,
+        `${uc.id} has unknown Status \`${uc.fields["Status"]}\` (expected active|deprecated) — treated as active so no coverage check is skipped`);
+    }
+    uc.status = rawStatus === "deprecated" ? "deprecated" : "active";
     uc.acs = [];
     uc.das = [];
     let mode = null;
@@ -264,7 +275,12 @@ function parsePlan(art) {
       .split(",").map((s) => s.trim()).filter(Boolean);
     t.dependsOn = (t.fields["Depends on"] || "none")
       .split(",").map((s) => s.trim()).filter((s) => s && s.toLowerCase() !== "none");
-    t.status = (t.fields["Status"] || "todo").toLowerCase();
+    const rawStatus = (t.fields["Status"] || "todo").trim().toLowerCase();
+    if (!TASK_STATUSES.has(rawStatus)) {
+      report("AL-36", "error", "plan.md", t.fieldLines["Status"] || t.line,
+        `${t.id} has unknown Status \`${t.fields["Status"]}\` (expected todo|in-progress|done) — treated as todo`);
+    }
+    t.status = TASK_STATUSES.has(rawStatus) ? rawStatus : "todo";
   }
   return { tasks, milestones };
 }
@@ -720,29 +736,50 @@ if (glossary) {
   }
 }
 
-// --- AL-14: every active UC labeled in usecases.sql
+// --- AL-14: every active UC — and every DA-n of it — labeled in usecases.sql.
+// A single bare `-- usecase: UC-xxx` block cannot "cover" several assertions.
 if (sqlRaw && ucs) {
-  const labeled = new Set();
-  for (const m of sqlRaw.matchAll(/^--\s*usecase:\s*(UC-\d{3})\b/gm)) labeled.add(m[1]);
+  const labeled = new Map(); // UC id -> Set of DA ids covered by labeled blocks
+  for (const m of sqlRaw.matchAll(/^--\s*usecase:\s*(UC-\d{3})(?:\/(DA-\d+))?\b/gm)) {
+    if (!labeled.has(m[1])) labeled.set(m[1], new Set());
+    if (m[2]) labeled.get(m[1]).add(m[2]);
+  }
   for (const uc of ucs) {
-    if (uc.status === "active" && !labeled.has(uc.id)) {
+    if (uc.status !== "active") continue;
+    if (!labeled.has(uc.id)) {
       report("AL-14", "error", "data/usecases.sql", 1,
         `${uc.id} is active but has no \`-- usecase: ${uc.id}/DA-n …\` block in usecases.sql — its data assertions were never live-tested`);
+      continue;
+    }
+    const covered = labeled.get(uc.id);
+    for (const da of uc.das) {
+      if (!covered.has(da.id)) {
+        report("AL-14", "error", "data/usecases.sql", 1,
+          `${uc.id}/${da.id} has no labeled block in usecases.sql — this data assertion was never live-tested (label a block \`-- usecase: ${uc.id}/${da.id} …\`)`);
+      }
     }
   }
 }
 
-// --- AL-16: upstream-fingerprint staleness — model.dbml (`//` comments) and the
-// derived .md artifacts usecases/api/plan (HTML comments). Convention: spec-format §1.6.
+// --- AL-16/AL-37: upstream fingerprints — model.dbml (`//` comments) and the derived
+// .md artifacts usecases/api/plan (HTML comments). Convention: spec-format §1.6.
+// AL-16 (warn) = a recorded fingerprint is stale/dangling. AL-37 (error) = an expected
+// fingerprint line is missing entirely — a derived artifact with its provenance stripped
+// must not pass silently.
+function resolveFpPath(relPath) {
+  // Recorded paths carry the spec/ prefix by convention (§1.6); resolve them
+  // against the directory under check so a spec dir not literally named
+  // "spec/" still verifies.
+  return relPath.startsWith("spec/")
+    ? join(args.spec, relPath.slice("spec/".length))
+    : join(args.spec, "..", relPath);
+}
 function checkFingerprints(raw, artifactName, fpRe) {
+  const recorded = new Set();
   for (const fp of raw.matchAll(fpRe)) {
     const [, relPath, storedHash] = fp;
-    // Recorded paths carry the spec/ prefix by convention (§1.6); resolve them
-    // against the directory under check so a spec dir not literally named
-    // "spec/" still verifies.
-    const absPath = relPath.startsWith("spec/")
-      ? join(args.spec, relPath.slice("spec/".length))
-      : join(args.spec, "..", relPath);
+    recorded.add(relPath);
+    const absPath = resolveFpPath(relPath);
     if (!existsSync(absPath)) {
       report("AL-16", "warn", artifactName, 1,
         `fingerprint references ${relPath} which does not exist`);
@@ -754,25 +791,50 @@ function checkFingerprints(raw, artifactName, fpRe) {
         `upstream fingerprint mismatch for ${relPath} — artifact may be stale (stored ${storedHash.slice(0, 8)}…, actual ${actual.slice(0, 8)}…)`);
     }
   }
+  return recorded;
+}
+// Who fingerprints what (spec-format §1.6). Each upstream is required only when the
+// upstream file actually exists on disk (conditional entries handle themselves).
+const EXPECTED_FPS = {
+  model: ["spec/glossary.md"],
+  usecases: ["spec/glossary.md", "spec/flows.md"],
+  api: ["spec/usecases.md", "spec/stack.md", "spec/nfr.md"],
+  plan: ["spec/usecases.md", "spec/data/model.dbml", "spec/api.md"],
+};
+function requireFingerprints(type, artifactName, recorded) {
+  for (const relPath of EXPECTED_FPS[type] ?? []) {
+    if (!existsSync(resolveFpPath(relPath))) continue; // upstream absent — nothing to record
+    if (!recorded.has(relPath)) {
+      report("AL-37", "error", artifactName, 1,
+        `missing \`upstream-fingerprint\` line for ${relPath} (spec-format §1.6) — provenance was never recorded; regenerate the artifact via its owning skill`);
+    }
+  }
 }
 const FP_DBML_RE = /^\/\/ upstream-fingerprint: (.+)@sha256:([0-9a-f]{64})/gm;
 const FP_MD_RE = /^<!-- upstream-fingerprint: (.+)@sha256:([0-9a-f]{64}) -->/gm;
 if (existsSync(modelPath)) {
-  checkFingerprints(readFileSync(modelPath, "utf8"), "data/model.dbml", FP_DBML_RE);
+  const recorded = checkFingerprints(readFileSync(modelPath, "utf8"), "data/model.dbml", FP_DBML_RE);
+  requireFingerprints("model", "data/model.dbml", recorded);
 }
 for (const type of ["usecases", "api", "plan"]) {
-  if (artifacts[type]) checkFingerprints(artifacts[type].raw, artifacts[type].file, FP_MD_RE);
+  if (artifacts[type]) {
+    const recorded = checkFingerprints(artifacts[type].raw, artifacts[type].file, FP_MD_RE);
+    requireFingerprints(type, artifacts[type].file, recorded);
+  }
 }
 
-// --- AL-17: every active UC has an API-UC-xxx entry in api.md (when api.md exists)
+// --- AL-17: every active UC has an API-UC-xxx entry in api.md (when api.md exists).
+// A policy-derived UC's `## API-UC-xxx-internal` block satisfies coverage too — the
+// `-internal` suffix exempts an operation from external-surface conventions (auth),
+// not from being specified.
 if (apiOps !== null && ucs) {
   const apiIds = new Set(apiOps.map((op) => op.id));
   for (const uc of ucs) {
     if (uc.status !== "active") continue;
     const expected = "API-" + uc.id;
-    if (!apiIds.has(expected)) {
+    if (!apiIds.has(expected) && !apiIds.has(expected + "-internal")) {
       report("AL-17", "error", "api.md", 1,
-        `${uc.id} is active but has no \`## ${expected}\` entry in api.md`);
+        `${uc.id} is active but has no \`## ${expected}\` (or \`## ${expected}-internal\`) entry in api.md`);
     }
   }
 }
@@ -815,10 +877,38 @@ if (apiOps !== null && dbml) {
   }
 }
 
-// --- AL-35: plan.md must carry the execution contract for the build phase
-if (artifacts.plan && !/^## Execution contract$/m.test(artifacts.plan.raw)) {
-  report("AL-35", "warn", "plan.md", 1,
-    "plan.md has no `## Execution contract` section — the build-phase rules (gate, regression SQL, traceability, deprecation) do not survive the handoff (copy it verbatim from spec-format §6)");
+// --- AL-35: plan.md must carry the execution contract for the build phase — verbatim.
+// Canonical text inlined from spec-format §6 to preserve the zero-dependency contract
+// (check-align runs against target projects where the plugin's references/ is not on
+// disk); the selftest pins this constant against spec-format.md so they cannot drift.
+const EXECUTION_CONTRACT = [
+  "- Gate: every edit to `spec/` re-runs the alignment gate (`ddd-align`); a failing gate blocks the change that caused it.",
+  "- Schema: `spec/data/usecases.sql` is the schema's regression test — it must pass against every migration.",
+  "- Traceability: every module cites the UC-xxx or T-xxx it implements; code with no citation is presumed dead (nfr.md §Code quality).",
+  "- Deprecation: spec items are retired with `Status: deprecated`, never deleted, so citations cannot dangle.",
+  "- Staleness: derived artifacts carry `upstream-fingerprint` lines; when the gate reports AL-16, regenerate the artifact via its owning skill.",
+];
+if (artifacts.plan) {
+  const planLines = artifacts.plan.lines;
+  const headIdx = planLines.findIndex((l) => /^## Execution contract\s*$/.test(l));
+  if (headIdx === -1) {
+    report("AL-35", "warn", "plan.md", 1,
+      "plan.md has no `## Execution contract` section — the build-phase rules (gate, regression SQL, traceability, deprecation) do not survive the handoff (copy it verbatim from spec-format §6)");
+  } else {
+    const norm = (s) => s.replace(/\s+/g, " ").trim();
+    const section = [];
+    for (let i = headIdx + 1; i < planLines.length && !/^## /.test(planLines[i]); i++) {
+      if (/^\s*- /.test(planLines[i])) section.push(norm(planLines[i]));
+    }
+    const canonical = EXECUTION_CONTRACT.map(norm);
+    const missing = canonical.filter((b) => !section.includes(b));
+    const extra = section.filter((b) => !canonical.includes(b));
+    if (missing.length || extra.length) {
+      const first = missing[0] ?? extra[0];
+      report("AL-35", "warn", "plan.md", headIdx + 1,
+        `\`## Execution contract\` diverges from the canonical text — ${missing.length ? "missing/changed bullet" : "extra bullet"}: "${first.slice(0, 80)}…" (copy the section verbatim from spec-format §6)`);
+    }
+  }
 }
 
 // --- AL-19: every Policy command Y is the trigger of at least one active UC

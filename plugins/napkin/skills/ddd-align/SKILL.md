@@ -1,6 +1,7 @@
 ---
 name: ddd-align
 description: Use when the user wants to check, validate, or audit the consistency of a spec/ directory — glossary vs data model, use cases vs plan, spec drift, traceability, or "is my spec still aligned". Also runs as the exit gate of every napkin DDD pipeline skill (ddd-brief, ddd-domain, ddd-usecases, erd-modeler, ddd-plan). Mechanically parses spec/ artifacts with a Node harness and proves their cross-references — then judges what a parser can't. Not for designing models or writing specs; it only audits them.
+allowed-tools: Read, Glob, Grep, Bash(node:*)
 ---
 
 # DDD Align

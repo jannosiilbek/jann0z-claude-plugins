@@ -126,7 +126,10 @@ useless). Re-embed on every save. Who fingerprints what:
 
 check-align (AL-16) recomputes every fingerprint and warns on mismatch — a stale
 fingerprint means the artifact may no longer reflect its inputs; regenerate it via the
-owning skill.
+owning skill. Absence is stricter than staleness: AL-37 **errors** when a derived
+artifact is missing the fingerprint line for an expected upstream that exists on disk —
+an artifact with its provenance stripped must not pass silently. Conditional entries
+("when used"/"when present") are required exactly when the upstream file exists.
 
 ## 2. spec/brief.md
 
@@ -232,9 +235,9 @@ The ubiquitous language.
 - `- Aggregate root: yes` — marks the entity that owns its cluster (the root of an
   aggregate). Omit the field for entities that are not aggregate roots.
 - `- Aggregate: <Term>` — on leaf entities, points at the aggregate root term. When
-  present, check-align warns if the FK from this entity's table to the root's table
-  uses `ON DELETE CASCADE` (cross-aggregate cascade is a DDD violation: use RESTRICT or
-  SET NULL instead).
+  present, erd-modeler's validation pass (validation-rules C5) warns if the Ref from
+  this entity's table across an aggregate boundary declares `[delete: cascade]`
+  (cross-aggregate cascade is a DDD violation: use `restrict` or `set null` instead).
 - `- Invariants:` — required on every term that carries `Aggregate root: yes`; a
   bulleted list of the business rules this aggregate boundary enforces. Sub-bullets
   start with `  - ` (two-space indent). These rules are what justify the aggregate
@@ -337,7 +340,9 @@ a live-tested SQL assertion when erd-modeler runs.
 - ...
 ```
 
-- `- Status:` is `active` or `deprecated` (missing = active).
+- `- Status:` is `active` or `deprecated` (missing = active). The vocabulary is closed:
+  any other value is an AL-36 error and the UC is treated as active (fail-closed), so a
+  typo can never exempt a UC from its coverage checks.
 - **Acceptance criteria** use EARS shapes — pick the one that fits:
   - `WHEN <trigger>, THE SYSTEM SHALL <behavior>.` (event-driven)
   - `WHILE <state>, THE SYSTEM SHALL <behavior>.` (state-driven)
@@ -359,9 +364,11 @@ a live-tested SQL assertion when erd-modeler runs.
 
   In erd-modeler's live test, `UC-001`'s `DA-1` becomes the block label
   `-- usecase: UC-001/DA-1 <description>` with `-- expect: <assertion>` — a 1:1 mapping,
-  which is what makes the spec executable rather than aspirational. Give every UC at
-  least one positive assertion and, wherever the domain has an integrity rule worth
-  protecting, one negative (`error ~ …`) assertion.
+  which is what makes the spec executable rather than aspirational. AL-14 verifies the
+  mapping per assertion: every `DA-n` of every active UC needs its own labeled block in
+  `data/usecases.sql`; a single bare `UC-xxx` block cannot cover several assertions.
+  Give every UC at least one positive assertion and, wherever the domain has an
+  integrity rule worth protecting, one negative (`error ~ …`) assertion.
 
 ## 6. spec/plan.md
 
@@ -398,7 +405,9 @@ a live-tested SQL assertion when erd-modeler runs.
   a task implements 3+ UCs and has no Effort field.
 - `## Execution contract` — a fixed preamble section, placed immediately after the
   artifact marker (and fingerprint lines), copied **verbatim** — it is the handoff
-  contract the implementing agent reads first (AL-35 warns when absent):
+  contract the implementing agent reads first. AL-35 warns when the section is absent
+  **or** when its bullets diverge from the canonical text below (whitespace-normalized
+  compare against the copy embedded in check-align.mjs; the selftest pins both):
 
   ```markdown
   ## Execution contract
@@ -701,8 +710,10 @@ but invisible to the gate.
 implementation; no duplication. `Dead code: none` mandates that unreachable or unused
 exports are removed before merge; no placeholder stubs. `Drift safety: spec-traced` means
 every module traces to a UC, AC, or task; code with no spec citation is presumed dead and
-must be removed or backed by a new task. These fields follow the same "omit if not
-specified" rule as all nfr.md sections — never write placeholders.
+must be removed or backed by a new task. Unlike the other nfr.md sections (which follow
+the omit-if-not-specified rule), `## Code quality` is **always written** — ddd-brief owns
+it and writes it unconditionally, because plan.md's Execution contract cites
+`nfr.md §Code quality` for its traceability rule.
 
 ## 9. spec/api.md
 
@@ -777,8 +788,10 @@ interface kind declared in stack.md.
   `nfr.md § Error contracts` (AL-18 enforces this when both files exist).
 - `- Status: deprecated` + `- Superseded-by: API-UC-xxx` follow the same deprecation
   discipline as UCs and tasks.
-- `Internal:` operations (from Policy flows) use `## API-UC-xxx-internal` and are
-  excluded from AL-17 (they have no external auth requirement).
+- `Internal:` operations (from Policy flows) use `## API-UC-xxx-internal`. The
+  `-internal` block **satisfies AL-17 coverage** for its UC — the suffix exempts the
+  operation from external-surface conventions (auth, pagination), not from being
+  specified.
 
 ## 10. spec/decisions.md
 
@@ -863,7 +876,7 @@ nfr.md ────────────────────────�
 ```
 
 `check-align.mjs` proves these edges mechanically (see `../scripts/README.md` for the
-full check list AL-00…AL-33): glossary↔DBML table tracing, enum spelling fidelity,
+full check list AL-00…AL-37): glossary↔DBML table tracing, enum spelling fidelity,
 actor closure, UC→plan coverage, DA grammar validity, UC→usecases.sql labeling,
 ID uniqueness, and dependency acyclicity. Run it after every artifact write; a spec
 that fails the gate is not done.

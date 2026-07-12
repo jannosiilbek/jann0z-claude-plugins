@@ -40,10 +40,10 @@ node check-align.mjs --spec path/to/spec [--require glossary,model,usecases,plan
 | AL-11 | error | the plan dependency graph is acyclic |
 | AL-12 | warn | every UC trigger names a Command/Event from flows.md |
 | AL-13 | warn | forbidden synonyms do not appear in flows/usecases/plan |
-| AL-14 | error | every active UC has a labeled block in `data/usecases.sql` (when present) |
+| AL-14 | error | every active UC — and every `DA-n` of it — has a labeled `-- usecase: UC-xxx/DA-n` block in `data/usecases.sql` (when present); one bare block cannot cover several assertions |
 | AL-15 | error | structural integrity: markers present, ID headings well-formed, policies parse — reported with line numbers, never silently skipped; no unfilled `<TODO:` scaffold markers in usecases.md |
 | AL-16 | warn | an `upstream-fingerprint` in a derived artifact (`usecases.md`, `api.md`, `plan.md`, `data/model.dbml`) is stale — a source file it hashes has changed since the artifact was last generated (convention: spec-format §1.6) |
-| AL-17 | error | every active UC has a corresponding `## API-UC-xxx` entry in `api.md` (when api.md exists) |
+| AL-17 | error | every active UC has a corresponding `## API-UC-xxx` or `## API-UC-xxx-internal` entry in `api.md` (when api.md exists) — `-internal` exempts an operation from external-surface conventions, not from coverage |
 | AL-18 | error | every error code slug in a `Response 4xx:` line in `api.md` appears in `nfr.md § Error contracts` (when both exist) |
 | AL-19 | warn | every `Policy: Whenever X, then Y` command Y is the trigger of at least one active UC — an unmatched policy command indicates a missing use case |
 | AL-20 | error | `stack.md §Conventions` must exist with `File naming:` and `File structure:` fields present |
@@ -53,13 +53,17 @@ node check-align.mjs --spec path/to/spec [--require glossary,model,usecases,plan
 | AL-24 | error | `stack.md §Pipeline` must exist with `CI:`, `Branching:`, and `Branch map:` fields present |
 | AL-25 | error | `stack.md §TypeScript` section must exist when the preset declares `typescript` requirements |
 | AL-26 | error | when `§TypeScript` is present, `strict`, `moduleResolution`, `verbatimModuleSyntax`, and `isolatedModules` must match the preset's canonical values |
+| AL-27 | warn | every glossary term marked `Aggregate root: yes` declares an `Invariants:` block |
+| AL-28 | warn | no glossary term marked `Value object: yes` also has a `Maps to:` line (value objects are identity-less and own no table) |
 | AL-29 | warn | when nfr.md declares `Soft-delete: <column> column on all entities`, every model.dbml table has that column |
 | AL-30 | warn | when nfr.md §Audit declares `logged to <table>`, that table exists in model.dbml |
 | AL-31 | warn | active-UC acceptance criteria contain no vacuous phrase ("works correctly", "as expected", "gracefully", …) |
 | AL-32 | warn | glossary definitions do not restate the term they define (short-and-circular heuristic) |
 | AL-33 | error | `stack.md §Structure` must list every path in `PRESET_CONFIG[preset].requiredPaths` hardcoded in `check-align.mjs` |
 | AL-34 | error | every `TypeID<t>` field type in api.md names a model.dbml table (AL-34b warn: enum-shaped type with no matching DBML Enum) — activates when both api.md and model.dbml exist |
-| AL-35 | warn | plan.md carries the verbatim `## Execution contract` section (spec-format §6) so build-phase rules survive the handoff |
+| AL-35 | warn | plan.md carries the `## Execution contract` section AND its bullets match the canonical spec-format §6 text (whitespace-normalized compare — heading alone is not enough) |
+| AL-36 | error | every `Status:` value is in its closed vocabulary (`active\|deprecated` for UCs, `todo\|in-progress\|done` for tasks) — unknown values are treated as active/todo (fail-closed) so a typo can never exempt an item from coverage checks |
+| AL-37 | error | every derived artifact records an `upstream-fingerprint` line for each of its expected upstreams that exist on disk (spec-format §1.6) — stripped provenance must not pass silently |
 | AL-00 | info/error | artifact presence bookkeeping; `--require` misses are errors |
 
 
@@ -86,4 +90,7 @@ there are zero `error` findings, and every `--require`d artifact is present.
 
 `fixtures/golden/spec/` is a complete, aligned sample spec (course platform domain)
 exercising every grammar feature. The selftest mutates copies of it; it is also the
-reference example of what a finished pipeline output looks like.
+reference example of what a finished pipeline output looks like. `data/` carries the
+full runnable SQL trio — `schema.sql` (mechanically exported from `model.dbml` via
+@dbml/core; regenerate after any model change), `seed.sql`, and `usecases.sql` — so the
+pipeline eval grader can live-test the golden spec end-to-end.

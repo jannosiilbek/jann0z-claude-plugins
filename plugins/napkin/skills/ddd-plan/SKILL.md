@@ -41,7 +41,8 @@ The artifact grammar is defined once, in
 
 - Open the plan with the `## Execution contract` section copied **verbatim** from
   spec-format.md §6, immediately after the marker and fingerprint lines. It is the
-  handoff preamble the implementing agent reads first; AL-35 warns when it is missing.
+  handoff preamble the implementing agent reads first; AL-35 warns when it is missing
+  or when its bullets diverge from the canonical text — the copy really must be verbatim.
   In delta mode, add it if absent — it is boilerplate, not history.
 - **Milestones** are dependency-driven, not thematic: foundations (schema, scaffolding)
   first, then use-case clusters grouped by the entities they share, so each milestone

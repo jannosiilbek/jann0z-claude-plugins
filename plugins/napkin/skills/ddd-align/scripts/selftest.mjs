@@ -474,6 +474,114 @@ testCase("plan.md missing Execution contract → AL-35 warn",
   (r) => (hasWarn(r, "AL-35") ? null
     : `plan without §Execution contract must produce AL-35 warn (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
 
+// AL-35 checks the BODY, not just the heading — a reworded bullet under an intact
+// heading must warn (the docs promise the contract is copied verbatim).
+testCase("reworded Execution contract bullet → AL-35 warn",
+  (s) => edit(s, "plan.md", (t) => t.replace(
+    "- Deprecation: spec items are retired with `Status: deprecated`, never deleted, so citations cannot dangle.",
+    "- Deprecation: old spec items can simply be deleted when no longer needed.")),
+  (r) => (hasWarn(r, "AL-35") ? null
+    : `a reworded contract bullet must produce AL-35 warn (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
+
+// Whitespace-only divergence is normalized away — no false-red on formatting.
+testCase("whitespace-only contract divergence → no AL-35",
+  (s) => edit(s, "plan.md", (t) => t.replace(
+    "- Gate: every edit to `spec/` re-runs the alignment gate",
+    "- Gate:  every edit to `spec/`   re-runs the alignment gate")),
+  (r) => (r.json && !r.json.findings.some((f) => f.check === "AL-35")
+    ? null
+    : `whitespace-only divergence must not fire AL-35 (got ${r.json ? JSON.stringify(r.json.findings.filter((f) => f.check === "AL-35")) : "?"})`));
+
+// Anti-drift pin: rebuild plan.md's contract from spec-format §6's canonical fenced
+// block and assert it passes — proving the constant embedded in check-align.mjs and the
+// spec-format text cannot silently diverge.
+testCase("execution contract constant is pinned to spec-format §6",
+  (s) => {
+    const sf = readFileSync(join(HERE, "..", "references", "spec-format.md"), "utf8").split("\n");
+    const head = sf.findIndex((l, i) => l.trim() === "## Execution contract"
+      && sf.slice(i + 1, i + 4).some((n) => n.trim().startsWith("- Gate:")));
+    if (head === -1) throw new Error("spec-format §6 canonical contract block not found");
+    const bullets = [];
+    for (let i = head + 1; i < sf.length; i++) {
+      const t = sf[i].trim();
+      if (t.startsWith("```")) break;
+      if (t.startsWith("- ")) bullets.push(t);
+    }
+    edit(s, "plan.md", (t) => t.replace(/## Execution contract\n[\s\S]*?(?=\n## )/,
+      "## Execution contract\n\n" + bullets.join("\n") + "\n"));
+  },
+  (r) => (r.json && !r.json.findings.some((f) => f.check === "AL-35")
+    ? null
+    : `a contract rebuilt from spec-format §6 must pass AL-35 — the embedded constant has drifted (got ${r.json ? JSON.stringify(r.json.findings.filter((f) => f.check === "AL-35")) : "?"})`));
+
+// AL-36: a typo'd UC status must be caught, never silently skip the UC's checks.
+testCase("UC Status typo (activ) → AL-36",
+  (s) => edit(s, "usecases.md", (t) => t.replace("- Trigger: Enroll student\n- Status: active", "- Trigger: Enroll student\n- Status: activ")),
+  (r) => caught(r, "AL-36"));
+
+// AL-36 is FAIL-CLOSED: the typo'd UC is treated as active, so its coverage checks
+// still run — deleting its SQL block must ALSO fire AL-14.
+testCase("Status typo cannot exempt a UC from coverage → AL-36 + AL-14",
+  (s) => {
+    edit(s, "usecases.md", (t) => t.replace("- Trigger: Enroll student\n- Status: active", "- Trigger: Enroll student\n- Status: activ"));
+    edit(s, "data/usecases.sql", (t) => t.replace(/-- usecase: UC-001[\s\S]*?-- expect: error ~ foreign key\n/, ""));
+  },
+  (r) => (hasCheck(r, "AL-36") && hasCheck(r, "AL-14") && r.exit !== 0
+    ? null
+    : `typo'd status must not exempt the UC: expected AL-36 AND AL-14 (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
+
+// AL-36 also covers plan task statuses (todo|in-progress|done).
+testCase("plan task Status typo (in progress) → AL-36",
+  (s) => edit(s, "plan.md", (t) => t.replace(
+    "- Implements: UC-002\n- Depends on: T-001\n- Status: todo",
+    "- Implements: UC-002\n- Depends on: T-001\n- Status: in progress")),
+  (r) => caught(r, "AL-36"));
+
+// A deprecated UC (valid vocabulary) is still exempt from coverage — no AL-36, no AL-14.
+testCase("deprecated UC stays exempt without AL-36",
+  (s) => {
+    edit(s, "usecases.md", (t) => t.replace("- Trigger: Enroll student\n- Status: active", "- Trigger: Enroll student\n- Status: deprecated"));
+    edit(s, "data/usecases.sql", (t) => t.replace(/-- usecase: UC-001[\s\S]*?-- expect: error ~ foreign key\n/, ""));
+    // UC-001 is now deprecated but plan task T-001 implements it → AL-06b warn is
+    // expected and unrelated; this case only asserts AL-36/AL-14 stay quiet.
+  },
+  (r) => (r.json
+      && !r.json.findings.some((f) => f.check === "AL-36")
+      && !r.json.findings.some((f) => f.check === "AL-14")
+    ? null
+    : `deprecated is valid vocabulary and exempts coverage (got ${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
+
+// AL-37: a derived artifact with a required fingerprint line stripped must error —
+// provenance-stripped artifacts must not pass silently.
+testCase("stripped flows.md fingerprint in usecases.md → AL-37",
+  (s) => edit(s, "usecases.md", (t) => t.replace(/<!-- upstream-fingerprint: spec\/flows\.md@sha256:[0-9a-f]{64} -->\n/, "")),
+  (r) => caught(r, "AL-37"));
+
+// AL-37 requires a fingerprint only when the upstream actually exists on disk.
+testCase("absent upstream needs no fingerprint → no AL-37",
+  (s) => {
+    unlinkSync(join(s, "flows.md"));
+    edit(s, "usecases.md", (t) => t.replace(/<!-- upstream-fingerprint: spec\/flows\.md@sha256:[0-9a-f]{64} -->\n/, ""));
+  },
+  (r) => (r.json && !r.json.findings.some((f) => f.check === "AL-37")
+    ? null
+    : `no AL-37 when the upstream file is absent (got ${r.json ? JSON.stringify(r.json.findings.filter((f) => f.check === "AL-37")) : "?"})`));
+
+// AL-14 is per-DA: one bare block cannot cover a UC's other assertions — deleting only
+// UC-003/DA-2's block must name exactly that assertion.
+testCase("usecases.sql missing one DA block → AL-14 names UC-003/DA-2",
+  (s) => edit(s, "data/usecases.sql", (t) => t.replace(/-- usecase: UC-003\/DA-2[\s\S]*?-- expect: col:status=dropped\n/, "")),
+  (r) => (r.json && r.json.findings.some((f) => f.check === "AL-14" && f.severity === "error" && f.message.includes("UC-003/DA-2")) && r.exit !== 0
+    ? null
+    : `expected an AL-14 error naming UC-003/DA-2 (got ${r.json ? JSON.stringify(r.json.findings.filter((f) => f.check === "AL-14")) : "?"})`));
+
+// AL-17: a policy UC's `-internal` block satisfies coverage (ddd-api §Policy steps).
+testCase("API-UC-xxx-internal block satisfies AL-17",
+  (s) => edit(s, "api.md", (t) => t.replace("## API-UC-003 —", "## API-UC-003-internal —")),
+  (r) => (r.json && !r.json.findings.some((f) => f.check === "AL-17")
+    ? null
+    : `an -internal block must satisfy AL-17 coverage (got ${r.json ? JSON.stringify(r.json.findings.filter((f) => f.check === "AL-17")) : "?"})`));
+
 // AL-16 resolution must not assume the spec directory is literally named "spec/".
 {
   const dir = mkdtempSync(join(tmpdir(), "ddd-align-selftest-"));

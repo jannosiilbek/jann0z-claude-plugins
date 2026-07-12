@@ -17,6 +17,9 @@ anything.
 
 ### 1. Intake
 
+- Read `spec/brief.md` if present — when its Pipeline sizing block declares
+  `ddd-api: no`, report "the brief sized this project without an API stage — update the
+  brief's Pipeline sizing first if that changed" and exit without writing anything.
 - Read `spec/usecases.md` — required. If absent, route to `ddd-usecases` first.
 - Read `spec/stack.md` — required. If absent, route to `ddd-brief` first (it writes
   stack.md in phase 2). If `Interface: Kind = none`, report "no external surface declared
@@ -53,7 +56,8 @@ For each active UC in usecases.md, derive its operation:
   - REST: GET with the entity's collection path
   - Include pagination for list operations (cursor-based by default)
 - **`Policy:` steps** → mark as `- Interface: Internal` and use `## API-UC-xxx-internal`;
-  these are excluded from AL-17 (no external auth requirement)
+  the `-internal` block satisfies AL-17 coverage for its UC — the suffix exempts the
+  operation from external-surface conventions (auth, pagination), not from being specified
 - Embed upstream fingerprints for `spec/usecases.md`, `spec/stack.md`, and
   `spec/nfr.md` per spec-format.md §1.6, immediately after the artifact marker.
   Re-embed on every save.

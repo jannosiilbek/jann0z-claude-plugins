@@ -28,8 +28,8 @@ Table enrollments {
   id text [pk] // TypeID, prefix "enr"
   status enrollment_status [not null]
   enrolled_at timestamptz [not null]
-  student_id text [not null, ref: > students.id] // ON DELETE CASCADE
-  course_id text [not null, ref: > courses.id] // ON DELETE RESTRICT
+  student_id text [not null]
+  course_id text [not null]
 
   indexes {
     student_id
@@ -39,3 +39,6 @@ Table enrollments {
 
   Note: 'TypeID prefix: enr'
 }
+
+Ref: enrollments.student_id > students.id [delete: cascade]
+Ref: enrollments.course_id > courses.id [delete: restrict]
