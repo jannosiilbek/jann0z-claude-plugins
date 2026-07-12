@@ -1,4 +1,8 @@
 {
+  "stale": {
+    "since": "2026-07-12",
+    "reason": "grader semantics changed (live-test pass rate now read from asserted stats and included; band hard-capped on mechanical failure; AL-36/AL-37 checks added) — these numbers are not comparable; rerun the matrix and --bless"
+  },
   "config": {
     "bri_tolerance": 5,
     "metric_tolerance": 8,

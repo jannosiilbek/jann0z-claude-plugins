@@ -10,8 +10,11 @@
 // Regression for a cell = any of:
 //   - BRI mean dropped by more than config.bri_tolerance
 //   - any per-metric mean dropped by more than config.metric_tolerance
-//   - mechanical gate went aligned -> drift (align_ok true -> false)
+//   - mechanical gate went aligned -> drift (align_ok true -> false), or the combined
+//     gate (alignment + live-test) went ok -> fail (gate_ok true -> false)
 //   - a cell present in the baseline is missing from the latest run
+// A baseline carrying a top-level `stale` marker (grader semantics changed; numbers not
+// comparable) skips comparison with a loud notice and exits 0; `--bless` clears it.
 // Improvements and new cells are reported but never fail. When the latest run has repeats
 // (n>1), a BRI drop must ALSO exceed the cell's own run noise (baseline allowance widened by
 // its stddev) so jitter can't trip the gate.
@@ -40,6 +43,7 @@ function toBaseline(latest) {
     cells[`${c.model_key}-${c.scenario}`] = {
       model_key: c.model_key, scenario: c.scenario,
       bri: mn(c.bri), bri_stddev: c.bri?.stddev ?? 0, band: c.band, align_ok: c.align_ok,
+      gate_ok: c.gate_ok ?? c.align_ok,
       metrics: Object.fromEntries(METRICS.map((k) => [k, mn(c.metrics?.[k])])),
     }
   }
@@ -63,6 +67,10 @@ if (values.bless) {
 
 // --- compare ---
 const base = load(BASELINE, 'baseline')
+if (base.stale) {
+  console.log(`⚠️  baseline is marked STALE${base.stale.reason ? ` (${base.stale.reason})` : ''} — comparison skipped; rerun the matrix and bless a fresh baseline (--bless clears the marker)`)
+  process.exit(0)
+}
 const latest = load(LATEST, 'latest results')
 const cur = toBaseline(latest).cells
 const cfg = base.config || { bri_tolerance: 5, metric_tolerance: 8 }
@@ -88,6 +96,7 @@ for (const key of Object.keys(base.cells)) {
     if (db < -cfg.metric_tolerance) reasons.push(`${m} ${b.metrics[m]}->${c.metrics[m]} (${db})`)
   }
   if (b.align_ok && !c.align_ok) reasons.push('gate aligned->DRIFT')
+  else if ((b.gate_ok ?? b.align_ok) && !(c.gate_ok ?? c.align_ok)) reasons.push('gate ok->FAIL (live-test)')
   let status
   if (reasons.length) { status = 'REGRESSION'; regressions.push(`${key}: ${reasons.join('; ')}`) }
   else if (dBri > cfg.bri_tolerance) { status = 'improved'; improvements.push(`${key}: BRI ${b.bri}->${c.bri} (+${dBri.toFixed(1)})`) }

@@ -20,7 +20,7 @@ For every **executor model × scenario** cell:
    explicitly. (One `claude -p` per stage mirrors skill-creator's "one skill per
    invocation" and keeps each stage debuggable.)
 2. **Grades the produced `spec/`** with `grade.mjs`:
-   - **Mechanical** (objective, reproducible): `check-align.mjs` (AL-00…AL-24) and, when the
+   - **Mechanical** (objective, reproducible): `check-align.mjs` (AL-00…AL-37) and, when the
      SQL trio is present, `run-erd-test.mjs` (PGlite live-test) → alignment, coverage %s,
      live-test pass rate, plan acyclicity, reference validity.
    - **Judged** (only what a parser can't see), from the perspective of **Claude Code +
@@ -81,7 +81,10 @@ Runner flags: `--models <all|csv>` · `--scenario <all|id>` · `--repeat <n>` ·
   can be told apart from run-to-run noise. `--repeat 1` is fine for a quick look but is **not
   a regression-grade signal** — the gate widens its tolerance by a cell's σ, which is 0 at n=1.
 - **`baseline.json`** is the committed expected score per cell (+ tolerances). `check-regression`
-  is the enforcement; `--bless` is how you advance it deliberately.
+  is the enforcement; `--bless` is how you advance it deliberately. A top-level `stale` marker
+  (`{since, reason}`) declares the baseline non-comparable (set it when grader semantics change);
+  the gate then prints a loud STALE notice and skips comparison until a fresh matrix is blessed —
+  `--bless` clears the marker automatically.
 - **Provenance**: every `grade.json` records the harness version, git SHA, **skills-hash**, and
   judge-rubric-hash. `check-regression` warns if the judge model/rubric changed since the
   baseline (scores not comparable) and notes when the skills changed (expected while iterating).
@@ -106,12 +109,17 @@ ones are LLM-scored):
 | Metric | Wt | Source | The number |
 |--------|----|--------|------------|
 | Clarity | 0.25 | judged (isolated) | a **dedicated** judge pass (spec only — no mechanical signals, no other metrics) reports the blocking-question COUNT; harness derives the score via a diminishing-returns curve `100·8/(8+count)` (0q→100, 2q→80, 6q→57). Isolation removes the measured cross-metric/anchoring inflation; median-of-N removes residual jitter. |
-| Alignment | 0.20 | mechanical | `100 − 15·errors − 5·warnings` (check-align AL-00…AL-24) |
+| Alignment | 0.20 | mechanical | `100 − 15·errors − 5·warnings` (check-align AL-00…AL-37) |
 | Completeness | 0.20 | hybrid | mean of UC→task and UC→live-test coverage %, minus orphan/untraced-table penalty |
 | Testability | 0.20 | hybrid | mean of EARS %, data-assertion %, live-test pass rate, and judged non-vacuous-AC % |
 | Actionability | 0.15 | hybrid | plan acyclic + refs resolve (mechanical) blended with judged task-sizing |
 
 Bands: **≥85 ship-ready · 70–84 buildable-with-gaps · 50–69 underspecified · <50 not-buildable.**
+A mechanical failure **hard-caps the band**: any alignment error or live-test failure
+(`gate_ok: false`) demotes ship-ready to buildable-with-gaps regardless of BRI — the score stays
+informative, the band stays trustworthy. The live-test is never silently skipped: when
+`usecases.sql` exists, the schema is exported from `model.dbml` and `seed.sql` must be persisted;
+a missing input scores `livetest_pass_rate: 0` and fails the gate.
 With `--no-judge`, clarity is dropped and the remaining weights are renormalized (mechanical-only BRI).
 
 ## Scenarios

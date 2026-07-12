@@ -2,8 +2,8 @@
 // grade.mjs — score a produced `spec/` as the INPUT a downstream builder (Claude Code +
 // superpowers) would build from. Two layers:
 //   1. MECHANICAL (objective, reproducible): runs the repo's own oracles —
-//      check-align.mjs (AL-01..AL-15 cross-artifact consistency) and, when the SQL is
-//      present, run-erd-test.mjs (PGlite live-test) — and derives numbers from them.
+//      check-align.mjs (AL-00…AL-37 cross-artifact consistency) and, when usecases.sql
+//      is present, run-erd-test.mjs (PGlite live-test) — and derives numbers from them.
 //   2. JUDGED (LLM, only what a parser can't see): clarity/ambiguity, non-vacuity of
 //      acceptance criteria, task sizing — via buildability-judge.md run through `claude -p`.
 // It blends both into a Build-Readiness Index (BRI, 0-100) + band. The judge can never
@@ -20,7 +20,7 @@ import { parseArgs } from 'node:util'
 import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, relative } from 'node:path'
-import { WEIGHTS, band, clamp, round, mean, loadModels, provenance, clarityFromQuestions } from './lib.mjs'
+import { WEIGHTS, capBand, clamp, round, mean, loadModels, provenance, clarityFromQuestions } from './lib.mjs'
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
 const NAPKIN = join(SCRIPT_DIR, '..', '..')
@@ -74,16 +74,35 @@ function mechanical() {
   const active = align.stats?.usecases_active || 0
   const covPct = (failing) => (active > 0 ? round(((active - failing) / active) * 100) : null)
 
-  // live-test re-check (only if the standalone SQL trio is present next to the model)
+  // live-test re-check: when usecases.sql exists, the proof must be re-runnable — the
+  // schema is exported from model.dbml (or read from a persisted schema.sql) and the
+  // seed must be persisted (erd-modeler SKILL.md stage 6). A missing input is a scored
+  // gap (rate 0, gate fail), never a silent skip.
   let livetest_pass_rate = null
+  let livetest_ok = true // stays true only when the live-test genuinely doesn't apply
+  const extraFindings = []
   const schema = join(SPEC, 'data', 'schema.sql')
   const seed = join(SPEC, 'data', 'seed.sql')
   const ucsql = join(SPEC, 'data', 'usecases.sql')
-  if (existsSync(schema) && existsSync(seed) && existsSync(ucsql)) {
-    const lt = runJsonTool(ERD_TEST, ['--schema', schema, '--seed', seed, '--usecases', ucsql])
-    const passed = lt.passed ?? lt.summary?.passed
-    const total = lt.total ?? lt.summary?.total
-    if (typeof passed === 'number' && total) livetest_pass_rate = passed / total
+  const model = join(SPEC, 'data', 'model.dbml')
+  if (existsSync(ucsql)) {
+    const schemaArgs = existsSync(model) ? ['--dbml', model] : existsSync(schema) ? ['--schema', schema] : null
+    if (schemaArgs && existsSync(seed)) {
+      const lt = runJsonTool(ERD_TEST, [...schemaArgs, '--seed', seed, '--usecases', ucsql])
+      const passed = lt.stats?.asserted_passed
+      const total = lt.stats?.usecases_asserted
+      // asserted stats only: a merely-executed setup block proves nothing, and a suite
+      // that asserts nothing proves nothing (rate 0, not null).
+      livetest_pass_rate = typeof passed === 'number' && typeof total === 'number' && total > 0
+        ? passed / total : 0
+      livetest_ok = lt.ok === true
+      if (!livetest_ok) extraFindings.push(`live-test: run-erd-test not ok (${lt.fatal || lt._toolError || 'assertion failures — see per-usecase statuses'})`)
+    } else {
+      livetest_pass_rate = 0
+      livetest_ok = false
+      const missing = [!schemaArgs && 'model.dbml/schema.sql', !existsSync(seed) && 'seed.sql'].filter(Boolean).join(' + ')
+      extraFindings.push(`live-test: spec/data/usecases.sql present but ${missing} missing — the assertions cannot be re-verified`)
+    }
   }
 
   const errors = align.stats?.errors ?? errCount('AL')
@@ -106,13 +125,16 @@ function mechanical() {
   const structure = mean([plan_acyclic ? 100 : 0, refs_resolve ? 100 : 0])
 
   return {
-    align_ok: !!align.ok, errors, warnings, active,
+    align_ok: !!align.ok, livetest_ok, errors, warnings, active,
     numbers: {
       uc_task_coverage_pct, uc_livetest_coverage_pct, term_table_errors,
       ears_coverage_pct, da_coverage_pct, livetest_pass_rate, plan_acyclic, refs_resolve,
     },
     scores: { alignment, completeness, testability_mech, structure },
-    findings_summary: findings.filter((f) => f.severity === 'error').map((f) => `${f.check} ${f.artifact}:${f.line} ${f.message}`),
+    findings_summary: [
+      ...findings.filter((f) => f.severity === 'error').map((f) => `${f.check} ${f.artifact}:${f.line} ${f.message}`),
+      ...extraFindings,
+    ],
   }
 }
 
@@ -231,17 +253,21 @@ function combine(mech, judge) {
     usedWeights = Object.fromEntries(Object.entries(w).map(([k, v]) => [k, +(v / sum).toFixed(3)]))
   }
 
+  // gate_ok: the mechanical verdict a band must respect — alignment AND the live-test
+  // (livetest_ok is true when no usecases.sql exists, i.e. the live-test doesn't apply).
+  const gate_ok = mech.align_ok && mech.livetest_ok
   return {
     spec: SPEC,
     judge_model: judge ? JUDGE_MODEL : null,
     mechanical_only: !judge,
     build_readiness_index: bri,
-    band: band(bri),
+    band: capBand(bri, gate_ok),
+    gate_ok,
     weights: usedWeights,
     metrics: { ...(clarity ? { clarity } : {}), ...m },
     top_gaps,
     rationale,
-    mechanical: { align_ok: mech.align_ok, errors: mech.errors, warnings: mech.warnings, errors_detail: mech.findings_summary },
+    mechanical: { align_ok: mech.align_ok, livetest_ok: mech.livetest_ok, errors: mech.errors, warnings: mech.warnings, errors_detail: mech.findings_summary },
   }
 }
 
@@ -260,5 +286,6 @@ result.provenance = provenance({ judgeModel: result.judge_model, now: new Date()
 const json = JSON.stringify(result, null, 2)
 if (values.out) writeFileSync(values.out, json + '\n')
 process.stdout.write(json + '\n')
-// exit non-zero when the spec is mechanically broken, so callers can gate on it
-process.exit(mech.align_ok ? 0 : 1)
+// exit non-zero when the spec is mechanically broken (alignment OR live-test), so
+// callers can gate on it
+process.exit(result.gate_ok ? 0 : 1)

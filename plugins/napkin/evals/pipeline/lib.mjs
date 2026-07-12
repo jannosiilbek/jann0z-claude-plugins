@@ -19,6 +19,13 @@ export const SKILLS_DIR = join(NAPKIN_DIR, 'skills')
 export const WEIGHTS = { clarity: 0.25, alignment: 0.20, completeness: 0.20, testability: 0.20, actionability: 0.15 }
 export const BANDS = [[85, 'ship-ready'], [70, 'buildable-with-gaps'], [50, 'underspecified'], [0, 'not-buildable']]
 export const band = (bri) => BANDS.find(([t]) => bri >= t)[1]
+// Mechanical failure hard-caps the band: a spec with an alignment error or a failing
+// live-test can score high on the judged dimensions, but it is not ship-ready by
+// definition — the gate is the gate.
+export const capBand = (bri, gateOk) => {
+  const b = band(bri)
+  return !gateOk && b === 'ship-ready' ? 'buildable-with-gaps' : b
+}
 export const clamp = (x, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, x))
 export const round = (x) => Math.round(x)
 

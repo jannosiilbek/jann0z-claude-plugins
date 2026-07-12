@@ -11,7 +11,7 @@ import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from '
 import { parseArgs } from 'node:util'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
-import { loadModels, stats, band } from './lib.mjs'
+import { loadModels, stats, capBand } from './lib.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const { values } = parseArgs({ options: { runs: { type: 'string' }, 'out-dir': { type: 'string' } } })
@@ -72,9 +72,12 @@ function aggregateCell(grades) {
   const metrics = {}
   for (const name of METRICS) metrics[name] = stats(grades.map((g) => g.metrics?.[name]?.score).filter((x) => typeof x === 'number'))
   const rep = grades[0] // representative run for qualitative fields
+  const align_ok = grades.every((g) => g.mechanical?.align_ok)
+  // older grade.json files predate gate_ok — fall back to their align verdict
+  const gate_ok = grades.every((g) => g.gate_ok ?? g.mechanical?.align_ok)
   return {
-    bri, band: band(Math.round(bri.median)), metrics,
-    align_ok: grades.every((g) => g.mechanical?.align_ok),
+    bri, band: capBand(Math.round(bri.median), gate_ok), metrics,
+    align_ok, gate_ok,
     errors: Math.max(...grades.map((g) => g.mechanical?.errors ?? 0)),
     n: grades.length,
     top_gaps: rep.top_gaps || [], rationale: rep.rationale || '',
@@ -86,6 +89,18 @@ const cells = {}
 for (const [k, grades] of groups) cells[k] = aggregateCell(grades)
 
 const anyProv = Object.values(cells).find((c) => c.provenance)?.provenance || {}
+// Judge label from ALL grades, not a single representative run — a cell whose first
+// repeat had a failed judge invocation must not report "judge null" over judged scores.
+const judgeModels = new Set()
+let judgedRuns = 0, totalRuns = 0
+for (const grades of groups.values()) for (const g of grades) {
+  totalRuns++
+  if (g.judge_model) { judgeModels.add(g.judge_model); judgedRuns++ }
+}
+const judgeModelValue = judgeModels.size ? [...judgeModels].sort().join(', ') : null
+const judgeLabel = judgeModelValue
+  ? `${judgeModelValue}${judgedRuns < totalRuns ? ` (${judgedRuns}/${totalRuns} runs judged)` : ''}`
+  : 'none (mechanical-only)'
 const ns = Object.values(cells).map((c) => c.n)
 const maxN = Math.max(...ns), minN = Math.min(...ns)
 const repeatsLabel = maxN === 1 ? 'n=1 per cell — no variance yet'
@@ -96,7 +111,7 @@ const fmt = (st) => st.n > 1 ? `${st.median}±${st.stddev}` : `${st.median}`
 
 // --- matrix.md ---
 const L = ['# Pipeline eval — Build-Readiness matrix', '']
-L.push(`_judge: ${anyProv.judge_model || 'n/a'} (held constant) · skills @ ${anyProv.skills_hash || '?'} · git ${anyProv.git_sha || '?'} · ${repeatsLabel}._`)
+L.push(`_judge: ${judgeLabel} · skills @ ${anyProv.skills_hash || '?'} · git ${anyProv.git_sha || '?'} · ${repeatsLabel}._`)
 L.push('_BRI 0–100. Bands: ≥85 ship-ready · 70–84 buildable-with-gaps · 50–69 underspecified · <50 not-buildable._', '')
 L.push(`| Executor \\ scenario | ${scenarios.map((s) => `${s}${scenMeta[s]?.sizing ? ` (${scenMeta[s].sizing})` : ''}`).join(' | ')} |`)
 L.push(`|---|${scenarios.map(() => '---').join('|')}|`)
@@ -114,7 +129,7 @@ L.push('| Cell | BRI | band | clar | algn | cmpl | test | actn | gate |')
 L.push('|------|----:|------|----:|----:|----:|----:|----:|------|')
 for (const mk of execOrder) for (const s of scenarios) {
   const c = cells[`${mk}|${s}`]; if (!c) continue
-  const g = c.align_ok ? '✅' : `❌ ${c.errors}err`
+  const g = !c.align_ok ? `❌ ${c.errors}err` : !c.gate_ok ? '❌ live-test' : '✅'
   L.push(`| ${mk}-${s} | ${fmt(c.bri)} | ${c.band} | ${fmt(c.metrics.clarity)} | ${fmt(c.metrics.alignment)} | ${fmt(c.metrics.completeness)} | ${fmt(c.metrics.testability)} | ${fmt(c.metrics.actionability)} | ${g} |`)
 }
 writeFileSync(join(OUT, 'matrix.md'), L.join('\n') + '\n')
@@ -124,7 +139,8 @@ function shortBand(b) { return { 'ship-ready': 'ship', 'buildable-with-gaps': 'g
 // --- latest.json ---
 const payload = {
   generated: anyProv.generated || null,
-  judge_model: anyProv.judge_model || null,
+  judge_model: judgeModelValue,
+  judged_runs: `${judgedRuns}/${totalRuns}`,
   provenance: { harness_version: anyProv.harness_version, git_sha: anyProv.git_sha, skills_hash: anyProv.skills_hash, judge_rubric_hash: anyProv.judge_rubric_hash },
   repeats_per_cell: maxN,
   scenarios: scenarios.map((s) => ({ id: s, ...scenMeta[s] })),
@@ -134,7 +150,7 @@ for (const mk of execOrder) for (const s of scenarios) {
   const c = cells[`${mk}|${s}`]; if (!c) continue
   payload.cells.push({
     model: modelId[mk] || mk, model_key: mk, scenario: s,
-    bri: c.bri, band: c.band, align_ok: c.align_ok, errors: c.errors,
+    bri: c.bri, band: c.band, align_ok: c.align_ok, gate_ok: c.gate_ok, errors: c.errors,
     metrics: Object.fromEntries(METRICS.map((n) => [n, c.metrics[n]])),
     top_gaps: c.top_gaps,
   })
@@ -142,11 +158,12 @@ for (const mk of execOrder) for (const s of scenarios) {
 writeFileSync(join(OUT, 'latest.json'), JSON.stringify(payload, null, 2) + '\n')
 
 // --- latest.md ---
-const D = ['# Pipeline eval — last result (detail)', '', `_${payload.cells.length} cells · judge ${payload.judge_model} · ${repeatsLabel} · skills @ ${anyProv.skills_hash}_`, '']
+const D = ['# Pipeline eval — last result (detail)', '', `_${payload.cells.length} cells · judge ${judgeLabel} · ${repeatsLabel} · skills @ ${anyProv.skills_hash}_`, '']
 for (const cell of payload.cells) {
   const m = cell.metrics
+  const gate = !cell.align_ok ? 'DRIFT — ' + cell.errors + ' errors' : !cell.gate_ok ? 'LIVE-TEST FAIL' : 'aligned'
   D.push(`## ${modelLabel[cell.model_key] || cell.model_key} × ${cell.scenario}${scenMeta[cell.scenario]?.title ? ` (${scenMeta[cell.scenario].title})` : ''} — BRI ${fmt(cell.bri)} (${cell.band})`)
-  D.push(`- gate: ${cell.align_ok ? 'aligned' : 'DRIFT — ' + cell.errors + ' errors'} · clar ${fmt(m.clarity)} · algn ${fmt(m.alignment)} · cmpl ${fmt(m.completeness)} · test ${fmt(m.testability)} · actn ${fmt(m.actionability)}`)
+  D.push(`- gate: ${gate} · clar ${fmt(m.clarity)} · algn ${fmt(m.alignment)} · cmpl ${fmt(m.completeness)} · test ${fmt(m.testability)} · actn ${fmt(m.actionability)}`)
   for (const gp of (cell.top_gaps || []).slice(0, 3)) D.push(`  - gap: ${gp}`)
   D.push('')
 }

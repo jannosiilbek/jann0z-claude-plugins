@@ -37,11 +37,17 @@ function tmpCopyOfGolden() {
   return join(d, 'spec')
 }
 
-// 1. golden spec is mechanically clean → green, BRI 100, exit 0, no fabricated clarity
+// 1. golden spec is mechanically clean → green, BRI 100, exit 0, no fabricated clarity.
+// The live-test really ran and really counted: livetest_pass_rate must be exactly 1
+// (this is the regression pin for the field-mapping bug where grade.mjs read
+// lt.passed/lt.summary.passed while the oracle emits stats.asserted_passed — the rate
+// was silently null and the SQL proof never influenced any score).
 {
   const r = grade(GOLDEN)
   ok('golden: exit 0', r.code === 0, `code=${r.code}`)
   ok('golden: align_ok true', r.json?.mechanical?.align_ok === true)
+  ok('golden: gate_ok true', r.json?.gate_ok === true)
+  ok('golden: livetest_pass_rate is 1 (SQL proof counted)', r.json?.metrics?.testability?.livetest_pass_rate === 1, `rate=${r.json?.metrics?.testability?.livetest_pass_rate}`)
   ok('golden: BRI 100', r.json?.build_readiness_index === 100, `bri=${r.json?.build_readiness_index}`)
   ok('golden: mechanical-only has no clarity metric', r.json?.metrics?.clarity === undefined)
 }
@@ -99,6 +105,49 @@ ok('clarity curve: gentler than old linear at the tail (6q > 28)', clarityFromQu
   const fake = JSON.stringify({ metrics: { clarity: { note: 'no count' } }, top_gaps: [], rationale: '' })
   const r = grade(GOLDEN, { judge: true, env: { GRADE_FAKE_JUDGE: fake } })
   ok('judge-no-question-count: rejected → mechanical-only', r.json?.mechanical_only === true)
+}
+
+const PERFECT_JUDGE = JSON.stringify({
+  metrics: { clarity: { clarification_questions_needed: 0, note: '' }, testability: { nonvacuous_ac_pct: 100 }, actionability: { score: 100 }, completeness: { note: '' } },
+  top_gaps: [], rationale: 'flawless',
+})
+
+// 7. band hard-cap: a failing live-test caps the band below ship-ready no matter how
+// high the judge scores — a spec whose SQL proof fails is not ship-ready by definition.
+{
+  const spec = tmpCopyOfGolden()
+  const up = join(spec, 'data', 'usecases.sql')
+  writeFileSync(up, readFileSync(up, 'utf8').replace('-- expect: rows=2', '-- expect: rows=99'))
+  const r = grade(spec, { judge: true, env: { GRADE_FAKE_JUDGE: PERFECT_JUDGE } })
+  ok('livetest-fail: gate_ok false', r.json?.gate_ok === false)
+  ok('livetest-fail: exit non-zero', r.code !== 0, `code=${r.code}`)
+  ok('livetest-fail: band capped below ship-ready', r.json?.band !== 'ship-ready', `band=${r.json?.band} bri=${r.json?.build_readiness_index}`)
+  ok('livetest-fail: pass rate below 1', (r.json?.metrics?.testability?.livetest_pass_rate ?? 1) < 1, `rate=${r.json?.metrics?.testability?.livetest_pass_rate}`)
+  rmSync(join(spec, '..'), { recursive: true, force: true })
+}
+
+// 8. band hard-cap on an align error (the haiku-02 shape: high judged scores + one
+// mechanical drift error must not band as ship-ready).
+{
+  const spec = tmpCopyOfGolden()
+  const gp = join(spec, 'glossary.md')
+  writeFileSync(gp, readFileSync(gp, 'utf8').replace(/Maps to: ERD: `?enrollments`?/, 'Maps to: ERD: ghost_table_xyz'))
+  const r = grade(spec, { judge: true, env: { GRADE_FAKE_JUDGE: PERFECT_JUDGE } })
+  ok('align-fail: gate_ok false', r.json?.gate_ok === false)
+  ok('align-fail: band capped below ship-ready', r.json?.band !== 'ship-ready', `band=${r.json?.band} bri=${r.json?.build_readiness_index}`)
+  rmSync(join(spec, '..'), { recursive: true, force: true })
+}
+
+// 9. missing seed.sql is a scored gap, never a silent skip: usecases.sql claims proofs
+// that cannot be re-verified.
+{
+  const spec = tmpCopyOfGolden()
+  rmSync(join(spec, 'data', 'seed.sql'))
+  const r = grade(spec)
+  ok('missing-seed: gate_ok false', r.json?.gate_ok === false)
+  ok('missing-seed: livetest_pass_rate 0', r.json?.metrics?.testability?.livetest_pass_rate === 0, `rate=${r.json?.metrics?.testability?.livetest_pass_rate}`)
+  ok('missing-seed: finding names the gap', (r.json?.mechanical?.errors_detail || []).some((f) => /seed\.sql missing/.test(f)), JSON.stringify(r.json?.mechanical?.errors_detail))
+  rmSync(join(spec, '..'), { recursive: true, force: true })
 }
 
 console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'} — ${pass} passed, ${fail} failed`)
