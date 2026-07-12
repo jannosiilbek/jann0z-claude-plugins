@@ -62,8 +62,8 @@ creates a meaningful query chain, state: "N/A — no chasm-trap path."
 comments) and conflict with the normal parents-before-children ordering.
 **Fix:**
 - A self-referential FK must be **nullable** so the root row can exist (a root has no
-  parent). Recommend `ON DELETE SET NULL` or `RESTRICT`, and an index on the parent
-  column.
+  parent). Recommend `[delete: set null]` or `[delete: restrict]` on its Ref, and an
+  index on the parent column.
 - Forbid direct self-reference with `CHECK (manager_id <> id)`. (Multi-row cycles like
   A→B→A cannot be caught by a CHECK; note they need an application/trigger guard.)
 - A true mutual cycle must be broken by making one side nullable (insert NULL first,
@@ -152,11 +152,11 @@ the nullable FK as an oversight.
 **Severity:** `⚠️ warn`.
 
 ### B7a — SET NULL policy on NOT NULL column
-**Detect:** a FK column declared `not null` in the DBML that also carries an
-`// ON DELETE SET NULL` comment. Postgres rejects this at DDL time:
-"column defined NOT NULL but foreign key has ON DELETE SET NULL."
+**Detect:** a FK column declared `not null` in the DBML whose standalone Ref carries
+`[delete: set null]`. Postgres rejects this at DDL time (the mechanically exported
+schema fails to load): "column defined NOT NULL but foreign key has ON DELETE SET NULL."
 **Fix:** either (a) remove `not null` from the FK column (the relationship is optional),
-or (b) change the ON DELETE policy to `RESTRICT` (the relationship is mandatory and the
+or (b) change the Ref to `[delete: restrict]` (the relationship is mandatory and the
 parent cannot be deleted while children exist).
 **Severity:** `❌ error`.
 
@@ -205,12 +205,12 @@ they are named for the relationship (e.g. `course_enrollments` for `courses ↔ 
 **Severity:** `❌ error` (when `spec/glossary.md` is present).
 
 ### C5 — Cross-aggregate cascade advisory
-**Detect:** an `ON DELETE CASCADE` FK that crosses an aggregate boundary — i.e. the
-child table belongs to a different aggregate root than the parent, as indicated by
+**Detect:** a Ref with `[delete: cascade]` that crosses an aggregate boundary — i.e.
+the child table belongs to a different aggregate root than the parent, as indicated by
 `spec/glossary.md` aggregate-root annotations or domain knowledge.
-**Fix:** replace with `ON DELETE RESTRICT` (hold the reference by identity without
+**Fix:** replace with `[delete: restrict]` (hold the reference by identity without
 cascading). The lifecycle coupling belongs in application/policy logic, not a DB
-cascade. Judgment call — document the decision with a trailing comment.
+cascade. Judgment call — record the decision in a comment beside the Ref.
 **Severity:** `⚠️ warn`.
 
 ---

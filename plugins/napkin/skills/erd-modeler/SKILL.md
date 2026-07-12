@@ -22,8 +22,12 @@ Follow these stages in order.
 Extract business use-cases from the user's context or ask for them, then proceed from
 stage 3.
 
-**If a `spec/glossary.md` exists**, do **structured intake** from all spec files — read
-them in this order and extract:
+**If a `spec/glossary.md` exists**, do **structured intake** from all spec files. First
+check `spec/brief.md`'s Pipeline sizing block (when present): if it declares
+`erd-modeler: no`, report "the brief sized this project without a data-model stage —
+update the brief's Pipeline sizing first if that changed" and stop without writing
+anything. (Standalone invocations with no spec/ workspace are unaffected.) Then read the
+spec files in this order and extract:
 
 - **`spec/glossary.md`** — every term flagged `Maps to: ERD: <Entity>` is a table; use the
   glossary's canonical names verbatim (respect Forbidden synonyms). The **Enumerations**
@@ -125,12 +129,17 @@ model using this output template:
   a natural key may exist only as an extra `[unique, not null]` attribute.
 - Foreign key columns are named `<referenced_singular>_id` and **typed to match the
   referenced PK** (`text` under TypeID, `uuid` under UUID, `bigint` under auto-increment).
-  Express the link inline with `[ref: > target_table.id]`, and record the
-  chosen ON DELETE policy as a trailing comment — `// ON DELETE CASCADE` /
-  `SET NULL` / `RESTRICT` (DBML has no native ON DELETE syntax, so this comment is how
-  the policy survives in the source-of-truth `.dbml`). Choose the policy using the
-  decision matrix in `references/live-testing.md §1`: owned children → CASCADE,
-  optional/nullable FK → SET NULL, mandatory blocking reference → RESTRICT.
+  The FK column itself carries **no inline `[ref: ...]`**; every relationship is one
+  standalone short-form Ref after all Tables, carrying its delete policy as a **native
+  DBML setting**: `Ref: orders.customer_id > customers.id [delete: restrict]`
+  (values: `cascade | restrict | set null | set default | no action`; add `update:` only
+  when it differs from the default). The delete setting is **mandatory on every Ref** —
+  it is what the mechanical DBML→DDL export turns into `ON DELETE …`, so an unset policy
+  silently becomes NO ACTION. Short form only (`Ref: a.b > c.d [...]`); inline column
+  refs cannot carry settings and the diagram renderer has no long-form `Ref { }` support.
+  Choose the policy using the decision matrix in `references/live-testing.md §1`:
+  owned children → `cascade`, optional/nullable FK → `set null`, mandatory blocking
+  reference → `restrict`.
 - A many-to-many relationship is **never** written directly — always resolve it to a
   bridge/junction table.
 - Add an `indexes` block for FK columns and natural lookup columns.
@@ -217,10 +226,14 @@ Only after this table is complete may you proceed to stage 5.
 ### 5. Live-test — prove it works against real Postgres
 
 Read `references/live-testing.md` and run the closed-loop test. This step always runs.
-The three SQL files below are **working artifacts** — write them to a scratch dir for the
-test run (e.g. `/tmp/erd-test-<n>/` or a `.erd-test/` subdir). In summary:
+The DDL is **not hand-written**: the harness mechanically exports it from the model via
+@dbml/core, so PGlite tests exactly what the saved DBML declares — a DBML syntax error
+surfaces as a `dbml`-phase error in the JSON. The two SQL files below are **working
+artifacts** — write them to a scratch dir for the test run (e.g. `/tmp/erd-test-<n>/`
+or a `.erd-test/` subdir). In summary:
 
-1. **Generate `schema.sql`** — convert the validated DBML to Postgres DDL.
+1. **Save the validated DBML** to a file (the scratch `model.dbml`, or the persisted
+   `spec/data/model.dbml` when working in a spec pipeline).
 2. **Generate `seed.sql`** — realistic simulation data covering every relationship and
    edge case. Supply an **explicit, stable `id` for every row** in the strategy's literal
    form (prefixed string for TypeID, uuid literal for UUID, small integer for
@@ -228,23 +241,29 @@ test run (e.g. `/tmp/erd-test-<n>/` or a `.erd-test/` subdir). In summary:
 3. **Generate `usecases.sql`** — one labeled, asserting query per business use-case,
    using the **closed assertion grammar** (`error ~ <reason>`, `rowcount=`, `rows=`,
    `value=`, `col:<name>=`). Meet the **coverage floor**: ≥1 write and ≥1 negative test, and
-   prove each FK's ON DELETE behavior. (Exception: a genuinely read-only/reporting domain
-   may omit the write — the harness only warns, not fails, for a missing write test.)
+   prove each Ref's `[delete: ...]` behavior. (Exception: a genuinely read-only/reporting
+   domain may omit the write — the harness only warns, not fails, for a missing write test.)
    - **Label every block exactly `-- usecase: UC-NNN/DA-N <description>`** when a
      `spec/usecases.md` exists: `UC-NNN` is the three-digit use case number and `DA-N`
      is the data-assertion number (e.g. `-- usecase: UC-001/DA-1 Enroll a student`).
-     The canonical label format is defined in spec-format.md §5; AL-14 enforces it.
-4. **Run** the three files through the PGlite harness: `scripts/run-erd-test.mjs`.
+     The canonical label format is defined in spec-format.md §5; AL-14 enforces it
+     per data assertion.
+4. **Run** the PGlite harness:
+   `node scripts/run-erd-test.mjs --dbml <model.dbml> --seed <seed.sql> --usecases <usecases.sql>`.
 5. **Evaluate** the JSON result against the optimality checklist (every use-case `pass`,
    no `malformed`/`broken-test`, `usecases_total` matches your use-case count).
-   **Mandatory:** extract and log `result.usecases_total`, `result.warnings`, and all
-   `result.usecases[*].status` values from the JSON. If `usecases_total` ≠ your use-case
-   count **or** `result.warnings` is non-empty, treat this as a failure — a silently
-   dropped block means a use case was never tested.
-6. **If any use-case fails or any error is reported** — a `malformed`/`broken-test`
-   status means fix the *assertion*; for all other statuses, diagnose using the
-   categories in `references/live-testing.md` §5 (schema/seed error vs. model error vs.
-   ON DELETE failure). Adjust and repeat from stage 3 **including stage 4** — re-run the
+   **Mandatory:** extract and log `result.stats.usecases_total`,
+   `result.stats.usecases_asserted`, `result.stats.asserted_passed`, `result.warnings`,
+   and all `result.usecases[*].status` values from the JSON. If `usecases_total` ≠ your
+   use-case count **or** `result.warnings` is non-empty, treat this as a failure — a
+   silently dropped block means a use case was never tested. `asserted_passed` /
+   `usecases_asserted` is the pass rate that proves something; `executed_only` blocks
+   are setup, not proof.
+6. **If any use-case fails or any error is reported** — a `dbml` export error means fix
+   the model file's syntax; a `malformed`/`broken-test` status means fix the *assertion*;
+   for all other statuses, diagnose using the categories in
+   `references/live-testing.md` §5 (schema/seed error vs. model error vs. delete-policy
+   failure). Adjust the DBML and repeat from stage 3 **including stage 4** — re-run the
    professor gate for any table you modified. Bounded by a max of 5 iterations.
 
    **Upstream-defect exception:** if a failure traces to an upstream artifact rather
@@ -288,14 +307,17 @@ Resolve the location deterministically, in order:
 
 Filename is `model.dbml` (use `<domain>.dbml` only when one project holds several models).
 
-The live-test SQL files (`schema.sql`, `seed.sql`, `usecases.sql`) are **optional** to
-keep — persist them next to the `.dbml` only when the user wants runnable SQL/seed
-output; otherwise they can stay in the scratch dir. Exception: when `spec/usecases.md`
-exists, **always persist the final `usecases.sql` to `spec/data/usecases.sql`** — it is
-the traceability record proving every use case's data assertions were live-tested (the
-ddd-align gate audits for it). The `.dbml` is the source of truth;
-everything else is reproducible from it (each FK's ON DELETE policy is carried as a
-trailing `//` comment, since DBML has no native syntax for it — see stage 2).
+The live-test SQL files are **optional** to keep — persist them next to the `.dbml` only
+when the user wants runnable SQL/seed output; otherwise they can stay in the scratch dir.
+Exception: when `spec/usecases.md` exists, **always persist the final `usecases.sql` to
+`spec/data/usecases.sql` AND the final `seed.sql` to `spec/data/seed.sql`** — together
+they are the traceability record proving every use case's data assertions were
+live-tested, and the seed is the one input the pipeline eval grader cannot re-derive
+when it re-runs the proof (the ddd-align gate and the grader audit for them). The
+`.dbml` is the source of truth; `schema.sql` is always reproducible from it — the
+harness exports it mechanically, and `--emit-schema <path>` writes it out on demand.
+Each Ref's delete policy is native DBML (`[delete: ...]` — see stage 2), so nothing is
+lost in the round trip.
 
 **Decisions log:** when a `spec/` directory exists, write every row from the Assumptions
 table (stage 7) to `spec/decisions.md` as an ADR log following spec-format.md §10:
@@ -409,7 +431,8 @@ Only after completing all 5 items above, emit the report:
 | Reject orphan enrollment       | INSERT `error ~ foreign key` | ✅ pass | rejected (23503)        |
 | Revenue per product            | SELECT `value=70.00`     | ✅ pass | no fan-trap inflation       |
 
-Coverage: ✅ write + negative test present · usecases_total matches use-case count
+Coverage: ✅ write + negative test present · usecases_total matches use-case count ·
+asserted_passed/usecases_asserted = N/N (setup-only blocks excluded)
 Iterations to convergence: N
 
 ## Corrected DBML

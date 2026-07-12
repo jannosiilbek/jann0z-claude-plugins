@@ -20,10 +20,11 @@ decoration on top of these six concepts.
    `0..1` (optional, at most one), `1` (exactly one), `0..*` (optional, many),
    `1..*` (mandatory, many).
 
-**Type notes:** write `timestamp` for timestamps in the DBML (the DDL conversion emits
-`timestamptz`); use `numeric(p,s)` (e.g. `numeric(12,2)`) for money/amounts — **never**
-`float`/`double`, which corrupt the aggregates the live-test checks. The PK/FK type
-itself depends on the chosen identity strategy (see below).
+**Type notes:** write `timestamptz` for timestamps in the DBML — the DDL is exported
+mechanically, so the type you write is the type you get; use `numeric(p,s)` (e.g.
+`numeric(12,2)`) for money/amounts — **never** `float`/`double`, which corrupt the
+aggregates the live-test checks. The PK/FK type itself depends on the chosen identity
+strategy (see below).
 
 A relationship is fully described by its cardinality **and** the participation of each
 end. "An order must belong to exactly one customer; a customer may have zero or more
@@ -68,9 +69,13 @@ of these — but the choice is the user's.
 **TypeID specifics** (only when the TypeID strategy is chosen): the **application**
 generates the id (Go/TS/Python TypeID libraries, or the `typeid-sql` Postgres functions),
 so there is no DB sequence and every INSERT supplies an explicit prefixed string. **Prefix
-rules:** lowercase `[a-z_]`, starts and ends with a letter, ≤ 63 chars — use the entity's
-singular glossary name (`user`, `order_item`). Record each table's prefix in a `Note`.
-(The prefix `Note` is a TypeID-only requirement; the other strategies skip it.)
+rules** (ddd-domain's algorithm is normative — the glossary's `TypeID prefix:` value is
+the single source): up to **4 lowercase ASCII letters**, unique within the project. When
+a `spec/glossary.md` exists, copy each term's recorded prefix verbatim; standalone,
+derive it the same way ddd-domain does (single word → first 4 letters, `Task → task`,
+`Project → proj`; multi-word → first 2 letters of each word truncated to 4,
+`OrderItem → orit`). Record each table's prefix in a `Note`. (The prefix `Note` is a
+TypeID-only requirement; the other strategies skip it.)
 
 ## DBML cheat-sheet
 
@@ -87,16 +92,22 @@ Table orders {
   id          text      [pk]                    // TypeID primary key (text, app-generated)
   order_no    varchar   [unique, not null]      // natural unique attribute
   status      order_status [not null, default: 'pending']
-  customer_id text      [not null, ref: > customers.id]  // FK, many-to-one
-  created_at  timestamp [not null, default: `now()`]
+  customer_id text      [not null]              // FK column — the Ref lives below, after all Tables
+  created_at  timestamptz [not null, default: `now()`]
 
   indexes {
     customer_id
   }
 
-  Note: 'A single customer order. TypeID prefix: order'
+  Note: 'A single customer order. TypeID prefix: orde'
 }
+
+Ref: orders.customer_id > customers.id [delete: restrict]
 ```
+
+**Apostrophes in `Note:`/`[note:]` strings:** escape with a backslash (`'a customer\'s
+order'`) or use a typographic `’` — never SQL-style doubling (`''`), which the DBML
+grammar rejects (the harness folds `''` to `’` defensively, but don't rely on it).
 
 The example above uses the **default (TypeID)** strategy. Under UUID the id line is
 `id uuid [pk, default: gen_random_uuid()]` and FKs are `uuid`; under auto-increment
@@ -109,43 +120,43 @@ it is `id bigint [pk, increment]` and FKs are `bigint` (and the prefix `Note` is
 | `[pk]` | primary key |
 | `[unique]` | unique constraint |
 | `not null` | mandatory (NOT NULL) |
-| `[ref: > t.c]` | foreign key reference (this column is the many side) |
 | `[default: ...]` | default value (`` `now()` `` for expressions) |
 | `[note: '...']` | inline documentation |
 
-### Relationship operators
+(Inline `[ref: > t.c]` exists in DBML but is **not used in this convention** — inline
+refs cannot carry delete settings, so every relationship is a standalone `Ref` instead;
+see below. Never declare the same relationship both ways: @dbml/core rejects duplicate
+refs.)
 
-In `[ref: ...]` or a standalone `Ref`, the operator encodes cardinality:
+### Relationships: standalone `Ref` with a delete policy
+
+Every relationship is one standalone **short-form** `Ref` line, placed after all the
+Tables it references, carrying its delete policy as a native setting:
+
+```dbml
+Ref: order_items.order_id > orders.id [delete: cascade]        // owned child
+Ref: employees.manager_id > employees.id [delete: set null]    // optional reference
+Ref: orders.customer_id > customers.id [delete: restrict]      // blocking reference
+```
+
+The `delete:` setting is **mandatory on every Ref** (`cascade | restrict | set null |
+set default | no action`; add `update:` only when it differs from the default). The
+mechanical DBML→DDL export turns it into the matching `REFERENCES … ON DELETE …` clause
+— an unset policy silently exports as NO ACTION, and the live-test proves each policy's
+behavior. Short form only: the diagram renderer has no long-form `Ref { }` support.
+
+The operator encodes cardinality:
 
 | Operator | Meaning |
 |---|---|
-| `>` | many-to-one (put on the FK / many side) |
+| `>` | many-to-one (FK / many side on the left) |
 | `<` | one-to-many |
 | `-` | one-to-one — **must** add `[unique]` to the FK column (a plain FK only enforces 1:N) |
 | `<>` | many-to-many — **do not use**; resolve to a bridge table instead |
 
-**1:1:** put the FK on the optional/dependent side and mark it `[unique, ref: > parent.id]`.
-A mandatory-on-both-sides 1:1 is better modeled as a single table.
-
-Standalone refs (equivalent to inline `[ref]`):
-
-```dbml
-Ref: orders.customer_id > customers.id
-```
-
-### ON DELETE policy (recorded as a comment)
-
-DBML has **no** native ON DELETE syntax, but the model still needs to carry the policy
-(the live-test proves it). Record it as a trailing `//` comment on the FK column:
-
-```dbml
-order_id    text [not null, ref: > orders.id]     // ON DELETE CASCADE  (owned child)
-manager_id  text [ref: > employees.id]            // ON DELETE SET NULL (optional)
-customer_id text [not null, ref: > customers.id]  // ON DELETE RESTRICT (blocking ref)
-```
-
-The DDL conversion (live-testing.md §1) turns each comment into the matching
-`REFERENCES … ON DELETE …` clause.
+**1:1:** put the FK on the optional/dependent side, mark the column `[unique]`, and
+declare `Ref: child.parent_id - parent.id [delete: ...]`. A mandatory-on-both-sides 1:1
+is better modeled as a single table.
 
 ### Enums
 
@@ -169,24 +180,27 @@ FK `not null`:
 
 ```dbml
 Table students {
-  id    text    [pk]   // TypeID prefix: student
+  id    text    [pk]   // TypeID prefix: stud
   email varchar [unique, not null]
 }
 
 Table courses {
-  id    text    [pk]   // TypeID prefix: course
+  id    text    [pk]   // TypeID prefix: cour
   title varchar [not null]
 }
 
 Table enrollments {
-  student_id  text      [not null, ref: > students.id]
-  course_id   text      [not null, ref: > courses.id]
-  enrolled_at timestamp [not null, default: `now()`]
+  student_id  text        [not null]
+  course_id   text        [not null]
+  enrolled_at timestamptz [not null, default: `now()`]
 
   indexes {
     (student_id, course_id) [pk]   // composite PK (both FKs are text TypeIDs)
   }
 }
+
+Ref: enrollments.student_id > students.id [delete: cascade]
+Ref: enrollments.course_id > courses.id [delete: restrict]
 ```
 
 The bridge table is named for the relationship (`enrollments`), not `students_courses`,

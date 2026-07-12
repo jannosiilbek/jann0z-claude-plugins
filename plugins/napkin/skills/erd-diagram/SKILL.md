@@ -52,9 +52,10 @@ node "${CLAUDE_PLUGIN_ROOT}/skills/erd-diagram/scripts/render-erd.mjs" \
   --open
 ```
 
-- First run installs the renderer once via npm (needs `npm` + network that one time); afterwards it
-  works offline. Install chatter goes to stderr — the **only** thing on stdout is the saved HTML
-  path, so capture that.
+- First run installs the renderer once via npm (needs `npm` + network that one time) — into the
+  plugin's persistent data directory (`$CLAUDE_PLUGIN_DATA/erd-diagram`) when installed as a plugin,
+  or next to the script in a dev checkout; afterwards it works offline. Install chatter goes to
+  stderr — the **only** thing on stdout is the saved HTML path, so capture that.
 - The script writes `<basename>.html` next to the `.dbml` by default (e.g. `model.dbml` →
   `model.html`). Pass `--out <path>` only if the user wants it elsewhere.
 - The output is fully self-contained: the SVG, styles, and pan/zoom script are all inlined, so the

@@ -11,13 +11,21 @@
 //
 // Exits non-zero with a clear stderr message on any failure — it never writes a broken page.
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join, basename, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { execFileSync } from 'node:child_process'
+import { createRequire } from 'node:module'
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
 const RENDERER = '@softwaretechnik/dbml-renderer'
+
+// At plugin runtime (CLAUDE_PLUGIN_DATA set) dependencies install under the plugin's
+// persistent data directory — the plugin install tree itself is ephemeral and replaced
+// on every update. In a dev checkout they install next to this file.
+const DEPS_DIR = process.env.CLAUDE_PLUGIN_DATA
+  ? join(process.env.CLAUDE_PLUGIN_DATA, 'erd-diagram')
+  : SCRIPT_DIR
 
 function fail(msg) {
   process.stderr.write(`[erd-diagram] ${msg}\n`)
@@ -38,13 +46,27 @@ function parseArgs(argv) {
   return args
 }
 
-// Lazy-install the renderer on first run. npm chatter is routed to stderr so stdout (the saved
-// path) stays clean — the same convention the erd-modeler harness uses.
+// Lazy-install dependencies on first run (or when the manifest changed across a plugin
+// update). npm chatter is routed to stderr so stdout (the saved path) stays clean — the
+// same convention the erd-modeler harness uses.
 function ensureDeps() {
-  if (existsSync(join(SCRIPT_DIR, 'node_modules', '@softwaretechnik', 'dbml-renderer'))) return
-  process.stderr.write(`[erd-diagram] ${RENDERER} not found — installing once via npm (first run only)...\n`)
+  const manifest = readFileSync(join(SCRIPT_DIR, 'package.json'), 'utf8')
+  const deps = Object.keys(JSON.parse(manifest).dependencies ?? {})
+  const missing = deps.some((d) => !existsSync(join(DEPS_DIR, 'node_modules', ...d.split('/'))))
+  let stale = false
+  if (DEPS_DIR !== SCRIPT_DIR) {
+    // A manifest copy in the data dir detects dependency changes across plugin updates.
+    const copyPath = join(DEPS_DIR, 'package.json')
+    stale = !existsSync(copyPath) || readFileSync(copyPath, 'utf8') !== manifest
+    if (stale) {
+      mkdirSync(DEPS_DIR, { recursive: true })
+      writeFileSync(copyPath, manifest)
+    }
+  }
+  if (!missing && !stale) return
+  process.stderr.write(`[erd-diagram] installing dependencies into ${DEPS_DIR} (first run or dependency update)...\n`)
   try {
-    execFileSync('npm', ['install'], { cwd: SCRIPT_DIR, stdio: ['ignore', 2, 2] })
+    execFileSync('npm', ['install'], { cwd: DEPS_DIR, stdio: ['ignore', 2, 2] })
   } catch (e) {
     fail(`npm install failed: ${e.message ?? e}`)
   }
@@ -255,7 +277,8 @@ async function main() {
   ensureDeps()
   let run
   try {
-    ;({ run } = await import(`${RENDERER}/lib/api.js`))
+    const req = createRequire(join(DEPS_DIR, 'package.json'))
+    ;({ run } = await import(pathToFileURL(req.resolve(`${RENDERER}/lib/api.js`)).href))
   } catch (e) {
     fail(`could not load ${RENDERER}: ${e.message ?? e}`)
   }

@@ -10,6 +10,7 @@
   "author": "janno",
   "license": "MIT",
   "dependencies": {
+    "@dbml/core": "^3",
     "@electric-sql/pglite": "^0.4.6"
   }
 }

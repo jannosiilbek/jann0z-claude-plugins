@@ -8,9 +8,16 @@
 // only pass when it has actually proven something.
 //
 // Usage:
-//   node run-erd-test.mjs --schema schema.sql --seed seed.sql --usecases usecases.sql
+//   node run-erd-test.mjs --dbml model.dbml --seed seed.sql --usecases usecases.sql [--emit-schema schema.sql]
+//   node run-erd-test.mjs --schema schema.sql --seed seed.sql --usecases usecases.sql   (legacy)
 //
-// Requires @electric-sql/pglite (already installed next to this file).
+// With --dbml (primary) the Postgres DDL is mechanically exported from the model via
+// @dbml/core, so PGlite tests exactly what the saved model declares — no hand-translated
+// schema can drift from it. --emit-schema additionally writes the exported DDL to a file.
+// Exactly one of --dbml / --schema must be given.
+//
+// Requires @electric-sql/pglite and @dbml/core (auto-installed on first run — into
+// $CLAUDE_PLUGIN_DATA/erd-modeler at plugin runtime, or next to this file in a dev checkout).
 //
 // usecases.sql contract — one block per use-case:
 //   -- usecase: <label>            (optionally end the label with [persist] to keep writes)
@@ -22,61 +29,92 @@
 //
 // Closed expect grammar (never invent operators):
 //   error                  statement is rejected by a GENUINE runtime/constraint error
-//                          (a "does not exist"/syntax error is a BROKEN TEST → fails)
+//                          (a "does not exist"/syntax-class error is a BROKEN TEST → fails,
+//                          judged SQLSTATE-first and regardless of any ~ qualifier)
 //   error ~ <reason>       rejected for a SPECIFIC reason. <reason> matches the error
 //                          message (case-insensitive substring) or a constraint class:
 //                          foreign key|23503, not null|23502, unique|23505, check|23514
-//   rowcount=N             writes only: affectedRows === N
-//   rows=N / rows>=N       reads only: returned row count
+//   rowcount=N             writes only: affectedRows === N — on a read final statement it
+//                          fails as `expect-mismatch`
+//   rows=N / rows>=N       reads only: returned row count — on a write final statement
+//                          without RETURNING it fails as `expect-mismatch`; `rows>=0` is
+//                          vacuous and fails as `malformed`
 //   value=<v>              result is exactly one row, one column, equal to <v>
 //   col:<name>=<v>         result is exactly one row; column <name> equals <v>
-//   (no expect)            passes iff the body executes without error
+//   (no expect)            setup blocks only — passes iff the body executes without error;
+//                          a block labeled `UC-xxx…` claims a spec proof and MUST carry an
+//                          expect (fails as `missing-expect`)
 // Trailing inline comments ( -- ... / # ... ) on assertions are tolerated.
 // <v> compares numerically when both sides are numbers (so 70.00 == 70), the literal
 // `null` matches a SQL NULL, otherwise it is a trimmed string compare.
 
-import { readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { parseArgs } from 'node:util'
 import { execFileSync } from 'node:child_process'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, join } from 'node:path'
+import { createRequire } from 'node:module'
 
 const { values } = parseArgs({
   options: {
     schema: { type: 'string' },
+    dbml: { type: 'string' },
+    'emit-schema': { type: 'string' },
     seed: { type: 'string' },
     usecases: { type: 'string' },
   },
 })
 
-if (!values.schema || !values.seed || !values.usecases) {
-  console.error('Usage: node run-erd-test.mjs --schema s.sql --seed d.sql --usecases u.sql')
+const schemaSources = [values.dbml, values.schema].filter(Boolean).length
+if (schemaSources !== 1 || !values.seed || !values.usecases) {
+  console.error('Usage: node run-erd-test.mjs (--dbml model.dbml | --schema s.sql) --seed d.sql --usecases u.sql [--emit-schema out.sql]')
   process.exit(2)
 }
 
-// Load PGlite, installing it on first use if missing. The dependency (and its version
-// range) lives in scripts/package.json, so a fresh install picks up library
-// improvements and matches the local Node/OS rather than shipping a frozen binary.
+// Dependencies (and their version ranges) live in scripts/package.json and install on
+// first use. At plugin runtime (CLAUDE_PLUGIN_DATA set) they install under the plugin's
+// persistent data directory — the plugin install tree itself is ephemeral and replaced
+// on every update. In a dev checkout they install next to this file.
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
+const DEPS_DIR = process.env.CLAUDE_PLUGIN_DATA
+  ? join(process.env.CLAUDE_PLUGIN_DATA, 'erd-modeler')
+  : SCRIPT_DIR
 
-async function loadPGlite() {
-  const installed = existsSync(join(SCRIPT_DIR, 'node_modules', '@electric-sql', 'pglite'))
-  if (!installed) {
-    process.stderr.write('[erd-test] @electric-sql/pglite not found — installing once via npm (this happens only on first run)...\n')
-    try {
-      // Route npm stdout to OUR stderr (fd 2) so the JSON summary on stdout stays clean.
-      execFileSync('npm', ['install'], { cwd: SCRIPT_DIR, stdio: ['ignore', 2, 2] })
-    } catch (installErr) {
-      console.error(JSON.stringify({
-        ok: false,
-        fatal: 'could not auto-install @electric-sql/pglite — run `npm install` in the scripts dir manually (is npm on PATH? is there network access?)',
-        detail: String(installErr.message ?? installErr),
-      }, null, 2))
-      process.exit(3)
+function ensureDeps() {
+  const manifest = readFileSync(join(SCRIPT_DIR, 'package.json'), 'utf8')
+  const deps = Object.keys(JSON.parse(manifest).dependencies ?? {})
+  const missing = deps.some((d) => !existsSync(join(DEPS_DIR, 'node_modules', ...d.split('/'))))
+  let stale = false
+  if (DEPS_DIR !== SCRIPT_DIR) {
+    // A manifest copy in the data dir detects dependency changes across plugin updates.
+    const copyPath = join(DEPS_DIR, 'package.json')
+    stale = !existsSync(copyPath) || readFileSync(copyPath, 'utf8') !== manifest
+    if (stale) {
+      mkdirSync(DEPS_DIR, { recursive: true })
+      writeFileSync(copyPath, manifest)
     }
   }
+  if (!missing && !stale) return
+  process.stderr.write(`[erd-test] installing dependencies into ${DEPS_DIR} (first run or dependency update)...\n`)
   try {
-    return (await import('@electric-sql/pglite')).PGlite
+    // Route npm output to OUR stderr (fd 2) so the JSON summary on stdout stays clean.
+    execFileSync('npm', ['install'], { cwd: DEPS_DIR, stdio: ['ignore', 2, 2] })
+  } catch (installErr) {
+    console.error(JSON.stringify({
+      ok: false,
+      fatal: `could not auto-install dependencies — run \`npm install\` in ${DEPS_DIR} manually (is npm on PATH? is there network access?)`,
+      detail: String(installErr.message ?? installErr),
+    }, null, 2))
+    process.exit(3)
+  }
+}
+
+async function loadPGlite() {
+  ensureDeps()
+  try {
+    const req = createRequire(join(DEPS_DIR, 'package.json'))
+    const mod = await import(pathToFileURL(req.resolve('@electric-sql/pglite')).href)
+    return mod.PGlite ?? mod.default?.PGlite
   } catch (e) {
     console.error(JSON.stringify({
       ok: false,
@@ -149,7 +187,7 @@ function parseUsecases(sqlText) {
   const cases = []
   const warnings = []
   const seenLabels = new Set()
-  let label = null, persist = false, expect = null, body = [], startLine = 0, expectLine = 0
+  let label = null, persist = false, expect = null, body = [], startLine = 0
   const flush = () => {
     if (label === null) return
     const s = body.join('\n').trim()
@@ -176,7 +214,7 @@ function parseUsecases(sqlText) {
     if (mExp) {
       if (label === null) { warnings.push({ line: ln, message: `expect with no preceding usecase — discarded` }); return }
       if (expect !== null) warnings.push({ line: ln, message: `use-case "${label}" has multiple expect lines — using the last` })
-      expect = mExp[1].trim(); expectLine = ln
+      expect = mExp[1].trim()
       return
     }
     if (label !== null) body.push(line)
@@ -187,6 +225,11 @@ function parseUsecases(sqlText) {
 
 const commandOf = (stmt) => (stmt.trim().match(/^[a-zA-Z]+/) || ['?'])[0].toUpperCase()
 
+// Statement kinds for assertion/command cross-checking. Commands outside both sets
+// (e.g. WITH, which can wrap either kind) are exempt from the check.
+const WRITE_COMMANDS = new Set(['INSERT', 'UPDATE', 'DELETE', 'MERGE'])
+const READ_COMMANDS = new Set(['SELECT', 'VALUES', 'TABLE', 'SHOW'])
+
 function compareVal(actual, expected) {
   if (/^null$/i.test(expected)) return actual === null
   if (actual === null || actual === undefined) return false
@@ -195,12 +238,16 @@ function compareVal(actual, expected) {
   return String(actual).trim() === String(expected).trim()
 }
 
-// Returns { pass, status, detail }. status ∈ executed|pass|fail|malformed|broken-test|unexpected-error
-function checkExpect(expect, res, errored, errMsg, code) {
+// Returns { pass, status, detail }.
+// status ∈ executed|pass|fail|malformed|broken-test|unexpected-error|missing-expect|expect-mismatch
+function checkExpect(expect, res, errored, errMsg, code, ctx = {}) {
   if (!expect) {
-    return errored
-      ? { pass: false, status: 'unexpected-error', detail: errMsg }
-      : { pass: true, status: 'executed', detail: 'executed without error' }
+    if (errored) return { pass: false, status: 'unexpected-error', detail: errMsg }
+    // A UC-labeled block claims to prove a spec assertion — executing is not proving.
+    if (/^UC-\d{3}\b/i.test(ctx.label || '')) {
+      return { pass: false, status: 'missing-expect', detail: 'block is labeled as a UC-xxx proof but has no -- expect: — a claimed proof must assert something' }
+    }
+    return { pass: true, status: 'executed', detail: 'executed without error' }
   }
   const raw = expect.replace(/\s+(--|#)\s.*$/, '').trim()
   const lower = raw.toLowerCase()
@@ -208,7 +255,12 @@ function checkExpect(expect, res, errored, errMsg, code) {
   // error / error ~ reason
   if (lower === 'error' || lower.startsWith('error ~') || lower.startsWith('error~')) {
     if (!errored) return { pass: false, status: 'fail', detail: 'expected an error but the statement succeeded' }
-    const broken = (code && BROKEN_TEST_CODES.has(code)) || BROKEN_TEST_RE.test(errMsg || '')
+    // SQLSTATE-first: when the engine reports a code, trust it over message heuristics
+    // (an application RAISE saying "... does not exist" is P0001, not a broken test).
+    // A does-not-exist/syntax-class error is a broken test regardless of any ~ qualifier —
+    // a reason match must never launder a typo'd table/column into a pass.
+    const broken = code ? BROKEN_TEST_CODES.has(code) : BROKEN_TEST_RE.test(errMsg || '')
+    if (broken) return { pass: false, status: 'broken-test', detail: `error looks like a broken test, not a constraint: ${errMsg} (code ${code})` }
     const m = raw.match(/^error\s*~\s*(.+)$/i)
     if (m) {
       const reason = m[1].trim().toLowerCase()
@@ -219,9 +271,7 @@ function checkExpect(expect, res, errored, errMsg, code) {
         : { pass: false, status: 'fail', detail: `expected error reason "${reason}" but got: ${errMsg} (code ${code})` }
     }
     // bare `error`
-    return broken
-      ? { pass: false, status: 'broken-test', detail: `error looks like a broken test, not a constraint: ${errMsg} (code ${code})` }
-      : { pass: true, status: 'pass', detail: `rejected: ${errMsg} (code ${code})` }
+    return { pass: true, status: 'pass', detail: `rejected: ${errMsg} (code ${code})` }
   }
 
   if (errored) return { pass: false, status: 'unexpected-error', detail: errMsg + (code ? ` (code ${code})` : '') }
@@ -230,17 +280,27 @@ function checkExpect(expect, res, errored, errMsg, code) {
   const affected = res?.affectedRows ?? 0
   let m
   if ((m = lower.match(/^rowcount\s*=\s*(\d+)$/))) {
+    if (READ_COMMANDS.has(ctx.finalCommand)) {
+      return { pass: false, status: 'expect-mismatch', detail: `rowcount= asserts affectedRows and is only valid on a write; the final statement is a ${ctx.finalCommand} — use rows=/value=/col: for reads` }
+    }
     const want = +m[1]
     return affected === want
       ? { pass: true, status: 'pass', detail: `affectedRows ${affected} == ${want}` }
       : { pass: false, status: 'fail', detail: `expected affectedRows=${want}, got ${affected}` }
   }
   if ((m = lower.match(/^rows\s*>=\s*(\d+)$/))) {
+    if (+m[1] === 0) return { pass: false, status: 'malformed', detail: 'rows>=0 is vacuously true — assert a real bound (fix the assertion, not the model)' }
+    if (WRITE_COMMANDS.has(ctx.finalCommand) && !ctx.hasReturning) {
+      return { pass: false, status: 'expect-mismatch', detail: `rows>= counts returned rows; a ${ctx.finalCommand} without RETURNING returns none — use rowcount= for writes` }
+    }
     return rows.length >= +m[1]
       ? { pass: true, status: 'pass', detail: `rows ${rows.length} >= ${m[1]}` }
       : { pass: false, status: 'fail', detail: `expected rows>=${m[1]}, got ${rows.length}` }
   }
   if ((m = lower.match(/^rows\s*=\s*(\d+)$/))) {
+    if (WRITE_COMMANDS.has(ctx.finalCommand) && !ctx.hasReturning) {
+      return { pass: false, status: 'expect-mismatch', detail: `rows= counts returned rows; a ${ctx.finalCommand} without RETURNING returns none — use rowcount= for writes` }
+    }
     return rows.length === +m[1]
       ? { pass: true, status: 'pass', detail: `rows ${rows.length} == ${m[1]}` }
       : { pass: false, status: 'fail', detail: `expected rows=${m[1]}, got ${rows.length}` }
@@ -273,6 +333,44 @@ const summary = {
   warnings: [],
   stats: {},
 }
+
+// Resolve the DDL under test. With --dbml it is mechanically exported from the model
+// via @dbml/core, so PGlite tests exactly what the saved model declares; --schema
+// (legacy) tests a hand-supplied DDL file and never loads @dbml/core.
+let schemaSql
+if (values.dbml) {
+  try {
+    const rawDbml = read(values.dbml)
+    if (/\/\/\s*ON DELETE/i.test(rawDbml)) {
+      summary.warnings.push({ line: 0, message: 'legacy `// ON DELETE` comment found in the DBML — delete policies are only enforced via standalone `Ref ... [delete: ...]` settings; a comment-only policy exports as NO ACTION' })
+    }
+    // erd-modeler historically escaped apostrophes SQL-style ('') which the DBML grammar
+    // rejects; fold to a typographic apostrophe (same normalization erd-diagram applies).
+    const normalized = rawDbml.replaceAll("''", '’')
+    const req = createRequire(join(DEPS_DIR, 'package.json'))
+    const { exporter } = req('@dbml/core')
+    schemaSql = exporter.export(normalized, 'postgres')
+    summary.dbml = { ok: true, source: values.dbml, errors: [] }
+  } catch (e) {
+    const diags = (e.diags ?? []).map((d) => ({
+      line: d.location?.start?.line ?? null,
+      column: d.location?.start?.column ?? null,
+      message: d.message,
+    }))
+    summary.dbml = {
+      ok: false,
+      source: values.dbml,
+      errors: diags.length ? diags : [{ line: null, column: null, message: String(e.message ?? e) }],
+    }
+    summary.ok = false
+    console.log(JSON.stringify(summary, null, 2))
+    process.exit(1)
+  }
+  if (values['emit-schema']) writeFileSync(values['emit-schema'], schemaSql)
+} else {
+  schemaSql = read(values.schema)
+}
+
 const db = new PGlite()
 
 async function runPhase(sqlText) {
@@ -289,7 +387,7 @@ async function runPhase(sqlText) {
 }
 
 try {
-  summary.schema.errors = await runPhase(read(values.schema))
+  summary.schema.errors = await runPhase(schemaSql)
   summary.schema.ok = summary.schema.errors.length === 0
 
   summary.seed.errors = await runPhase(read(values.seed))
@@ -318,12 +416,14 @@ try {
       try { await db.exec(uc.persist ? 'COMMIT' : 'ROLLBACK') } catch { /* txn already aborted/closed */ }
     }
     const finalStmt = stmts[stmts.length - 1] || ''
+    const finalCommand = commandOf(finalStmt)
+    const hasReturning = /\breturning\b/i.test(finalStmt)
     const wrote = stmts.some((s) => ['INSERT', 'UPDATE', 'DELETE'].includes(commandOf(s)))
-    const verdict = checkExpect(uc.expect, res, errored, errMsg, code)
+    const verdict = checkExpect(uc.expect, res, errored, errMsg, code, { label: uc.label, finalCommand, hasReturning })
     summary.usecases.push({
       label: uc.label,
       persist: uc.persist || undefined,
-      command: commandOf(finalStmt),
+      command: finalCommand,
       wrote,
       statements: stmts.length,
       expect: uc.expect ?? '(executes)',
@@ -348,15 +448,22 @@ try {
 }
 
 const usecasesPassed = summary.usecases.filter((u) => u.pass).length
+// Asserted = blocks that carry an expect. A merely-executed setup block proves nothing,
+// so consumers scoring "how much of the spec is proven" must use the asserted stats.
+const asserted = summary.usecases.filter((u) => u.expect !== '(executes)')
 summary.stats = {
   schema_errors: summary.schema.errors.length,
   seed_errors: summary.seed.errors.length,
   usecases_total: summary.usecases.length,
   usecases_passed: usecasesPassed,
+  usecases_asserted: asserted.length,
+  asserted_passed: asserted.filter((u) => u.pass).length,
+  executed_only: summary.usecases.length - asserted.length,
   warnings: summary.warnings.length,
 }
 summary.ok =
   !summary.fatal &&
+  (!summary.dbml || summary.dbml.ok) &&
   summary.schema.ok &&
   summary.seed.ok &&
   summary.usecases.length > 0 &&

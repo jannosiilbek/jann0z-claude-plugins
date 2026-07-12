@@ -17,8 +17,17 @@ import { normalizeDbml } from './render-erd.mjs'
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url))
 const RENDER = join(SCRIPT_DIR, 'render-erd.mjs')
 
-// A small but representative model: 1:N FK with ON DELETE comment, an enum, a self-referential FK,
-// a bridge (M:N) table, and a Note with the doubled-apostrophe ('') escaping erd-modeler emits.
+// Strip CLAUDE_PLUGIN_DATA so tests are deterministic even when run inside a plugin
+// session: the renderer must resolve deps from the scripts dir here.
+const CLEAN_ENV = { ...process.env }
+delete CLEAN_ENV.CLAUDE_PLUGIN_DATA
+
+// A small but representative model in the current erd-modeler convention: standalone
+// Refs carrying native [delete: ...] settings (cascade / restrict / set null, incl. a
+// self-referential one), an enum, a bridge (M:N) table, and a Note with the
+// doubled-apostrophe ('') escaping older models may contain. The `categories` table
+// keeps the LEGACY inline-ref + `// ON DELETE` comment form so both syntaxes stay
+// render-proven against the floating renderer version.
 const SAMPLE = `// Sample shop model
 Enum order_status {
   pending
@@ -33,7 +42,7 @@ Table customers {
 
 Table orders {
   id          text         [pk]
-  customer_id text         [not null, ref: > customers.id]  // ON DELETE RESTRICT
+  customer_id text         [not null]
   status      order_status [not null, default: 'pending']
   Note: 'A single order. TypeID prefix: order'
 }
@@ -44,8 +53,8 @@ Table products {
 }
 
 Table order_items {
-  order_id   text [not null, ref: > orders.id]    // ON DELETE CASCADE
-  product_id text [not null, ref: > products.id]  // ON DELETE RESTRICT
+  order_id   text [not null]
+  product_id text [not null]
   indexes {
     (order_id, product_id) [pk]
   }
@@ -53,9 +62,13 @@ Table order_items {
 
 Table categories {
   id        text [pk]
-  parent_id text [ref: > categories.id]  // ON DELETE SET NULL (self-referential)
+  parent_id text [ref: > categories.id]  // ON DELETE SET NULL (legacy inline form)
   name      varchar [not null]
 }
+
+Ref: orders.customer_id > customers.id [delete: restrict]
+Ref: order_items.order_id > orders.id [delete: cascade, update: no action]
+Ref: order_items.product_id > products.id [delete: restrict]
 `
 
 const TABLES = ['customers', 'orders', 'products', 'order_items', 'categories']
@@ -82,6 +95,7 @@ function main() {
     stdout = execFileSync('node', [RENDER, '--dbml', dbml, '--title', 'Shop — Data Model', '--out', out], {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'inherit'],
+      env: CLEAN_ENV,
     }).trim()
   } catch (e) {
     console.log(`  FAIL  render-erd.mjs exited non-zero — ${e.message}`)
@@ -115,11 +129,29 @@ function main() {
   writeFileSync(badDbml, 'Table { this is not valid dbml', 'utf8')
   let rejected = false
   try {
-    execFileSync('node', [RENDER, '--dbml', badDbml, '--out', join(dir, 'bad.html')], { stdio: 'ignore' })
+    execFileSync('node', [RENDER, '--dbml', badDbml, '--out', join(dir, 'bad.html')], { stdio: 'ignore', env: CLEAN_ENV })
   } catch {
     rejected = true
   }
   check('invalid DBML is rejected with a non-zero exit (no false-green)', rejected)
+
+  // Opt-in (does a real npm install — slow, needs network/cache): when CLAUDE_PLUGIN_DATA
+  // is set, deps install under <data>/erd-diagram instead of the scripts dir. Enable with
+  // ERD_SELFTEST_DATA_DIR=1.
+  if (process.env.ERD_SELFTEST_DATA_DIR === '1') {
+    const dataDir = mkdtempSync(join(tmpdir(), 'erd-plugin-data-'))
+    const dataOut = join(dir, 'data-mode.html')
+    let ok = false
+    try {
+      execFileSync('node', [RENDER, '--dbml', dbml, '--out', dataOut], {
+        stdio: 'ignore',
+        env: { ...CLEAN_ENV, CLAUDE_PLUGIN_DATA: dataDir },
+      })
+      ok = existsSync(dataOut)
+    } catch { /* ok stays false */ }
+    const installed = existsSync(join(dataDir, 'erd-diagram', 'package.json')) && existsSync(join(dataDir, 'erd-diagram', 'node_modules'))
+    check('plugin-data install (opt-in)', ok && installed, `rendered=${ok} installed=${installed} dataDir=${dataDir}`)
+  }
 
   // Unit check on the pure helper.
   check('normalizeDbml folds doubled apostrophes to a typographic one', normalizeDbml("a''b") === 'a’b')
