@@ -32,7 +32,8 @@
 
 ## Testing
 - Framework: pytest
-- DB strategy: SQLite (in-memory)
+- DB strategy: PostgreSQL (testcontainers; ephemeral per test session) — parity with the
+  Postgres semantics the data-model pipeline live-tests against
 - E2E: playwright-bdd
 
 ## Structure
@@ -54,7 +55,7 @@ apps/
       dependencies.py             — DI dependencies (db session, current user)
 
 packages/
-  domains/                        — flat stereotype naming inside each bc folder
+  domain/                         — flat stereotype naming inside each bc folder
     <bc>/
       <bc>_aggregate.py
       <noun>_entity.py

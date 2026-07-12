@@ -97,6 +97,9 @@ block, clarifications table, changelog).
 2. Copy the stack preset into `spec/stack.md` **verbatim**. The only permitted transformations:
    - Substitute `<Project name>` and `<DATE>`.
    - Resolve `<env-config>` (see §2a for the value). Never write `<env-config>` literally.
+   - Resolve every `<set per project>` placeholder with a concrete value — derive it
+     from the brief, or ask the user (each marks a real per-project decision, e.g.
+     token lifetimes). Never write `<set per project>` literally.
    - Omit `## Integrations` only when the system has zero external dependencies.
 3. Append `## Deployment` and `## Pipeline` from the infra preset **verbatim**
    (with `<env-config>` resolved as above).

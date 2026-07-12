@@ -31,7 +31,8 @@ ddd-brief → ddd-domain → ddd-usecases → [ddd-api] → erd-modeler → ddd-
 
 **`check-align.mjs`** validates `spec/` artifacts — see `plugins/napkin/skills/ddd-align/scripts/README.md` for the check list and output contract.
 
-**`erd-modeler` and `erd-diagram` dependencies are not committed** — they install on first use.
+**`erd-modeler` and `erd-diagram` dependencies are not committed** — they install on first use
+(into `$CLAUDE_PLUGIN_DATA/<skill>` at plugin runtime; into the skill's `scripts/` dir in a dev checkout).
 
 ## Lunchbox plugin — productivity skills
 

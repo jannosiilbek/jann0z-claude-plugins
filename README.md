@@ -83,8 +83,11 @@ what's in `spec/` and fills in the gaps.
 `erd-diagram` never auto-triggers — invoke it explicitly on a DBML file:
 
 ```
-/erd-diagram spec/data/model.dbml
+/napkin:erd-diagram spec/data/model.dbml
 ```
+
+(Installed plugin skills are namespaced by plugin name; in a dev checkout of this repo
+the unnamespaced `/erd-diagram` works too.)
 
 ## Development
 
