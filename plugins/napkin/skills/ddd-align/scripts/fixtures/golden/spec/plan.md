@@ -3,6 +3,7 @@
 <!-- upstream-fingerprint: spec/usecases.md@sha256:5c002abf5b0fbf4b56312eaa62b20b1a902d5c4f462778aa4aab91eb4c6c2d0c -->
 <!-- upstream-fingerprint: spec/api.md@sha256:b564796b52f55316f45aaac37198605fd02b5668c2b7e92f5a54665728a25bb8 -->
 <!-- upstream-fingerprint: spec/data/model.dbml@sha256:470a39cf8dbc6829746150e66446f06f1fa5e95ff6e1452c33a347b8dc4c7840 -->
+<!-- upstream-fingerprint: spec/screens.md@sha256:73f2820431ab227aa1d21b663af787ce4caee9c0b477157687a3775e7bbff64c -->
 
 ## Execution contract
 
@@ -27,6 +28,7 @@
 - Implements: UC-002
 - Depends on: T-001
 - Status: todo
+- Screens: SC-001
 - Acceptance: the acceptance criteria of UC-002 pass
 
 ### T-003 — Drop flow

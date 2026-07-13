@@ -46,7 +46,7 @@ function report(check, severity, artifact, line, message) {
 
 // ---------------------------------------------------------------- parsing
 
-const KNOWN_TYPES = ["brief", "glossary", "flows", "usecases", "plan", "stack", "nfr", "api", "decisions", "env"];
+const KNOWN_TYPES = ["brief", "glossary", "flows", "usecases", "plan", "stack", "nfr", "api", "decisions", "env", "screens"];
 const EXPECTED_FILENAMES = {
   "brief.md": "brief",
   "glossary.md": "glossary",
@@ -58,6 +58,7 @@ const EXPECTED_FILENAMES = {
   "api.md": "api",
   "decisions.md": "decisions",
   "env.md": "env",
+  "screens.md": "screens",
 };
 const MARKER_RE = /<!--\s*ddd:\s*([a-z]+)\s*-->/;
 
@@ -92,9 +93,9 @@ const PRESET_CONFIG = {
 };
 
 // Heading shapes: `## UC-001 — Title` (em dash, single spaces).
-const ID_HEADING_RE = /^(#{2,3}) (UC-\d{3}|FL-\d{3}|T-\d{3}|M\d+) — (.+)$/;
+const ID_HEADING_RE = /^(#{2,3}) (UC-\d{3}|FL-\d{3}|T-\d{3}|SC-\d{3}|M\d+) — (.+)$/;
 // Near-miss: starts like an ID heading but doesn't match the exact shape.
-const ID_HEADING_LOOSE_RE = /^#{2,3}\s+(UC|FL|T)-?\d/;
+const ID_HEADING_LOOSE_RE = /^#{2,3}\s+(UC|FL|T|SC)-?\d/;
 
 const FIELD_RE = /^\s*- ([A-Za-z][A-Za-z ]*): ?(.*)$/;
 
@@ -403,6 +404,22 @@ function parseStack(art) {
   return sections;
 }
 
+// Screens share the UC status vocabulary and fail-closed rule (spec-format §12).
+function parseScreens(art) {
+  const screens = extractItems(art, "screens.md").filter((it) => it.id.startsWith("SC-"));
+  for (const sc of screens) {
+    const rawStatus = (sc.fields["Status"] || "active").trim().toLowerCase();
+    if (!UC_STATUSES.has(rawStatus)) {
+      report("AL-36", "error", "screens.md", sc.fieldLines["Status"] || sc.line,
+        `${sc.id} has unknown Status \`${sc.fields["Status"]}\` (expected active|deprecated) — treated as active so no coverage check is skipped`);
+    }
+    sc.status = rawStatus === "deprecated" ? "deprecated" : "active";
+    sc.serves = (sc.fields["Serves"] || "").split(",").map((s) => s.trim()).filter(Boolean);
+    sc.navRefs = [...(sc.fields["Navigation"] || "").matchAll(/\bSC-\d{3}\b/g)].map((m) => m[0]);
+  }
+  return screens;
+}
+
 // ---------------------------------------------------------------- main
 
 const args = parseArgs(process.argv);
@@ -448,6 +465,7 @@ const plan = artifacts.plan ? parsePlan(artifacts.plan) : null;
 const apiOps = artifacts.api ? parseApi(artifacts.api) : null;
 const nfr = artifacts.nfr ? parseNfr(artifacts.nfr) : null;
 const stackSections = artifacts.stack ? parseStack(artifacts.stack) : null;
+const screens = artifacts.screens ? parseScreens(artifacts.screens) : null;
 
 // Trigger malformed-heading detection for artifacts not covered by extractItems.
 if (artifacts.brief) extractItems(artifacts.brief, "brief.md");
@@ -458,6 +476,7 @@ for (const [name, items] of [
   ["flows.md", flows ? flows.flows : []],
   ["usecases.md", ucs || []],
   ["plan.md", plan ? [...plan.tasks, ...plan.milestones] : []],
+  ["screens.md", screens || []],
 ]) {
   const seen = new Map();
   for (const it of items) {
@@ -530,6 +549,7 @@ if (glossary) {
     for (const sa of flows.stepActors) checkActor(sa.actor, "flows.md", sa.line);
   }
   if (ucs) for (const uc of ucs) checkActor(uc.fields["Actor"], "usecases.md", uc.fieldLines["Actor"] || uc.line);
+  if (screens) for (const sc of screens) checkActor(sc.fields["Actor"], "screens.md", sc.fieldLines["Actor"] || sc.line);
 }
 
 // --- use cases (AL-07, AL-08, AL-12)

@@ -203,7 +203,7 @@ testCase("empty spec dir → non-zero (no vacuous green)",
   (s) => {
     rmSync(s, { recursive: true });
     cpSync(GOLDEN, s, { recursive: true });
-    for (const f of ["brief.md", "glossary.md", "flows.md", "usecases.md", "plan.md", "stack.md", "nfr.md", "api.md", "env.md"]) unlinkSync(join(s, f));
+    for (const f of ["brief.md", "glossary.md", "flows.md", "usecases.md", "plan.md", "stack.md", "nfr.md", "api.md", "env.md", "screens.md"]) unlinkSync(join(s, f));
     rmSync(join(s, "data"), { recursive: true });
   },
   (r) => (r.exit !== 0 && r.json && r.json.ok === false ? null : `expected non-zero exit, got ${r.exit}`));
@@ -581,6 +581,21 @@ testCase("API-UC-xxx-internal block satisfies AL-17",
   (r) => (r.json && !r.json.findings.some((f) => f.check === "AL-17")
     ? null
     : `an -internal block must satisfy AL-17 coverage (got ${r.json ? JSON.stringify(r.json.findings.filter((f) => f.check === "AL-17")) : "?"})`));
+
+// AL-36 covers screen statuses too — a typo'd screen status must be caught.
+testCase("screen Status typo (activ) → AL-36",
+  (s) => edit(s, "screens.md", (t) => t.replace("- Navigation: from entry; to SC-002\n- Status: active", "- Navigation: from entry; to SC-002\n- Status: activ")),
+  (r) => caught(r, "AL-36"));
+
+// SC ids join the global uniqueness rule.
+testCase("duplicate screen id → AL-10",
+  (s) => edit(s, "screens.md", (t) => t.replace("## SC-003 — Enrollment management", "## SC-001 — Enrollment management")),
+  (r) => caught(r, "AL-10"));
+
+// Screen actors join the ubiquitous-language closure.
+testCase("non-glossary screen actor → AL-09",
+  (s) => edit(s, "screens.md", (t) => t.replace("- Actor: Registrar", "- Actor: Admin")),
+  (r) => caught(r, "AL-09"));
 
 // AL-16 resolution must not assume the spec directory is literally named "spec/".
 {
