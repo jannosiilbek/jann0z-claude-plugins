@@ -19,7 +19,7 @@ writes.
 Artifacts live at fixed paths under the target project's `spec/` directory —
 `spec/brief.md`, `spec/glossary.md`, `spec/flows.md`, `spec/usecases.md`,
 `spec/stack.md`, `spec/nfr.md`, `spec/api.md`, `spec/decisions.md`,
-`spec/plan.md`, `spec/env.md`, and `spec/data/` for the model and its live-test record. Create
+`spec/plan.md`, `spec/env.md`, `spec/screens.md`, and `spec/data/` for the model and its live-test record. Create
 `spec/` when it doesn't exist yet; never write these files at the project root or
 anywhere else — every downstream skill and the alignment harness looks for them only
 here.
@@ -33,7 +33,7 @@ The first line after the H1 title is an HTML comment naming the artifact type:
 <!-- ddd: brief -->
 ```
 
-Types: `brief`, `glossary`, `flows`, `usecases`, `plan`, `stack`, `nfr`, `api`, `decisions`, `env`. The marker — not the filename —
+Types: `brief`, `glossary`, `flows`, `usecases`, `plan`, `stack`, `nfr`, `api`, `decisions`, `env`, `screens`. The marker — not the filename —
 is how the parser identifies an artifact, so it survives renames and case differences.
 A spec file without a marker is invisible to the alignment check; never remove it.
 
@@ -43,6 +43,7 @@ A spec file without a marker is invisible to the alignment check; never remove i
 |------|--------|---------|-------|
 | Use case | `UC-` + 3 digits | `UC-001` | global |
 | Flow | `FL-` + 3 digits | `FL-001` | global |
+| Screen | `SC-` + 3 digits | `SC-001` | global |
 | Task | `T-` + 3 digits | `T-001` | global |
 | Milestone | `M` + number | `M1` | plan.md |
 | Architecture decision | `ADR-` + 3 digits | `ADR-001` | global |
@@ -121,8 +122,9 @@ useless). Re-embed on every save. Who fingerprints what:
 |----------|--------------|
 | usecases.md | glossary.md, flows.md |
 | api.md | usecases.md, stack.md, nfr.md |
+| screens.md | usecases.md |
 | data/model.dbml | glossary.md, and usecases.md when used |
-| plan.md | usecases.md, data/model.dbml, and api.md when present |
+| plan.md | usecases.md, data/model.dbml, and api.md/screens.md when present |
 
 check-align (AL-16) recomputes every fingerprint and warns on mismatch — a stale
 fingerprint means the artifact may no longer reflect its inputs; regenerate it via the
@@ -165,7 +167,7 @@ an artifact with its provenance stripped must not pass silently. Conditional ent
 
 ## Pipeline sizing
 - Decision: full | lean | delta
-- Stages: ddd-domain: yes|no|delta · ddd-usecases: yes|no|delta · ddd-api: yes|no|delta · erd-modeler: yes|no|delta · ddd-plan: yes|no|delta
+- Stages: ddd-domain: yes|no|delta · ddd-usecases: yes|no|delta · ddd-api: yes|no|delta · ddd-screens: yes|no|delta · erd-modeler: yes|no|delta · ddd-plan: yes|no|delta
 - Rationale: <one line>
 
 ## Clarifications log
@@ -403,6 +405,9 @@ a live-tested SQL assertion when erd-modeler runs.
 - `- Effort:` — optional; `XS | S | M | L | XL`. `ddd-plan` populates it from the
   task's AC count + DA count + presence of external integrations. check-align warns when
   a task implements 3+ UCs and has no Effort field.
+- `- Screens:` — optional; comma-separated SC-xxx anchors from screens.md for tasks
+  with a UI surface. Cited ids must resolve to screens.md entries (AL-38); citing
+  screens when no screens.md exists is an error.
 - `## Execution contract` — a fixed preamble section, placed immediately after the
   artifact marker (and fingerprint lines), copied **verbatim** — it is the handoff
   contract the implementing agent reads first. AL-35 warns when the section is absent
@@ -859,7 +864,58 @@ ddd-brief generates this file at greenfield time from the integrations and auth
 mechanism declared in stack.md. Add rows by hand as new integrations are wired.
 The artifact is registered as type `env` — the `<!-- ddd: env -->` marker is required.
 
-## 12. How the artifacts interlock
+## 12. spec/screens.md
+
+The screen inventory — which screens exist, which use cases each serves, and which
+states it must handle. Written by ddd-screens only when the brief's Pipeline sizing
+declares `ddd-screens: yes` (projects with a human-facing UI). The implementing agent
+still does the visual design; this artifact removes the need to invent WHAT screens
+exist and what each one shows.
+
+```markdown
+# Screens — <Project name>
+<!-- ddd: screens -->
+
+## SC-001 — <Screen name>
+- App: web
+- Route: /courses/:course_id
+- Actor: <Glossary term>
+- Serves: UC-002, UC-005
+- States: loading, empty, error, ready
+- Navigation: from SC-002; to SC-004
+- Status: active
+
+## Changelog
+- ...
+```
+
+Field rules:
+
+- `- App:` — an app name declared in stack.md `## Structure` (e.g. `web`, `www`).
+  Omit for single-app projects.
+- `- Route:` — path pattern, free text (`:param` placeholders conventional); for
+  non-URL UIs (desktop, TUI) it names the view.
+- `- Serves:` — comma-separated UC ids. **Required, at least one**; every cited UC
+  must exist and be active (AL-38). Pure plumbing screens (login, signup, password
+  reset) that serve no UC carry no entry in this artifact — the implementing agent
+  derives them from stack.md §Auth.
+- `- States:` — comma-separated, **required**. The four base states `loading`,
+  `empty`, `error`, `ready` are the recommended core (omit `empty` where the screen
+  can never be empty, e.g. a detail view); append domain states (e.g. `enrolled`)
+  freely — the vocabulary is open, the field may not be empty.
+- `- Actor:` — a glossary term; the same closure rule as flows and use cases (AL-09).
+- `- Navigation:` — optional; shape `from <SC-ids | entry>; to <SC-ids>`. `entry`
+  marks screens reachable directly (nav bar, deep link). Cited SC ids must resolve
+  to active screens (AL-38).
+- `- Status:` — `active` | `deprecated` (AL-36 closed vocabulary, fail-closed);
+  `- Superseded-by: SC-xxx` follows the §1.2 deprecation discipline. Deprecated
+  screens are exempt from AL-38 citation checks and do not count as UC coverage.
+- Every active UC must appear in at least one active screen's `Serves:`, unless its
+  api.md operation is `## API-UC-xxx-internal` (AL-39 warn) — policy-derived and
+  scheduled operations have no screen. When api.md is absent, no UC is exempt.
+- Fingerprints (§1.6): screens.md records `spec/usecases.md`.
+
+## 13. How the artifacts interlock
 
 ```
 brief.md ──actors──▶ glossary.md ──terms──▶ flows.md ──commands──▶ usecases.md
@@ -867,17 +923,17 @@ stack.md ───────────────────────�
 nfr.md ─────────────────────────────────────────────────────────────────┐ │  │
                     │                                                    │ │  │ DA => expect
                     │ Maps to: ERD / Enumerations                        ▼ ▼  ▼
-                    ▼                                               api.md  data/usecases.sql
+                    ▼                                    api.md · screens.md  data/usecases.sql
                data/model.dbml ◀──────live-tested against──────────────────────┘
                     │                                                              ▲
                     └──Assumptions──▶ decisions.md                                │
                                                                             plan.md
-                                                              (Implements: UC-xxx, reads api.md + decisions.md)
+                                        (Implements: UC-xxx, reads api.md + screens.md + decisions.md)
 ```
 
 `check-align.mjs` proves these edges mechanically (see `../scripts/README.md` for the
-full check list AL-00…AL-37): glossary↔DBML table tracing, enum spelling fidelity,
+full check list AL-00…AL-39): glossary↔DBML table tracing, enum spelling fidelity,
 actor closure, UC→plan coverage, DA grammar validity, UC→usecases.sql labeling,
-ID uniqueness, and dependency acyclicity. Run it after every artifact write; a spec
+screen↔UC citation and coverage, ID uniqueness, and dependency acyclicity. Run it after every artifact write; a spec
 that fails the gate is not done.
 
