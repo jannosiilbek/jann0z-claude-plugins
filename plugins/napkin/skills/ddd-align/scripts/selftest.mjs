@@ -597,6 +597,48 @@ testCase("non-glossary screen actor → AL-09",
   (s) => edit(s, "screens.md", (t) => t.replace("- Actor: Registrar", "- Actor: Admin")),
   (r) => caught(r, "AL-09"));
 
+// AL-38: Serves must cite an existing UC.
+testCase("screen serves a non-existent UC → AL-38",
+  (s) => edit(s, "screens.md", (t) => t.replace("- Serves: UC-002", "- Serves: UC-009")),
+  (r) => caught(r, "AL-38"));
+
+// AL-38: a deprecated Serves target errors and the message names the replacement.
+testCase("screen serves a deprecated UC → AL-38 naming the replacement",
+  (s) => edit(s, "usecases.md", (t) => t.replace(
+    "## UC-002 — List a student's courses\n- Actor: Student\n- Trigger: Student enrolled\n- Status: active",
+    "## UC-002 — List a student's courses\n- Actor: Student\n- Trigger: Student enrolled\n- Status: deprecated\n- Superseded-by: UC-003")),
+  (r) => {
+    const f = r.json && r.json.findings.find((x) => x.check === "AL-38" && x.severity === "error");
+    if (!f || r.exit === 0) return `expected an AL-38 error for a deprecated Serves target (exit=${r.exit})`;
+    if (!f.message.includes("UC-003")) return `AL-38 message must name the Superseded-by replacement (got: ${f.message})`;
+    return null;
+  });
+
+// AL-38: States is required on every active screen.
+testCase("screen without States → AL-38",
+  (s) => edit(s, "screens.md", (t) => t.replace("- States: loading, error, ready\n", "")),
+  (r) => caught(r, "AL-38"));
+
+// AL-38: Serves is required on every active screen.
+testCase("screen without Serves → AL-38",
+  (s) => edit(s, "screens.md", (t) => t.replace("- Serves: UC-001\n", "")),
+  (r) => caught(r, "AL-38"));
+
+// AL-38: Navigation SC refs must resolve.
+testCase("navigation cites a non-existent screen → AL-38",
+  (s) => edit(s, "screens.md", (t) => t.replace("- Navigation: from entry; to SC-002", "- Navigation: from entry; to SC-009")),
+  (r) => caught(r, "AL-38"));
+
+// AL-38: plan-task Screens anchors must resolve.
+testCase("plan task cites a non-existent screen → AL-38",
+  (s) => edit(s, "plan.md", (t) => t.replace("- Screens: SC-001", "- Screens: SC-009")),
+  (r) => caught(r, "AL-38"));
+
+// AL-38: a Screens anchor with no screens.md at all is dangling.
+testCase("plan Screens anchor without screens.md → AL-38",
+  (s) => { unlinkSync(join(s, "screens.md")); },
+  (r) => caught(r, "AL-38"));
+
 // AL-16 resolution must not assume the spec directory is literally named "spec/".
 {
   const dir = mkdtempSync(join(tmpdir(), "ddd-align-selftest-"));

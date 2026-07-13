@@ -21,7 +21,7 @@ node check-align.mjs --spec path/to/spec [--require glossary,model,usecases,plan
 | Flag | Meaning |
 |------|---------|
 | `--spec` | The spec directory to audit (the one holding `brief.md`, `glossary.md`, …). |
-| `--require` | Comma-separated artifacts that must be present: `brief`, `glossary`, `flows`, `usecases`, `plan`, `model` (= `data/model.dbml`), `sql` (= `data/usecases.sql`). Use at pipeline milestones; without it, partial pipelines are legal and missing artifacts are `info`. |
+| `--require` | Comma-separated artifacts that must be present: `brief`, `glossary`, `flows`, `usecases`, `plan`, `screens`, `model` (= `data/model.dbml`), `sql` (= `data/usecases.sql`). Use at pipeline milestones; without it, partial pipelines are legal and missing artifacts are `info`. |
 
 ## Checks
 
@@ -64,6 +64,7 @@ node check-align.mjs --spec path/to/spec [--require glossary,model,usecases,plan
 | AL-35 | warn | plan.md carries the `## Execution contract` section AND its bullets match the canonical spec-format §6 text (whitespace-normalized compare — heading alone is not enough) |
 | AL-36 | error | every `Status:` value is in its closed vocabulary (`active\|deprecated` for UCs, `todo\|in-progress\|done` for tasks) — unknown values are treated as active/todo (fail-closed) so a typo can never exempt an item from coverage checks |
 | AL-37 | error | every derived artifact records an `upstream-fingerprint` line for each of its expected upstreams that exist on disk (spec-format §1.6) — stripped provenance must not pass silently |
+| AL-38 | error | screens.md citations resolve: every `Serves:` UC exists and is active, every `Navigation:` SC ref resolves to an active screen, `Serves:`/`States:` are non-empty on active screens, and plan-task `Screens:` anchors resolve — activates only when screens.md exists |
 | AL-00 | info/error | artifact presence bookkeeping; `--require` misses are errors |
 
 

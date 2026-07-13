@@ -97,7 +97,7 @@ const ID_HEADING_RE = /^(#{2,3}) (UC-\d{3}|FL-\d{3}|T-\d{3}|SC-\d{3}|M\d+) — (
 // Near-miss: starts like an ID heading but doesn't match the exact shape.
 const ID_HEADING_LOOSE_RE = /^#{2,3}\s+(UC|FL|T|SC)-?\d/;
 
-const FIELD_RE = /^\s*- ([A-Za-z][A-Za-z ]*): ?(.*)$/;
+const FIELD_RE = /^\s*- ([A-Za-z][A-Za-z -]*): ?(.*)$/;
 
 function readArtifact(path) {
   const raw = readFileSync(path, "utf8");
@@ -707,6 +707,67 @@ if (glossary) {
     if (t.fields["Value object"] === "yes" && t.fields["Maps to"]) {
       report("AL-28", "warn", "glossary.md", t.line,
         `"${term}" is a value object but also has a "Maps to:" line — value objects are identity-less and should not own a table; remove one or the other`);
+    }
+  }
+}
+
+// --- AL-38: screens.md citation validity (activates only when screens.md exists).
+// Serves is the load-bearing edge: a screen exists to serve use cases. Deprecated
+// screens are exempt (their citations may legitimately point at deprecated items).
+if (screens) {
+  const scIds = new Map(screens.map((s) => [s.id, s]));
+  const ucIds = ucs ? new Map(ucs.map((u) => [u.id, u])) : null;
+  for (const sc of screens) {
+    if (sc.status !== "active") continue;
+    if (sc.serves.length === 0) {
+      report("AL-38", "error", "screens.md", sc.fieldLines["Serves"] || sc.line,
+        `${sc.id} has no \`Serves:\` use cases — a screen exists to serve UCs; cite at least one (pure plumbing screens like login carry no entry in screens.md)`);
+    }
+    if (!(sc.fields["States"] || "").trim()) {
+      report("AL-38", "error", "screens.md", sc.fieldLines["States"] || sc.line,
+        `${sc.id} has no \`States:\` list — declare the states the implementing agent must handle (loading, empty, error, ready + domain states)`);
+    }
+    if (ucIds) {
+      for (const ref of sc.serves) {
+        const uc = ucIds.get(ref);
+        if (!uc) {
+          report("AL-38", "error", "screens.md", sc.fieldLines["Serves"] || sc.line,
+            `${sc.id} serves ${ref}, which does not exist in usecases.md`);
+        } else if (uc.status !== "active") {
+          const repl = uc.fields["Superseded-by"];
+          report("AL-38", "error", "screens.md", sc.fieldLines["Serves"] || sc.line,
+            `${sc.id} serves ${ref}, which is deprecated${repl ? ` (superseded by ${repl})` : ""} — cite the replacement or deprecate the screen`);
+        }
+      }
+    }
+    for (const ref of sc.navRefs) {
+      const target = scIds.get(ref);
+      if (!target) {
+        report("AL-38", "error", "screens.md", sc.fieldLines["Navigation"] || sc.line,
+          `${sc.id} navigation cites ${ref}, which does not exist in screens.md`);
+      } else if (target.status !== "active") {
+        report("AL-38", "error", "screens.md", sc.fieldLines["Navigation"] || sc.line,
+          `${sc.id} navigation cites ${ref}, which is deprecated`);
+      }
+    }
+  }
+}
+// Plan tasks may anchor UI work via `- Screens: SC-xxx` (spec-format §6) — anchors must resolve.
+if (plan) {
+  const scIds = screens ? new Map(screens.map((s) => [s.id, s])) : null;
+  for (const t of plan.tasks) {
+    const cites = (t.fields["Screens"] || "").split(",").map((s) => s.trim()).filter(Boolean);
+    if (!cites.length) continue;
+    if (!scIds) {
+      report("AL-38", "error", "plan.md", t.fieldLines["Screens"] || t.line,
+        `${t.id} cites screens (${cites.join(", ")}) but spec/screens.md does not exist`);
+      continue;
+    }
+    for (const ref of cites) {
+      if (!scIds.has(ref)) {
+        report("AL-38", "error", "plan.md", t.fieldLines["Screens"] || t.line,
+          `${t.id} cites ${ref}, which does not exist in screens.md`);
+      }
     }
   }
 }
