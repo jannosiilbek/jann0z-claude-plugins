@@ -108,7 +108,7 @@ Coverage: N operations from M active UCs
 Error codes declared in nfr.md: VALIDATION_ERROR, NOT_FOUND, ENROLLMENT_EXISTS, FORBIDDEN, UNAUTHORIZED
 Alignment gate: ✅ ok
 📄 Saved to spec/api.md
-➡️ Next: run erd-modeler to build the data model, then ddd-plan
+➡️ Next: run ddd-screens (if `ddd-screens: yes` in the Pipeline sizing block), then erd-modeler to build the data model, then ddd-plan
 ```
 
 In delta mode, add "Operations added / changed / deprecated / preserved" line. The ➡️

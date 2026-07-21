@@ -85,6 +85,7 @@ never happens here.
 | Bug fix / small behavior change | **delta**, usually touching one use case and nothing else — and if not even a use case changes, say the pipeline isn't needed at all |
 | Spike / prototype the user calls throwaway | **lean** at most — and say that the spec can be skipped entirely; don't manufacture ceremony |
 | No external API surface (internal tool, library, data pipeline) | **lean** — set `ddd-api: no` |
+| No human-facing UI (headless service, CLI, library, data pipeline) | set `ddd-screens: no` — the screen inventory only pays off when someone will look at screens |
 
 Two tests before settling:
 

@@ -106,7 +106,7 @@ trigger closure (AL-12), id discipline (AL-10).
 Coverage: N use cases from M flows · every assertion inside the closed grammar
 Alignment gate: ✅ ok
 📄 Saved to spec/usecases.md
-➡️ Next: run ddd-api (if `ddd-api: yes` in the Pipeline sizing block) or erd-modeler directly — erd-modeler turns every data assertion into a live test against a real in-memory Postgres
+➡️ Next: run ddd-api / ddd-screens (whichever the Pipeline sizing block marks `yes`) or erd-modeler directly — erd-modeler turns every data assertion into a live test against a real in-memory Postgres
 ```
 
 In delta mode, add an "Added / changed / deprecated / preserved" line. The ➡️ pointer

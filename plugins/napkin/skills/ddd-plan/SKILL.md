@@ -24,6 +24,9 @@ The artifact grammar is defined once, in
 - Read `spec/api.md` (when present) — operation paths, request/response shapes, and
   error codes inform task scope. A task implementing UC-001 should cite the
   corresponding API-UC-001 entry as context for the implementing agent.
+- Read `spec/screens.md` (when present) — tasks with a UI surface anchor the screens
+  they build via `- Screens:`, so the implementing agent reads the screen's states and
+  navigation instead of inventing them.
 - Read `spec/decisions.md` (when present) — architectural rationale. Tasks that
   implement entities with non-default FK policies (e.g. RESTRICT) should reference the
   relevant ADR so the implementing agent does not re-derive it.
@@ -62,14 +65,17 @@ The artifact grammar is defined once, in
     implementing deletes on a RESTRICT FK should cite the ADR that explains why RESTRICT
     was chosen, so the agent surfaces the correct 409 error rather than letting the DB
     error bubble through).
+  - `- Screens:` (optional) SC-xxx anchors from screens.md for tasks with a UI
+    surface — cite the screens whose `Serves:` UCs the task implements. Cited ids must
+    resolve (AL-38); never cite screens when no screens.md exists.
   - `- Effort:` populate using the task's total AC count + DA count across all cited UCs
     as the primary signal, with external-integration presence as a modifier:
     XS (1–2 AC+DA, no integrations) · S (3–4) · M (5–7) · L (8–12 or any integration) ·
     XL (13+ or multiple integrations). Per spec-format.md §6, check-align warns when a
     task implements 3+ UCs and has no Effort field, so populate it for every multi-UC task.
-- Embed upstream fingerprints for `spec/usecases.md`, `spec/data/model.dbml`, and
-  `spec/api.md` (when present) per spec-format.md §1.6, immediately after the
-  artifact marker. Re-embed on every save.
+- Embed upstream fingerprints for `spec/usecases.md`, `spec/data/model.dbml`, and —
+  when present — `spec/api.md` and `spec/screens.md`, per spec-format.md §1.6,
+  immediately after the artifact marker. Re-embed on every save.
 
 ### 3. Delta mode
 

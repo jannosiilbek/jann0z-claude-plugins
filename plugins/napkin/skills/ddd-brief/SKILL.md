@@ -1,6 +1,6 @@
 ---
 name: ddd-brief
-description: Use when the user wants to start a spec, scope a project or feature, write a project brief, kick off the DDD spec pipeline, or clarify what to build before designing anything — including "let's spec this out", "help me define this product", or when they hand over requirement documents/transcripts to turn into a structured starting point. Interactively elicits the problem, actors, scope, and constraints (one question at a time, never re-asking what provided material already answers), then writes or incrementally updates a living spec/brief.md, spec/stack.md, and spec/nfr.md, and sizes how much of the downstream pipeline (ddd-domain → ddd-usecases → [ddd-api →] erd-modeler → ddd-plan) the work actually warrants.
+description: Use when the user wants to start a spec, scope a project or feature, write a project brief, kick off the DDD spec pipeline, or clarify what to build before designing anything — including "let's spec this out", "help me define this product", or when they hand over requirement documents/transcripts to turn into a structured starting point. Interactively elicits the problem, actors, scope, and constraints (one question at a time, never re-asking what provided material already answers), then writes or incrementally updates a living spec/brief.md, spec/stack.md, and spec/nfr.md, and sizes how much of the downstream pipeline (ddd-domain → ddd-usecases → [ddd-api →] [ddd-screens →] erd-modeler → ddd-plan) the work actually warrants.
 ---
 
 # DDD Brief
