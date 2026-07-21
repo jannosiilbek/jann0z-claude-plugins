@@ -11,12 +11,12 @@
 `plugins/napkin` chains six skills into a DDD pipeline that writes persistent artifacts to the target project's `spec/` directory:
 
 ```
-ddd-brief → ddd-domain → ddd-usecases → [ddd-api] → erd-modeler → ddd-plan
+ddd-brief → ddd-domain → ddd-usecases → [ddd-api] → [ddd-screens] → erd-modeler → ddd-plan
                                                │
                            ddd-align (exit gate on every step)
 ```
 
-`[ddd-api]` is optional — runs when the brief's Pipeline sizing block declares `ddd-api: yes` (any project with an external surface).
+`[ddd-api]` and `[ddd-screens]` are optional — each runs when the brief's Pipeline sizing block declares it `yes` (`ddd-api` for any project with an external surface, `ddd-screens` for any project with a human-facing UI).
 
 | Skill | Writes |
 |-------|--------|
@@ -24,6 +24,7 @@ ddd-brief → ddd-domain → ddd-usecases → [ddd-api] → erd-modeler → ddd-
 | `ddd-domain` | `spec/glossary.md`, `spec/flows.md` |
 | `ddd-usecases` | `spec/usecases.md` |
 | `ddd-api` | `spec/api.md` (optional — skipped when `Interface: Kind = none`) |
+| `ddd-screens` | `spec/screens.md` (optional — skipped when there is no human-facing UI) |
 | `erd-modeler` | `spec/data/model.dbml`, `spec/data/usecases.sql`, `spec/decisions.md` |
 | `ddd-plan` | `spec/plan.md` |
 | `ddd-align` | report only — never edits |

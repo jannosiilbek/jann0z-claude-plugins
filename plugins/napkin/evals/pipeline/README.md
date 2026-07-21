@@ -15,12 +15,13 @@ For every **executor model × scenario** cell:
    stripped so the CLI can nest, `--permission-mode bypassPermissions` so stages can write
    files *and* run the harness scripts unattended — trusted skills in a throwaway dir):
    `ddd-brief → ddd-domain → ddd-usecases → erd-modeler → ddd-plan`. The runner covers
-   these five core stages; `ddd-api` is optional and not driven by the runner (exercised
-   via scenario when a project has an external API surface). Each stage names its skill
+   these five core stages; `ddd-api` and `ddd-screens` are optional and not driven by the
+   runner (exercised via scenario when a project has an external API surface / a
+   human-facing UI). Each stage names its skill
    explicitly. (One `claude -p` per stage mirrors skill-creator's "one skill per
    invocation" and keeps each stage debuggable.)
 2. **Grades the produced `spec/`** with `grade.mjs`:
-   - **Mechanical** (objective, reproducible): `check-align.mjs` (AL-00…AL-37) and, when the
+   - **Mechanical** (objective, reproducible): `check-align.mjs` (AL-00…AL-39) and, when the
      SQL trio is present, `run-erd-test.mjs` (PGlite live-test) → alignment, coverage %s,
      live-test pass rate, plan acyclicity, reference validity.
    - **Judged** (only what a parser can't see), from the perspective of **Claude Code +
@@ -109,7 +110,7 @@ ones are LLM-scored):
 | Metric | Wt | Source | The number |
 |--------|----|--------|------------|
 | Clarity | 0.25 | judged (isolated) | a **dedicated** judge pass (spec only — no mechanical signals, no other metrics) reports the blocking-question COUNT; harness derives the score via a diminishing-returns curve `100·8/(8+count)` (0q→100, 2q→80, 6q→57). Isolation removes the measured cross-metric/anchoring inflation; median-of-N removes residual jitter. |
-| Alignment | 0.20 | mechanical | `100 − 15·errors − 5·warnings` (check-align AL-00…AL-37) |
+| Alignment | 0.20 | mechanical | `100 − 15·errors − 5·warnings` (check-align AL-00…AL-39) |
 | Completeness | 0.20 | hybrid | mean of UC→task and UC→live-test coverage %, minus orphan/untraced-table penalty |
 | Testability | 0.20 | hybrid | mean of EARS %, data-assertion %, live-test pass rate, and judged non-vacuous-AC % |
 | Actionability | 0.15 | hybrid | plan acyclic + refs resolve (mechanical) blended with judged task-sizing |

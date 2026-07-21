@@ -21,11 +21,11 @@ spec pipeline: a chain of skills that each write one persistent, hand-editable a
 your project's `spec/` directory — the single source of truth for what you're building.
 
 ```
-ddd-brief  →  ddd-domain  →  ddd-usecases  →  [ddd-api →]  erd-modeler  →  ddd-plan
-   │             │               │                               │              │
- brief.md   glossary.md      usecases.md                    model.dbml       plan.md
-            flows.md                                         usecases.sql
-                                  └──────── ddd-align (consistency gate, runs throughout) ──────┘
+ddd-brief  →  ddd-domain  →  ddd-usecases  →  [ddd-api →]  [ddd-screens →]  erd-modeler  →  ddd-plan
+   │             │               │                 │              │              │              │
+ brief.md   glossary.md      usecases.md        api.md       screens.md     model.dbml       plan.md
+            flows.md                                                        usecases.sql
+                                  └──────── ddd-align (consistency gate, runs throughout) ──────────┘
 ```
 
 - **Plain-language triggers** — each step is its own skill; say *"let's spec this out"* and `ddd-brief` takes it from there.
