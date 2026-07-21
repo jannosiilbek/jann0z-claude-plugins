@@ -772,6 +772,24 @@ if (plan) {
   }
 }
 
+// --- AL-39: every active UC appears in at least one active screen's Serves (when
+// screens.md exists). A `## API-UC-xxx-internal` operation exempts its UC — policies
+// and schedules have no screen. When api.md is absent, no UC is exempt.
+if (screens && ucs) {
+  const served = new Set();
+  for (const sc of screens) {
+    if (sc.status !== "active") continue;
+    for (const ref of sc.serves) served.add(ref);
+  }
+  const internalOps = new Set((apiOps || []).filter((op) => op.id.endsWith("-internal")).map((op) => op.id));
+  for (const uc of ucs) {
+    if (uc.status !== "active" || served.has(uc.id)) continue;
+    if (internalOps.has(`API-${uc.id}-internal`)) continue;
+    report("AL-39", "warn", "screens.md", 1,
+      `${uc.id} is active but appears in no active screen's \`Serves:\` — add it to a screen, or mark its api.md operation \`## API-${uc.id}-internal\` if it has no UI surface`);
+  }
+}
+
 // --- AL-29: nfr.md soft-delete column must exist on every model table
 if (nfr && nfr.softDeleteColumn && dbml) {
   for (const [table, t] of dbml.tables) {
@@ -880,7 +898,8 @@ const EXPECTED_FPS = {
   model: ["spec/glossary.md"],
   usecases: ["spec/glossary.md", "spec/flows.md"],
   api: ["spec/usecases.md", "spec/stack.md", "spec/nfr.md"],
-  plan: ["spec/usecases.md", "spec/data/model.dbml", "spec/api.md"],
+  screens: ["spec/usecases.md"],
+  plan: ["spec/usecases.md", "spec/data/model.dbml", "spec/api.md", "spec/screens.md"],
 };
 function requireFingerprints(type, artifactName, recorded) {
   for (const relPath of EXPECTED_FPS[type] ?? []) {
@@ -897,7 +916,7 @@ if (existsSync(modelPath)) {
   const recorded = checkFingerprints(readFileSync(modelPath, "utf8"), "data/model.dbml", FP_DBML_RE);
   requireFingerprints("model", "data/model.dbml", recorded);
 }
-for (const type of ["usecases", "api", "plan"]) {
+for (const type of ["usecases", "api", "screens", "plan"]) {
   if (artifacts[type]) {
     const recorded = checkFingerprints(artifacts[type].raw, artifacts[type].file, FP_MD_RE);
     requireFingerprints(type, artifacts[type].file, recorded);

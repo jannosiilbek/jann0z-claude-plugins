@@ -65,6 +65,7 @@ node check-align.mjs --spec path/to/spec [--require glossary,model,usecases,plan
 | AL-36 | error | every `Status:` value is in its closed vocabulary (`active\|deprecated` for UCs, `todo\|in-progress\|done` for tasks) — unknown values are treated as active/todo (fail-closed) so a typo can never exempt an item from coverage checks |
 | AL-37 | error | every derived artifact records an `upstream-fingerprint` line for each of its expected upstreams that exist on disk (spec-format §1.6) — stripped provenance must not pass silently |
 | AL-38 | error | screens.md citations resolve: every `Serves:` UC exists and is active, every `Navigation:` SC ref resolves to an active screen, `Serves:`/`States:` are non-empty on active screens, and plan-task `Screens:` anchors resolve — activates only when screens.md exists |
+| AL-39 | warn | every active UC appears in at least one active screen's `Serves:` — a `## API-UC-xxx-internal` operation exempts its UC (policies and schedules have no screen); with no api.md, no UC is exempt — activates only when screens.md exists |
 | AL-00 | info/error | artifact presence bookkeeping; `--require` misses are errors |
 
 

@@ -639,6 +639,48 @@ testCase("plan Screens anchor without screens.md → AL-38",
   (s) => { unlinkSync(join(s, "screens.md")); },
   (r) => caught(r, "AL-38"));
 
+// Repoint SC-002's Serves at UC-002 so UC-003 loses screen coverage, then re-embed the
+// screens fingerprint in plan.md so the mutation doesn't also trip AL-16 staleness.
+const uncoverUc003 = (s) => {
+  edit(s, "screens.md", (t) => t.replace("- Serves: UC-003", "- Serves: UC-002"));
+  const newHash = createHash("sha256").update(readFileSync(join(s, "screens.md"))).digest("hex");
+  edit(s, "plan.md", (t) =>
+    t.replace(/spec\/screens\.md@sha256:[0-9a-f]{64}/, `spec/screens.md@sha256:${newHash}`));
+};
+
+// AL-39: an active UC served by no active screen is uncovered UI work.
+testCase("active UC with no screen coverage → AL-39 warn",
+  uncoverUc003,
+  (r) => (hasWarn(r, "AL-39") ? null : `expected an AL-39 warn for uncovered UC-003 (findings=${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
+
+// AL-39: an -internal api.md operation exempts its UC — policies and schedules have no screen.
+testCase("internal api operation exempts its UC from AL-39",
+  (s) => {
+    uncoverUc003(s);
+    edit(s, "api.md", (t) => t.replace("## API-UC-003 —", "## API-UC-003-internal —"));
+  },
+  (r) => (r.json && !r.json.findings.some((f) => f.check === "AL-39")
+    ? null
+    : `an -internal operation must exempt its UC from AL-39 (findings=${r.json ? JSON.stringify(r.json.findings.filter((f) => f.check === "AL-39")) : "?"})`));
+
+// AL-39: with no api.md there is no exemption path — every active UC needs a screen.
+testCase("uncovered UC without api.md → AL-39 warn (no exemptions)",
+  (s) => {
+    uncoverUc003(s);
+    unlinkSync(join(s, "api.md"));
+  },
+  (r) => (hasWarn(r, "AL-39") ? null : `expected an AL-39 warn with api.md absent (findings=${r.json ? JSON.stringify(r.json.findings.map((f) => f.check)) : "?"})`));
+
+// AL-37: screens.md must record its usecases.md provenance (spec-format §12).
+testCase("screens.md without usecases fingerprint → AL-37",
+  (s) => edit(s, "screens.md", (t) => t.replace(/<!-- upstream-fingerprint: spec\/usecases\.md@sha256:[0-9a-f]{64} -->\n/, "")),
+  (r) => caught(r, "AL-37"));
+
+// AL-37: plan.md must record screens.md provenance when screens.md exists.
+testCase("plan.md without screens fingerprint → AL-37",
+  (s) => edit(s, "plan.md", (t) => t.replace(/<!-- upstream-fingerprint: spec\/screens\.md@sha256:[0-9a-f]{64} -->\n/, "")),
+  (r) => caught(r, "AL-37"));
+
 // AL-16 resolution must not assume the spec directory is literally named "spec/".
 {
   const dir = mkdtempSync(join(tmpdir(), "ddd-align-selftest-"));
