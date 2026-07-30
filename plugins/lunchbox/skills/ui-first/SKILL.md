@@ -1,7 +1,8 @@
 ---
 name: ui-first
 argument-hint: "[design|review]"
-description: Use when the user wants to design or audit an application's UI structure — navigation, screens, surfaces, and workflow queues — derived from the user's work rather than the domain model. Trigger on "design the UX", "plan the navigation", "what should the nav be", "review my UI structure", "audit my screens", and on symptoms: "my navigation is a mess", "too many menu items", "the app just mirrors the database tables", "users can't find where to do X". Two modes: design (produce nav map, surface inventory, attention inbox, disclosure stages, boundary translation table) and review (per-element audit with principle verdicts and canonical fix moves). Pre-implementation structure only — not visual design, layout, color, typography, or component styling. In a project with napkin's spec/usecases.md, the screen-inventory artifact (spec/screens.md) belongs to napkin:ddd-screens; use this skill to design or audit the structure and the model/UI boundary.
+description: >-
+  Use when the user wants to design or audit an application's UI structure — navigation, screens, surfaces, and workflow queues — derived from the user's work rather than the domain model. Trigger on "design the UX", "plan the navigation", "what should the nav be", "review my UI structure", "audit my screens", and on symptoms: "my navigation is a mess", "too many menu items", "the app just mirrors the database tables", "users can't find where to do X". Two modes: design (produce nav map, surface inventory, attention inbox, disclosure stages, boundary translation table) and review (per-element audit with principle verdicts and canonical fix moves). Pre-implementation structure only — not visual design, layout, color, typography, or component styling. In a project with napkin's spec/usecases.md, the screen-inventory artifact (spec/screens.md) belongs to napkin:ddd-screens; use this skill to design or audit the structure and the model/UI boundary.
 ---
 
 # UI First
@@ -27,6 +28,7 @@ Designs or audits an application's UI structure — navigation, screens, surface
 
 ## Mode selection
 
+0. **Explicit argument wins**: an explicit `design` or `review` argument decides the mode outright. The rules below apply only when no argument is given.
 1. **Intent verbs first**: design/plan/create/add/extend → design mode; review/audit/critique/check/assess → review mode.
 2. Artifact presence is only the **tiebreaker** when the verb is ambiguous.
 3. Still ambiguous → ask one question.
@@ -60,9 +62,11 @@ Before producing the first design output in a session, skim `references/example.
 1. **Discovery recipe** for the existing structure, in order: router/route files (framework conventions), nav/menu/sidebar components, `spec/screens.md`, any sitemap/screens doc; fallback — ask the user to point at the structure.
 2. **Compressed intake**: establish actors and their top 3–5 tasks (shared intake sources) — P1 cannot be judged without a workday, and the first-shot test needs a task to walk.
 3. **Audit per structural element** (nav item, surface): each finding cites evidence (literal label/route/file), the principle(s) violated, and exactly one fix move. The per-principle table is the **rollup**, not the working structure. P1's verdict must cite task-to-nav coverage (nav items serving no named task; top tasks with no first-class path).
-4. Read `references/playbook.md` before mapping violations to fix moves.
+4. **Before mapping any finding to a fix move, in either mode** — this review-mode step, or brownfield design mode's inline violation flagging (Mode selection, rule 4) — read `references/playbook.md`.
 5. **Emit the review-mode output contract** (below). Report-only — never edits files.
 6. When the audited structure is `spec/screens.md`: fixes are keyed by SC-id and phrased as ddd-screens delta instructions (e.g., "merge SC-003 + SC-007 into one surface with tabs: keep SC-003, deprecate SC-007 with Superseded-by"), closing with "apply via ddd-screens". Never re-check what the ddd-align gate already validates (citation resolution, status vocabulary, UC coverage).
+
+Before emitting the first audit of a session, skim `references/example.md`'s audit section (Part 3).
 
 ## Output contracts
 
@@ -77,6 +81,8 @@ Closed vocabularies used by both contracts:
   - `derive-and-show` — replace a raw joinless list/table with a view that renders what the object derives from.
   - `stage-behind-precondition` — gate a feature so it appears only once its precondition exists, instead of showing it to everyone on day one.
   - `teach-empty-state` — replace a blank list/table with an onboarding surface that names the next action.
+
+**Template metatext**: fragments annotated with "←" arrows inside the fenced templates below are commentary and are never emitted in output; the asterisk footnote line under the surface inventory (marked `*`) IS part of the output.
 
 **Design-mode template** (all sections mandatory unless marked):
 
@@ -120,7 +126,7 @@ Verdict: PASS | FAIL — most-likely-to-fail step: <step>
 
 **Engine-name backtick rule** (in SKILL.md, applies to both templates): whenever an engine/aggregate name appears anywhere in the output — boundary translation table, surface-merge notes, prose — it is backticked (`` `PartyAccount` ``). Nav and surface **labels** are never engine names; the leak-check diff renames any hit before emitting. This is what keeps the deterministic leak assertions sound: a bare `| PartyAccount` in the output can only be a leaked table cell, never a legitimate boundary-table row (those render as ``| `PartyAccount` |``).
 
-First-shot test rules (make it falsifiable, not theater): **in both modes, one walkthrough per primary actor's top task** — never a single global walkthrough when shells diverge. *Sees* may contain only labels that literally exist in the produced nav map / surface inventory — inventing an affordance mid-walkthrough is a spec bug, not a pass. *Does* is the click a domain expert would choose knowing the domain but not the product. Hard-fail rule: any step whose correct next click requires an engine/internal term, or a location not derivable from the task, fails the test. The most-likely-to-fail step is named even on PASS. Review mode runs the same table against the actual ingested labels.
+First-shot test rules (make it falsifiable, not theater): **in both modes, one walkthrough per primary actor's top task** — never a single global walkthrough when shells diverge. When one shared shell serves all roles, a single walkthrough of the most load-bearing actor's top task suffices. *Sees* may contain only labels that literally exist in the produced nav map / surface inventory — inventing an affordance mid-walkthrough is a spec bug, not a pass. *Does* is the click a domain expert would choose knowing the domain but not the product. Hard-fail rule: any step whose correct next click requires an engine/internal term, or a location not derivable from the task, fails the test. The most-likely-to-fail step is named even on PASS. Review mode runs the same table against the actual ingested labels.
 
 **Review-mode template**:
 

@@ -81,10 +81,28 @@
           "description": "The deliberately-good empty states pass — defeats flag-everything auditing."
         },
         {
-          "name": "canonical_fix_moves_used",
+          "name": "canonical_fix_move_merge_to_tabs",
           "type": "string_match",
-          "patterns": ["merge-to-tabs", "demote-to-queue", "derive-and-show", "stage-behind-precondition"],
-          "description": "Fixes use the canonical hyphenated move names verbatim."
+          "patterns": ["merge-to-tabs"],
+          "description": "Fix uses the canonical hyphenated move name merge-to-tabs verbatim."
+        },
+        {
+          "name": "canonical_fix_move_demote_to_queue",
+          "type": "string_match",
+          "patterns": ["demote-to-queue"],
+          "description": "Fix uses the canonical hyphenated move name demote-to-queue verbatim."
+        },
+        {
+          "name": "canonical_fix_move_derive_and_show",
+          "type": "string_match",
+          "patterns": ["derive-and-show"],
+          "description": "Fix uses the canonical hyphenated move name derive-and-show verbatim."
+        },
+        {
+          "name": "canonical_fix_move_stage_behind_precondition",
+          "type": "string_match",
+          "patterns": ["stage-behind-precondition"],
+          "description": "Fix uses the canonical hyphenated move name stage-behind-precondition verbatim."
         },
         {
           "name": "report_only",

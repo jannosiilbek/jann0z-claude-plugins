@@ -150,7 +150,7 @@ A different build of the same product, discovered by reading its route files and
 | "Compliance Export" nav item | `routes/compliance-export.tsx` visible to every authenticated user regardless of role, though only ever run by the publisher | P5 | stage-behind-precondition |
 
 ### Principle rollup
-P1: FAIL — nav has one item per engine model (Pitch Submissions, Manuscript Records, Pending Revisions, Issue Assembly, Ledger Export), not one item per recurring task; several items serve no task any role can name.
+P1: FAIL — nav has one item per engine model (Pitch Submissions, Manuscript Records, Pending Revisions, Issue Assembly, Ledger Export), not one item per recurring task; several items serve no task any role can name, and no first-class path exists for the editor's "send revision notes" task.
 P2: FAIL — Pitch Submissions and Manuscript Records are the same story to every actor, double-homed across two disconnected surfaces with no cross-link.
 P3: FAIL — Pending Revisions sits as its own top-level destination instead of a tab on the story plus a rollup in a shared inbox.
 P4: FAIL — Issue Assembly and Ledger Export render raw `manuscript_id` / `contributor_id` / `amount_cents` instead of the related story's title, author, or amount summary.
