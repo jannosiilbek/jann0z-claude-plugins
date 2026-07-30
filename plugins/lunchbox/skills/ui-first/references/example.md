@@ -22,7 +22,7 @@ Same actors, same engine, designed from the task inventory first and read agains
 
 ## UI structure — Longhand
 Form factor: sidebar ≤7
-Shell decision: per-role shells — a writer's day is producing and revising copy; an editor's and publisher's day is moving copy through review to print, with the publisher holding a final-authority tier on top of the editor's day-to-day. Same underlying objects, different verbs, different attention inboxes → Writer gets its own shell; Editor and Publisher share one, with publisher-only actions expressed as disclosure preconditions rather than a third shell.
+Shell decision: per-role shells — a writer's day is producing and revising copy; an editor's and publisher's day is moving copy through review to print, with the publisher holding a final-authority tier on top of the editor's day-to-day. Same underlying objects, different verbs, different attention inboxes → Writer gets its own shell; Editor and Publisher share one, with role-specific nav items and actions expressed as disclosure preconditions rather than a third shell.
 
 ### Actors and tasks
 | Actor | Task | Frequency | Criticality |
@@ -53,9 +53,9 @@ Revision notes from an editor on any story, landing the moment a `RevisionCycle`
 ### Nav map — Editor + Publisher
 | # | Label | Serves |
 |---|---|---|
-| N1 | Story Queue | serves: review pitches and greenlight stories; send revision notes on a submitted draft; approve a manuscript for publication |
+| N1 | Story Queue | serves: review pitches and greenlight stories; send revision notes on a submitted draft; approve a manuscript for publication — editor permission |
 | N2 | Issues | serves: assemble the next issue's lineup; give final sign-off on an issue; schedule an issue's release date |
-| N3 | Release Calendar | serves: review the cross-issue release calendar |
+| N3 | Release Calendar | serves: review the cross-issue release calendar — publisher permission |
 | N4 | Compliance Export | serves: run the annual contributor-compliance export — rare-critical, justified: the export is a statutory filing a regulator requires every cycle, regardless of how few people touch it |
 
 ### Attention inbox — Editor + Publisher
@@ -65,7 +65,7 @@ Pitches awaiting a greenlight decision, drafts awaiting revision notes, manuscri
 | Surface | Merges (user concepts) | Shows derived-from | Empty-state teaching line* |
 |---|---|---|---|
 | My Stories / Story Queue | `PitchSubmission` + `ManuscriptRecord` — one "story," staged by tabs (Idea / Drafting / In Review / Published) | each card renders the story's title, author, current stage, and open `RevisionCycle` note count — never a raw status code | "No stories yet — pitch your first idea to get started." (Writer) / "Nothing waiting on you — new pitches will land in Idea." (Editor + Publisher) |
-| Issues | — (one `IssueAssembly` per issue; no merge) | each slot renders the story's title and author, not a manuscript reference; the Sign-off tab renders the full lineup, not a raw completeness flag | "No issue in progress — assemble the next lineup from Ready to Publish stories." |
+| Issues | — (one `IssueAssembly` per issue; no merge) | each slot renders the story's title and author, not a manuscript reference; the Sign-off tab renders the full lineup, not a raw completeness flag | "No issue in progress — assemble the next lineup from stories approved for publication." |
 | Release Calendar | — | renders each issue's title and scheduled date, not an issue reference | "No release dates scheduled yet — set one from an issue with a complete lineup." |
 | Compliance Export | — | renders the contributor and amount owed per prior export run, not a raw ledger row count | "No export has run yet — the first is due at the next filing cycle." |
 | Style Guide | — | static reference content | — |
@@ -88,10 +88,13 @@ Search / command palette reaches: any story by title or contributor name, at any
 ### Disclosure stages
 | Feature | Appears when (precondition) |
 |---|---|
+| Story Queue nav item | the viewer holds editor permission |
 | Story Queue / My Stories — "Submit for review" action | the story has a full draft saved, not just a bare pitch |
 | Issues — Sign-off tab | the viewer holds publisher permission AND the issue's lineup is marked complete by an editor |
-| Compliance Export nav item | the viewer holds publisher permission (shown permanently once granted — the rare-critical justification above is why it keeps a slot at all rather than being cut for low frequency) |
+| Issues — Sign-off tab — "Approve for print" action | the viewer holds publisher permission AND the issue's lineup is marked complete by an editor (same precondition as the Sign-off tab it's nested in) |
+| Release Calendar nav item | the viewer holds publisher permission |
 | Release Calendar — "Schedule release date" action | the target issue's lineup is marked complete |
+| Compliance Export nav item | the viewer holds publisher permission (shown permanently once granted — the rare-critical justification above is why it keeps a slot at all rather than being cut for low frequency) |
 
 ### Build plan (≤5 lines)
 1. Ship My Stories / Story Queue first — it merges the two most-used engine concepts (`PitchSubmission`, `ManuscriptRecord`) into the one surface both shells depend on.
@@ -114,7 +117,7 @@ Verdict: PASS — most-likely-to-fail step: Step 4 — a writer who has only eve
 | Step | Sees | Does | Risk |
 |---|---|---|---|
 | 1 | "Story Queue" in the sidebar, with a badge count on In Review | Clicks Story Queue | low |
-| 2 | Tabs: New Pitches / In Draft / In Review / Ready to Publish | Opens In Review | low |
+| 2 | Tabs: Idea / Drafting / In Review / Published | Opens In Review | low |
 | 3 | Submitted stories listed by title, author, and section — no ids | Opens one story | low |
 | 4 | A "Revision Notes" tab on the story itself | Opens Revision Notes, writes feedback, sends back to the writer | medium |
 Verdict: PASS — most-likely-to-fail step: Step 4 — an editor used to a separate "Revisions" section elsewhere may look for a top-level nav item before noticing notes live as a tab on the story.
