@@ -35,6 +35,7 @@ plugins/napkin/skills/ddd-align-workspace/
 plugins/lunchbox/skills/council-workspace/
 plugins/lunchbox/skills/doc-align-workspace/
 plugins/lunchbox/skills/brand-namer-workspace/
+plugins/lunchbox/skills/ui-first-workspace/
 
 # Pipeline-eval raw run output (full spec/ per model × scenario + stage transcripts).
 # Reproducible from scenarios/ + models.json; only results/ summaries are committed.

@@ -37,10 +37,11 @@ ddd-brief → ddd-domain → ddd-usecases → [ddd-api] → [ddd-screens] → er
 
 ## Lunchbox plugin — productivity skills
 
-`plugins/lunchbox` contains four skills: `goal`, `council`, `doc-align`, and `product-sparring`.
+`plugins/lunchbox` contains six skills: `goal`, `council`, `doc-align`, `product-sparring`, `brand-namer`, and `ui-first`.
 
 - Prompt-only skills with optional `references/` and `evals/`.
 - `product-sparring` also ships a `scripts/lint-canvas.mjs` harness.
+- `ui-first` is dual-mode (design | review) and must never write into a target project's `spec/`.
 
 ## Testing
 
