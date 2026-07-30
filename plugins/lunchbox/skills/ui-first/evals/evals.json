@@ -57,7 +57,7 @@
         {
           "name": "nav_derived_from_tasks",
           "type": "llm_judge",
-          "description": "Every nav row's serves: clause names a recurring task from the prompt's inventory (no orphan nav items), and every label in the first-shot walkthrough's Sees column exists verbatim in the produced nav map or surface inventory."
+          "description": "Every nav row's serves: clause names a recurring task from the prompt's inventory (no orphan nav items), and every label in the first-shot walkthrough's Sees column exists verbatim in the produced structure (nav map, surface inventory, attention inbox, or disclosure stages)."
         }
       ]
     },

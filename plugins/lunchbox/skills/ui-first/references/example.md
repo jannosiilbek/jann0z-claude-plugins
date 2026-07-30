@@ -59,7 +59,7 @@ Revision notes from an editor on any story, landing the moment a `RevisionCycle`
 | N4 | Compliance Export | serves: run the annual contributor-compliance export — rare-critical, justified: the export is a statutory filing a regulator requires every cycle, regardless of how few people touch it |
 
 ### Attention inbox — Editor + Publisher
-Pitches awaiting a greenlight decision, drafts awaiting revision notes, manuscripts awaiting publication approval (editor-facing); issues awaiting final sign-off (publisher-facing, visible only to publisher-permission holders). Actions available: open the story or issue at the flagged stage, approve or reject inline, open an issue's Sign-off tab directly.
+Pitches awaiting a greenlight decision, drafts awaiting revision notes, manuscripts awaiting publication approval (editor-facing); issues awaiting final sign-off, flagged "Needs your sign-off" (publisher-facing, visible only to publisher-permission holders). Actions available: open the story or issue at the flagged stage, approve or reject inline, open an issue's Sign-off tab directly.
 
 ### Surface inventory
 | Surface | Merges (user concepts) | Shows derived-from | Empty-state teaching line* |
@@ -78,7 +78,7 @@ Pitches awaiting a greenlight decision, drafts awaiting revision notes, manuscri
 |---|---|---|
 | `PitchSubmission` | Story — Idea stage | My Stories / Story Queue — Idea tab |
 | `ManuscriptRecord` | Story — Drafting / In Review / Published stage | My Stories / Story Queue — matching tab |
-| `RevisionCycle` | revision notes | tab on the story + Attention inbox |
+| `RevisionCycle` | Revision Notes | tab on the story + Attention inbox |
 | `IssueAssembly` | Issue | Issues |
 | `ContributorLedgerEntry` | never surfaces | — |
 

@@ -28,7 +28,7 @@ Designs or audits an application's UI structure — navigation, screens, surface
 
 ## Mode selection
 
-0. **Explicit argument wins**: an explicit `design` or `review` argument decides the mode outright. The rules below apply only when no argument is given.
+0. **Explicit argument wins**: an explicit `design` or `review` argument decides the mode outright. Rules 1–3 below apply only when no argument is given.
 1. **Intent verbs first**: design/plan/create/add/extend → design mode; review/audit/critique/check/assess → review mode.
 2. Artifact presence is only the **tiebreaker** when the verb is ambiguous.
 3. Still ambiguous → ask one question.
@@ -124,9 +124,9 @@ Most at risk: P<n> — <why>
 Verdict: PASS | FAIL — most-likely-to-fail step: <step>
 ```
 
-**Engine-name backtick rule** (in SKILL.md, applies to both templates): whenever an engine/aggregate name appears anywhere in the output — boundary translation table, surface-merge notes, prose — it is backticked (`` `PartyAccount` ``). Nav and surface **labels** are never engine names; the leak-check diff renames any hit before emitting. This is what keeps the deterministic leak assertions sound: a bare `| PartyAccount` in the output can only be a leaked table cell, never a legitimate boundary-table row (those render as ``| `PartyAccount` |``).
+**Engine-name backtick rule** (applies to both templates): whenever an engine/aggregate name appears anywhere in the output — boundary translation table, surface-merge notes, prose — it is backticked (`` `PartyAccount` ``). Nav and surface **labels** are never engine names; the leak-check diff renames any hit before emitting. This is what keeps the deterministic leak assertions sound: a bare `| PartyAccount` in the output can only be a leaked table cell, never a legitimate boundary-table row (those render as ``| `PartyAccount` |``).
 
-First-shot test rules (make it falsifiable, not theater): **in both modes, one walkthrough per primary actor's top task** — never a single global walkthrough when shells diverge. When one shared shell serves all roles, a single walkthrough of the most load-bearing actor's top task suffices. *Sees* may contain only labels that literally exist in the produced nav map / surface inventory — inventing an affordance mid-walkthrough is a spec bug, not a pass. *Does* is the click a domain expert would choose knowing the domain but not the product. Hard-fail rule: any step whose correct next click requires an engine/internal term, or a location not derivable from the task, fails the test. The most-likely-to-fail step is named even on PASS. Review mode runs the same table against the actual ingested labels.
+First-shot test rules (make it falsifiable, not theater): **in both modes, one walkthrough per primary actor's top task** — never a single global walkthrough when shells diverge. When one shared shell serves all roles, a single walkthrough of the most load-bearing actor's top task suffices. *Sees* may contain only labels that literally exist in the produced structure — nav map, surface inventory, attention inbox, or disclosure stages — inventing an affordance mid-walkthrough is a spec bug, not a pass. *Does* is the click a domain expert would choose knowing the domain but not the product. Hard-fail rule: any step whose correct next click requires an engine/internal term, or a location not derivable from the task, fails the test. The most-likely-to-fail step is named even on PASS. Review mode runs the same table against the actual ingested labels.
 
 **Review-mode template**:
 
@@ -147,7 +147,7 @@ P6: <token> — <one-line evidence>
 
 ### Ordered fixes            ← deduped by move; one merge can clear three findings
 1. <fix-move>: <concrete instruction>
-   (spec/screens.md target: keyed by SC-id, ddd-screens delta phrasing, ends "apply via ddd-screens")
+   (spec/screens.md target: keyed by SC-id, ddd-screens delta phrasing, ends "apply via ddd-screens")   ← commentary — emit only for spec/screens.md targets
 
 ### First-shot test — <actor>: <top task>
 | Step | Sees | Does | Risk |
