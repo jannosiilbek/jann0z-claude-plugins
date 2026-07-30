@@ -32,7 +32,7 @@ Per-principle detail behind the closed fix-move list in SKILL.md: what each viol
 ### Smells
 
 - Two nav sections whose CRUD forms carry nearly identical fields (name, contact info, status) with a lifecycle stage or foreign key as the only real distinguisher — e.g., a `Leads` section and a `Customers` section that are the same person before and after a sale closes.
-- A route tree with two list routes over the same underlying table, split only by a status filter (`/pending-clients` and `/active-clients`) instead of one destination with a filter control.
+- A route tree has two fully independent route pairs — `/vendors` and `/suppliers` — each backed by its own model, its own primary key, and its own CRUD screen, because the two classes arrived from separate integrations or separate legacy modules; no status field or lifecycle stage separates them, they are simply two different engine classes that every user interview calls by one shared word ("the people I buy from").
 - The same real-world object has two different edit forms depending on which stage it's in, and the user must already know which section to open to find the version they need.
 - A search inside the product surfaces two unrelated result rows for what the user considers one thing, because the concept is double-homed across two surfaces with no cross-link between them.
 - A boundary check (reading the underlying model against the nav/surface labels) turns up two different classes mapped to two different user-facing names that any user in an interview would call the same word.
