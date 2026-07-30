@@ -1,0 +1,102 @@
+{
+  "skill_name": "ui-first",
+  "evals": [
+    {
+      "id": 0,
+      "name": "design-mode-fieldflow",
+      "prompt": "Design the UX for FieldFlow, our field-service management app. Users and their recurring work: Dispatcher (daily): assign incoming jobs to technicians; rebalance today's schedule when things slip; handle urgent customer requests; look up a customer's service history when they call. Technician (daily, on a phone): see today's jobs in order; complete each job's checklist and log parts used; collect customer sign-off; flag blockers. Office manager (daily/weekly): send invoices; chase overdue payments; approve technicians' timesheets; approve quotes above threshold; onboard new customers; run the end-of-month revenue report; maintain the price list; review customer complaints; and — rare but critical — file an insurance incident report. Engine model (already built, DDD, do not redesign it): aggregates PartyAccount, ProspectRecord, ClientRecord, DispatchAssignment, WorkOrder, RemittanceDocument, ApprovalRequest, LedgerPosting. ProspectRecord converts to ClientRecord on first signed quote; both belong to a PartyAccount. RemittanceDocument derives from completed WorkOrders. ApprovalRequest carries both timesheet and quote approvals. LedgerPosting is internal double-entry bookkeeping. This is the complete inventory — don't ask questions; produce the full structure.",
+      "expected_output": "Full design-mode contract: per-role nav maps (office manager consolidated to ≤7), one attention inbox per role, ApprovalRequest work surfaced as queue not nav, boundary translation table with backticked engine names and LedgerPosting marked never-surfaces, ≤5-line build plan naming the most-at-risk principle, falsifiable first-shot walkthrough per primary actor. No aggregate names as nav labels. No files written.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "no_schema_leak_in_nav",
+          "type": "string_absent_all",
+          "patterns": ["| PartyAccount", "| ProspectRecord", "| ClientRecord", "| DispatchAssignment", "| RemittanceDocument", "| ApprovalRequest", "| LedgerPosting", "|PartyAccount", "|ProspectRecord", "|ClientRecord", "|DispatchAssignment", "|RemittanceDocument", "|ApprovalRequest", "|LedgerPosting"],
+          "description": "No bare aggregate name appears as a table-cell label; backticked boundary-table mentions are exempt by construction."
+        },
+        {
+          "name": "nav_cap_respected",
+          "type": "string_absent_all",
+          "patterns": ["| N8 |", "|N8|"],
+          "description": "No nav table exceeds 7 rows; ids restart at N1 per role."
+        },
+        {
+          "name": "at_risk_principle_named",
+          "type": "string_match",
+          "patterns": ["Most at risk: P"],
+          "description": "At-risk principle identified by name."
+        },
+        {
+          "name": "boundary_table_present",
+          "type": "string_match",
+          "patterns": ["Boundary translation table"],
+          "description": "Boundary translation table present in output."
+        },
+        {
+          "name": "never_surfaces_marked",
+          "type": "string_match",
+          "patterns": ["never surfaces"],
+          "description": "LedgerPosting (internal bookkeeping) is marked never-surfaces in the boundary table."
+        },
+        {
+          "name": "build_plan_present",
+          "type": "string_match",
+          "patterns": ["Build plan"],
+          "description": "Build plan section present in output."
+        },
+        {
+          "name": "nothing_written",
+          "type": "file_unchanged",
+          "description": "No files are created or modified — output is in-chat."
+        },
+        {
+          "name": "no_napkin_artifact",
+          "type": "file_absent",
+          "description": "spec/screens.md does not exist after the run — the skill never writes napkin's artifact."
+        },
+        {
+          "name": "nav_derived_from_tasks",
+          "type": "llm_judge",
+          "description": "Every nav row's serves: clause names a recurring task from the prompt's inventory (no orphan nav items), and every label in the first-shot walkthrough's Sees column exists verbatim in the produced nav map or surface inventory."
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "review-mode-planted-leaks",
+      "prompt": "Audit our app's UI structure. Navigation config (nav.ts): top-level items = Dashboard, PartyAccounts, ProspectRecords, ClientRecords, DispatchAssignments, WorkOrders, RemittanceDocuments, ApprovalRequests, PendingReviews, CompliancePortal. Screen notes: RemittanceDocumentDetail renders columns remittance_id, party_account_id, agreement_id, amount, status. CompliancePortal is visible to every role from day one and is empty until a first audit cycle is configured. Empty states we already wrote: WorkOrders — \"No jobs yet. Accept a quote to schedule your first job.\"; RemittanceDocuments — \"Nothing to invoice. Completed jobs appear here ready to bill.\"; PendingReviews — \"All clear — approvals you need to act on will land here.\" Who uses it: dispatchers assign and rebalance jobs all day and look up customers when they call; technicians work their day's job list on a phone; the office manager invoices, chases overdue payments, and approves timesheets and quotes. Audit this structure.",
+      "expected_output": "Review-mode contract: per-element findings citing literal nav entries/columns, principle rollup failing P1–P5 (10 schema-named nav items; Prospect/Client split; approval queues as nav destinations; raw foreign-key columns; day-one-for-everyone compliance module) while P6 passes (the empty-state copy genuinely teaches next actions), ordered fixes using canonical move names, first-shot walkthrough, no files touched.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "planted_violations_not_passed",
+          "type": "string_absent_all",
+          "patterns": ["P1: PASS", "P2: PASS", "P3: PASS", "P4: PASS", "P5: PASS"],
+          "description": "None of the five planted principles is marked PASS (FAIL or AT-RISK both acceptable)."
+        },
+        {
+          "name": "control_principle_passes",
+          "type": "string_match",
+          "patterns": ["P6: PASS"],
+          "description": "The deliberately-good empty states pass — defeats flag-everything auditing."
+        },
+        {
+          "name": "canonical_fix_moves_used",
+          "type": "string_match",
+          "patterns": ["merge-to-tabs", "demote-to-queue", "derive-and-show", "stage-behind-precondition"],
+          "description": "Fixes use the canonical hyphenated move names verbatim."
+        },
+        {
+          "name": "report_only",
+          "type": "file_unchanged",
+          "description": "Review mode edits nothing."
+        },
+        {
+          "name": "findings_cite_fixture_elements",
+          "type": "llm_judge",
+          "description": "Each failed principle's finding cites the specific fixture element by name (e.g. ProspectRecords/ClientRecords nav entries, party_account_id or agreement_id column, CompliancePortal, ApprovalRequests or PendingReviews), not generic descriptions."
+        }
+      ]
+    }
+  ]
+}
