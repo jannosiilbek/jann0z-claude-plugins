@@ -55,16 +55,16 @@
           "description": "spec/screens.md does not exist after the run — the skill never writes napkin's artifact."
         },
         {
-          "name": "grounding_gate_blocked",
+          "name": "grounding_banner_present",
           "type": "string_match",
-          "patterns": ["Grounding lookup: not run"],
-          "description": "The prompt supplies a complete inventory and forbids questions, so the gate blocks the lookup and the output says so."
+          "patterns": ["Grounding lookup"],
+          "description": "The decision line is emitted — the gate is never silent. Matches the label only, since markdown emphasis on the label is expected and permitted."
         },
         {
           "name": "no_research_performed",
           "type": "string_absent_all",
-          "patterns": ["Grounding lookup: run", "Cited obligations", "User nouns", "https://"],
-          "description": "No lookup ran: no run banner, no lookup-only sections, no citations."
+          "patterns": ["Grounding lookup: run", "Grounding lookup:** run", "Cited obligations", "User nouns", "https://"],
+          "description": "The prompt supplies a complete inventory and forbids questions, so the gate blocked the lookup: no run banner in either emphasis form, no lookup-only sections, no citations."
         },
         {
           "name": "nav_derived_from_tasks",
@@ -124,8 +124,13 @@
         {
           "name": "grounding_gate_blocked_in_review",
           "type": "string_absent_all",
-          "patterns": ["Grounding lookup: run", "Cited obligations", "User nouns", "https://"],
+          "patterns": ["Grounding lookup: run", "Grounding lookup:** run", "Cited obligations", "User nouns", "https://"],
           "description": "Review mode never runs the grounding lookup — external evidence must not be in context while principle verdicts are assigned."
+        },
+        {
+          "name": "no_absence_from_silence_or_dead_surface_findings",
+          "type": "llm_judge",
+          "description": "No finding outside P1's coverage check cites the absence of an artifact (an empty state, column, or link the fixture simply did not mention) as evidence — the fixture's three listed empty states are a sample offered for audit, not a manifest. And no finding requires content added to a surface that another finding in the same audit cuts, merges, or gates behind a precondition."
         },
         {
           "name": "findings_cite_fixture_elements",
@@ -160,9 +165,15 @@
           "description": "No nav table exceeds 7 rows; ids restart at N1 per role."
         },
         {
-          "name": "grounding_gate_blocked",
+          "name": "grounding_banner_present",
           "type": "string_match",
-          "patterns": ["Grounding lookup: not run"],
+          "patterns": ["Grounding lookup"],
+          "description": "The decision line is emitted — the gate is never silent. Label only; markdown emphasis on it is expected."
+        },
+        {
+          "name": "no_research_performed",
+          "type": "string_absent_all",
+          "patterns": ["Grounding lookup: run", "Grounding lookup:** run", "Cited obligations", "User nouns", "https://"],
           "description": "Complete inventory plus don't-ask instruction blocks the lookup — this eval is fully deterministic and never touches the network."
         },
         {

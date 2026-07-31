@@ -109,30 +109,30 @@ Search / command palette reaches: any story by title or contributor name, at any
 Most at risk: P3 — Sign-off and revision notes are stateful and demo well as their own screens; the discipline to keep them as tabs-plus-inbox only is the easiest thing to lose under deadline pressure.
 
 ### First-shot test — Writer: draft or revise a manuscript
-| Step | Sees | Does | Risk |
-|---|---|---|---|
-| 1 | "My Stories" in the sidebar | Clicks My Stories | low |
-| 2 | Tabs: Idea / Drafting / In Review / Published, with story cards under each | Opens the story sitting in Drafting | low |
-| 3 | The draft editor, current body text and word count | Edits the text, saves | low |
-| 4 | A "Submit for review" action, present only now that a full draft is saved | Clicks Submit for review | medium |
+| Step | Sees | Source | Does | Risk |
+|---|---|---|---|---|
+| 1 | "My Stories" in the sidebar | Nav map — Writer, N1 | Clicks My Stories | low |
+| 2 | Tabs: Idea / Drafting / In Review / Published, with story cards under each | Surface inventory — My Stories / Story Queue (tabs; cards render title, author, stage) | Opens the story sitting in Drafting | low |
+| 3 | The draft editor, current body text and word count | Surface inventory — My Stories / Story Queue (Drafting tab) | Edits the text, saves | low |
+| 4 | A "Submit for review" action, present only now that a full draft is saved | Disclosure stages — "Submit for review" action | Clicks Submit for review | medium |
 Verdict: PASS — most-likely-to-fail step: Step 4 — a writer who has only ever saved partial notes before won't have seen Submit for review appear yet, and may hunt for it believing the app is missing a submit action.
 
 ### First-shot test — Editor: send revision notes on a submitted draft
-| Step | Sees | Does | Risk |
-|---|---|---|---|
-| 1 | "Story Queue" in the sidebar, with a badge count on In Review | Clicks Story Queue | low |
-| 2 | Tabs: Idea / Drafting / In Review / Published | Opens In Review | low |
-| 3 | Submitted stories listed by title, author, and section — no ids | Opens one story | low |
-| 4 | A "Revision Notes" tab on the story itself | Opens Revision Notes, writes feedback, sends back to the writer | medium |
+| Step | Sees | Source | Does | Risk |
+|---|---|---|---|---|
+| 1 | "Story Queue" in the sidebar, with a badge count on In Review | Nav map — Editor + Publisher, N1; count from Attention inbox (drafts awaiting revision notes) | Clicks Story Queue | low |
+| 2 | Tabs: Idea / Drafting / In Review / Published | Surface inventory — My Stories / Story Queue (tabs) | Opens In Review | low |
+| 3 | Submitted stories listed by title, author, and section — no ids | Surface inventory — My Stories / Story Queue (shows derived-from) | Opens one story | low |
+| 4 | A "Revision Notes" tab on the story itself | Boundary table — `RevisionCycle` → Revision Notes, home surface "tab on the story" | Opens Revision Notes, writes feedback, sends back to the writer | medium |
 Verdict: PASS — most-likely-to-fail step: Step 4 — an editor used to a separate "Revisions" section elsewhere may look for a top-level nav item before noticing notes live as a tab on the story.
 
 ### First-shot test — Publisher: give final sign-off on an issue
-| Step | Sees | Does | Risk |
-|---|---|---|---|
-| 1 | "Issues" in the sidebar | Clicks Issues | low |
-| 2 | The current issue flagged "Needs your sign-off" (same flag as in the Attention inbox) | Opens the flagged issue | low |
-| 3 | The assembled lineup, and a Sign-off tab (visible because the lineup is complete and the viewer holds publisher permission) | Opens Sign-off | medium |
-| 4 | An "Approve for print" action | Clicks Approve for print | high |
+| Step | Sees | Source | Does | Risk |
+|---|---|---|---|---|
+| 1 | "Issues" in the sidebar | Nav map — Editor + Publisher, N2 | Clicks Issues | low |
+| 2 | The current issue flagged "Needs your sign-off" (same flag as in the Attention inbox) | Attention inbox — Editor + Publisher (flagged "Needs your sign-off") | Opens the flagged issue | low |
+| 3 | The assembled lineup, and a Sign-off tab (visible because the lineup is complete and the viewer holds publisher permission) | Surface inventory — Issues (Sign-off tab renders the full lineup); Disclosure stages — Issues — Sign-off tab | Opens Sign-off | medium |
+| 4 | An "Approve for print" action | Disclosure stages — Issues — Sign-off tab — "Approve for print" action | Clicks Approve for print | high |
 Verdict: PASS — most-likely-to-fail step: Step 4 — if an editor hasn't yet marked the lineup complete, the Sign-off tab is absent rather than disabled, and a publisher unaware of that precondition may read it as a bug instead of a blocked upstream step.
 
 ---
@@ -181,10 +181,10 @@ Defect: `PitchSubmission` and `ManuscriptRecord` are one user-facing concept (a 
 6. stage-behind-precondition: gate "Compliance Export" to publisher permission and state that precondition next to the nav entry so it stays checkable — clears the Compliance Export finding.
 
 ### First-shot test — Editor: send revision notes on a submitted draft
-| Step | Sees | Does | Risk |
-|---|---|---|---|
-| 1 | Nav items "Pitch Submissions," "Manuscript Records," "Pending Revisions," "Issue Assembly," "Ledger Export," "Compliance Export" — none named for reviewing a draft | Guesses "Manuscript Records" is the closest match | medium |
-| 2 | A raw table of manuscript rows: `id`, `status_code`, `contributor_id`, `target_issue_id` | Scans for the submitted draft by matching `contributor_id` — not a name | high |
-| 3 | No action on this row to attach revision notes | Navigates to "Pending Revisions," hoping the note-writing path lives there instead | high |
-| 4 | Pending Revisions lists cycles by `revision_id` and `manuscript_id`, no title or author rendered | Cross-references the `manuscript_id` from step 2 to guess which row matches | high |
+| Step | Sees | Source | Does | Risk |
+|---|---|---|---|---|
+| 1 | Nav items "Pitch Submissions," "Manuscript Records," "Pending Revisions," "Issue Assembly," "Ledger Export," "Compliance Export" — none named for reviewing a draft | nav component (all six route files) | Guesses "Manuscript Records" is the closest match | medium |
+| 2 | A raw table of manuscript rows: `id`, `status_code`, `contributor_id`, `target_issue_id` | `routes/manuscript-records.tsx` | Scans for the submitted draft by matching `contributor_id` — not a name | high |
+| 3 | No action on this row to attach revision notes | `routes/manuscript-records.tsx` — no such action declared | Navigates to "Pending Revisions," hoping the note-writing path lives there instead | high |
+| 4 | Pending Revisions lists cycles by `revision_id` and `manuscript_id`, no title or author rendered | `routes/pending-revisions.tsx` | Cross-references the `manuscript_id` from step 2 to guess which row matches | high |
 Verdict: FAIL — most-likely-to-fail step: Step 4 — resolving which pending revision belongs to the draft found in step 2 requires manually matching a raw `manuscript_id` across two disconnected table dumps, exactly the mental join a domain-expert stranger cannot be expected to perform.
