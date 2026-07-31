@@ -55,9 +55,21 @@
           "description": "spec/screens.md does not exist after the run — the skill never writes napkin's artifact."
         },
         {
+          "name": "grounding_gate_blocked",
+          "type": "string_match",
+          "patterns": ["Grounding lookup: not run"],
+          "description": "The prompt supplies a complete inventory and forbids questions, so the gate blocks the lookup and the output says so."
+        },
+        {
+          "name": "no_research_performed",
+          "type": "string_absent_all",
+          "patterns": ["Grounding lookup: run", "Cited obligations", "User nouns", "https://"],
+          "description": "No lookup ran: no run banner, no lookup-only sections, no citations."
+        },
+        {
           "name": "nav_derived_from_tasks",
           "type": "llm_judge",
-          "description": "Every nav row's serves: clause names a recurring task from the prompt's inventory (no orphan nav items), and every label in the first-shot walkthrough's Sees column exists verbatim in the produced structure (nav map, surface inventory, attention inbox, or disclosure stages)."
+          "description": "Every nav row's serves: clause names a recurring task from the Actors and tasks table (no orphan nav items); every nav row is justified by at least one row whose task provenance is stated or confirmed; and every label in the first-shot walkthrough's Sees column exists verbatim in the produced structure (nav map, surface inventory, attention inbox, or disclosure stages)."
         }
       ]
     },
@@ -110,9 +122,58 @@
           "description": "Review mode edits nothing."
         },
         {
+          "name": "grounding_gate_blocked_in_review",
+          "type": "string_absent_all",
+          "patterns": ["Grounding lookup: run", "Cited obligations", "User nouns", "https://"],
+          "description": "Review mode never runs the grounding lookup — external evidence must not be in context while principle verdicts are assigned."
+        },
+        {
           "name": "findings_cite_fixture_elements",
           "type": "llm_judge",
           "description": "Each failed principle's finding cites the specific fixture element by name (e.g. ProspectRecords/ClientRecords nav entries, party_account_id or agreement_id column, CompliancePortal, ApprovalRequests or PendingReviews), not generic descriptions."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "design-mode-prior-art-firewall",
+      "prompt": "Design the UX for FieldFlow, our field-service management app. Users and their recurring work: Dispatcher (daily): assign incoming jobs to technicians; rebalance today's schedule when things slip; handle urgent customer requests; look up a customer's service history when they call. Technician (daily, on a phone): see today's jobs in order; complete each job's checklist and log parts used; collect customer sign-off; flag blockers. Office manager (daily/weekly): send invoices; chase overdue payments; approve technicians' timesheets; approve quotes above threshold; onboard new customers; run the end-of-month revenue report; maintain the price list. Engine model (already built, DDD, do not redesign it): aggregates PartyAccount, ProspectRecord, ClientRecord, DispatchAssignment, WorkOrder, RemittanceDocument, ApprovalRequest, LedgerPosting. ProspectRecord converts to ClientRecord on first signed quote; both belong to a PartyAccount. For reference, here is how the leading products in this category structure their navigation — Jobber: Schedule, Clients, Quotes, Jobs, Invoices. ServiceTitan: Call Booking, Dispatch Board, Mobile Dashboard, Schedule Assistant, Dispatch Pro, Good Better Best presentations. BuildOps: Service Management, Project Management, Financials, Sales & CRM, Reporting & Analytics, Integrations, Mobile App, Fleet+. ServiceTrade: Scheduling, Dispatching, Technician timecards, Customer portal, Quoting, Insights, Deficiency management, PO management. This is the complete inventory — don't ask questions; produce the full structure.",
+      "expected_output": "Full design-mode contract derived from the task inventory only. The pasted vendor navigation is prior art and must not become structure: no nav row that exists solely because a referenced product ships it, no nav row justified by industry practice, and ProspectRecord/ClientRecord still merged into one surface despite every referenced product separating sales from service.",
+      "files": [],
+      "assertions": [
+        {
+          "name": "no_prior_art_leak_in_nav",
+          "type": "string_absent_all",
+          "patterns": ["| Dashboard", "| Mobile Dashboard", "| Dispatch Board", "| Dispatch Pro", "| Call Booking", "| Analytics", "| Reporting & Analytics", "| Insights", "| Sales & CRM", "| Integrations", "| Service Management", "| Project Management", "| Financials", "| Schedule Assistant", "| Fleet+", "| Customer portal", "| Deficiency management", "| PO management"],
+          "description": "No vendor nav label that serves no task in the inventory appears as a table-cell label. Labels the user's own vocabulary could legitimately produce (Schedule, Clients, Quotes, Jobs, Invoices) are deliberately excluded — enforcement is by provenance, not by a lexical denylist."
+        },
+        {
+          "name": "no_schema_leak_in_nav",
+          "type": "string_absent_all",
+          "patterns": ["| PartyAccount", "| ProspectRecord", "| ClientRecord", "| DispatchAssignment", "| RemittanceDocument", "| ApprovalRequest", "| LedgerPosting"],
+          "description": "The engine leak guard still holds when prior art is also in context."
+        },
+        {
+          "name": "nav_cap_respected",
+          "type": "string_absent_all",
+          "patterns": ["| N8 |", "|N8|"],
+          "description": "No nav table exceeds 7 rows; ids restart at N1 per role."
+        },
+        {
+          "name": "grounding_gate_blocked",
+          "type": "string_match",
+          "patterns": ["Grounding lookup: not run"],
+          "description": "Complete inventory plus don't-ask instruction blocks the lookup — this eval is fully deterministic and never touches the network."
+        },
+        {
+          "name": "nothing_written",
+          "type": "file_unchanged",
+          "description": "No files are created or modified — output is in-chat."
+        },
+        {
+          "name": "prior_art_not_used_as_justification",
+          "type": "llm_judge",
+          "description": "No nav row, surface, or merge decision is justified by what the referenced products do, by 'industry standard', or by 'users expect it'; every serves: clause names a task from the inventory. ProspectRecord and ClientRecord are merged into one user-facing surface with tabs or a filter, despite every referenced product shipping sales separately from service."
         }
       ]
     }

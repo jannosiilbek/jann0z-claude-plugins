@@ -23,22 +23,26 @@ Same actors, same engine, designed from the task inventory first and read agains
 ## UI structure — Longhand
 Form factor: sidebar ≤7
 Shell decision: per-role shells — a writer's day is producing and revising copy; an editor's and publisher's day is moving copy through review to print, with the publisher holding a final-authority tier on top of the editor's day-to-day. Same underlying objects, different verbs, different attention inboxes → Writer gets its own shell; Editor and Publisher share one, with role-specific nav items and actions expressed as disclosure preconditions rather than a third shell.
+Grounding lookup: not run — the prompt supplied a complete inventory
 
 ### Actors and tasks
-| Actor | Task | Frequency | Criticality |
-|---|---|---|---|
-| Writer | Pitch a new story idea | weekly | medium |
-| Writer | Draft or revise a manuscript | daily | high |
-| Writer | Respond to an editor's revision notes | daily | high |
-| Writer | Update contributor profile and payment details | quarterly | medium |
-| Editor | Review pitches and greenlight stories | daily | high |
-| Editor | Send revision notes on a submitted draft | daily | high |
-| Editor | Approve a manuscript for publication | weekly | high |
-| Editor | Assemble the next issue's lineup | weekly | high |
-| Publisher | Review the cross-issue release calendar | weekly | medium |
-| Publisher | Give final sign-off on an issue | monthly | high |
-| Publisher | Schedule an issue's release date | monthly | medium |
-| Publisher | Run the annual contributor-compliance export | yearly | high |
+| Actor | Task | Frequency | Criticality | Provenance (task/freq/crit) |
+|---|---|---|---|---|
+| Writer | Pitch a new story idea | weekly | medium | stated/stated/stated |
+| Writer | Draft or revise a manuscript | daily | high | stated/stated/stated |
+| Writer | Respond to an editor's revision notes | daily | high | stated/stated/stated |
+| Writer | Look up house style before submitting | weekly | medium | stated/assumed/assumed |
+| Writer | Update contributor profile and payment details | quarterly | medium | stated/stated/stated |
+| Editor | Review pitches and greenlight stories | daily | high | stated/stated/stated |
+| Editor | Send revision notes on a submitted draft | daily | high | stated/stated/stated |
+| Editor | Approve a manuscript for publication | weekly | high | stated/stated/stated |
+| Editor | Assemble the next issue's lineup | weekly | high | stated/stated/stated |
+| Publisher | Review the cross-issue release calendar | weekly | medium | stated/stated/stated |
+| Publisher | Give final sign-off on an issue | monthly | high | stated/stated/stated |
+| Publisher | Schedule an issue's release date | monthly | medium | stated/stated/stated |
+| Publisher | Run the annual contributor-compliance export | yearly | high | stated/stated/stated |
+
+The Style Guide row is `stated/assumed/assumed`: the writers named the task, nobody stated how often they consult it or what it costs to skip. The task cell is `stated`, so it is nav-eligible; had the task itself been inferred, N2 below could not exist.
 
 ### Nav map — Writer
 | # | Label | Serves |

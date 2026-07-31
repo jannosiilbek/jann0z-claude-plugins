@@ -41,7 +41,7 @@ ddd-brief → ddd-domain → ddd-usecases → [ddd-api] → [ddd-screens] → er
 
 - Prompt-only skills with optional `references/` and `evals/`.
 - `product-sparring` also ships a `scripts/lint-canvas.mjs` harness.
-- `ui-first` is dual-mode (design | review) and must never write into a target project's `spec/`.
+- `ui-first` is dual-mode (design | review) and must never write into a target project's `spec/`. Its gated grounding lookup is the only place in either plugin that spawns subagents with web access; they run isolated, return tables only, and inherit the skill's never-write guardrails.
 
 ## Testing
 

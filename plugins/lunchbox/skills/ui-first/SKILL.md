@@ -39,18 +39,27 @@ Designs or audits an application's UI structure — navigation, screens, surface
 Priority-ordered sources; read what exists, ask only for what's genuinely missing:
 
 1. The conversation/prompt content itself.
-2. `spec/usecases.md` + `spec/brief.md` (napkin project: a UC is literally actor + recurring task — the interview collapses to zero questions).
+2. `spec/usecases.md` + `spec/brief.md` (napkin project: a UC is literally actor + recurring task — the interview collapses to zero questions *on the task set*; a UC carries neither frequency nor criticality, and both still have to be established).
 3. `product.md` Personas (product-sparring project: Role/Goal/Friction).
 4. README / product docs.
-5. Route/nav code (discovery recipe below).
+5. Route/nav code (discovery recipe below). **Source 5 never yields a grounded task** — it is the artifact under design or audit, not evidence about anyone's work.
+6. **Grounding lookup** — gated, design mode only; see `references/grounding.md`.
 
-Then **at most one batched question round** covering only missing actors/tasks; then proceed with stated assumptions. When the prompt already supplies a complete inventory, proceed without asking anything. The task inventory records **frequency and criticality** per task.
+Then **at most one batched question round** covering only missing actors/tasks; then proceed with stated assumptions. When the prompt already supplies a complete inventory — or instructs not to ask — **source 6 and the question round are both suppressed**. The task inventory records **frequency, criticality, and per-cell provenance** per task.
+
+**Grounding lookup gate** — compute once, after reading sources 1–5, before the question round. A task is **grounded** when a source from 1–4 states it as something a named actor does repeatedly.
+
+- **Do not run it** when any of these holds: the prompt supplies a complete inventory, instructs not to ask, or instructs to proceed with what is given; the mode is review; no source states a market or jurisdiction; no research tool is available.
+- **Otherwise run it** only when: no source names any actor's tasks at all; or a named actor has 0 grounded tasks; or the primary actor has fewer than 3 grounded tasks.
+- No blocker and no trigger → do not run it.
+
+Read `references/grounding.md` before running it. It asks the user nothing, writes nothing, spawns nothing that writes, and terminates at the end of intake — only its tables cross into design step 3. Either way, design mode's output states the decision on the `Grounding lookup:` line of the contract.
 
 ## Design mode
 
-1. **Intake** (above) → actor → recurring-task inventory (frequency + criticality).
+1. **Intake** (above) → actor → recurring-task inventory (frequency, criticality, per-cell provenance).
 2. **Shell decision**: when roles' workdays diverge, decide explicitly — one shared nav or per-role shells. The ≤7 cap applies **per role**; the attention inbox is per role; permissions are expressed as disclosure preconditions.
-3. **Draft nav + surface inventory from the task inventory ALONE** — the domain model is deliberately not yet in context for this step (anti-anchoring: entity names in context bias nav labels). Nav slots go to frequent tasks; rare-but-critical tasks get a documented guaranteed path (nav placement only with stated justification).
+3. **Draft nav + surface inventory from the task inventory ALONE** — the domain model is deliberately not yet in context for this step (anti-anchoring: entity names in context bias nav labels — and so does any external product's navigation, which anchors harder because it needs no transformation to become a label). Nav slots are allocated **only from rows whose task provenance is `stated` or `confirmed`**, and among those go to frequent tasks; a `cited`/`assumed` row may share an existing surface or be raised in the question round for promotion, never hold a slot alone. Rare-but-critical tasks get a documented guaranteed path (nav placement only with stated justification).
 4. **Now read the domain model** (glossary/DBML/schema/code, read-only) and use it for exactly three things: name the concept merges in the surface inventory; fill the boundary translation table; run a leak-check diff of drafted nav/surface names against aggregate names.
 5. **Emit the design-mode output contract** (below).
 6. **First-shot test walkthrough** — once per primary actor's top task, falsifiable format (below).
@@ -73,6 +82,9 @@ Before emitting the first audit of a session, skim `references/example.md`'s aud
 Closed vocabularies used by both contracts:
 
 - **Verdict tokens**: `PASS` | `AT-RISK` | `FAIL` (per principle, written as `P<n>: <token>`).
+- **Frequency tokens**: `per-day` | `daily` | `weekly` | `monthly` | `quarterly` | `yearly` | `event-driven`. No free text — "recurring, rate unknown" is not a frequency; it is `assumed` provenance on whichever token is the honest guess.
+- **Criticality tokens**: `critical` | `high` | `medium` | `low`.
+- **Provenance tokens**: `stated` (the user said it) | `confirmed` (the user confirmed a row put to them) | `cited` (a source states it verbatim) | `assumed` (model inference). Written **per cell**, as `<task>/<frequency>/<criticality>` — task existence and cadence fabricate independently, so one token per row would hide the failure. Precedence is strict: a cell never rises without a user act or a verbatim quote. Nav slots come only from rows whose task cell is `stated` or `confirmed`.
 - **Fix moves** (canonical hyphenated names; detail lives in `references/playbook.md`):
   - `cut-nav-item` — remove a nav item that serves no recurring task.
   - `rename-to-user-noun` — relabel a nav/surface label from an engine/aggregate name to the user's word for the concept.
@@ -82,17 +94,26 @@ Closed vocabularies used by both contracts:
   - `stage-behind-precondition` — gate a feature so it appears only once its precondition exists, instead of showing it to everyone on day one.
   - `teach-empty-state` — replace a blank list/table with an onboarding surface that names the next action.
 
-**Template metatext**: fragments annotated with "←" arrows inside the fenced templates below are commentary and are never emitted in output; the asterisk footnote line under the surface inventory (marked `*`) IS part of the output.
+**Template metatext**: fragments annotated with "←" arrows inside the fenced templates below are commentary and are never emitted in output; the asterisk footnote line under the surface inventory (marked `*`) IS part of the output. A block marked **lookup-only** is emitted whole when the grounding lookup ran and omitted whole when it did not — the `Grounding lookup:` line is what says which, so an omitted block is never silent.
 
-**Design-mode template** (all sections mandatory unless marked):
+**Design-mode template** (all sections mandatory unless marked lookup-only):
 
 ```
 ## UI structure — <product/feature>
 Form factor: <sidebar ≤7 | bottom tabs ≤5 | ...>   ← states the cap it designs to
 Shell decision: <single shared nav | per-role shells> — <reason>
+Grounding lookup: not run — <reason>   ← or: run — <n> actors, <k> cited rows, <j> obligations, 0 unconfirmed rows in nav
 
 ### Actors and tasks
-| Actor | Task | Frequency | Criticality |
+| Actor | Task | Frequency | Criticality | Provenance (task/freq/crit) |
+
+### Cited obligations — <market/jurisdiction>   ← lookup-only section; a row needs all three of cadence, recipient, consequence
+| Actor | Obligation | Cadence / deadline | External recipient | Consequence of failure | Source class | Verbatim |
+
+### User nouns — <market/jurisdiction>          ← lookup-only section
+| Concept | User's word | Source class |
+
+Not found: <fields the lookup could not evidence, per actor>   ← lookup-only line; never empty
 
 ### Nav map — <role>            ← one per role when shells diverge; ≤7 rows
 | # | Label | Serves |                       ← row ids restart at N1 in each role's table
@@ -156,6 +177,7 @@ Verdict: PASS | FAIL — most-likely-to-fail step: <step>
 
 ## Guardrails
 
+- **Every constraint in this section binds any subagent this skill spawns.** A grounding-lookup agent inherits the never-write rules verbatim: it returns tables to this session and touches no file.
 - **Never write into `spec/`** — that directory belongs to the napkin pipeline. When a napkin project wants UI structure persisted, route to ddd-screens. (An unmarked .md in spec/ is unvalidated drift; a marked one breaks the ddd-align gate with AL-15.)
 - Review mode never edits any file.
 - Output is in-chat; a file is written only when the user explicitly asks, at a path they name (outside `spec/`).
