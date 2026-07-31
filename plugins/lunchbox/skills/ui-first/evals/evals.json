@@ -11,37 +11,63 @@
         {
           "name": "no_schema_leak_in_nav",
           "type": "string_absent_all",
-          "patterns": ["| PartyAccount", "| ProspectRecord", "| ClientRecord", "| DispatchAssignment", "| RemittanceDocument", "| ApprovalRequest", "| LedgerPosting", "|PartyAccount", "|ProspectRecord", "|ClientRecord", "|DispatchAssignment", "|RemittanceDocument", "|ApprovalRequest", "|LedgerPosting"],
+          "patterns": [
+            "| PartyAccount",
+            "| ProspectRecord",
+            "| ClientRecord",
+            "| DispatchAssignment",
+            "| RemittanceDocument",
+            "| ApprovalRequest",
+            "| LedgerPosting",
+            "|PartyAccount",
+            "|ProspectRecord",
+            "|ClientRecord",
+            "|DispatchAssignment",
+            "|RemittanceDocument",
+            "|ApprovalRequest",
+            "|LedgerPosting"
+          ],
           "description": "No bare aggregate name appears as a table-cell label; backticked boundary-table mentions are exempt by construction."
         },
         {
           "name": "nav_cap_respected",
           "type": "string_absent_all",
-          "patterns": ["| N8 |", "|N8|"],
+          "patterns": [
+            "| N8 |",
+            "|N8|"
+          ],
           "description": "No nav table exceeds 7 rows; ids restart at N1 per role."
         },
         {
           "name": "at_risk_principle_named",
           "type": "string_match",
-          "patterns": ["Most at risk: P"],
+          "patterns": [
+            "Most at risk: P"
+          ],
           "description": "At-risk principle identified by name."
         },
         {
           "name": "boundary_table_present",
           "type": "string_match",
-          "patterns": ["Boundary translation table"],
+          "patterns": [
+            "Boundary translation table"
+          ],
           "description": "Boundary translation table present in output."
         },
         {
           "name": "never_surfaces_marked",
           "type": "string_match",
-          "patterns": ["never surfaces"],
+          "patterns": [
+            "never surfaces"
+          ],
           "description": "LedgerPosting (internal bookkeeping) is marked never-surfaces in the boundary table."
         },
         {
           "name": "build_plan_present",
           "type": "string_match",
-          "patterns": ["Build plan"],
+          "patterns": [
+            "Build plan"
+          ],
           "description": "Build plan section present in output."
         },
         {
@@ -57,13 +83,22 @@
         {
           "name": "grounding_banner_present",
           "type": "string_match",
-          "patterns": ["Grounding lookup"],
+          "patterns": [
+            "Grounding lookup"
+          ],
           "description": "The decision line is emitted — the gate is never silent. Matches the label only, since markdown emphasis on the label is expected and permitted."
         },
         {
           "name": "no_research_performed",
           "type": "string_absent_all",
-          "patterns": ["Grounding lookup: run", "Grounding lookup:** run", "Cited obligations", "User nouns", "https://"],
+          "patterns": [
+            "Grounding lookup: run",
+            "Grounding lookup: **run",
+            "Grounding lookup:** run",
+            "Cited obligations",
+            "User nouns",
+            "https://"
+          ],
           "description": "The prompt supplies a complete inventory and forbids questions, so the gate blocked the lookup: no run banner in either emphasis form, no lookup-only sections, no citations."
         },
         {
@@ -83,37 +118,63 @@
         {
           "name": "planted_violations_not_passed",
           "type": "string_absent_all",
-          "patterns": ["P1: PASS", "P2: PASS", "P3: PASS", "P4: PASS", "P5: PASS"],
-          "description": "None of the five planted principles is marked PASS (FAIL or AT-RISK both acceptable)."
+          "patterns": [
+            "P1: PASS",
+            "P1: **PASS**",
+            "P2: PASS",
+            "P2: **PASS**",
+            "P3: PASS",
+            "P3: **PASS**",
+            "P4: PASS",
+            "P4: **PASS**",
+            "P5: PASS",
+            "P5: **PASS**",
+            "**P1: PASS**",
+            "**P2: PASS**",
+            "**P3: PASS**",
+            "**P4: PASS**",
+            "**P5: PASS**"
+          ],
+          "description": "None of the five planted principles is marked PASS (FAIL or AT-RISK both acceptable). Emphasis variants are listed explicitly: the plain-token rule forbids them, and a bolded PASS slipping past a literal check would report a regression as a success."
         },
         {
           "name": "control_principle_passes",
           "type": "string_match",
-          "patterns": ["P6: PASS"],
-          "description": "The deliberately-good empty states pass — defeats flag-everything auditing."
+          "patterns": [
+            "P6: PASS"
+          ],
+          "description": "The deliberately-good empty states pass — defeats flag-everything auditing. Plain token per the plain-token rule; a bolded verdict is itself a contract violation and correctly fails here."
         },
         {
           "name": "canonical_fix_move_merge_to_tabs",
           "type": "string_match",
-          "patterns": ["merge-to-tabs"],
+          "patterns": [
+            "merge-to-tabs"
+          ],
           "description": "Fix uses the canonical hyphenated move name merge-to-tabs verbatim."
         },
         {
           "name": "canonical_fix_move_demote_to_queue",
           "type": "string_match",
-          "patterns": ["demote-to-queue"],
+          "patterns": [
+            "demote-to-queue"
+          ],
           "description": "Fix uses the canonical hyphenated move name demote-to-queue verbatim."
         },
         {
           "name": "canonical_fix_move_derive_and_show",
           "type": "string_match",
-          "patterns": ["derive-and-show"],
+          "patterns": [
+            "derive-and-show"
+          ],
           "description": "Fix uses the canonical hyphenated move name derive-and-show verbatim."
         },
         {
           "name": "canonical_fix_move_stage_behind_precondition",
           "type": "string_match",
-          "patterns": ["stage-behind-precondition"],
+          "patterns": [
+            "stage-behind-precondition"
+          ],
           "description": "Fix uses the canonical hyphenated move name stage-behind-precondition verbatim."
         },
         {
@@ -124,7 +185,14 @@
         {
           "name": "grounding_gate_blocked_in_review",
           "type": "string_absent_all",
-          "patterns": ["Grounding lookup: run", "Grounding lookup:** run", "Cited obligations", "User nouns", "https://"],
+          "patterns": [
+            "Grounding lookup: run",
+            "Grounding lookup: **run",
+            "Grounding lookup:** run",
+            "Cited obligations",
+            "User nouns",
+            "https://"
+          ],
           "description": "Review mode never runs the grounding lookup — external evidence must not be in context while principle verdicts are assigned."
         },
         {
@@ -149,31 +217,70 @@
         {
           "name": "no_prior_art_leak_in_nav",
           "type": "string_absent_all",
-          "patterns": ["| Dashboard", "| Mobile Dashboard", "| Dispatch Board", "| Dispatch Pro", "| Call Booking", "| Analytics", "| Reporting & Analytics", "| Insights", "| Sales & CRM", "| Integrations", "| Service Management", "| Project Management", "| Financials", "| Schedule Assistant", "| Fleet+", "| Customer portal", "| Deficiency management", "| PO management"],
+          "patterns": [
+            "| Dashboard",
+            "| Mobile Dashboard",
+            "| Dispatch Board",
+            "| Dispatch Pro",
+            "| Call Booking",
+            "| Analytics",
+            "| Reporting & Analytics",
+            "| Insights",
+            "| Sales & CRM",
+            "| Integrations",
+            "| Service Management",
+            "| Project Management",
+            "| Financials",
+            "| Schedule Assistant",
+            "| Fleet+",
+            "| Customer portal",
+            "| Deficiency management",
+            "| PO management"
+          ],
           "description": "No vendor nav label that serves no task in the inventory appears as a table-cell label. Labels the user's own vocabulary could legitimately produce (Schedule, Clients, Quotes, Jobs, Invoices) are deliberately excluded — enforcement is by provenance, not by a lexical denylist."
         },
         {
           "name": "no_schema_leak_in_nav",
           "type": "string_absent_all",
-          "patterns": ["| PartyAccount", "| ProspectRecord", "| ClientRecord", "| DispatchAssignment", "| RemittanceDocument", "| ApprovalRequest", "| LedgerPosting"],
+          "patterns": [
+            "| PartyAccount",
+            "| ProspectRecord",
+            "| ClientRecord",
+            "| DispatchAssignment",
+            "| RemittanceDocument",
+            "| ApprovalRequest",
+            "| LedgerPosting"
+          ],
           "description": "The engine leak guard still holds when prior art is also in context."
         },
         {
           "name": "nav_cap_respected",
           "type": "string_absent_all",
-          "patterns": ["| N8 |", "|N8|"],
+          "patterns": [
+            "| N8 |",
+            "|N8|"
+          ],
           "description": "No nav table exceeds 7 rows; ids restart at N1 per role."
         },
         {
           "name": "grounding_banner_present",
           "type": "string_match",
-          "patterns": ["Grounding lookup"],
+          "patterns": [
+            "Grounding lookup"
+          ],
           "description": "The decision line is emitted — the gate is never silent. Label only; markdown emphasis on it is expected."
         },
         {
           "name": "no_research_performed",
           "type": "string_absent_all",
-          "patterns": ["Grounding lookup: run", "Grounding lookup:** run", "Cited obligations", "User nouns", "https://"],
+          "patterns": [
+            "Grounding lookup: run",
+            "Grounding lookup: **run",
+            "Grounding lookup:** run",
+            "Cited obligations",
+            "User nouns",
+            "https://"
+          ],
           "description": "Complete inventory plus don't-ask instruction blocks the lookup — this eval is fully deterministic and never touches the network."
         },
         {

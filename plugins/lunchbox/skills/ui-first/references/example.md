@@ -68,7 +68,7 @@ Pitches awaiting a greenlight decision, drafts awaiting revision notes, manuscri
 ### Surface inventory
 | Surface | Merges (user concepts) | Shows derived-from | Empty-state teaching line* |
 |---|---|---|---|
-| My Stories / Story Queue | `PitchSubmission` + `ManuscriptRecord` — one "story," staged by tabs (Idea / Drafting / In Review / Published) | each card renders the story's title, author, current stage, and open `RevisionCycle` note count — never a raw status code | "No stories yet — pitch your first idea to get started." (Writer) / "Nothing waiting on you — new pitches will land in Idea." (Editor + Publisher) |
+| My Stories / Story Queue | `PitchSubmission` + `ManuscriptRecord` — one "story," staged by tabs (Idea / Drafting / In Review / Published) | each card renders the story's title, author, current stage, and open `RevisionCycle` note count — never a raw status code; opening a card in Drafting opens the draft editor, which renders the body text and a live word count and autosaves; the In Review count also shows on the tab | "No stories yet — pitch your first idea to get started." (Writer) / "Nothing waiting on you — new pitches will land in Idea." (Editor + Publisher) |
 | Issues | — (one `IssueAssembly` per issue; no merge) | each slot renders the story's title and author, not a manuscript reference; the Sign-off tab renders the full lineup, not a raw completeness flag | "No issue in progress — assemble the next lineup from stories approved for publication." |
 | Release Calendar | — | renders each issue's title and scheduled date, not an issue reference | "No release dates scheduled yet — set one from an issue with a complete lineup." |
 | Compliance Export | — | renders the contributor and amount owed per prior export run, not a raw ledger row count | "No export has run yet — the first is due at the next filing cycle." |
@@ -113,14 +113,14 @@ Most at risk: P3 — Sign-off and revision notes are stateful and demo well as t
 |---|---|---|---|---|
 | 1 | "My Stories" in the sidebar | Nav map — Writer, N1 | Clicks My Stories | low |
 | 2 | Tabs: Idea / Drafting / In Review / Published, with story cards under each | Surface inventory — My Stories / Story Queue (tabs; cards render title, author, stage) | Opens the story sitting in Drafting | low |
-| 3 | The draft editor, current body text and word count | Surface inventory — My Stories / Story Queue (Drafting tab) | Edits the text, saves | low |
+| 3 | The draft editor, current body text and word count | Surface inventory — My Stories / Story Queue (draft editor: body text, live word count, autosave — covers the save in *Does*) | Edits the text; it autosaves | low |
 | 4 | A "Submit for review" action, present only now that a full draft is saved | Disclosure stages — "Submit for review" action | Clicks Submit for review | medium |
 Verdict: PASS — most-likely-to-fail step: Step 4 — a writer who has only ever saved partial notes before won't have seen Submit for review appear yet, and may hunt for it believing the app is missing a submit action.
 
 ### First-shot test — Editor: send revision notes on a submitted draft
 | Step | Sees | Source | Does | Risk |
 |---|---|---|---|---|
-| 1 | "Story Queue" in the sidebar, with a badge count on In Review | Nav map — Editor + Publisher, N1; count from Attention inbox (drafts awaiting revision notes) | Clicks Story Queue | low |
+| 1 | "Story Queue" in the sidebar, with a badge count on In Review | Nav map — Editor + Publisher, N1; indicator declared in Surface inventory — My Stories / Story Queue ("the In Review count also shows on the tab"); its content from Attention inbox (drafts awaiting revision notes) | Clicks Story Queue | low |
 | 2 | Tabs: Idea / Drafting / In Review / Published | Surface inventory — My Stories / Story Queue (tabs) | Opens In Review | low |
 | 3 | Submitted stories listed by title, author, and section — no ids | Surface inventory — My Stories / Story Queue (shows derived-from) | Opens one story | low |
 | 4 | A "Revision Notes" tab on the story itself | Boundary table — `RevisionCycle` → Revision Notes, home surface "tab on the story" | Opens Revision Notes, writes feedback, sends back to the writer | medium |
