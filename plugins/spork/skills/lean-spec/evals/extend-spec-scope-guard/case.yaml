@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: extend-spec-scope-guard
+expected_outcome: |
+  The two in-scope decisions are integrated and their open questions removed; billing and the admin dashboard are flagged as widening the API spec scope rather than silently folded in; untouched sections stay unchanged.
+context:
+  scaffold_script: place-files.sh

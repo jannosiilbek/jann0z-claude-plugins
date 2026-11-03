@@ -2,7 +2,7 @@
 
 ## What this repo is
 
-- A personal Claude Code plugin marketplace: `plugins/napkin` and `plugins/lunchbox`.
+- A personal Claude Code plugin marketplace: `plugins/napkin`, `plugins/lunchbox` and `plugins/spork`.
 - Plus eval infrastructure for measuring and hardening those skills.
 - No build step — skills are markdown (`SKILL.md`) plus optional Node.js harnesses.
 
@@ -42,6 +42,14 @@ ddd-brief → ddd-domain → ddd-usecases → [ddd-api] → [ddd-screens] → er
 - Prompt-only skills with optional `references/` and `evals/`.
 - `product-sparring` also ships a `scripts/lint-canvas.mjs` harness.
 - `ui-first` is dual-mode (design | review) and must never write into a target project's `spec/`. Its gated grounding lookup is the only place in either plugin that spawns subagents with web access; they run isolated, return tables only, and inherit the skill's never-write guardrails.
+
+## Spork plugin — small, sharp skills
+
+`plugins/spork` contains one skill so far: `lean-spec`.
+
+- `lean-spec` writes, edits and validates concise specs and technical docs. One self-contained `SKILL.md`: no `references/`, no scripts, no dependency on other skills. Keep it that way.
+- Tests are case folders under `evals/` (`prompt.md`, `case.yaml`, `graders/`), the layout `claude plugin eval` reads.
+- Overlaps `lunchbox/doc-align` on purpose: `doc-align` aligns a whole docs tree; `lean-spec` writes and gates one document.
 
 ## Testing
 

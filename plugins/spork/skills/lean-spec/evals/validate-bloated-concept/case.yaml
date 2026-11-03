@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: validate-bloated-concept
+expected_outcome: |
+  A pass/fail validation that leads with a verdict and flags the concept doc for below-altitude implementation detail, invented estimates, and length, quoting the failing text, without rewriting the spec.
+context:
+  scaffold_script: place-files.sh

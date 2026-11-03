@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: api-spec-rate-limit
+expected_outcome: |
+  A functional spec at the API boundary with the exact limits, 429 + Retry-After, the three headers with the reset semantics, enterprise custom limits; no product pitch or internal implementation essay.
