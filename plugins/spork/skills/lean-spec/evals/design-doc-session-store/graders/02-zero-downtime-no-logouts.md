@@ -1,6 +1,8 @@
 ---
 type: llm
-focus: trace
+focus:
+  source: file
+  path: session-store-design.md
 weight: 1
 ---
 

@@ -1,6 +1,8 @@
 ---
 type: llm
-focus: trace
+focus:
+  source: file
+  path: rate-limit-spec.md
 weight: 1
 ---
 

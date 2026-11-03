@@ -1,6 +1,8 @@
 ---
 type: llm
-focus: trace
+focus:
+  source: file
+  path: shared-notes-prd.md
 weight: 1
 ---
 

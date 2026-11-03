@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: validate-agent-task-spec
+expected_outcome: |
+  A validation of a spec written for a coding agent that finds its agent-specific gaps (no checkable definition of done, an open question with no instruction, an unbounded "refactor as needed"), flags the baseline filler, leads with the verdict, and does not rewrite the spec.
+context:
+  scaffold_script: place-files.sh
