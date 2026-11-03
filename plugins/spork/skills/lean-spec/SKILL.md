@@ -61,6 +61,7 @@ Anything in these that the user didn't give (a boundary, a provisional default, 
 - Normative words (MUST/SHOULD/MAY) only in specs that are actually normative, and then consistently.
 - Sections only when they carry content. No empty or ceremonial sections ("Introduction", "Conclusion", "Glossary" with one obvious term). Pick structure to fit the content, not a template. For a build document read by an agent, default to this order: goal and non-goals, constraints and boundaries, behaviour, acceptance, open questions.
 - No hedging ("might potentially", "it could be argued"), intensifiers ("very", "really", "critical"), throat-clearing ("It's important to note that"), or AI-tell phrasing. See *Appendix B: Cut list* below for patterns.
+- Keep the user's existing terminology, structure and decisions when editing their draft. Tighten; don't rewrite their intent.
 
 ### Language: Simplified Technical English
 
@@ -77,7 +78,6 @@ Write every document, and every reply, in Simplified Technical English (STE), th
 - **Keep modality.** MUST, SHOULD, MAY and a real "may" carry confidence. Do not turn a SHOULD into a MUST, or "may fail" into "fails". Real uncertainty becomes an open question, not a fact.
 
 The sentence rules do not apply to code, identifiers, field and header names, paths, status text, MUST/SHOULD/MAY, quoted text, headings, labels, or terse table cells (each cell must still have only one reading). The gate can still cut any of these. Meaning comes first: if a rule would drop a condition, a number or a qualifier, keep the longer sentence. The document never mentions STE.
-- Keep the user's existing terminology, structure and decisions when editing their draft. Tighten; don't rewrite their intent.
 
 ## 4. Alignment checks
 
