@@ -1,21 +1,29 @@
 ---
 name: lean-spec
-description: Write, edit, tighten or validate superconcise, filler-free specs and tech docs at the right detail level, in Simplified Technical English, keeping scope focused, with alignment checks and a litmus test. Use for specs, PRDs, RFCs, design docs, ADRs.
+description: Write, edit, tighten or validate superconcise, filler-free specs and tech docs at the right detail level, in Simplified Technical English, keeping scope focused, with alignment checks and a litmus test. Use for specs, PRDs, RFCs, design docs, ADRs, implementation plans and agent task specs, and whenever the user asks to draft, tighten, extend, review or litmus-test one, even if they don't say "spec".
 ---
 
 # Lean Spec
 
 Write documents where every sentence carries information the target reader needs at that document's level, and nothing else. Short is a consequence, not the goal: the goal is that the document is accurate, complete *for its altitude and purpose*, and fully aligned with what the user asked for. Cut noise, never substance: a document that is short because it omits what the reader needs to act is as wrong as a bloated one.
 
-This skill is self-contained. Everything it needs is in this file; it doesn't depend on other skills, templates or reference files.
+This skill is self-contained: everything it needs is in this folder, and it doesn't depend on other skills. The core workflow is below. Detail that only some tasks need lives in `references/`, and each step says when to read which file.
+
+## Pick the mode
+
+- **Write** a new document: follow steps 1 to 5.
+- **Edit, extend or tighten** an existing document: read `references/editing.md` first, then follow steps 1 to 5 with its rules.
+- **Validate, check, review or litmus-test** a document: read `references/validating.md`. It runs step 1 and step 5 only, and never rewrites the document.
+
+Whatever the mode, read `references/altitudes.md` during step 1, and `references/cut-list.md` before you write or tighten (step 3). Both are short.
 
 ## 1. Calibrate before writing
 
 Decide these five things first. Infer them from the request, the existing draft, and the conversation. Ask the user only when a wrong guess would change the document substantially, and then ask in one short message. Otherwise state your reading in a single line at the top of your reply (not in the document), e.g. *"Read as: conceptual spec, for engineering leads, product perspective."*
 
 1. **Type**: concept/vision, PRD, design doc, architecture, functional/API spec, implementation plan, ADR, runbook, reference, README.
-2. **Altitude**: how deep the document goes. See *Appendix A: Altitudes* below for what belongs at each level and what doesn't. The altitude is a ceiling on detail: nothing below it gets in unless the gate in step 2 lets it.
-3. **Reader and their baseline**: who reads it and what a competent professional in that role already knows and expects. That baseline is never written down. When the reader is an AI coding agent, its baseline is general professional knowledge (cut it as for a senior) and nothing local: not this codebase, team, history or conversation. See *When an agent builds from it* in step 2.
+2. **Altitude**: how deep the document goes. `references/altitudes.md` says what belongs at each level and what doesn't, with signals for inferring the level. The altitude is a ceiling on detail: nothing below it gets in unless the gate in step 2 lets it.
+3. **Reader and their baseline**: who reads it and what a competent professional in that role already knows and expects. That baseline is never written down. When the reader is an AI coding agent, its baseline is general professional knowledge (cut it as for a senior) and nothing local: not this codebase, team, history or conversation. When the purpose is build, also read `references/agent-build.md`.
 4. **Perspective**: whose view the document takes (product, user, system, operator, integrator). Keep it constant; a product spec does not drift into describing tables, a system spec does not drift into marketing.
 5. **Purpose**: what the reader will *do* with the document: decide (fund, approve, choose), build, integrate, operate, or review. The purpose sets what must be there; the altitude sets how deep it goes. A concept doc for a funding decision needs the value, what drives cost and the main risks, all at concept level; a concept doc for alignment may not. If the user states a purpose ("they'll use it to decide…"), the document must serve it.
 
@@ -40,15 +48,7 @@ Everything else is left out. Typical things that fail the gate:
 
 When the user explicitly asks for a detail that sits below the document's altitude, include it, compactly, where it belongs. Their request overrides the altitude; it does not lower the altitude of the rest of the document.
 
-**When an agent builds from it.** An agent can't come back with questions, it fills silence with guesses, and it stops when the work looks done. When the reader is an AI coding agent and the purpose is build, these are *needed for the purpose*, kept at the document's altitude:
-
-- **Local context**: the files, modules, interfaces and existing pattern the work touches or follows, and decisions made in the conversation. Point to them by path or name; don't paste code or restate what the agent can read in the repo.
-- **Done check**: acceptance criteria the agent can check itself: testable statements or input → output examples, plus the end-to-end check that proves the whole works. This section is never ceremonial.
-- **Boundaries**: what must not change (a public contract, a schema, existing behaviour, dependencies) and what needs human sign-off first. Only rules specific to this work; repo-wide rules (commands, code style, secrets) belong in CLAUDE.md or AGENTS.md.
-- **Open questions with an instruction**: each says either *blocking* (leave that part unbuilt) or gives a marked provisional default to build against, so the agent never picks silently.
-- **Reasons**: a non-default constraint keeps a one-clause reason when the reason decides cases the document doesn't name.
-
-Anything in these that the user didn't give (a boundary, a provisional default, a structural rule such as "share one implementation") is a proposal: mark it as one, never as a MUST. This covers implementation hints too ("reuse the CSV filter code", "keep chart code separate", "add a test before you change `csv.ts`"): start each with "Proposal:". Leave out repo-wide commands such as `npm test` or lint.
+**When an AI coding agent builds from it.** Read `references/agent-build.md`. It lists what an agent needs that a human reader doesn't (local context, a done check, boundaries, open questions with an instruction) and how to mark what you add as a proposal.
 
 ## 3. Write lean
 
@@ -60,7 +60,7 @@ Anything in these that the user didn't give (a boundary, a provisional default, 
 - State each rule, risk and value once, in the section where it belongs. Elsewhere refer to it in a few words ("see Signing"). Do not restate it as a principle and again as a section. A non-goal names what is out of scope, never the negation of a rule already stated. A value line does not repeat the problem. A later section on the same topic adds only what is new (an edge case, a risk) and points back to the rule instead of stating it again.
 - Normative words (MUST/SHOULD/MAY) only in specs that are actually normative, and then consistently.
 - Sections only when they carry content. No empty or ceremonial sections ("Introduction", "Conclusion", "Glossary" with one obvious term). Pick structure to fit the content, not a template. For a build document read by an agent, default to this order: goal and non-goals, constraints and boundaries, behaviour, acceptance, open questions.
-- No hedging ("might potentially", "it could be argued"), intensifiers ("very", "really", "critical"), throat-clearing ("It's important to note that"), or AI-tell phrasing. See *Appendix B: Cut list* below for patterns.
+- No hedging ("might potentially", "it could be argued"), intensifiers ("very", "really", "critical"), throat-clearing ("It's important to note that"), or AI-tell phrasing. `references/cut-list.md` lists the patterns.
 - Keep the user's existing terminology, structure and decisions when editing their draft. Tighten; don't rewrite their intent.
 
 ### Language: Simplified Technical English
@@ -86,22 +86,11 @@ Save the draft first. Then run three separate passes on the saved file and fix i
 **Pass 1: alignment with the ask (author, outside-in).**
 Write down each thing the user asked for or stated as a requirement, constraint, decision or purpose. For each one, find where the document covers it and confirm it says the same thing, with the same strength (a "must" stays a must, a "maybe" stays open). Then go the other way: for each section of the document, confirm it traces back to the ask, the purpose, or the gate in step 2. Anything that contradicts, weakens, overstates or wasn't asked for is fixed or removed. Then check every rule, behaviour, boundary and non-goal in the document that is not on your list: each one follows necessarily from the list, or starts with "Proposal:", or goes. Any requirement not covered is added or listed under *Open questions*. Keep this list; Pass 2 is checked against it.
 
-**Pass 2: independent cold read (fresh reader, inside-out).**
-When a subagent tool is available (Agent, Task or similar), you must use it: give a fresh one *only* the document plus one line naming the reader, their role, the purpose and the one-sentence focus. Do not give it the conversation, the user's request, or your Pass 1 list. Ask it to return:
-1. A restatement of every requirement, decision and constraint the document makes, one line each.
-2. Every point where the document is silent but the reader would have to decide something to do the job, and what it would assume there.
-3. Its answers to the litmus test in step 5, each with the exact text that fails it.
+**Pass 2: independent cold read (fresh reader, inside-out).** A fresh subagent gets *only* the document plus one line naming the reader, their role, the purpose and the focus. It restates every requirement, names every point where it would have to guess, and answers the litmus test. Every mismatch with your Pass 1 list is an alignment bug, and every guess is a gap to close or list as open.
 
-If no subagent is available, do the same yourself as deliberately as you can: write the restatement from the document alone before looking at the request again, then run the litmus test.
+**Pass 3: line audit (fresh auditor, line by line).** A second fresh subagent gets the user's request word for word and the saved document. It returns every sentence that states an unrequested rule as decided, every rule stated twice, and every STE form break. Fix each item.
 
-Then compare. Every mismatch between the reader's restatement and your Pass 1 list is an alignment bug: the document says something other than what the user meant. Every assumption it had to make is a gap: state the answer if the user gave it, otherwise add an open question. Fix those first, then every litmus failure. Ignore suggestions to add detail below the altitude unless the purpose needs it.
-
-**Pass 3: line audit (fresh auditor, line by line).**
-When a subagent tool is available, start another fresh subagent (you can run it at the same time as Pass 2). Give it the user's request word for word (in edit mode, also the original document) and the saved document. Ask it to go through the document sentence by sentence and return, with each sentence quoted:
-1. Every sentence that states as decided a rule, behaviour, boundary, non-goal, default or detail that the request does not give and that does not follow necessarily from it, unless the sentence starts with "Proposal:" or "Provisional default:". Small ones count: a status code, a header, the format of a value, which requests count toward a limit, a test step, a layout detail.
-2. Every rule, risk, value or decision that the document states in more than one place, including a non-goal that negates a stated rule and a value or summary line that repeats the problem or a principle.
-3. Every STE form break outside code, tables and headings: a verb with back, up, down, off, out, over or on; a passive that does not name the actor; "has/have been" or "has/have + participle"; "will" for behaviour; a semicolon; a sentence over 25 words; a requirement or status written as a fragment.
-Fix every item: mark it "Proposal:", leave it to the implementer, merge the repeat into one place, or rewrite the sentence. Then re-check the lines you changed. Only if no subagent tool exists, do this audit yourself: read the saved file back, then write the three lists one sentence at a time against the request before you edit.
+Read `references/check-passes.md` for the exact brief to give each subagent. When a subagent tool is available (Agent, Task or similar), you must use it for Passes 2 and 3, and you can run them at the same time. Only if no subagent tool exists, do both yourself, deliberately: write the restatement from the document alone before you look at the request again, then read the saved file back and audit it one sentence at a time.
 
 ## 5. Litmus test
 
@@ -127,106 +116,15 @@ Answer each question as the target reader would: the named role, at senior level
 
 **Reporting.** When writing or editing, don't print the test; fix and re-run until it passes, then report in at most two lines outside the document: what you assumed, and any open question that needs the user. Don't narrate the checks, list what you removed, or repeat the document in the reply when it's saved to a file, unless asked. The reply follows the same rules as the document.
 
-**Validating on request.** When the user asks to validate, check, review or litmus-test a spec (theirs or anyone's), run steps 1 and 5 only and don't rewrite it. Return a table: test, pass/fail, the exact failing text (quoted, short), and the fix in a few words. Count each defect once, under the test it fits best; if the same text fails several tests, list it once and name the others in the fix cell, so the score reflects distinct problems. Never quote the same sentence in two rows, even for two different problems: give it one row and name both problems in its fix cell. Lead with the verdict ("Passes" or "Fails 3 of 10"), then name the blockers: the failures that would make the reader build, integrate or decide wrongly, as opposed to wording cleanups. STE form problems count only under test 10, and only when they allow a second reading. Note other sentence-form problems in at most one line after the table, never as a failure. A content problem is never a form note: a missing boundary, an unbounded instruction ("refactor it as needed"), a gap or a conflict always fails a test, with its text quoted. If the user's original ask isn't available, test 2 checks the document against its own stated goals and scope.
+For validation, follow `references/validating.md`.
 
-## Editing, extending or reviewing an existing document
+## Reference files
 
-Specs grow by edits, and most bloat and scope creep enter that way. Treat every edit as a change to a focused document, not an append.
-
-**1. Anchor the focus first.** Before changing anything, state the document's focus to yourself in one sentence: what it covers, for whom, at what altitude, for what purpose, and its non-goals. Infer it from the title, the opening, the existing scope and non-goals sections, and the conversation. This anchor stays fixed unless the user explicitly changes it.
-
-**2. Classify each requested change against the anchor.**
-- **In focus**: refines, adds to or corrects something within the anchor. Make the change.
-- **Below altitude**: right topic, too much detail for this document. If the user asked for it explicitly, add it compactly where it belongs (their request wins); otherwise keep it at the document's level and mention in one line that the detail belongs in a lower-level doc.
-- **Widens scope**: a new goal, feature, audience or problem area the anchor doesn't cover. Don't silently fold it in, and don't silently refuse. A placeholder section ("not yet defined, see open questions") counts as folding it in. If it is small and clearly intended, add it and flag it in one line ("This widens scope from X to also cover Y"). If it would change what the document is about, ask before adding, offering the options in one short message: widen the scope, put it in a separate doc, or record it as a non-goal / open question. Meanwhile make all the in-focus changes.
-
-**3. Integrate, don't append.** Put each addition in the section where it belongs, in the document's terms and structure. Merge with what is already there instead of restating it. Resolve what the change affects elsewhere: an answered open question is removed, a changed number is changed everywhere, a superseded statement is replaced, not kept beside the new one. An edit that only ever makes the document longer is usually wrong; check what the change makes obsolete.
-
-**4. Leave the rest alone.** Text the request doesn't touch stays word for word, unless it now contradicts the change. Don't take an edit request as licence to rewrite, re-style or "improve" other sections; if you see a real problem elsewhere, mention it in one line instead. Untouched text keeps its wording even where it breaks STE. New and changed text follows the language rules in step 3. A request to tighten or rewrite the whole document makes all of it new text, including its sections and headings: a section the gate empties goes, and its heading goes with it.
-
-**5. Run all three alignment passes and the litmus test on the edited document.** In Pass 1 the "ask" is both the new request *and* the document's existing decisions: confirm every requested change is in, and no existing decision changed unintentionally. The one-sentence anchor is the focus that litmus test 7 checks against.
-
-For a **review** or **validation** rather than an edit, use *Validating on request* in step 5.
-
-## Appendix A: Altitudes
-
-Pick the level that matches the document's purpose. Each level answers its own question; lower-level answers are out of scope unless the user asks for them.
-
-| Altitude | Answers | Belongs | Leave out |
-|---|---|---|---|
-| **Concept / vision** | Why and what, in principle | Problem, intent, core idea, key properties, boundaries, principles, non-goals, major open questions; when it supports a decision: value, main cost drivers and risks, stated qualitatively unless the user gave numbers | Components, data models, APIs, tech choices, UI layout and UI states, estimates, edge-case behaviour, mechanisms (how sync, upload or retry works) |
-| **Product / PRD** | What the user gets and why it matters | Users, problems, outcomes, scope, requirements as behaviour, success measures, constraints, non-goals | Architecture, storage, internal APIs, implementation sequence |
-| **Architecture** | How the system is shaped | Components and their responsibilities, boundaries, data flow, key interfaces at contract level, trade-offs, chosen vs rejected options, cross-cutting constraints that deviate from default | Function signatures, schemas field-by-field, config values, library minutiae |
-| **Design doc / RFC** | How we'll build this one thing and why this way | The key mechanism in depth, alternatives with trade-offs, risks, migration/rollout, relevant concerns (security, scale, compat) only where non-default | Code-level detail the code will document, restated background |
-| **Functional / API spec** | Exactly what it does at its boundary | Inputs, outputs, states, rules, errors that matter to the caller, limits, examples | Internal implementation, rationale essays, product pitch |
-| **Implementation plan** | Who does what, in which order | Steps in order, dependencies, risks to the plan; for an agent, what each step touches and how it is checked; owners and milestones when people run it | Re-explaining the design |
-| **ADR** | What we decided and why | Context (brief), decision, consequences, rejected options in one line each | History of the discussion |
-| **Runbook / reference** | How to do or look up X | Exact steps, commands, values, preconditions, how to verify | Background, theory |
-
-### Signals for inferring altitude
-
-- Words the user uses: "concept", "idea", "vision", "high-level" → concept. "Requirements", "user stories" → PRD. "Architecture", "components" → architecture. "Endpoint", "schema", "contract" → functional/API.
-- What the existing draft already contains: match its deepest *deliberate* level, not stray details.
-- Who reads it: execs and stakeholders read concept/PRD; engineers read architecture and below.
-
-### Mixed documents
-
-Some documents legitimately span two levels (e.g. a PRD with an architecture sketch). Keep each section at one level and make the transition explicit with a section boundary, not a gradual drift.
-
-### Example: same feature, three altitudes
-
-Feature: users can export reports.
-
-- **Concept**: "Users can take their reports out of the product in formats other tools read. Exports reflect what the user sees, including filters. Non-goal: scheduled exports."
-- **PRD**: "Users export the current report view as CSV or PDF. The export keeps the active filters and the column order. A report with more than 50k rows exports in the background, and the user gets an email when it is ready. Success: support tickets about exports drop by half."
-- **API spec**: "`POST /reports/{id}/exports` body `{format: csv|pdf, filters}` → `202 {exportId}`. `GET /exports/{exportId}` → `{status: pending|ready|failed, url?}`. URL valid 24 h."
-
-Each is complete for its level. None contains the next level's details.
-
-## Appendix B: Cut list
-
-Patterns that add words without information. Delete or replace with the direct statement.
-
-### Openers and meta
-
-- "This document describes / outlines / aims to…" → start with the content.
-- "It's important to note that", "It's worth mentioning", "Note that" → state the fact.
-- "In today's fast-paced…", "As we all know…" → delete.
-- "In summary", "To conclude", "Overall" plus a recap → delete the recap.
-- "Let's dive into", "Here's how…" → delete.
-
-### Hedges and intensifiers
-
-- "might potentially", "could possibly", "in some cases may" → decide: state it, or mark it open. Never turn the user's real uncertainty into a fact.
-- "very", "really", "highly", "extremely", "critical", "crucial", "key", "robust", "seamless", "comprehensive", "leverage", "utilize" → drop, or replace with a measurable claim.
-- "perform an analysis of", "carry out validation", "make a decision" → analyze, validate, decide.
-- "set up", "spin up", "kick off", "roll out", "fall back to" → configure, start, begin, release, use.
-- "etc." at the end of a list that should be complete → complete the list or say what the rule is.
-
-### Baseline statements (assumed by any competent reader)
-
-- "Ensure the system is secure / scalable / maintainable / performant."
-- "Handle errors appropriately." "Validate inputs." "Log important events."
-- "Write unit tests." "Follow best practices." "Document the code."
-- "The UI should be intuitive / user-friendly."
-- "Stakeholders will be kept informed."
-
-Keep only the specific, non-default version: a number, a rule, an exception.
-
-### Structural filler
-
-- Restating the requirement in prose and then again as a bullet.
-- A "Background" that repeats what the reader asked for. If one real line of problem is left, title it "Problem" or merge it into the opening.
-- Lists of benefits nobody disputes.
-- Sections with one sentence that belongs in another section.
-- "Future considerations" that weren't requested and decide nothing.
-- Rhetorical contrasts ("This isn't just X, it's Y"), dramatic fragments, questions answered immediately ("Why does this matter? Because…").
-
-### Vague → specific
-
-| Vague | Specific |
+| File | Read it when |
 |---|---|
-| "fast" | "p95 < 300 ms" |
-| "large files" | "files > 100 MB" |
-| "users can manage settings" | "users can change X and Y; Z is admin-only" |
-| "integrates with external systems" | "pushes events to Kafka topic `orders`" (only if at API altitude) |
+| `references/altitudes.md` | Step 1, always: what belongs at each altitude, signals, an example at three levels |
+| `references/cut-list.md` | Step 3, before you write or tighten: patterns that add words without information |
+| `references/agent-build.md` | The reader is an AI coding agent and the purpose is build |
+| `references/check-passes.md` | Step 4: the briefs for the Pass 2 and Pass 3 subagents |
+| `references/editing.md` | Editing, extending or tightening an existing document |
+| `references/validating.md` | Validating, checking or litmus-testing a document |
