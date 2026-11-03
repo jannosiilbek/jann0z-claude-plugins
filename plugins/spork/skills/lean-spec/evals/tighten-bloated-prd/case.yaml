@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: tighten-bloated-prd
+expected_outcome: |
+  The tightened PRD keeps all four real requirements (share in workspace, view/edit chosen by owner, immediate revocation, no external sharing) and drops the intro, background, conclusion and baseline statements (secure/scalable, errors, tests, intuitive UI).
