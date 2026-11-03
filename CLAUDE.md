@@ -47,7 +47,7 @@ ddd-brief → ddd-domain → ddd-usecases → [ddd-api] → [ddd-screens] → er
 
 `plugins/spork` contains one skill so far: `lean-spec`.
 
-- `lean-spec` writes, edits and validates concise specs and technical docs. One self-contained `SKILL.md`: no `references/`, no scripts, no dependency on other skills. Keep it that way.
+- `lean-spec` writes, edits and validates concise specs and technical docs, always in Simplified Technical English (ASD-STE100 sentence rules, copied in). One self-contained `SKILL.md`: no `references/`, no scripts, no dependency on other skills. Keep it that way.
 - Evals: `claude plugin eval plugins/spork/skills/lean-spec --scaffold --allow-tools Write Edit --judge-model sonnet --trust-plugin`. Graders that judge a saved doc use `focus: {source: file, path: <doc>}`, because the trace a judge sees cuts off long docs; graders that need the input state it in their own text. The default haiku judge is too noisy for these graders.
 - Tests are case folders under `evals/` (`prompt.md`, `case.yaml`, `graders/`), the layout `claude plugin eval` reads.
 - Overlaps `lunchbox/doc-align` on purpose: `doc-align` aligns a whole docs tree; `lean-spec` writes and gates one document.

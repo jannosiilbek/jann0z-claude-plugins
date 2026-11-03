@@ -1,6 +1,6 @@
 ---
 name: lean-spec
-description: Write, edit, tighten or validate superconcise, filler-free specs and tech docs at the right detail level, keeping scope focused, with alignment checks and a litmus test. Use for specs, PRDs, RFCs, design docs, ADRs.
+description: Write, edit, tighten or validate superconcise, filler-free specs and tech docs at the right detail level, in Simplified Technical English, keeping scope focused, with alignment checks and a litmus test. Use for specs, PRDs, RFCs, design docs, ADRs.
 ---
 
 # Lean Spec
@@ -51,14 +51,29 @@ Anything in these that the user didn't give (a boundary, a provisional default, 
 
 ## 3. Write lean
 
-- One idea per sentence. Lead with the claim. Cut words that don't change meaning.
-- A length the user sets ("one page", "a paragraph") is a hard limit, not a target. One page is about 400 words; if the content doesn't fit, cut the least decision-bearing parts, not the sentences' clarity.
+- One idea per sentence. Lead with the claim. Cut words that carry no information, but never a subject, verb or article just to save space.
+- A length the user sets ("one page", "a paragraph") is a hard limit, not a target. One page is about 400 words; if the content doesn't fit, cut the least decision-bearing parts, not the sentences' clarity. The language rules below never justify going over it: cut content, not articles.
 - Prefer concrete over abstract: a number, a name, a rule, an example.
-- Define each term once and use exactly that term thereafter. No synonyms for the same concept.
+- Define each term once and use exactly that term thereafter. No synonyms for the same concept or action (not check, verify and confirm for one action), and no word used in two meanings.
 - Use lists and tables for parallel or enumerable content; prose for reasoning and relationships. No bullet fragments that need a sentence to make sense.
 - Normative words (MUST/SHOULD/MAY) only in specs that are actually normative, and then consistently.
 - Sections only when they carry content. No empty or ceremonial sections ("Introduction", "Conclusion", "Glossary" with one obvious term). Pick structure to fit the content, not a template. For a build document read by an agent, default to this order: goal and non-goals, constraints and boundaries, behaviour, acceptance, open questions.
 - No hedging ("might potentially", "it could be argued"), intensifiers ("very", "really", "critical"), throat-clearing ("It's important to note that"), or AI-tell phrasing. See *Appendix B: Cut list* below for patterns.
+
+### Language: Simplified Technical English
+
+Write every document, and every reply, in Simplified Technical English (STE), the controlled language of ASD-STE100. Use it for every type and altitude. STE decides only how each sentence is written. Apply it last: first cut and restructure with the gate in step 2 and the rules above, then shape the sentences that remain. STE never adds a section, a detail or an explanation, and never keeps a section or heading that the gate removes.
+
+- **Active voice.** Name the actor: "The API rejects the request." If the user did not say who acts, keep the passive or add an open question. Do not invent an actor.
+- **Simple tenses.** Use the simple present for behaviour and the simple past for decisions and context. Use "has/have + participle" only when it states that something is true now. Do not use "will" for system behaviour, because readers cannot tell it from MUST.
+- **Sentence length.** Write at most 20 words in an instruction, step or acceptance criterion, and at most 25 words in other sentences. A code span or a number with its unit counts as one word. Put three or more conditions or steps in a list.
+- **Plain verbs.** Use one verb, not a phrasal verb: "configure", not "set up". "Start", not "spin up" or "kick off". "Release", not "roll out". "Reads use Postgres", not "reads fall back to Postgres". Use the verb, not its noun form: "validate", not "perform validation of".
+- **No semicolons.** Write two sentences, or a list.
+- **Short noun phrases.** Stack at most three nouns: "the time when the window resets", not "rate limit window reset time".
+- **Paragraphs.** One topic per paragraph, at most six sentences.
+- **Keep modality.** MUST, SHOULD, MAY and a real "may" carry confidence. Do not turn a SHOULD into a MUST, or "may fail" into "fails". Real uncertainty becomes an open question, not a fact.
+
+The sentence rules do not apply to code, identifiers, field and header names, paths, status text, MUST/SHOULD/MAY, quoted text, headings, labels, or terse table cells (each cell must still have only one reading). The gate can still cut any of these. Meaning comes first: if a rule would drop a condition, a number or a qualifier, keep the longer sentence. The document never mentions STE.
 - Keep the user's existing terminology, structure and decisions when editing their draft. Tighten; don't rewrite their intent.
 
 ## 4. Double alignment check
@@ -96,13 +111,13 @@ Answer each question as the target reader would: the named role, at senior level
 7. **Focus**: Does everything fall within the one-sentence focus? *Fail:* a goal, feature, audience or problem area outside it that the user didn't explicitly add.
 
 **Says it correctly**
-8. **Consistent**: One term per concept, and every number, name and state agrees everywhere. *Fail:* synonyms for the same thing, or any contradiction.
+8. **Consistent**: One term per concept, and every number, name and state agrees everywhere. *Fail:* synonyms for the same thing, one word in two meanings, or any contradiction.
 9. **True**: Is every claim traceable to the user's input or to verifiable fact? *Fail:* anything asserted that neither supports.
-10. **Unambiguous**: Would two readers in this role build or decide the same thing from it? *Fail:* any sentence two readers could reasonably read differently on a point that matters.
+10. **Unambiguous**: Would two readers in this role build or decide the same thing from it? *Fail:* any sentence two readers could reasonably read differently on a point that matters. This includes sentence form that allows a second reading: a passive that hides who acts, a dropped subject or article, or a chained sentence with an unclear scope. A form problem with only one reading is not a failure.
 
 **Reporting.** When writing or editing, don't print the test; fix and re-run until it passes, then report in at most two lines outside the document: what you assumed, and any open question that needs the user. Don't narrate the checks, list what you removed, or repeat the document in the reply when it's saved to a file, unless asked. The reply follows the same rules as the document.
 
-**Validating on request.** When the user asks to validate, check, review or litmus-test a spec (theirs or anyone's), run steps 1 and 5 only and don't rewrite it. Return a table: test, pass/fail, the exact failing text (quoted, short), and the fix in a few words. Count each defect once, under the test it fits best; if the same text fails several tests, list it once and name the others in the fix cell, so the score reflects distinct problems. Lead with the verdict ("Passes" or "Fails 3 of 10"), then name the blockers: the failures that would make the reader build, integrate or decide wrongly, as opposed to wording cleanups. If the user's original ask isn't available, test 2 checks the document against its own stated goals and scope.
+**Validating on request.** When the user asks to validate, check, review or litmus-test a spec (theirs or anyone's), run steps 1 and 5 only and don't rewrite it. Return a table: test, pass/fail, the exact failing text (quoted, short), and the fix in a few words. Count each defect once, under the test it fits best; if the same text fails several tests, list it once and name the others in the fix cell, so the score reflects distinct problems. Lead with the verdict ("Passes" or "Fails 3 of 10"), then name the blockers: the failures that would make the reader build, integrate or decide wrongly, as opposed to wording cleanups. STE form problems count only under test 10, and only when they allow a second reading. Note other form problems in at most one line after the table, never as a failure. If the user's original ask isn't available, test 2 checks the document against its own stated goals and scope.
 
 ## Editing, extending or reviewing an existing document
 
@@ -117,7 +132,7 @@ Specs grow by edits, and most bloat and scope creep enter that way. Treat every 
 
 **3. Integrate, don't append.** Put each addition in the section where it belongs, in the document's terms and structure. Merge with what is already there instead of restating it. Resolve what the change affects elsewhere: an answered open question is removed, a changed number is changed everywhere, a superseded statement is replaced, not kept beside the new one. An edit that only ever makes the document longer is usually wrong; check what the change makes obsolete.
 
-**4. Leave the rest alone.** Text the request doesn't touch stays word for word, unless it now contradicts the change. Don't take an edit request as licence to rewrite, re-style or "improve" other sections; if you see a real problem elsewhere, mention it in one line instead.
+**4. Leave the rest alone.** Text the request doesn't touch stays word for word, unless it now contradicts the change. Don't take an edit request as licence to rewrite, re-style or "improve" other sections; if you see a real problem elsewhere, mention it in one line instead. Untouched text keeps its wording even where it breaks STE. New and changed text follows the language rules in step 3. A request to tighten or rewrite the whole document makes all of it new text, including its sections and headings: a section the gate empties goes, and its heading goes with it.
 
 **5. Run both alignment passes and the litmus test on the edited document.** In Pass 1 the "ask" is both the new request *and* the document's existing decisions: confirm every requested change is in, and no existing decision changed unintentionally. The one-sentence anchor is the focus that litmus test 7 checks against.
 
@@ -153,7 +168,7 @@ Some documents legitimately span two levels (e.g. a PRD with an architecture ske
 Feature: users can export reports.
 
 - **Concept**: "Users can take their reports out of the product in formats other tools read. Exports reflect what the user sees, including filters. Non-goal: scheduled exports."
-- **PRD**: "Export current report view as CSV or PDF. Respects active filters and column order. Reports > 50k rows export asynchronously with an email when ready. Success: export-related support tickets drop by half."
+- **PRD**: "Users export the current report view as CSV or PDF. The export keeps the active filters and the column order. A report with more than 50k rows exports in the background, and the user gets an email when it is ready. Success: support tickets about exports drop by half."
 - **API spec**: "`POST /reports/{id}/exports` body `{format: csv|pdf, filters}` → `202 {exportId}`. `GET /exports/{exportId}` → `{status: pending|ready|failed, url?}`. URL valid 24 h."
 
 Each is complete for its level. None contains the next level's details.
@@ -172,8 +187,10 @@ Patterns that add words without information. Delete or replace with the direct s
 
 ### Hedges and intensifiers
 
-- "might potentially", "could possibly", "in some cases may" → decide: state it, or mark it open.
+- "might potentially", "could possibly", "in some cases may" → decide: state it, or mark it open. Never turn the user's real uncertainty into a fact.
 - "very", "really", "highly", "extremely", "critical", "crucial", "key", "robust", "seamless", "comprehensive", "leverage", "utilize" → drop, or replace with a measurable claim.
+- "perform an analysis of", "carry out validation", "make a decision" → analyze, validate, decide.
+- "set up", "spin up", "kick off", "roll out", "fall back to" → configure, start, begin, release, use.
 - "etc." at the end of a list that should be complete → complete the list or say what the rule is.
 
 ### Baseline statements (assumed by any competent reader)
