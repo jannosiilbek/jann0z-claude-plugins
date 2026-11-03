@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: agent-task-spec-pdf-export
+expected_outcome: |
+  A spec a coding agent can implement from: it points to the existing CSV export as the pattern, keeps the CSV response unchanged with its reason, has acceptance criteria the agent can check, gives every open question a blocking-or-default instruction, and adds no repo-wide rules, baseline filler or invented decisions.
+context:
+  scaffold_script: place-files.sh

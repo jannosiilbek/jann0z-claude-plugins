@@ -1,6 +1,8 @@
 ---
 type: llm
-focus: trace
+focus:
+  source: file
+  path: validation.md
 weight: 1
 ---
 

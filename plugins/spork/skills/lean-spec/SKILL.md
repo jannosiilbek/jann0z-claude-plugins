@@ -15,7 +15,7 @@ Decide these five things first. Infer them from the request, the existing draft,
 
 1. **Type**: concept/vision, PRD, design doc, architecture, functional/API spec, implementation plan, ADR, runbook, reference, README.
 2. **Altitude**: how deep the document goes. See *Appendix A: Altitudes* below for what belongs at each level and what doesn't. The altitude is a ceiling on detail: nothing below it gets in unless the gate in step 2 lets it.
-3. **Reader and their baseline**: who reads it and what a competent professional in that role already knows and expects. That baseline is never written down.
+3. **Reader and their baseline**: who reads it and what a competent professional in that role already knows and expects. That baseline is never written down. When the reader is an AI coding agent, its baseline is general professional knowledge (cut it as for a senior) and nothing local: not this codebase, team, history or conversation. See *When an agent builds from it* in step 2.
 4. **Perspective**: whose view the document takes (product, user, system, operator, integrator). Keep it constant; a product spec does not drift into describing tables, a system spec does not drift into marketing.
 5. **Purpose**: what the reader will *do* with the document: decide (fund, approve, choose), build, integrate, operate, or review. The purpose sets what must be there; the altitude sets how deep it goes. A concept doc for a funding decision needs the value, what drives cost and the main risks, all at concept level; a concept doc for alignment may not. If the user states a purpose ("they'll use it to decide…"), the document must serve it.
 
@@ -39,6 +39,16 @@ Everything else is left out. Typical things that fail the gate:
 
 When the user explicitly asks for a detail that sits below the document's altitude, include it, compactly, where it belongs. Their request overrides the altitude; it does not lower the altitude of the rest of the document.
 
+**When an agent builds from it.** An agent can't come back with questions, it fills silence with guesses, and it stops when the work looks done. When the reader is an AI coding agent and the purpose is build, these are *needed for the purpose*, kept at the document's altitude:
+
+- **Local context**: the files, modules, interfaces and existing pattern the work touches or follows, and decisions made in the conversation. Point to them by path or name; don't paste code or restate what the agent can read in the repo.
+- **Done check**: acceptance criteria the agent can check itself: testable statements or input → output examples, plus the end-to-end check that proves the whole works. This section is never ceremonial.
+- **Boundaries**: what must not change (a public contract, a schema, existing behaviour, dependencies) and what needs human sign-off first. Only rules specific to this work; repo-wide rules (commands, code style, secrets) belong in CLAUDE.md or AGENTS.md.
+- **Open questions with an instruction**: each says either *blocking* (leave that part unbuilt) or gives a marked provisional default to build against, so the agent never picks silently.
+- **Reasons**: a non-default constraint keeps a one-clause reason when the reason decides cases the document doesn't name.
+
+Anything in these that the user didn't give (a boundary, a provisional default, a structural rule such as "share one implementation") is a proposal: mark it as one, never as a MUST.
+
 ## 3. Write lean
 
 - One idea per sentence. Lead with the claim. Cut words that don't change meaning.
@@ -47,7 +57,7 @@ When the user explicitly asks for a detail that sits below the document's altitu
 - Define each term once and use exactly that term thereafter. No synonyms for the same concept.
 - Use lists and tables for parallel or enumerable content; prose for reasoning and relationships. No bullet fragments that need a sentence to make sense.
 - Normative words (MUST/SHOULD/MAY) only in specs that are actually normative, and then consistently.
-- Sections only when they carry content. No empty or ceremonial sections ("Introduction", "Conclusion", "Glossary" with one obvious term). Pick structure to fit the content, not a template.
+- Sections only when they carry content. No empty or ceremonial sections ("Introduction", "Conclusion", "Glossary" with one obvious term). Pick structure to fit the content, not a template. For a build document read by an agent, default to this order: goal and non-goals, constraints and boundaries, behaviour, acceptance, open questions.
 - No hedging ("might potentially", "it could be argued"), intensifiers ("very", "really", "critical"), throat-clearing ("It's important to note that"), or AI-tell phrasing. See *Appendix B: Cut list* below for patterns.
 - Keep the user's existing terminology, structure and decisions when editing their draft. Tighten; don't rewrite their intent.
 
@@ -61,11 +71,12 @@ Write down each thing the user asked for or stated as a requirement, constraint,
 **Pass 2: independent cold read (fresh reader, inside-out).**
 If you can start a subagent or separate task (an Agent/Task tool or similar), give a fresh one *only* the document plus one line naming the reader, their role, the purpose and the one-sentence focus. Do not give it the conversation, the user's request, or your Pass 1 list. Ask it to return:
 1. A restatement of every requirement, decision and constraint the document makes, one line each.
-2. Its answers to the litmus test in step 5, each with the exact text that fails it.
+2. Every point where the document is silent but the reader would have to decide something to do the job, and what it would assume there.
+3. Its answers to the litmus test in step 5, each with the exact text that fails it.
 
 If no subagent is available, do the same yourself as deliberately as you can: write the restatement from the document alone before looking at the request again, then run the litmus test.
 
-Then compare. Every mismatch between the reader's restatement and your Pass 1 list is an alignment bug: the document says something other than what the user meant. Fix those first, then every litmus failure. Ignore suggestions to add detail below the altitude unless the purpose needs it.
+Then compare. Every mismatch between the reader's restatement and your Pass 1 list is an alignment bug: the document says something other than what the user meant. Every assumption it had to make is a gap: state the answer if the user gave it, otherwise add an open question. Fix those first, then every litmus failure. Ignore suggestions to add detail below the altitude unless the purpose needs it.
 
 ## 5. Litmus test
 
@@ -74,13 +85,13 @@ The litmus test is the pass/fail gate a finished spec must clear. Step 4 finds a
 Answer each question as the target reader would: the named role, at senior level, knowing only what the document and their professional baseline give them.
 
 **Has what it needs**
-1. **Sufficient**: Could the reader do the job the document is for (decide, build, integrate, operate) using only this document, without coming back with questions? Include the risks and failure modes a senior in that role would raise at this altitude (security of an API, data loss or race conditions in a migration, behaviour at the stated limits, such as response size or run time at the maximum input, consent for recording). *Fail:* any question they'd have to ask, or risk they'd raise, that isn't addressed or listed as open. Name the gap; don't add detail below the altitude to close it.
+1. **Sufficient**: Could the reader do the job the document is for (decide, build, integrate, operate) using only this document, without coming back with questions? Include the risks and failure modes a senior in that role would raise at this altitude (security of an API, data loss or race conditions in a migration, behaviour at the stated limits, such as response size or run time at the maximum input, consent for recording). When the reader is an agent that builds, it must also know when it is done and what it must not touch. *Fail:* any question they'd have to ask, or risk they'd raise, that isn't addressed or listed as open. Name the gap; don't add detail below the altitude to close it.
 2. **Complete to the ask**: Is every requirement, constraint and decision the user gave in it, at the same strength? *Fail:* anything missing, softened or hardened.
 3. **Honest gaps**: Is every unresolved point either an explicit open question or out of scope? *Fail:* a gap papered over with vague wording, or filled with an invented number, name or behaviour.
 
 **Has nothing it doesn't need**
 4. **Senior test**: Is there no sentence a senior in the reader's role would call obvious, standard practice, or "goes without saying"? *Fail:* any such sentence (e.g. "handle errors", "write tests", "ensure security", "keep it scalable", defining a term every reader knows).
-5. **Altitude**: Does nothing sit below the document's level of detail unless the user asked for it or the purpose needs it? *Fail:* implementation detail in a concept or product doc, internals in an API spec, and so on.
+5. **Altitude**: Does nothing sit below the document's level of detail unless the user asked for it or the purpose needs it? *Fail:* implementation detail in a concept or product doc, a week-by-week schedule or sizing in a concept doc (even when labelled an assumption), internals in an API spec, and so on.
 6. **Deletion**: Would deleting any sentence lose something the reader needs? *Fail:* any sentence whose removal loses nothing, including repeated statements, recaps, intros and conclusions.
 7. **Focus**: Does everything fall within the one-sentence focus? *Fail:* a goal, feature, audience or problem area outside it that the user didn't explicitly add.
 
@@ -102,7 +113,7 @@ Specs grow by edits, and most bloat and scope creep enter that way. Treat every 
 **2. Classify each requested change against the anchor.**
 - **In focus**: refines, adds to or corrects something within the anchor. Make the change.
 - **Below altitude**: right topic, too much detail for this document. If the user asked for it explicitly, add it compactly where it belongs (their request wins); otherwise keep it at the document's level and mention in one line that the detail belongs in a lower-level doc.
-- **Widens scope**: a new goal, feature, audience or problem area the anchor doesn't cover. Don't silently fold it in, and don't silently refuse. If it is small and clearly intended, add it and flag it in one line ("This widens scope from X to also cover Y"). If it would change what the document is about, ask before adding, offering the options in one short message: widen the scope, put it in a separate doc, or record it as a non-goal / open question. Meanwhile make all the in-focus changes.
+- **Widens scope**: a new goal, feature, audience or problem area the anchor doesn't cover. Don't silently fold it in, and don't silently refuse. A placeholder section ("not yet defined, see open questions") counts as folding it in. If it is small and clearly intended, add it and flag it in one line ("This widens scope from X to also cover Y"). If it would change what the document is about, ask before adding, offering the options in one short message: widen the scope, put it in a separate doc, or record it as a non-goal / open question. Meanwhile make all the in-focus changes.
 
 **3. Integrate, don't append.** Put each addition in the section where it belongs, in the document's terms and structure. Merge with what is already there instead of restating it. Resolve what the change affects elsewhere: an answered open question is removed, a changed number is changed everywhere, a superseded statement is replaced, not kept beside the new one. An edit that only ever makes the document longer is usually wrong; check what the change makes obsolete.
 
@@ -123,7 +134,7 @@ Pick the level that matches the document's purpose. Each level answers its own q
 | **Architecture** | How the system is shaped | Components and their responsibilities, boundaries, data flow, key interfaces at contract level, trade-offs, chosen vs rejected options, cross-cutting constraints that deviate from default | Function signatures, schemas field-by-field, config values, library minutiae |
 | **Design doc / RFC** | How we'll build this one thing and why this way | The key mechanism in depth, alternatives with trade-offs, risks, migration/rollout, relevant concerns (security, scale, compat) only where non-default | Code-level detail the code will document, restated background |
 | **Functional / API spec** | Exactly what it does at its boundary | Inputs, outputs, states, rules, errors that matter to the caller, limits, examples | Internal implementation, rationale essays, product pitch |
-| **Implementation plan** | Who does what, in which order | Steps, dependencies, owners, milestones, risks to the plan | Re-explaining the design |
+| **Implementation plan** | Who does what, in which order | Steps in order, dependencies, risks to the plan; for an agent, what each step touches and how it is checked; owners and milestones when people run it | Re-explaining the design |
 | **ADR** | What we decided and why | Context (brief), decision, consequences, rejected options in one line each | History of the discussion |
 | **Runbook / reference** | How to do or look up X | Exact steps, commands, values, preconditions, how to verify | Background, theory |
 

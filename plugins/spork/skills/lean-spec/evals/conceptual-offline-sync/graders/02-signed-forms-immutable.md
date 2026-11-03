@@ -1,6 +1,8 @@
 ---
 type: llm
-focus: trace
+focus:
+  source: file
+  path: offline-mode-concept.md
 weight: 1
 ---
 
