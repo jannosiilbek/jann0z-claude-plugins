@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: validate-near-clean-design
+expected_outcome: |
+  A validation of a mostly good migration design doc that finds its three planted defects (1 vs 2 week rollback window, undefined "caught up", "monitor closely" filler), counts each once, raises a substantive migration risk, and does not inflate the verdict or demand below-altitude detail.
+context:
+  scaffold_script: place-files.sh
