@@ -6,4 +6,6 @@ focus:
 weight: 1
 ---
 
-pdf-export-spec.md does not state as decided anything the user did not decide: no settled behaviour for charts or for reports above 10,000 rows, and no invented facts (made-up page limits, timings or user counts). A provisional default clearly marked as provisional is not a decision. Any requirement or boundary the user did not give (a library choice, a structural rule, a sign-off step) is acceptable only if marked as a proposal or left to the implementer, not stated as MUST.
+The user gave exactly these decisions: add PDF export for reports; it works like the existing CSV export, with the same filters and column order; the response of GET /reports/:id/export?format=csv must not change, because the mobile app parses it; reports up to 10,000 rows must export. Undecided: above 10,000 rows (cap or async), and whether PDFs include charts.
+
+pdf-export-spec.md passes if it states as decided nothing beyond these. Any other rule, requirement, boundary or behaviour (a structural rule such as sharing code with CSV, a sign-off step, layout details, sync vs async, process steps) is marked as a proposal or provisional, or left to the implementer. Restating the user's decisions as MUST is fine. Pointing to existing code in the repo is fine.
