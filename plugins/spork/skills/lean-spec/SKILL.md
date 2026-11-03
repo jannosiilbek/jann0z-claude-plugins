@@ -26,7 +26,7 @@ From these, write the document's **focus** for yourself in one sentence: what it
 Before a detail, sentence or section goes in, it must pass at least one of these:
 
 - **Asked for**: the user requested it, or it answers a question they raised.
-- **Needed for the purpose**: the reader can't do what the document is for without it (e.g. the value case and key risks for a funding decision), or a decision at this altitude depends on it, or it records a decision made.
+- **Needed for the purpose**: the reader can't do what the document is for without it (e.g. the value case and key risks for a funding decision), or a decision at this altitude depends on it, or it records a decision made at this altitude. A decision that sits below the altitude (a table schema, a library, a token format) is still below-altitude detail: when tightening, take it out and say in one line which lower-level doc it belongs in.
 - **Non-obvious**: a competent reader at this level would get it wrong, or choose differently, without it. Deviations from the default count; the default itself doesn't.
 
 Everything else is left out. Typical things that fail the gate:
@@ -34,13 +34,15 @@ Everything else is left out. Typical things that fail the gate:
 - **Professional baseline**: "the API should handle errors gracefully", "code will be tested", "the UI should be user-friendly", "we will follow security best practices", "the system should be scalable". The reader assumes these. Write them only when there is a specific, non-default requirement ("p99 < 200 ms at 5k rps", "PII never leaves eu-west-1").
 - **Below-altitude detail**: field names, libraries, retry counts, UI copy, file layouts in a conceptual or product spec.
 - **Padding**: intros that restate the title, "this document describes…", summaries of what was just said, motivation the reader already shares, conclusions, "next steps" nobody asked for.
-- **Invented specifics**: never fill a gap with plausible-sounding numbers, names or behaviour. If the doc genuinely needs an answer you don't have, put it in *Open questions*. If it doesn't need it at this altitude, leave it out entirely.
+- **Invented specifics**: never fill a gap with plausible-sounding numbers, names or behaviour stated as fact. If the doc genuinely needs an answer you don't have, put it in *Open questions*. If it doesn't need it at this altitude, leave it out entirely.
+  - *Proposals are not inventions.* When the purpose needs something only the author can design (endpoint paths, error codes, go/no-go criteria for a funding ask), you may propose it, marked as a proposal in the reply or the doc. Never propose facts (measurements, market data, dates, other people's decisions).
 
 When the user explicitly asks for a detail that sits below the document's altitude, include it, compactly, where it belongs. Their request overrides the altitude; it does not lower the altitude of the rest of the document.
 
 ## 3. Write lean
 
 - One idea per sentence. Lead with the claim. Cut words that don't change meaning.
+- A length the user sets ("one page", "a paragraph") is a hard limit, not a target. One page is about 400 words; if the content doesn't fit, cut the least decision-bearing parts, not the sentences' clarity.
 - Prefer concrete over abstract: a number, a name, a rule, an example.
 - Define each term once and use exactly that term thereafter. No synonyms for the same concept.
 - Use lists and tables for parallel or enumerable content; prose for reasoning and relationships. No bullet fragments that need a sentence to make sense.
@@ -72,7 +74,7 @@ The litmus test is the pass/fail gate a finished spec must clear. Step 4 finds a
 Answer each question as the target reader would: the named role, at senior level, knowing only what the document and their professional baseline give them.
 
 **Has what it needs**
-1. **Sufficient**: Could the reader do the job the document is for (decide, build, integrate, operate) using only this document, without coming back with questions? *Fail:* any question they'd have to ask that isn't listed as open.
+1. **Sufficient**: Could the reader do the job the document is for (decide, build, integrate, operate) using only this document, without coming back with questions? Include the risks and failure modes a senior in that role would raise at this altitude (security of an API, data loss or race conditions in a migration, behaviour at the stated limits, such as response size or run time at the maximum input, consent for recording). *Fail:* any question they'd have to ask, or risk they'd raise, that isn't addressed or listed as open. Name the gap; don't add detail below the altitude to close it.
 2. **Complete to the ask**: Is every requirement, constraint and decision the user gave in it, at the same strength? *Fail:* anything missing, softened or hardened.
 3. **Honest gaps**: Is every unresolved point either an explicit open question or out of scope? *Fail:* a gap papered over with vague wording, or filled with an invented number, name or behaviour.
 
@@ -89,7 +91,7 @@ Answer each question as the target reader would: the named role, at senior level
 
 **Reporting.** When writing or editing, don't print the test; fix and re-run until it passes, then report in at most two lines outside the document: what you assumed, and any open question that needs the user. Don't narrate the checks, list what you removed, or repeat the document in the reply when it's saved to a file, unless asked. The reply follows the same rules as the document.
 
-**Validating on request.** When the user asks to validate, check, review or litmus-test a spec (theirs or anyone's), run steps 1 and 5 only and don't rewrite it. Return a table: test, pass/fail, the exact failing text (quoted, short), and the fix in a few words. Lead with the verdict ("Passes" or "Fails 3 of 10"). If the user's original ask isn't available, test 2 checks the document against its own stated goals and scope.
+**Validating on request.** When the user asks to validate, check, review or litmus-test a spec (theirs or anyone's), run steps 1 and 5 only and don't rewrite it. Return a table: test, pass/fail, the exact failing text (quoted, short), and the fix in a few words. Count each defect once, under the test it fits best; if the same text fails several tests, list it once and name the others in the fix cell, so the score reflects distinct problems. Lead with the verdict ("Passes" or "Fails 3 of 10"), then name the blockers: the failures that would make the reader build, integrate or decide wrongly, as opposed to wording cleanups. If the user's original ask isn't available, test 2 checks the document against its own stated goals and scope.
 
 ## Editing, extending or reviewing an existing document
 

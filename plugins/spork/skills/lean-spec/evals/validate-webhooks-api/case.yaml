@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: validate-webhooks-api
+expected_outcome: |
+  A validation of a public webhooks spec that counts each defect once, names the blockers (conflicting signature header, unspecified retries, ambiguous ordering), flags the missing replay protection as a security gap, and does not flag the content integrators need.
+context:
+  scaffold_script: place-files.sh

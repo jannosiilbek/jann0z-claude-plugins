@@ -1,6 +1,6 @@
 {
   "name": "spork",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Small, sharp, multi-purpose skills. Starts with /lean-spec: writes, edits and validates superconcise, filler-free specs and technical docs at the right level of detail, keeps scope focused, and gates every doc with a two-pass alignment check and a 10-question litmus test.",
   "author": {
     "name": "janno",
