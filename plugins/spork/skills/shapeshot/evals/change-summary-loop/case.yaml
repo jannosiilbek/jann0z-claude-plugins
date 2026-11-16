@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: change-summary-loop
+expected_outcome: |
+  The reply applies the four changes and shows only a compact change summary (+ added, - removed, ~ changed lines with dotted paths), not the whole outline again, then asks again whether the shape fits. No research and no files.

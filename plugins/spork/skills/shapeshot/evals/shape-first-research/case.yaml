@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: shape-first-research
+expected_outcome: |
+  Before any research, the reply proposes the output data shape as a compact indented outline (fields, types, list counts), marks research claims as needing sources, asks how to present the result (JSON, Markdown or UI), and asks the user to confirm the shape fits. It does no research and writes no files yet.

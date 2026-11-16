@@ -55,3 +55,6 @@ docs/superpowers/
 
 # Impeccable plugin hook cache (machine-local hook state; not part of any skill's source)
 .impeccable/
+
+# claude plugin eval reports for spork skills (reproducible, never commit)
+plugins/spork/skills/*/evals/results/
