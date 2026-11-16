@@ -31,7 +31,7 @@
       "license": "MIT",
       "category": "productivity",
       "keywords": ["spec", "writing", "documentation", "prd", "design-doc", "rfc", "adr", "concise", "review", "validation", "schema", "zod", "data-contract", "research", "analysis"],
-      "description": "Small, sharp, multi-purpose skills. /lean-spec writes, edits and validates superconcise, filler-free specs and technical docs at the right level of detail, keeps scope focused, and gates every doc with a two-pass alignment check and a 10-question litmus test. /shapeshot is schema-first: it agrees the exact output data shape with you in a compact outline before any work, locks it as a Zod 4 contract, fills it through a validate-and-repair pipeline, and presents it through data-driven JSON, Markdown or UI templates."
+      "description": "Small, sharp, multi-purpose skills. /lean-spec writes, edits and validates superconcise, filler-free specs and technical docs at the right level of detail, keeps scope focused, and gates every doc with a two-pass alignment check and a 10-question litmus test. /shapeshot is schema-first: it agrees the exact output data shape with you before any work (brief, normalized outline, targeted questions, loop until it fits), locks it as a Zod 4 contract, fills it through a validate-and-repair pipeline, and presents it through data-driven JSON, Markdown or UI templates."
     }
   ]
 }

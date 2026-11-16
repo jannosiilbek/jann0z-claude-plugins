@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: build-json-with-refs
+expected_outcome: |
+  The run writes a strict Zod 4 contract whose root superRefine checks that every apartment's agent refers to an existing agent id and every extra is known, fills data.json with agents stored once, validates it, and writes contract.schema.json.

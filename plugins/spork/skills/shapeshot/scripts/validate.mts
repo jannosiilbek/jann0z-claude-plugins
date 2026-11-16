@@ -1,14 +1,20 @@
-// Validate a data file against a shapeshot Zod contract.
-// Usage: npx -y tsx validate.mts <contract.ts> <data.json> [ExportName]
+// Validate a data file against a shapeshot Zod contract, and/or emit its JSON Schema.
+// Usage: npx -y tsx validate.mts <contract.ts> [data.json] [ExportName] [--schema <out.json>]
 // Picks ExportName, else the default export, else the last exported Zod schema.
+// --schema writes z.toJSONSchema(schema) to <out.json>, using the zod installed next to the contract.
 // Prints OK, or one line per failing path. Exit code 0 = valid, 1 = invalid, 2 = usage error.
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-const [contractPath, dataPath, exportName] = process.argv.slice(2);
-if (!contractPath || !dataPath) {
-  console.error("usage: validate.mts <contract.ts> <data.json> [ExportName]");
+const args = process.argv.slice(2);
+const si = args.indexOf("--schema");
+const schemaOut = si >= 0 ? args[si + 1] : undefined;
+if (si >= 0) args.splice(si, 2);
+const [contractPath, dataPath, exportName] = args;
+if (!contractPath || (!dataPath && !schemaOut) || (si >= 0 && !schemaOut)) {
+  console.error("usage: validate.mts <contract.ts> [data.json] [ExportName] [--schema <out.json>]");
   process.exit(2);
 }
 
@@ -20,6 +26,14 @@ if (!isSchema(schema)) schema = Object.values(mod).filter(isSchema).at(-1);
 if (!isSchema(schema)) {
   console.error(`no Zod schema found in ${contractPath}${exportName ? ` named ${exportName}` : ""}`);
   process.exit(2);
+}
+
+if (schemaOut) {
+  const zodPath = createRequire(resolve(contractPath)).resolve("zod");
+  const z = await import(pathToFileURL(zodPath).href);
+  writeFileSync(resolve(schemaOut), JSON.stringify(z.toJSONSchema(schema), null, 2) + "\n");
+  console.log(`wrote ${schemaOut}`);
+  if (!dataPath) process.exit(0);
 }
 
 let data: unknown;

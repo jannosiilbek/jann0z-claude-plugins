@@ -27,6 +27,7 @@ name  type  constraints  — description
 | `≤140` `≥0` `1..5` after a type | max length / min value / range | `text  str ≤140` |
 | `unique` | no two items in the list share this value | `name  str unique` |
 | `→ pages.id` | must equal the `id` of an item in that list | `from  → pages.id` |
+| `→ features.id 0+` | list of references to items in that list | `features  → features.id 0+` |
 | `@src` after a list or field | each value needs evidence: `sources url 1+`, `confidence low \| med \| high`, `retrievedAt datetime` | `strengths  1..5 @src` |
 | `where …` | rule across fields, in plain words | `where  every page reachable from entry` |
 
@@ -47,6 +48,8 @@ Vendor
 ```
 
 Don't split out a named shape that's used once; it makes the reader jump around.
+
+A named shape copies a *structure*: each use holds its own data. When the same *thing* is used in several places (one feature that many products have), make it a top-level list with `id slug unique` and refer to it with `→` instead. See `shaping.md`.
 
 ## Change summaries
 

@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: normalize-shared-entities
+expected_outcome: |
+  The reply briefs the purpose and the grain, then proposes a normalized outline: speakers and rooms are defined once and talks refer to them by id, session times are typed fields, and filter fields (track, level) are enums. It asks at most 3 targeted questions that each name a field and give a default, asks whether the shape fits, and writes no files.
