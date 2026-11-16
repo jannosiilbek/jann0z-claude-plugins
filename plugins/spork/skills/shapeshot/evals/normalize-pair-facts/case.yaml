@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: normalize-pair-facts
+expected_outcome: |
+  The proposed shape puts tools and teams in their own lists and keeps per-team facts (seats, cost, owner) on a team-tool usage item that refers to both, so tool facts like vendor and renewal date are written once. Costs are numeric with a period, renewal dates are typed, and overlap is modelled through a category or function field, not free text. No files.

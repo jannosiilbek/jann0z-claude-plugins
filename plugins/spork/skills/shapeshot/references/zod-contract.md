@@ -34,7 +34,7 @@ Target Zod 4 (`npm i zod@^4`; checked against 4.6). Import as `import * as z fro
 - **One `superRefine` on the root** for all cross-field rules (`unique`, `→`, `where`). Every `ctx.addIssue` gets `code: "custom"`, a message that names the rule, and a `path` to the exact failing item, so repair can target it. Zod runs refinements only after the field checks pass, so a run can show new issues once the field issues are fixed. That's expected.
 - **Metadata.** `.meta({ id, title, description })` on the root and on any named shape; the `id` becomes a `$defs` entry in the JSON Schema. Add `examples` only when the format of a value isn't obvious from its type. Use `.describe()` for field descriptions from the outline. Don't write descriptions the outline didn't have just to fill space.
 - **Exports.** Export the root schema as a named export and as `default`, plus `export type X = z.infer<typeof X>`. `scripts/validate.mts` picks the default export.
-- **JSON Schema.** Emit `contract.schema.json` with `z.toJSONSchema(Root)`. Keep the emit step in a tiny `emit.ts` (or at the end of `ingest.ts`), not as a side effect of importing the contract.
+- **JSON Schema.** Write `contract.schema.json` with `validate.mts --schema` (it calls `z.toJSONSchema` on the root). Don't emit it as a side effect of importing the contract.
 - **No transforms.** No `.transform()`, `.default()` or `.coerce` in the contract: the contract checks data, it doesn't change it. Normalizing belongs in the pipeline. (This also keeps `z.toJSONSchema()` exact.)
 
 ## Template
@@ -110,17 +110,12 @@ export type CompetitorAnalysis = z.infer<typeof CompetitorAnalysis>;
 export default CompetitorAnalysis;
 ```
 
-`emit.ts`:
+Write the JSON Schema with the bundled script, no extra file needed:
 
-```ts
-import * as z from "zod";
-import { writeFileSync } from "node:fs";
-import { CompetitorAnalysis } from "./contract.ts";
-
-writeFileSync("contract.schema.json", JSON.stringify(z.toJSONSchema(CompetitorAnalysis), null, 2));
 ```
-
-Run with `npx -y tsx emit.ts`. If the folder has no `zod`, install it there first: `npm i zod@^4` (and `npm i -D tsx` if you prefer it local).
+npm i zod@^4                      # once, in the output folder, if it has no zod
+npx -y tsx <skill-dir>/scripts/validate.mts contract.ts --schema contract.schema.json
+```
 
 ## Reference checks (`→`) and `where` rules
 

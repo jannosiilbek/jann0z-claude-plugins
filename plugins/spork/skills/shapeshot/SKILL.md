@@ -1,6 +1,6 @@
 ---
 name: shapeshot
-description: Schema-first workflow for any task whose result is structured findings. Agree the exact output data shape with the user first (compact outline, loop until they say it fits), then lock it as a Zod 4 contract, fill it with an ingestion pipeline that validates and repairs, and present it through a data-driven template (JSON, Markdown or UI). Use for research, competitor or market analysis, comparisons, app page or flow design, data investigation, audits and inventories, and whenever the user wants findings they can check, reuse or re-render, even if they don't mention schemas or Zod. Also use it when the user is reviewing or changing a data shape or outline proposed earlier, or says an agreed shape "fits" and wants it built.
+description: Schema-first workflow for any task whose result is structured findings. Agree the exact output data shape with the user first (compact outline, loop until they say it fits), then lock it as a Zod 4 contract, fill it with an ingestion pipeline that validates and repairs, and present it through a data-driven template (JSON, Markdown or UI). Use for research, competitor or market analysis, comparisons, app page or flow design, data investigation, audits and inventories, and whenever the user wants findings they can check, reuse or re-render, even if they don't mention schemas or Zod. Also use it when the user is reviewing or changing a data shape or outline proposed earlier, or says an agreed shape "fits" and wants it built. Not for one-off quick answers the user will not check, reuse or re-render, or for designing an app's database schema.
 ---
 
 # Shapeshot
@@ -14,6 +14,8 @@ The workflow has two halves with a hard stop between them:
 1. **Agree the shape** (steps 1 to 3): brief, propose, then loop with targeted questions until the shape is exact. Conversation only. No research, no files, no code.
 2. **Build to the shape** (steps 4 to 7): only after the user says the shape fits.
 
+When not to use it: a one-off question the user just wants answered ("which of these is cheapest?") with no wish to reuse, check or re-render the result. Answer it directly; the loop would cost more than the answer.
+
 ## 1. Brief: what the result is for
 
 Start from what the user will do with the result: decide, build, compare, monitor, present. List the questions the result must answer for that. Every field you add later must answer one of them; if you can't say which, drop it.
@@ -24,26 +26,29 @@ Don't do the research yet to find out what fields exist. A brief look is fine wh
 
 ## 2. Propose the shape
 
-Read `references/notation.md` and `references/shaping.md` before you write the first shape. Notation is the Outline format the user agreed on; shaping is how to get normalization and granularity right.
+Read `references/notation.md` (the Outline format the user agreed on) and `references/shaping.md` (grain, normalization, granularity) before you write the first shape.
 
-Draft the shape, then run the shape check from `references/shaping.md` on it and fix what it finds before you show anything. The points that matter most:
+Draft the shape, then run the shape check on it and fix what it finds before you show anything:
 
-- **Grain**: each list holds one kind of thing, with a count (`3..8`, `1+`). An open-ended list invites padding.
-- **Normalize**: a thing used in two or more places (a feature many products have, a page many edges point to) becomes its own top-level list with `id slug unique`, referenced with `→ list.id`. Write each fact once. Things used in one place stay nested.
-- **Atomic**: a field the result will compare, sort, filter or compute holds one fact in one unit (`usdSeat num ≥0` plus `billing monthly | annual`, never `price str "$10/user/mo"`). Enums over free text where the values are known.
-- **Granularity**: as fine as the questions need, no finer. Free text only for what a person just reads, with a length cap. No stored arithmetic: the template computes totals and ranks.
-- **Proportion**: a narrow question gets a narrow shape, often under 10 fields and one level deep. Broad work may need 2 to 3 levels, rarely more.
-- **Evidence**: mark everything that comes from research with `@src`: prices, plans, features, market figures, strengths and weaknesses. Facts the user gave you, and values computed from their data, don't need it. Research shapes get a `gaps?` list at the root, so unknowns have a place to go instead of being guessed.
-- Fields describe what will be collected. Don't put expected values in descriptions (`name str — Linear, Jira`). Fixed inputs from the user, like the team size, belong in the brief, not as fields.
+1. Each field answers a question from step 1. Fixed inputs from the user (the team size) go in the brief, not in fields.
+2. Each list holds one kind of thing and has a count (`3..8`, `1+`). Open-ended lists invite padding.
+3. Nothing is written twice. A thing used in two or more places becomes a top-level list with `id slug unique`, referenced with `→ list.id`. Things used once stay nested.
+4. Each field the result will compare, sort, filter or compute is atomic, typed, and has its unit (`usdSeat num ≥0` plus `billing monthly | annual`, never `price str`). Enums where the values are known.
+5. Free text only for what a person just reads, with a length cap.
+6. Nothing finer than the questions need. No stored arithmetic: the template computes totals, ranks and picks.
+7. `@src` on everything from research (prices, features, figures, strengths); not on facts the user gave or values computed from their data. Research shapes get `gaps? str 0+` at the root.
+8. In proportion: a narrow question gets a narrow shape, often under 10 fields and one level deep; broad work 2 to 3 levels, rarely more.
 
-Show it in this reply format, and nothing else:
+Don't print the checklist; show its result. The reply has these parts, in this order, and nothing else:
 
-1. **Brief**, at most 2 lines: what the result is for, as you read it, and the grain of each list.
+1. **Brief**: what the result is for, as you read it, and the grain of each list. One or two lines.
 2. **The shape** in Outline notation, in a code block.
-3. **Decisions**, at most 3 one-line bullets: the modelling calls a user might not expect (an entity split out, a value split into fields, something left coarse on purpose). Skip when there are none.
-4. **Questions**, at most 3, numbered, each targeted: it names a path in the shape, says what depends on it, and gives a default, so the user can answer in one word (`1. pricing.usdSeat — per seat or per workspace? Default: per seat.`). Ask only where the answer changes the shape. Skip when you're not unsure.
-5. **The presentation question**, once: *How should I present it: JSON only, a Markdown document, or a UI?* Skip it if the user already said.
+3. **Decisions**: up to 3 one-line bullets on modelling calls the user might not expect (an entity split out, a value split into fields, something left coarse on purpose). Only when there are such calls.
+4. **Questions**: up to 3, numbered, each targeted: it names a path, says what depends on it, and gives a default, so the user can answer in one word (`1. tiers.usdSeat — per seat or per workspace? Default: per seat.`). Only where the answer changes the shape.
+5. **The presentation question**: *How should I present it: JSON only, a Markdown document, or a UI?* Only in the first round, and only if the user hasn't said.
 6. **The closing ask**: *Does this shape fit? Say "fits", answer the questions, or tell me what to change.*
+
+Fit the reply to the shape. A small, flat shape gets a one-line brief, no Decisions, and at most one question; the whole reply should be shorter than the shape. Spend the parts on broad or tricky shapes, where they pay off.
 
 Example:
 
@@ -78,7 +83,7 @@ Each round makes the shape more exact. When the user answers or asks for changes
 - competitors.segment
 ```
 
-4. Ask the questions still open, plus any the change raised, in the same targeted format. Don't ask again what the user answered. The list shrinks each round; when nothing is open, say so in a few words.
+4. Ask the questions still open, plus any the change raised, in the same targeted format. Don't ask again what the user answered, and don't repeat the presentation question. The list shrinks each round; when nothing is open, say so in a few words.
 5. Ask the closing question again.
 
 Show the full outline again only when the user asks, or when more than about a third of the lines changed. Don't add it "for reference" either: the user already has it, and a second copy makes them hunt for what changed.
@@ -96,7 +101,7 @@ After agreement, read `references/zod-contract.md` and write `contract.ts`. It i
 - `z.strictObject` for every object, so unknown keys fail instead of slipping through.
 - `.meta({ id, title, description, examples })` on named shapes and `.describe()` on fields, carrying the outline's `— descriptions`.
 - `where` rules and `→` references become one `.superRefine()` on the root, with a `path` on every issue.
-- Export the root schema, its inferred type, and write `contract.schema.json` with `z.toJSONSchema()` so non-TypeScript tools can use the contract too.
+- Export the root schema (named and default) and its inferred type. Write `contract.schema.json` with `scripts/validate.mts contract.ts --schema contract.schema.json`, so non-TypeScript tools can use the contract too.
 
 Save the agreed outline as `shape.md` beside it. The outline is the human source; the contract must match it line for line.
 
@@ -149,4 +154,4 @@ When the agent gathers the data itself (for example, web research), `ingest.ts` 
 - `references/zod-contract.md`: outline to Zod 4 mapping and a contract template. Read at step 4.
 - `references/pipeline.md`: gather, normalize, validate, repair. Read at step 5.
 - `references/presentation.md`: Markdown and UI template patterns. Read at step 6.
-- `scripts/validate.mts`: `npx -y tsx <skill-dir>/scripts/validate.mts contract.ts data.json` prints each failing path, or `OK`.
+- `scripts/validate.mts`: `npx -y tsx <skill-dir>/scripts/validate.mts contract.ts data.json` prints each failing path, or `OK`. Add `--schema contract.schema.json` to write the JSON Schema.

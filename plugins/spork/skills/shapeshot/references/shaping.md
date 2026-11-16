@@ -1,6 +1,6 @@
 # Shaping: normalization and granularity
 
-How to get a shape right before the user sees it, and how to check it again after each change. A shape is high fidelity when every record means one thing, every fact lives in one place, and every field is as fine as the questions need, and no finer.
+Background for the shape check in SKILL.md step 2: how to get a shape right before the user sees it, and how to judge each change. A shape is high fidelity when every record means one thing, every fact lives in one place, and every field is as fine as the questions need, and no finer.
 
 ## Contents
 
@@ -9,7 +9,6 @@ How to get a shape right before the user sees it, and how to check it again afte
 - Atomic fields
 - Too coarse, too fine
 - Derived values
-- The shape check (run before every show)
 - Targeted questions
 - Worked example: before and after
 
@@ -75,33 +74,9 @@ Don't store what the template can compute from other fields: totals, counts, "ch
 
 Keep a derived value only when it is a judgement, not arithmetic (a `verdict`, a `confidence`), or when its inputs are not in the shape. Then mark how it was made with a `— description` (`effect pct — conversion gap vs. baseline`).
 
-## The shape check
-
-Run this before you show any shape, and again on the changed part after each edit. Fix what you can. Ask about what you can't decide.
-
-1. Each field answers a question from step 1. Drop the rest.
-2. Each list has one grain you can say in a phrase, and a count.
-3. Nothing is written in two places. Shared things are entity lists with `id` and `→` references.
-4. Each field the result will compare, sort, filter or compute is atomic, typed, and has its unit.
-5. Each free-text field is for reading only, and has a length cap.
-6. No field is finer than the questions need. No orphan `id`s.
-7. No stored arithmetic.
-8. `?` only where a value is really absent for some items; `@src` on everything from research.
-
-Don't print the checklist. Show its result: a better shape, the modelling calls in "Decisions", and the open points as questions.
-
 ## Targeted questions
 
-A targeted question points at one path in the shape, says what depends on the answer, and offers a default, so the user can reply with one word:
-
-```
-1. pricing.usdSeat — per seat per month, or per workspace? Default: per seat.
-2. features — fixed list you give me, or the 8..12 most mentioned in reviews? Default: most mentioned.
-```
-
-Good questions are about grain, granularity, entity boundaries, counts, enum values, and what the user will do with a field. Don't ask what you can decide from the request, and don't ask about presentation details in these slots (the presentation question is separate).
-
-Ask the questions whose answers would change the shape the most. Up to 3 per round. A later round asks only about what is still open, so the list shrinks to zero as the shape converges.
+Ask about what changes the shape most: grain, entity boundaries, granularity, counts, enum values, and what the user will do with a field. Don't ask what the request already settles. Answers shrink the open list each round.
 
 ## Worked example: before and after
 
