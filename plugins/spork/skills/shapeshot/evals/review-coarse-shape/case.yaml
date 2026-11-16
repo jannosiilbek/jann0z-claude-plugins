@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: review-coarse-shape
+expected_outcome: |
+  Reviewing the user's own shape, the reply finds the coarse and duplicated fields: price split into a number, agents split out and referenced, a filterable district, features as typed values. It shows the fixes as a change summary, asks whether the shape fits, and writes no files.

@@ -11,59 +11,66 @@ Why this works: most padding in agent output comes from not knowing what "done" 
 
 The workflow has two halves with a hard stop between them:
 
-1. **Agree the shape** (steps 1 to 3): conversation only. No research, no files, no code.
+1. **Agree the shape** (steps 1 to 3): brief, propose, then loop with targeted questions until the shape is exact. Conversation only. No research, no files, no code.
 2. **Build to the shape** (steps 4 to 7): only after the user says the shape fits.
 
-## 1. Work out the shape
+## 1. Brief: what the result is for
 
-Start from what the user will do with the result: decide, build, compare, monitor, present. List the questions the result must answer for that, then derive the fields from those questions. Every field should answer one of them. If you can't say which question a field answers, drop it.
+Start from what the user will do with the result: decide, build, compare, monitor, present. List the questions the result must answer for that. Every field you add later must answer one of them; if you can't say which, drop it.
 
-Keep it in proportion to the task:
-
-- A narrow question gets a narrow shape: often under 10 fields, one level deep.
-- A broad research or design task may need 2 to 3 levels, rarely more. Past 3 levels, flatten or split.
-- Prefer enums over free text where the set of values is known; they make the data comparable.
-- Put counts on lists (`3..8`, `1+`). An open-ended list invites padding.
-- Mark everything that comes from research with `@src`: prices, plans, features, market figures, strengths and weaknesses, anything from the web or a document a reader may want to check. Facts the user gave you, and values computed from their data, don't need it.
-- Fields describe what will be collected. Don't put expected values in descriptions (`name str — Linear, Jira`); fixed inputs from the user, like the team size, belong in the one-line reading above the shape, not as fields.
-- Add a `gaps?` list at the root of research shapes, so unknowns have a place to go instead of being guessed.
+Then name the grain: the things the result holds, and what one item of each list stands for ("one item = one pricing tier of one product"). Most shape mistakes are grain mistakes, and a user checks a grain in one glance, where a wrong field hides in twenty lines.
 
 Don't do the research yet to find out what fields exist. A brief look is fine when you can't name the fields otherwise (for example, the columns of a data file the user gave you), but the work itself waits for agreement.
 
-## 2. Show the shape in Outline notation
+## 2. Propose the shape
 
-Read `references/notation.md` before you write the first shape. It defines the Outline notation the user agreed on. In short:
+Read `references/notation.md` and `references/shaping.md` before you write the first shape. Notation is the Outline format the user agreed on; shaping is how to get normalization and granularity right.
+
+Draft the shape, then run the shape check from `references/shaping.md` on it and fix what it finds before you show anything. The points that matter most:
+
+- **Grain**: each list holds one kind of thing, with a count (`3..8`, `1+`). An open-ended list invites padding.
+- **Normalize**: a thing used in two or more places (a feature many products have, a page many edges point to) becomes its own top-level list with `id slug unique`, referenced with `→ list.id`. Write each fact once. Things used in one place stay nested.
+- **Atomic**: a field the result will compare, sort, filter or compute holds one fact in one unit (`usdSeat num ≥0` plus `billing monthly | annual`, never `price str "$10/user/mo"`). Enums over free text where the values are known.
+- **Granularity**: as fine as the questions need, no finer. Free text only for what a person just reads, with a length cap. No stored arithmetic: the template computes totals and ranks.
+- **Proportion**: a narrow question gets a narrow shape, often under 10 fields and one level deep. Broad work may need 2 to 3 levels, rarely more.
+- **Evidence**: mark everything that comes from research with `@src`: prices, plans, features, market figures, strengths and weaknesses. Facts the user gave you, and values computed from their data, don't need it. Research shapes get a `gaps?` list at the root, so unknowns have a place to go instead of being guessed.
+- Fields describe what will be collected. Don't put expected values in descriptions (`name str — Linear, Jira`). Fixed inputs from the user, like the team size, belong in the brief, not as fields.
+
+Show it in this reply format, and nothing else:
+
+1. **Brief**, at most 2 lines: what the result is for, as you read it, and the grain of each list.
+2. **The shape** in Outline notation, in a code block.
+3. **Decisions**, at most 3 one-line bullets: the modelling calls a user might not expect (an entity split out, a value split into fields, something left coarse on purpose). Skip when there are none.
+4. **Questions**, at most 3, numbered, each targeted: it names a path in the shape, says what depends on it, and gives a default, so the user can answer in one word (`1. pricing.usdSeat — per seat or per workspace? Default: per seat.`). Ask only where the answer changes the shape. Skip when you're not unsure.
+5. **The presentation question**, once: *How should I present it: JSON only, a Markdown document, or a UI?* Skip it if the user already said.
+6. **The closing ask**: *Does this shape fit? Say "fits", answer the questions, or tell me what to change.*
+
+Example:
 
 ```
 CompetitorAnalysis  — Pick a tracker for a 10-person startup
   asOf          date
-  competitors   3..8
+  competitors   3
     name        str unique
-    segment     smb | mid | ent
     pricing     1+ @src
       tier      str
-      usdSeat?  num ≥0          — empty = contact sales
+      usdSeat?  num ≥0          — per month; empty = contact sales
+      billing   monthly | annual
     strengths   1..5  @src
       text      str ≤140
   verdict       str ≤400
   gaps?         str 0+
 ```
 
-One field per line, nested by indent, a count after a name means a list of the fields below it. No braces, no colons, no Zod. The user should be able to read it in ten seconds and edit it by hand.
-
-Your reply in this step has exactly these parts, and nothing else:
-
-1. One line: what the result is for, as you read it.
-2. The shape, in a code block.
-3. At most 3 short questions, only where you are really unsure (a field you might be missing, a count, an enum's values). Skip this part when you're not unsure.
-4. The presentation question, once: *How should I present it: JSON only, a Markdown document, or a UI?* Skip it if the user already said.
-5. The closing ask: *Does this shape fit? Say "fits", or tell me what to change.*
-
 Then stop and wait. Don't start the work "to save time": if the shape changes, that work is wasted, and the user loses the chance to steer before it matters.
 
-## 3. Loop until the user says it fits
+## 3. Loop until the shape fits
 
-When the user asks for changes, apply them and show only what changed, as a change summary (format in `references/notation.md`):
+Each round makes the shape more exact. When the user answers or asks for changes:
+
+1. Apply them. Read answers with defaults: "ok" or "yes" to a question means take the default.
+2. Run the shape check again on what changed. If a requested change brings in duplication, a coarse field the result will sort or compare, or a field no question needs, apply it the way the user asked and flag it in one line with a better option. The user decides; you advise.
+3. Show only what changed, as a change summary (format in `references/notation.md`):
 
 ```
 ~ competitors        3..8  →  5
@@ -71,11 +78,16 @@ When the user asks for changes, apply them and show only what changed, as a chan
 - competitors.segment
 ```
 
-Then ask the closing question again. Show the full outline again only when the user asks, or when more than about a third of the lines changed. Don't add it "for reference" either: the user already has it, and a second copy makes them hunt for what changed.
+4. Ask the questions still open, plus any the change raised, in the same targeted format. Don't ask again what the user answered. The list shrinks each round; when nothing is open, say so in a few words.
+5. Ask the closing question again.
 
-Agreement means an explicit yes: "fits", "yes", "looks good", "go", "ship it", or a clear equivalent. Feedback that also says "otherwise fine" counts as a yes after you apply it, but still show the change summary. Silence, a new question, or "hmm" is not agreement. If the user agrees and asks for changes in one message, apply them, show the summary, and go on without asking again.
+Show the full outline again only when the user asks, or when more than about a third of the lines changed. Don't add it "for reference" either: the user already has it, and a second copy makes them hunt for what changed.
 
-If the user skips the loop ("just do it", "don't ask, pick a shape"), still show the shape in one block at the top of your reply, then go on. The shape stays the contract either way.
+When the user asks you to review or tighten a shape they wrote, treat it as the first proposal: run the shape check, and reply with Decisions (what you found, one line each), the change summary of your suggested fixes, targeted questions, and the closing ask.
+
+Agreement means an explicit yes: "fits", "yes", "looks good", "go", "ship it", or a clear equivalent. Feedback that also says "otherwise fine" counts as a yes after you apply it, but still show the change summary. Silence, a new question, or "hmm" is not agreement. If the user agrees and asks for changes in one message, apply them, show the summary, and go on without asking again. Open questions at that point take their defaults; say which in one line.
+
+If the user skips the loop ("just do it", "don't ask, pick a shape"), still run the shape check, show the shape in one block at the top of your reply, then go on. The shape stays the contract either way.
 
 ## 4. Lock it as a Zod contract
 
@@ -133,6 +145,7 @@ When the agent gathers the data itself (for example, web research), `ingest.ts` 
 ## References
 
 - `references/notation.md`: Outline notation, change summaries, worked examples. Read at step 2.
+- `references/shaping.md`: grain, normalization, granularity, the shape check, targeted questions. Read at step 2, and again when a change touches entities or grain.
 - `references/zod-contract.md`: outline to Zod 4 mapping and a contract template. Read at step 4.
 - `references/pipeline.md`: gather, normalize, validate, repair. Read at step 5.
 - `references/presentation.md`: Markdown and UI template patterns. Read at step 6.

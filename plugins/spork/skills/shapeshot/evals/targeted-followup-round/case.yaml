@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: targeted-followup-round
+expected_outcome: |
+  The reply applies the answers (default for question 1, a fixed feature list for question 2), adds the requested field but flags that a support email belongs on the product, not on each tier. It shows only a change summary, does not ask again what was answered, asks whether the shape fits, and writes no files.

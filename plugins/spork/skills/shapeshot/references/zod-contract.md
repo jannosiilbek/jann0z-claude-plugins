@@ -21,7 +21,8 @@ Target Zod 4 (`npm i zod@^4`; checked against 4.6). Import as `import * as z fro
 | `1+` / `0+` / `5` | `.min(1)` / no bound / `.length(5)` |
 | `str ≤140` / `num ≥0` | `.max(140)` / `.min(0)` |
 | `unique` | check in the root `.superRefine()` |
-| `→ pages.id` | check in the root `.superRefine()` |
+| `→ pages.id` | `z.string()`, checked in the root `.superRefine()` |
+| `→ features.id 0+` | `z.array(z.string())`, each item checked in the root `.superRefine()` |
 | `where …` | check in the root `.superRefine()` |
 | `@src` | `.extend(Source.shape)` on the item (see template) |
 | `— description` | `.describe("...")` on the field |
@@ -132,6 +133,10 @@ Run with `npx -y tsx emit.ts`. If the folder has no `zod`, install it there firs
       if (!ids.has(e[end]))
         ctx.addIssue({ code: "custom", message: `→ pages.id: unknown page "${e[end]}"`, path: ["edges", i, end] });
   });
+  // list of references (features  → features.id 0+): check every item, path down to the index
+  // d.products.forEach((p, i) => p.tiers.forEach((t, j) => t.features.forEach((f, k) => {
+  //   if (!featureIds.has(f)) ctx.addIssue({ code: "custom", message: `→ features.id: unknown "${f}"`, path: ["products", i, "tiers", j, "features", k] });
+  // })));
   // where: every page reachable from entry
   const reach = new Set([d.entry]);
   for (let grew = true; grew; ) {
