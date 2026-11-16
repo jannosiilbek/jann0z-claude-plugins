@@ -45,12 +45,13 @@ ddd-brief → ddd-domain → ddd-usecases → [ddd-api] → [ddd-screens] → er
 
 ## Spork plugin — small, sharp skills
 
-`plugins/spork` contains one skill so far: `lean-spec`.
+`plugins/spork` contains two skills: `lean-spec` and `shapeshot`.
 
 - `lean-spec` writes, edits and validates concise specs and technical docs, always in Simplified Technical English (ASD-STE100 sentence rules, copied in). Self-contained folder: a core `SKILL.md` plus `references/` that it loads per mode. No scripts, no dependency on other skills. Keep it that way.
 - Evals: `claude plugin eval plugins/spork/skills/lean-spec --scaffold --allow-tools Write Edit --judge-model sonnet --trust-plugin`. Graders that judge a saved doc use `focus: {source: file, path: <doc>}`, because the trace a judge sees cuts off long docs; graders that need the input state it in their own text. The default haiku judge is too noisy for these graders.
 - Tests are case folders under `evals/` (`prompt.md`, `case.yaml`, `graders/`), the layout `claude plugin eval` reads.
-- Overlaps `lunchbox/doc-align` on purpose: `doc-align` aligns a whole docs tree; `lean-spec` writes and gates one document.
+- `shapeshot` is schema-first: it agrees the output data shape with the user in Outline notation (`references/notation.md`, the format Janno picked) and loops until they say it fits, then writes a Zod 4 contract, a validate-and-repair ingestion pipeline and a data-driven template (JSON, Markdown or UI). Ships one script, `scripts/validate.mts` (`npx -y tsx`). Its build cases (`build-markdown-after-fits`, `ui-from-csv`) need npm access and a writable shell; the local `claude plugin eval` sandbox blocks both when it runs as root, so run those two with skill-creator subagents instead and check `data.json` with `validate.mts`.
+- `lean-spec` overlaps `lunchbox/doc-align` on purpose: `doc-align` aligns a whole docs tree; `lean-spec` writes and gates one document.
 
 ## Testing
 

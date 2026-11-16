@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: ui-from-csv
+expected_outcome: |
+  The run computes the drivers from trials.csv, writes data.json that passes a Zod 4 contract matching the shape, and builds a self-contained view.html whose rendering code reads everything from the data (embedded JSON or data.json) and hard-codes none of the numbers.
+context:
+  scaffold_script: place-files.sh

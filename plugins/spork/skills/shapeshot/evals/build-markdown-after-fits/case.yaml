@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: build-markdown-after-fits
+expected_outcome: |
+  The run writes a Zod 4 contract that mirrors the agreed shape (strict objects, metadata, a superRefine for page references and the reachability rule), emits JSON Schema, fills data.json with the described flow and validates it, and renders report.md through a template that holds no facts from this flow.
